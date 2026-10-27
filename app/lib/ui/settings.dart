@@ -55,8 +55,10 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(l.region, style: text.titleMedium),
             const SizedBox(height: 8),
-            // shortcut: one bundled region until the region picker in Iteration 3b.
+            // shortcut: one bundled region until the region picker in Iteration 3c.
             Text(l.northernFrance, style: text.bodyLarge),
+            const SizedBox(height: 48),
+            Text(l.dataSources, style: text.bodySmall),
           ],
         ),
       ),

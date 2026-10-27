@@ -79,4 +79,64 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get northernFrance => 'Nord de la France';
+
+  @override
+  String get alarms => 'Alarmes';
+
+  @override
+  String get collection => 'Collection';
+
+  @override
+  String get common => 'Commune';
+
+  @override
+  String get uncommon => 'Peu commune';
+
+  @override
+  String get rare => 'Rare';
+
+  @override
+  String get epic => 'Épique';
+
+  @override
+  String get legendary => 'Légendaire';
+
+  @override
+  String get heard => 'Entendu';
+
+  @override
+  String get heardHint =>
+      'Devinez-le la prochaine fois pour gagner cette carte';
+
+  @override
+  String quality(int percent) {
+    return 'Qualité $percent %';
+  }
+
+  @override
+  String get weight => 'Poids';
+
+  @override
+  String get wingspan => 'Envergure';
+
+  @override
+  String get length => 'Longueur';
+
+  @override
+  String get flightDistance => 'Vol';
+
+  @override
+  String get newCard => 'Nouvelle carte !';
+
+  @override
+  String get share => 'Partager';
+
+  @override
+  String progress(int owned, int total) {
+    return '$owned / $total cartes';
+  }
+
+  @override
+  String get dataSources =>
+      'Données : GBIF · Wikidata · Wikipédia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons';
 }

@@ -8,6 +8,16 @@ const moss = Color(0xFF3E8E6A);
 const brick = Color(0xFFC9503C);
 const radius = 16.0;
 
+/// Card frame color per rarity tier (decisions.md "Card collection").
+const rarityColor = {
+  'common': Color(0xFF8C857B),
+  'uncommon': Color(0xFF4F8F5B),
+  'rare': Color(0xFF3B7DB8),
+  'epic': Color(0xFF8A4FB0),
+  'legendary': Color(0xFFD9A21B),
+};
+const unknownColor = Color(0xFFDDD5CA); // not discovered yet
+
 final dawnTheme = ThemeData(
   colorScheme: const ColorScheme.light(
     primary: coral,

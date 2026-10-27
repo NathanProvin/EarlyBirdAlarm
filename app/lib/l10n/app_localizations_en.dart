@@ -78,4 +78,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get northernFrance => 'Northern France';
+
+  @override
+  String get alarms => 'Alarms';
+
+  @override
+  String get collection => 'Collection';
+
+  @override
+  String get common => 'Common';
+
+  @override
+  String get uncommon => 'Uncommon';
+
+  @override
+  String get rare => 'Rare';
+
+  @override
+  String get epic => 'Epic';
+
+  @override
+  String get legendary => 'Legendary';
+
+  @override
+  String get heard => 'Heard';
+
+  @override
+  String get heardHint => 'Guess it right next time to win this card';
+
+  @override
+  String quality(int percent) {
+    return 'Quality $percent %';
+  }
+
+  @override
+  String get weight => 'Weight';
+
+  @override
+  String get wingspan => 'Wingspan';
+
+  @override
+  String get length => 'Length';
+
+  @override
+  String get flightDistance => 'Flight';
+
+  @override
+  String get newCard => 'New card!';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String progress(int owned, int total) {
+    return '$owned / $total cards';
+  }
+
+  @override
+  String get dataSources =>
+      'Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons';
 }

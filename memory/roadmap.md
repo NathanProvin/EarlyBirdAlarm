@@ -14,13 +14,13 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 ## Iteration 2 — Real alarm app
 - [x] Multiple alarms (time, repeat days, on/off, snooze length, label), fade-in, snooze replays the same bird
 - [x] Streak, recent-bird rotation
-- [ ] Difficulty setting — moved to Iteration 3: needs family/order data the placeholder birds lack
+- [x] Difficulty setting — done in Iteration 3a
 - [x] EN/FR localization (UI strings + bird names). Follows the phone language; FR verified on device 2026-10-27, EN not yet
 
 ## Iteration 3a — Real content, one region (northern France, cell N48E002)
-- [ ] Pipeline v0 (`pipeline/build.py`): GBIF presence + rarity per month, GBIF taxonomy, Wikidata EN/FR names + photo, Commons credits, xeno-canto recordings (CC0/BY/BY-SA only), ffmpeg; `report.md`; your photos in `pipeline/my_photos/`
-- [ ] Catalog bundled in the app; season + rarity filter; difficulty (wrong answers by order/family)
-- [ ] Settings screen: difficulty, "All birds", **language picker** (Phone / English / Français — user request 2026-10-27), region shown
+- [x] Pipeline v0 (`pipeline/build.py`): GBIF presence + rarity per month, GBIF taxonomy, Wikidata EN/FR names + photo, Commons credits, xeno-canto recordings (CC0/BY/BY-SA only), ffmpeg; `report.md`; your photos in `pipeline/my_photos/`
+- [x] Catalog bundled in the app; season + rarity filter; difficulty (wrong answers by order/family)
+- [x] Settings screen: difficulty, "All birds", **language picker** (Phone / English / Français — user request 2026-10-27), region shown
 
 ## Iteration 3b — Card collection (TCG) — see decisions.md "Card collection"
 - [ ] Pipeline: 5 rarity tiers (replace the 3), card number, stats (weight, wingspan, length, flight distance) with mean + spread per species; coverage report for stats

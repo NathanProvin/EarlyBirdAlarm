@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../birds.dart';
+import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'collection.dart';
 import 'theme.dart';
 
 // See MainActivity.kt: true keeps the app over the lock screen after the alarm stops.
@@ -35,9 +37,10 @@ class _RingScreenState extends State<RingScreen> {
     await Alarm.stop(widget.alarm.id);
     final correct = bird == _bird;
     if (!mounted) return;
-    await store.answered(
+    final isNew = correct && !store.cards.any((c) => c.birdId == _bird.id);
+    final card = await store.answered(
       widget.alarm.id,
-      _bird.id,
+      _bird,
       correct,
       AppLocalizations.of(context).openToAnswer,
     );
@@ -46,7 +49,9 @@ class _RingScreenState extends State<RingScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => RevealScreen(bird: _bird)),
+      MaterialPageRoute<void>(
+        builder: (_) => RevealScreen(bird: _bird, card: card, isNew: isNew),
+      ),
     );
   }
 
@@ -179,14 +184,20 @@ class _Choice extends StatelessWidget {
 }
 
 class RevealScreen extends StatelessWidget {
-  const RevealScreen({required this.bird, super.key});
+  const RevealScreen({
+    required this.bird,
+    this.card,
+    this.isNew = false,
+    super.key,
+  });
   final Bird bird;
+  final CardData? card; // null after a wrong guess
+  final bool isNew;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    final name = bird.nameIn(l.localeName);
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _lockScreen.invokeMethod<void>('hold', false);
@@ -197,29 +208,18 @@ class RevealScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Spacer(),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
-                  child: Image.asset(
-                    bird.photo,
-                    height: 280,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                // The reveal is the card: won on a right guess, "heard" otherwise.
+                Expanded(
+                  child: CardDetail(
+                    bird: bird,
+                    card: card,
+                    copies: store.cards
+                        .where((c) => c.birdId == bird.id)
+                        .length,
+                    isNew: isNew,
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  name,
-                  style: text.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  bird.latin,
-                  style: text.titleMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const Spacer(),
+                const SizedBox(height: 8),
                 for (final credit in [bird.audioCredit, bird.photoCredit])
                   Text(
                     credit,

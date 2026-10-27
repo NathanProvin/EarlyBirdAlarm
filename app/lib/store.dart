@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'birds.dart';
+import 'cards.dart';
 
 class AlarmData {
   AlarmData({
@@ -136,22 +137,44 @@ class Store extends ChangeNotifier {
     await _write(alarms.where((x) => x.id != a.id).toList());
   }
 
-  /// Records a guess, then schedules the alarm's next ring or turns it off.
-  Future<void> answered(
+  /// Every card earned, oldest first (duplicates included).
+  List<CardData> get cards => [
+    for (final j in jsonDecode(_prefs.getString('cards') ?? '[]') as List)
+      CardData.fromJson(j as Map<String, dynamic>),
+  ];
+
+  /// Ids of birds guessed wrong and not yet won as a card.
+  Set<String> get heard => {...?_prefs.getStringList('heard')};
+
+  /// Records a guess (a correct one wins a card, returned), then schedules
+  /// the alarm's next ring or turns it off.
+  Future<CardData?> answered(
     int alarmId,
-    String birdId,
+    Bird bird,
     bool correct,
     String notificationBody,
   ) async {
     await _prefs.setInt('streak', correct ? streak + 1 : 0);
     await _prefs.setStringList('recent', [
-      birdId,
+      bird.id,
       ...recent.take(recentCount - 1),
     ]);
+    final card = correct ? rollCard(bird) : null;
+    if (card != null) {
+      await _prefs.setString('cards', jsonEncode([...cards, card]));
+    }
+    await _prefs.setStringList(
+      'heard',
+      (correct ? (heard..remove(bird.id)) : {...heard, bird.id}).toList(),
+    );
     final a = byId(alarmId);
-    if (a == null) return notifyListeners();
+    if (a == null) {
+      notifyListeners();
+      return card;
+    }
     if (a.days.isEmpty) a.enabled = false;
     await save(a, notificationBody);
+    return card;
   }
 
   Future<void> _write(List<AlarmData> list) async {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:early_bird/birds.dart';
+import 'package:early_bird/cards.dart';
 import 'package:early_bird/store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _fake = [
   ('robin', 'Passeriformes', 'Muscicapidae', {'5': 'common', '10': 'common'}),
   ('redstart', 'Passeriformes', 'Muscicapidae', {'5': 'uncommon'}),
-  ('flycatcher', 'Passeriformes', 'Muscicapidae', {'5': 'rare'}),
+  ('flycatcher', 'Passeriformes', 'Muscicapidae', {'5': 'epic'}),
   ('chaffinch', 'Passeriformes', 'Fringillidae', {'5': 'common'}),
   ('tit', 'Passeriformes', 'Paridae', {'5': 'common'}),
   ('pigeon', 'Columbiformes', 'Columbidae', {'5': 'common'}),
@@ -33,6 +34,14 @@ void main() {
               'order': order, 'family': family, 'months': months,
               'audio': 'audio/$id.m4a', 'photo': 'photos/$id.jpg',
               'audioCredit': 'a', 'photoCredit': 'p',
+              'rarity': months.values.first,
+              'number': _fake.indexWhere((f) => f.$1 == id) + 1,
+              'stats': {
+                'weight': [20, 2],
+                'wingspan': [22, 1],
+                'length': null,
+                'distance': [0, 50],
+              },
             },
         ],
       }),
@@ -59,8 +68,8 @@ void main() {
       pool(1, Difficulty.easy).length,
       _fake.length,
     ); // empty month falls back
-    expect(pool(5, Difficulty.hard)[_b('flycatcher')], 1);
-    expect(pool(5, Difficulty.hard)[_b('robin')], 6);
+    expect(pool(5, Difficulty.hard)[_b('flycatcher')], 2);
+    expect(pool(5, Difficulty.hard)[_b('robin')], 16);
   });
 
   test('pickBird avoids recent birds, falls back when all are recent', () {
@@ -93,6 +102,30 @@ void main() {
       ); // redstart + flycatcher
       expect(hard.every((b) => b.order == 'Passeriformes'), isTrue);
     }
+  });
+
+  test('cards: rolls stay within ±2 sd, unknown stats are left out', () {
+    expect(_b('robin').stats.keys, ['weight', 'wingspan', 'distance']);
+    expect(_b('robin').number, 1);
+    expect(_b('flycatcher').rarity, 'epic');
+    for (var seed = 0; seed < 200; seed++) {
+      final c = rollCard(_b('robin'), Random(seed));
+      expect(c.stats['weight'], inInclusiveRange(16, 24));
+      expect(c.stats['wingspan'], inInclusiveRange(20, 24));
+      expect(c.stats['distance'], inInclusiveRange(0, 100)); // never negative
+      expect(c.stats.containsKey('length'), isFalse);
+      expect(c.quality, inInclusiveRange(0, 100));
+      expect(CardData.fromJson(c.toJson()).stats, c.stats);
+    }
+    final mean = CardData(
+      birdId: 'robin',
+      stats: {},
+      quality: 0,
+      earned: DateTime(2026),
+    );
+    expect(percentileOf(_b('robin'), 'weight', 20), closeTo(0.5, 1e-6));
+    expect(percentileOf(_b('robin'), 'weight', 24), closeTo(0.977, 1e-3));
+    expect(mean.toJson()['bird'], 'robin');
   });
 
   test('nextRing', () {

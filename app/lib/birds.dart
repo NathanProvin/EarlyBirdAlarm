@@ -6,12 +6,22 @@ import 'package:flutter/services.dart';
 enum Difficulty { easy, medium, hard }
 
 /// Rarity tiers, most common first, with how often each is picked to ring.
-const _weight = {'common': 6, 'uncommon': 3, 'rare': 1};
-const _allowed = {
-  Difficulty.easy: {'common'},
-  Difficulty.medium: {'common', 'uncommon'},
-  Difficulty.hard: {'common', 'uncommon', 'rare'},
+const _weight = {
+  'common': 16,
+  'uncommon': 8,
+  'rare': 4,
+  'epic': 2,
+  'legendary': 1,
 };
+const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+const _allowed = {
+  Difficulty.easy: {'common', 'uncommon'},
+  Difficulty.medium: {'common', 'uncommon', 'rare'},
+  Difficulty.hard: {'common', 'uncommon', 'rare', 'epic', 'legendary'},
+};
+
+/// Card stats, in card order.
+const statKeys = ['weight', 'wingspan', 'length', 'distance'];
 
 class Bird {
   Bird.fromJson(Map<String, dynamic> j)
@@ -28,7 +38,17 @@ class Bird {
       audio = 'assets/content/${j['audio']}',
       photo = 'assets/content/${j['photo']}',
       audioCredit = j['audioCredit'] as String,
-      photoCredit = j['photoCredit'] as String;
+      photoCredit = j['photoCredit'] as String,
+      rarity = j['rarity'] as String,
+      number = j['number'] as int,
+      stats = {
+        for (final e in (j['stats'] as Map<String, dynamic>).entries)
+          if (e.value != null)
+            e.key: (
+              mean: ((e.value as List)[0] as num).toDouble(),
+              sd: ((e.value as List)[1] as num).toDouble(),
+            ),
+      };
 
   final String id,
       latin,
@@ -39,7 +59,10 @@ class Bird {
       audio,
       photo,
       audioCredit,
-      photoCredit;
+      photoCredit,
+      rarity; // card tier: the species' best monthly tier
+  final int number; // card number, in taxonomic order
+  final Map<String, ({double mean, double sd})> stats; // missing = unknown
   final Map<int, String> months; // month 1-12 -> tier; absent = not around
 
   String nameIn(String locale) => locale.startsWith('fr') ? nameFr : name;

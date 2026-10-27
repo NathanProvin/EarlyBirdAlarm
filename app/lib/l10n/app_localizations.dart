@@ -229,6 +229,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Northern France'**
   String get northernFrance;
+
+  /// No description provided for @alarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms'**
+  String get alarms;
+
+  /// No description provided for @collection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get collection;
+
+  /// No description provided for @common.
+  ///
+  /// In en, this message translates to:
+  /// **'Common'**
+  String get common;
+
+  /// No description provided for @uncommon.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncommon'**
+  String get uncommon;
+
+  /// No description provided for @rare.
+  ///
+  /// In en, this message translates to:
+  /// **'Rare'**
+  String get rare;
+
+  /// No description provided for @epic.
+  ///
+  /// In en, this message translates to:
+  /// **'Epic'**
+  String get epic;
+
+  /// No description provided for @legendary.
+  ///
+  /// In en, this message translates to:
+  /// **'Legendary'**
+  String get legendary;
+
+  /// No description provided for @heard.
+  ///
+  /// In en, this message translates to:
+  /// **'Heard'**
+  String get heard;
+
+  /// No description provided for @heardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Guess it right next time to win this card'**
+  String get heardHint;
+
+  /// No description provided for @quality.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality {percent} %'**
+  String quality(int percent);
+
+  /// No description provided for @weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weight;
+
+  /// No description provided for @wingspan.
+  ///
+  /// In en, this message translates to:
+  /// **'Wingspan'**
+  String get wingspan;
+
+  /// No description provided for @length.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get length;
+
+  /// No description provided for @flightDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Flight'**
+  String get flightDistance;
+
+  /// No description provided for @newCard.
+  ///
+  /// In en, this message translates to:
+  /// **'New card!'**
+  String get newCard;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'{owned} / {total} cards'**
+  String progress(int owned, int total);
+
+  /// No description provided for @dataSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons'**
+  String get dataSources;
 }
 
 class _AppLocalizationsDelegate

@@ -35,5 +35,40 @@
   "language": "Language",
   "systemLanguage": "Phone",
   "region": "Region",
-  "northernFrance": "Northern France"
+  "northernFrance": "Northern France",
+  "alarms": "Alarms",
+  "collection": "Collection",
+  "common": "Common",
+  "uncommon": "Uncommon",
+  "rare": "Rare",
+  "epic": "Epic",
+  "legendary": "Legendary",
+  "heard": "Heard",
+  "heardHint": "Guess it right next time to win this card",
+  "quality": "Quality {percent} %",
+  "weight": "Weight",
+  "wingspan": "Wingspan",
+  "length": "Length",
+  "flightDistance": "Flight",
+  "newCard": "New card!",
+  "share": "Share",
+  "progress": "{owned} / {total} cards",
+  "@quality": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@progress": {
+    "placeholders": {
+      "owned": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dataSources": "Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons"
 }
