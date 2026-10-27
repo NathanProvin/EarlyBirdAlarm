@@ -1,0 +1,17 @@
+{
+  "@@locale": "en",
+  "noAlarms": "No alarms",
+  "whoIsSinging": "Who is singing?",
+  "openToAnswer": "Who is singing? Open to answer.",
+  "snooze": "Snooze",
+  "snoozeMinutes": "Snooze {minutes} min",
+  "@snoozeMinutes": {"placeholders": {"minutes": {"type": "int"}}},
+  "streak": "Streak {count}",
+  "@streak": {"placeholders": {"count": {"type": "int"}}},
+  "once": "Once",
+  "label": "Label",
+  "save": "Save",
+  "delete": "Delete",
+  "done": "Done",
+  "placeholderAudio": "Placeholder audio"
+}

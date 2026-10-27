@@ -1,0 +1,15 @@
+{
+  "@@locale": "fr",
+  "noAlarms": "Aucune alarme",
+  "whoIsSinging": "Qui chante ?",
+  "openToAnswer": "Qui chante ? Ouvrez pour répondre.",
+  "snooze": "Répéter",
+  "snoozeMinutes": "Répéter après {minutes} min",
+  "streak": "Série {count}",
+  "once": "Une fois",
+  "label": "Libellé",
+  "save": "Enregistrer",
+  "delete": "Supprimer",
+  "done": "Terminé",
+  "placeholderAudio": "Audio provisoire"
+}
