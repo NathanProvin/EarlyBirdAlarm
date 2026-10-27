@@ -15,15 +15,17 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Multiple alarms (time, repeat days, on/off, snooze length, label), fade-in, snooze replays the same bird
 - [x] Streak, recent-bird rotation
 - [ ] Difficulty setting — moved to Iteration 3: needs family/order data the placeholder birds lack
-- [x] EN/FR localization (UI strings + bird names)
+- [x] EN/FR localization (UI strings + bird names). Follows the phone language; FR verified on device 2026-10-27, EN not yet
 
 ## Iteration 3 — Real content
 - [ ] Pipeline v0: one region cell end to end (license whitelist assert, coverage report)
 - [ ] ~30 fallback birds bundled
 - [ ] Full Europe + North America catalog on a static CDN; prefetch of the next 7 days; coarse location / manual region; seasonal toggle
+- [ ] Settings screen (first one in the app): region, "All birds" toggle, difficulty, **language picker** (System / English / Français — user request 2026-10-27, overrides the phone language)
 
 ## Iteration 4 — Polish and beta
 - [ ] Animations, haptics, dark mode, TalkBack, large text
+- [ ] Redesign the Snooze button on the ring screen (user request 2026-10-27; works, but the current small text button needs a UI rework — details to be discussed)
 - [ ] Credits/licenses screen, privacy policy, Play Data Safety form, declarations for full-screen intent and exact alarms
 - [ ] Play Store internal testing
 
