@@ -106,15 +106,25 @@ class _RingScreenState extends State<RingScreen> {
                   )
                 : Column(
                     children: [
-                      const Spacer(),
                       Text(l.whoIsSinging, style: text.headlineMedium),
-                      const Spacer(),
-                      for (final bird in _choices)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: FilledButton(
-                            onPressed: () => _guess(bird),
-                            child: Text(bird.nameIn(l.localeName)),
+                      const SizedBox(height: 24),
+                      // 2×2 photos: easier to read than text when half asleep.
+                      for (final row in [_choices.take(2), _choices.skip(2)])
+                        Expanded(
+                          child: Row(
+                            children: [
+                              for (final bird in row)
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: _Choice(
+                                      bird: bird,
+                                      name: bird.nameIn(l.localeName),
+                                      onTap: () => _guess(bird),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       const SizedBox(height: 12),
@@ -126,6 +136,46 @@ class _RingScreenState extends State<RingScreen> {
       ),
     );
   }
+}
+
+class _Choice extends StatelessWidget {
+  const _Choice({required this.bird, required this.name, required this.onTap});
+  final Bird bird;
+  final String name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: name,
+    excludeSemantics: true,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(radius),
+      child: Column(
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              child: Image.asset(
+                bird.photo,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            name,
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class RevealScreen extends StatelessWidget {
