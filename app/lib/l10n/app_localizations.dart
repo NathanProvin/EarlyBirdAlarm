@@ -164,11 +164,71 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get done;
 
-  /// No description provided for @placeholderAudio.
+  /// No description provided for @settings.
   ///
   /// In en, this message translates to:
-  /// **'Placeholder audio'**
-  String get placeholderAudio;
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @difficulty.
+  ///
+  /// In en, this message translates to:
+  /// **'Difficulty'**
+  String get difficulty;
+
+  /// No description provided for @easy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get easy;
+
+  /// No description provided for @medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get medium;
+
+  /// No description provided for @hard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get hard;
+
+  /// No description provided for @allBirds.
+  ///
+  /// In en, this message translates to:
+  /// **'All birds'**
+  String get allBirds;
+
+  /// No description provided for @allBirdsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any bird of the region, whatever the season'**
+  String get allBirdsHint;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @systemLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get systemLanguage;
+
+  /// No description provided for @region.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get region;
+
+  /// No description provided for @northernFrance.
+  ///
+  /// In en, this message translates to:
+  /// **'Northern France'**
+  String get northernFrance;
 }
 
 class _AppLocalizationsDelegate

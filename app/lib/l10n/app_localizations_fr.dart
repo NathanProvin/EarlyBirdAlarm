@@ -47,5 +47,36 @@ class AppLocalizationsFr extends AppLocalizations {
   String get done => 'Terminé';
 
   @override
-  String get placeholderAudio => 'Audio provisoire';
+  String get settings => 'Réglages';
+
+  @override
+  String get difficulty => 'Difficulté';
+
+  @override
+  String get easy => 'Facile';
+
+  @override
+  String get medium => 'Moyen';
+
+  @override
+  String get hard => 'Difficile';
+
+  @override
+  String get allBirds => 'Tous les oiseaux';
+
+  @override
+  String get allBirdsHint =>
+      'N\'importe quel oiseau de la région, quelle que soit la saison';
+
+  @override
+  String get language => 'Langue';
+
+  @override
+  String get systemLanguage => 'Téléphone';
+
+  @override
+  String get region => 'Région';
+
+  @override
+  String get northernFrance => 'Nord de la France';
 }

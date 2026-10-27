@@ -19,8 +19,13 @@ class RingScreen extends StatefulWidget {
 }
 
 class _RingScreenState extends State<RingScreen> {
-  late final int _bird = int.tryParse(widget.alarm.payload ?? '') ?? 0;
-  late final List<Bird> _choices = choicesFor(birds[_bird]);
+  // An alarm set before an app update may name a bird that's gone; ask about any bird then.
+  late final Bird _bird = birdById(widget.alarm.payload ?? '') ?? birds.first;
+  late final List<Bird> _choices = choicesFor(
+    _bird,
+    store.monthFor(widget.alarm.dateTime),
+    store.difficulty,
+  );
   late final int _oldStreak = store.streak;
   bool? _correct;
 
@@ -28,11 +33,11 @@ class _RingScreenState extends State<RingScreen> {
     if (_correct != null) return;
     await _lockScreen.invokeMethod<void>('hold', true);
     await Alarm.stop(widget.alarm.id);
-    final correct = bird == birds[_bird];
+    final correct = bird == _bird;
     if (!mounted) return;
     await store.answered(
       widget.alarm.id,
-      _bird,
+      _bird.id,
       correct,
       AppLocalizations.of(context).openToAnswer,
     );
@@ -41,7 +46,7 @@ class _RingScreenState extends State<RingScreen> {
     await Future<void>.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => RevealScreen(bird: birds[_bird])),
+      MaterialPageRoute<void>(builder: (_) => RevealScreen(bird: _bird)),
     );
   }
 
@@ -143,11 +148,14 @@ class RevealScreen extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(),
-                // shortcut: initial in a circle stands in for the photo until Iteration 3.
-                CircleAvatar(
-                  radius: 80,
-                  backgroundColor: coral,
-                  child: Text(name[0], style: text.displayMedium),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(radius),
+                  child: Image.asset(
+                    bird.photo,
+                    height: 280,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -162,7 +170,12 @@ class RevealScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                Text(l.placeholderAudio, style: text.bodySmall),
+                for (final credit in [bird.audioCredit, bird.photoCredit])
+                  Text(
+                    credit,
+                    style: text.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => Navigator.of(context).pop(),

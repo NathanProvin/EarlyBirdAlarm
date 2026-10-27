@@ -57,7 +57,10 @@ DateTime nextRing(AlarmData a, DateTime now) {
   }
 }
 
-/// Alarms, streak and recent birds, saved in shared_preferences.
+/// How many recently heard birds a new ring avoids.
+const recentCount = 10;
+
+/// Alarms, streak, recent birds and settings, saved in shared_preferences.
 class Store extends ChangeNotifier {
   Store._(this._prefs);
   final SharedPreferences _prefs;
@@ -72,8 +75,29 @@ class Store extends ChangeNotifier {
 
   int get streak => _prefs.getInt('streak') ?? 0;
 
-  List<int> get recent =>
-      (_prefs.getStringList('recent') ?? []).map(int.parse).toList();
+  /// Ids of the last birds heard, newest first.
+  List<String> get recent => _prefs.getStringList('recent') ?? [];
+
+  Difficulty get difficulty =>
+      Difficulty.values[_prefs.getInt('difficulty') ?? Difficulty.easy.index];
+  set difficulty(Difficulty d) =>
+      _prefs.setInt('difficulty', d.index).then((_) => notifyListeners());
+
+  /// Ignore the season: any bird of the region can ring.
+  bool get allBirds => _prefs.getBool('allBirds') ?? false;
+  set allBirds(bool on) =>
+      _prefs.setBool('allBirds', on).then((_) => notifyListeners());
+
+  /// 'en', 'fr', or null to follow the phone.
+  String? get language => _prefs.getString('language');
+  set language(String? code) =>
+      (code == null
+              ? _prefs.remove('language')
+              : _prefs.setString('language', code))
+          .then((_) => notifyListeners());
+
+  /// The month whose birds ring at [at], or null with "All birds".
+  int? monthFor(DateTime at) => allBirds ? null : at.month;
 
   AlarmData? byId(int id) => alarms.where((a) => a.id == id).firstOrNull;
 
@@ -87,13 +111,14 @@ class Store extends ChangeNotifier {
       await Alarm.stop(a.id);
       return;
     }
-    final bird = pickBird(recent);
+    final at = nextRing(a, DateTime.now());
+    final bird = pickBird(recent, monthFor(at), difficulty);
     await Alarm.set(
       alarmSettings: AlarmSettings(
         id: a.id,
-        dateTime: nextRing(a, DateTime.now()),
-        assetAudioPath: birds[bird].audio,
-        payload: '$bird',
+        dateTime: at,
+        assetAudioPath: bird.audio,
+        payload: bird.id,
         volumeSettings: VolumeSettings.fade(
           fadeDuration: const Duration(seconds: 60),
         ),
@@ -114,14 +139,14 @@ class Store extends ChangeNotifier {
   /// Records a guess, then schedules the alarm's next ring or turns it off.
   Future<void> answered(
     int alarmId,
-    int bird,
+    String birdId,
     bool correct,
     String notificationBody,
   ) async {
     await _prefs.setInt('streak', correct ? streak + 1 : 0);
     await _prefs.setStringList('recent', [
-      '$bird',
-      ...recent.take(recentCount - 1).map((b) => '$b'),
+      birdId,
+      ...recent.take(recentCount - 1),
     ]);
     final a = byId(alarmId);
     if (a == null) return notifyListeners();

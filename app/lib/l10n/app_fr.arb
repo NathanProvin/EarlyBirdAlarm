@@ -11,5 +11,15 @@
   "save": "Enregistrer",
   "delete": "Supprimer",
   "done": "Terminé",
-  "placeholderAudio": "Audio provisoire"
+  "settings": "Réglages",
+  "difficulty": "Difficulté",
+  "easy": "Facile",
+  "medium": "Moyen",
+  "hard": "Difficile",
+  "allBirds": "Tous les oiseaux",
+  "allBirdsHint": "N'importe quel oiseau de la région, quelle que soit la saison",
+  "language": "Langue",
+  "systemLanguage": "Téléphone",
+  "region": "Région",
+  "northernFrance": "Nord de la France"
 }

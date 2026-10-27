@@ -47,5 +47,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get done => 'Done';
 
   @override
-  String get placeholderAudio => 'Placeholder audio';
+  String get settings => 'Settings';
+
+  @override
+  String get difficulty => 'Difficulty';
+
+  @override
+  String get easy => 'Easy';
+
+  @override
+  String get medium => 'Medium';
+
+  @override
+  String get hard => 'Hard';
+
+  @override
+  String get allBirds => 'All birds';
+
+  @override
+  String get allBirdsHint => 'Any bird of the region, whatever the season';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get systemLanguage => 'Phone';
+
+  @override
+  String get region => 'Region';
+
+  @override
+  String get northernFrance => 'Northern France';
 }

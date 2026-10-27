@@ -17,11 +17,21 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [ ] Difficulty setting — moved to Iteration 3: needs family/order data the placeholder birds lack
 - [x] EN/FR localization (UI strings + bird names). Follows the phone language; FR verified on device 2026-10-27, EN not yet
 
-## Iteration 3 — Real content
-- [ ] Pipeline v0: one region cell end to end (license whitelist assert, coverage report)
+## Iteration 3a — Real content, one region (northern France, cell N48E002)
+- [ ] Pipeline v0 (`pipeline/build.py`): GBIF presence + rarity per month, GBIF taxonomy, Wikidata EN/FR names + photo, Commons credits, xeno-canto recordings (CC0/BY/BY-SA only), ffmpeg; `report.md`; your photos in `pipeline/my_photos/`
+- [ ] Catalog bundled in the app; season + rarity filter; difficulty (wrong answers by order/family)
+- [ ] Settings screen: difficulty, "All birds", **language picker** (Phone / English / Français — user request 2026-10-27), region shown
+
+## Iteration 3b — Card collection (TCG) — see decisions.md "Card collection"
+- [ ] Pipeline: 5 rarity tiers (replace the 3), card number, stats (weight, wingspan, length, flight distance) with mean + spread per species; coverage report for stats
+- [ ] Card widget (5 rarity colors, photo, names, 4 stats, quality %, number) — the reveal screen becomes the card
+- [ ] Correct guess = new card with Gaussian-rolled stats; wrong guess = "heard" silhouette
+- [ ] Collection tab (bottom bar: Alarms | Collection): 3-column grid, progress, rarity filter, tap → full card, swipe between cards, ×N duplicates
+- [ ] Share a card as a PNG via the share sheet (`share_plus`)
+
+## Iteration 3c — Full catalog
 - [ ] ~30 fallback birds bundled
-- [ ] Full Europe + North America catalog on a static CDN; prefetch of the next 7 days; coarse location / manual region; seasonal toggle
-- [ ] Settings screen (first one in the app): region, "All birds" toggle, difficulty, **language picker** (System / English / Français — user request 2026-10-27, overrides the phone language)
+- [ ] Full Europe + North America catalog on a static CDN; prefetch of the next 7 days; coarse location / manual region picker
 
 ## Iteration 4 — Polish and beta
 - [ ] Animations, haptics, dark mode, TalkBack, large text

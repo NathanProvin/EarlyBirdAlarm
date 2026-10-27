@@ -5,13 +5,35 @@
   "openToAnswer": "Who is singing? Open to answer.",
   "snooze": "Snooze",
   "snoozeMinutes": "Snooze {minutes} min",
-  "@snoozeMinutes": {"placeholders": {"minutes": {"type": "int"}}},
+  "@snoozeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "streak": "Streak {count}",
-  "@streak": {"placeholders": {"count": {"type": "int"}}},
+  "@streak": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "once": "Once",
   "label": "Label",
   "save": "Save",
   "delete": "Delete",
   "done": "Done",
-  "placeholderAudio": "Placeholder audio"
+  "settings": "Settings",
+  "difficulty": "Difficulty",
+  "easy": "Easy",
+  "medium": "Medium",
+  "hard": "Hard",
+  "allBirds": "All birds",
+  "allBirdsHint": "Any bird of the region, whatever the season",
+  "language": "Language",
+  "systemLanguage": "Phone",
+  "region": "Region",
+  "northernFrance": "Northern France"
 }

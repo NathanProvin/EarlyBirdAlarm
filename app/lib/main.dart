@@ -2,10 +2,12 @@ import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'birds.dart';
 import 'l10n/app_localizations.dart';
 import 'store.dart';
 import 'ui/edit.dart';
 import 'ui/ring.dart';
+import 'ui/settings.dart';
 import 'ui/theme.dart';
 
 late final Store store;
@@ -13,14 +15,19 @@ late final Store store;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Alarm.init();
+  await loadBirds();
   store = await Store.load();
   runApp(
-    MaterialApp(
-      title: 'Early Bird',
-      theme: dawnTheme,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: const HomeScreen(),
+    ListenableBuilder(
+      listenable: store,
+      builder: (_, _) => MaterialApp(
+        title: 'Early Bird',
+        theme: dawnTheme,
+        locale: store.language == null ? null : Locale(store.language!),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const HomeScreen(),
+      ),
     ),
   );
 }
@@ -72,8 +79,22 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(l.streak(store.streak), style: text.titleMedium),
+                  padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+                  child: Row(
+                    children: [
+                      Text(l.streak(store.streak), style: text.titleMedium),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: l.settings,
+                        icon: const Icon(Icons.settings_outlined),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const SettingsScreen(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 if (alarms.isEmpty)
                   Expanded(
