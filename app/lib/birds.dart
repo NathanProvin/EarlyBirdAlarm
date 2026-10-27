@@ -18,7 +18,9 @@ const birds = [
 
 /// The answer plus 3 other birds, shuffled.
 List<Bird> choicesFor(Bird answer, [Random? random]) =>
-    ([...birds]..remove(answer)..shuffle(random))
+    ([...birds]
+          ..remove(answer)
+          ..shuffle(random))
         .take(3)
         .followedBy([answer])
         .toList()
