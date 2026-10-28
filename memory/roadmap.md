@@ -30,8 +30,17 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Share a card as a PNG via the share sheet (`share_plus`)
 
 ## Iteration 3c — Full catalog
-- [ ] ~30 fallback birds bundled
-- [ ] Full Europe + North America catalog on a static CDN; prefetch of the next 7 days; coarse location / manual region picker
+### 3c-1 — Pipeline + hosting
+- [ ] Regions: 2°×2° cells (GPS) + European countries + bioregions (USA 8, Canada 4, European Russia); presence and rarity per region
+- [ ] Species built once for all regions (names, photo, 1–5 varied recordings: song/call/alarm, stats); global card numbers; report per region
+- [ ] Site in `pipeline/site/v1/` (species.json, regions.json, regions/, audio/, photos/) pushed to GitHub Pages (`early-bird-content`)
+- [ ] ~30 fallback birds bundled in the app (replace the 232 of N48E002)
+
+### 3c-2 — App
+- [ ] Region: "Use my location" (coarse GPS → cell) or country/bioregion list; first launch + Settings
+- [ ] Downloads: region photos + audio deck (~14), daily background top-up (`workmanager`); offline → fallback birds
+- [ ] Cards keep the rarity and region they were won in; collection = region birds + cards won elsewhere
+- [ ] Vocalizations: ring picks a recording by difficulty (Easy songs, Medium + calls, Hard all); reveal shows Song / Call / Alarm
 
 ## Iteration 4 — Polish and beta
 - [ ] Animations, haptics, dark mode, TalkBack, large text

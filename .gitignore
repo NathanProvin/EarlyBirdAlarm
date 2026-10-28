@@ -3,3 +3,4 @@
 pipeline/cache/
 pipeline/xc_key.txt
 __pycache__/
+pipeline/site/

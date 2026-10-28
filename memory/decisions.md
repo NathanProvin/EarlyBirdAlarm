@@ -14,8 +14,10 @@ An alarm clock (Android first, iOS later). Each ring plays a different bird song
 | Stack | Flutter. Native Kotlin/Swift only where the alarm core needs it |
 | Birds | Local to the user + seasonal (region + current month). Settings toggle "All birds" ignores both |
 | Launch area | Europe + North America |
-| Audio | xeno-canto, **CC BY / CC BY-SA / CC0 only** (keeps monetizing possible). Credit shown on the reveal screen |
-| Delivery | Hybrid: ~30 bundled fallback birds + a static CDN catalog; the next 7 days' birds are prefetched. No server |
+| Audio | xeno-canto, **CC BY / CC BY-SA / CC0** (keeps monetizing possible). Credit shown on the reveal screen. **Exception (decided 2026-10-28):** a species with no free recording at all may use **CC BY-NC / BY-NC-SA** recordings (never ND, since clips are trimmed); they are flagged `nc` in species.json and listed in the report, and **must be replaced or removed before any monetization** (ads count as commercial). Needed mainly for North America, where most xeno-canto recordings are NC |
+| Vocalizations | Several recordings per species (decided 2026-10-28): **5** if the bird is common in some region, 3 uncommon, 2 rare, 1 epic/legendary. Kinds rotate **song → call → alarm**; each extra pick needs a new recordist (and country when possible), recorded in Europe/North America first. No chick, imitation, uncertain or aberrant recordings. **Difficulty decides the kinds that ring**: Easy songs, Medium songs + calls, Hard all (a species without a song falls back to its best recording). The reveal shows which kind was heard |
+| Delivery | Hybrid: ~30 bundled fallback birds + a static catalog on **GitHub Pages** (public repo `early-bird-content`, `/v1/`; decided 2026-10-28). The phone downloads its region's photos and keeps an **audio deck** of ~14 songs that can ring soon (topped up at app open + daily in the background). No server |
+| Region | Either **GPS** → the 2°×2° cell around you (computed on the phone), or **pick from a list**: European countries; USA, Canada and Russia split into bioregions (decided 2026-10-28). Rarity is computed per region and **frozen on the card** when it's won |
 | Languages | English + French UI and common names; scientific name always shown |
 | Wake flow | Volume fades up over ~60s → snooze (same bird) → pick 1 of 4 → success/failure pop-up → reveal (photo, names, Latin name, credits). **No fact text** |
 | Gamification | Streak = consecutive correct guesses; a wrong guess resets it; snooze doesn't affect it |
