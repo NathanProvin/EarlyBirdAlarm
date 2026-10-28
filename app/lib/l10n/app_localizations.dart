@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'No alarms'**
   String get noAlarms;
 
-  /// No description provided for @whoIsSinging.
-  ///
-  /// In en, this message translates to:
-  /// **'Who is singing?'**
-  String get whoIsSinging;
-
   /// No description provided for @guessTheBird.
   ///
   /// In en, this message translates to:
@@ -200,12 +194,6 @@ abstract class AppLocalizations {
   /// **'All birds'**
   String get allBirds;
 
-  /// No description provided for @allBirdsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Any bird of the region, whatever the season'**
-  String get allBirdsHint;
-
   /// No description provided for @language.
   ///
   /// In en, this message translates to:
@@ -272,18 +260,6 @@ abstract class AppLocalizations {
   /// **'Heard'**
   String get heard;
 
-  /// No description provided for @heardHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Guess it right next time to win this card'**
-  String get heardHint;
-
-  /// No description provided for @quality.
-  ///
-  /// In en, this message translates to:
-  /// **'Quality {percent} %'**
-  String quality(int percent);
-
   /// No description provided for @weight.
   ///
   /// In en, this message translates to:
@@ -308,12 +284,6 @@ abstract class AppLocalizations {
   /// **'Flight'**
   String get flightDistance;
 
-  /// No description provided for @newCard.
-  ///
-  /// In en, this message translates to:
-  /// **'New card!'**
-  String get newCard;
-
   /// No description provided for @share.
   ///
   /// In en, this message translates to:
@@ -325,18 +295,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{owned} / {total} cards'**
   String progress(int owned, int total);
-
-  /// No description provided for @dataSources.
-  ///
-  /// In en, this message translates to:
-  /// **'Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons'**
-  String get dataSources;
-
-  /// No description provided for @chooseRegion.
-  ///
-  /// In en, this message translates to:
-  /// **'Where do you live?'**
-  String get chooseRegion;
 
   /// No description provided for @useMyLocation.
   ///
@@ -362,12 +320,6 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
-  /// No description provided for @downloading.
-  ///
-  /// In en, this message translates to:
-  /// **'Downloading your region\'s birds…'**
-  String get downloading;
-
   /// No description provided for @nearCell.
   ///
   /// In en, this message translates to:
@@ -379,12 +331,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location not available. Choose from the list.'**
   String get locationDenied;
-
-  /// No description provided for @youHeard.
-  ///
-  /// In en, this message translates to:
-  /// **'You heard its {kind}'**
-  String youHeard(String kind);
 
   /// No description provided for @song.
   ///
@@ -403,6 +349,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'alarm call'**
   String get alarmCall;
+
+  /// No description provided for @seasonalBirds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal birds'**
+  String get seasonalBirds;
+
+  /// No description provided for @credits.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits'**
+  String get credits;
+
+  /// No description provided for @creditsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org recordings (CC0, CC BY, CC BY-SA, and CC BY-NC-SA / BY-NC for a few species with no free recording); each recordist and license are on the card (ⓘ).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.'**
+  String get creditsBody;
+
+  /// No description provided for @tryNextTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Try next time!'**
+  String get tryNextTime;
+
+  /// No description provided for @newRarityCard.
+  ///
+  /// In en, this message translates to:
+  /// **'New {rarity} card!'**
+  String newRarityCard(String rarity);
+
+  /// No description provided for @speciesCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'{ordinal} species collected!'**
+  String speciesCollected(String ordinal);
+
+  /// No description provided for @streakLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak lost'**
+  String get streakLost;
+
+  /// No description provided for @viewCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected'**
+  String get viewCollected;
+
+  /// No description provided for @viewCopies.
+  ///
+  /// In en, this message translates to:
+  /// **'All copies'**
+  String get viewCopies;
+
+  /// No description provided for @viewRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get viewRegion;
+
+  /// No description provided for @allRarities.
+  ///
+  /// In en, this message translates to:
+  /// **'All rarities'**
+  String get allRarities;
 }
 
 class _AppLocalizationsDelegate

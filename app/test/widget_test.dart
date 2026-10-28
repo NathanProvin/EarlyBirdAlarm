@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:early_bird/birds.dart';
 import 'package:early_bird/cards.dart';
 import 'package:early_bird/store.dart';
+import 'package:early_bird/ui/card.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // id, order, family, months, recording kinds
@@ -147,7 +148,12 @@ void main() {
   test('cards: rolls stay within ±2 sd, keep rarity and region', () {
     expect(_b('robin').stats.keys, ['weight', 'wingspan', 'distance']);
     for (var seed = 0; seed < 200; seed++) {
-      final c = rollCard(_b('robin'), 'FR', Random(seed));
+      final c = rollCard(
+        _b('robin'),
+        'FR',
+        recording: 'audio/robin-2.m4a',
+        random: Random(seed),
+      );
       expect(c.stats['weight'], inInclusiveRange(16, 24));
       expect(c.stats['wingspan'], inInclusiveRange(20, 24));
       expect(c.stats['distance'], inInclusiveRange(0, 100)); // never negative
@@ -155,8 +161,12 @@ void main() {
       expect(c.quality, inInclusiveRange(0, 100));
       expect((c.rarity, c.region), ('common', 'FR'));
       final back = CardData.fromJson(c.toJson());
-      expect(back.stats, c.stats); // maps compare by content only outside records
+      expect(
+        back.stats,
+        c.stats,
+      ); // maps compare by content only outside records
       expect((back.rarity, back.region), ('common', 'FR'));
+      expect(back.recording, 'audio/robin-2.m4a');
     }
     // A card from before 3c has no rarity or region.
     final old = CardData.fromJson({
@@ -183,5 +193,25 @@ void main() {
       nextRing(at(7, {DateTime.saturday}), mon8),
       DateTime(2026, 10, 31, 7),
     );
+  });
+
+  test('ordinals for "nth species collected"', () {
+    expect(
+      [1, 2, 3, 4, 11, 12, 13, 21, 22, 101, 112].map((n) => ordinal(n, 'en')),
+      [
+        '1st',
+        '2nd',
+        '3rd',
+        '4th',
+        '11th',
+        '12th',
+        '13th',
+        '21st',
+        '22nd',
+        '101st',
+        '112th',
+      ],
+    );
+    expect([1, 2, 12].map((n) => ordinal(n, 'fr')), ['1re', '2e', '12e']);
   });
 }

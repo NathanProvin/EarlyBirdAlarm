@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -48,7 +49,6 @@ class RegionScreen extends StatefulWidget {
 class _RegionScreenState extends State<RegionScreen> {
   List<Map<String, dynamic>>? _regions;
   bool _offline = false;
-  double? _progress; // downloading the chosen region
   String _query = '';
 
   @override
@@ -91,27 +91,17 @@ class _RegionScreenState extends State<RegionScreen> {
                   (lon - pos.longitude) * (lon - pos.longitude),
             ),
       ]..sort((a, b) => a.$2.compareTo(b.$2));
-      await _choose(cells.first.$1);
+      if (mounted) _choose(cells.first.$1);
     } on Exception {
       messenger.showSnackBar(SnackBar(content: Text(l.locationDenied)));
     }
   }
 
-  Future<void> _choose(String id) async {
-    final title = AppLocalizations.of(context).guessTheBird;
-    setState(() => _progress = 0);
-    final ok = await downloadRegion(id, (p) {
-      if (mounted) setState(() => _progress = p);
-    });
-    if (!mounted) return;
-    if (!ok) {
-      setState(() => (_progress = null, _offline = true));
-      return;
-    }
+  void _choose(String id) {
     store.region = id;
-    await topUpDeck(store.monthFor(DateTime.now()), store.difficulty);
-    await store.rescheduleAll(title); // new region, new birds
-    if (mounted) Navigator.of(context).pop();
+    // Downloads happen in the background; until they land, the previous birds keep ringing.
+    unawaited(store.sync());
+    Navigator.of(context).pop();
   }
 
   @override
@@ -127,23 +117,8 @@ class _RegionScreenState extends State<RegionScreen> {
           r,
     ]..sort((a, b) => (a[lang] as String).compareTo(b[lang] as String));
     return Scaffold(
-      appBar: AppBar(title: Text(l.chooseRegion)),
-      body: switch (_progress) {
-        final p? => Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                l.downloading,
-                style: text.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              LinearProgressIndicator(value: p),
-            ],
-          ),
-        ),
+      appBar: AppBar(),
+      body: switch (_regions) {
         _ when _offline => Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

@@ -11,6 +11,7 @@ class CardData {
     required this.earned,
     this.rarity,
     this.region,
+    this.recording,
   });
 
   CardData.fromJson(Map<String, dynamic> j)
@@ -24,6 +25,7 @@ class CardData {
         earned: DateTime.parse(j['earned'] as String),
         rarity: j['rarity'] as String?,
         region: j['region'] as String?,
+        recording: j['recording'] as String?,
       );
 
   final String birdId;
@@ -33,6 +35,8 @@ class CardData {
   // Rarity and region where it was won: a card stays Legendary even if you move.
   // Null on cards from before Iteration 3c.
   final String? rarity, region;
+  final String?
+  recording; // file of the recording that rang (null before UI round 1)
 
   Map<String, dynamic> toJson() => {
     'bird': birdId,
@@ -41,11 +45,17 @@ class CardData {
     'earned': earned.toIso8601String(),
     'rarity': ?rarity,
     'region': ?region,
+    'recording': ?recording,
   };
 }
 
 /// Rolls each stat from a Gaussian around the species mean, clamped to ±2 sd.
-CardData rollCard(Bird bird, String? region, [Random? random]) {
+CardData rollCard(
+  Bird bird,
+  String? region, {
+  String? recording,
+  Random? random,
+}) {
   final r = random ?? Random();
   final rolls = {
     for (final e in bird.stats.entries) e.key: (e.value, _gaussian(r)),
@@ -64,6 +74,7 @@ CardData rollCard(Bird bird, String? region, [Random? random]) {
     earned: DateTime.now(),
     rarity: bird.rarity,
     region: region,
+    recording: recording,
   );
 }
 

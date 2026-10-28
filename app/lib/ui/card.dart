@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../birds.dart';
 import '../cards.dart';
@@ -17,7 +20,8 @@ String rarityName(AppLocalizations l, String tier) => switch (tier) {
   _ => l.legendary,
 };
 
-/// The full trading card. Without [card] the bird is only "heard": grey frame, no stats.
+/// The full trading card. Without [card] the bird is only "heard": a grey, blurred card
+/// showing just its name and "Try next time!".
 class BirdCardView extends StatelessWidget {
   const BirdCardView({required this.bird, this.card, super.key});
   final Bird bird;
@@ -36,10 +40,68 @@ class BirdCardView extends StatelessWidget {
       color: card == null ? ink : paper,
       fontWeight: FontWeight.bold,
     );
+    final recording = bird.recordings
+        .where((r) => r.file == card?.recording)
+        .firstOrNull;
+    final face = Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: paper,
+        borderRadius: BorderRadius.circular(radius - 6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius - 8),
+              child: BirdPhoto(bird),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      bird.nameIn(l.localeName),
+                      style: text.titleLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(bird.latin, style: _latin(text)),
+                  ],
+                ),
+              ),
+              // The recording this card was won with, to hear it again.
+              if (recording != null)
+                Column(
+                  children: [
+                    PlayButton(recording.file, color: frame),
+                    Text(kindName(l, recording.kind), style: _latin(text)),
+                  ],
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          for (final key in statKeys)
+            if (bird.stats.containsKey(key)) // unknown for this species: no row
+              _StatRow(
+                label: statName(l, key),
+                value: card?.stats[key],
+                stat: key,
+                bird: bird,
+                color: frame,
+              ),
+        ],
+      ),
+    );
     return AspectRatio(
-      aspectRatio: 5 / 7,
+      aspectRatio: 0.68,
       child: Container(
-        padding: EdgeInsets.all(rarity == 'legendary' ? 14 : 8),
+        padding: EdgeInsets.all(rarity == 'legendary' && card != null ? 14 : 8),
         decoration: BoxDecoration(
           color: frame,
           borderRadius: BorderRadius.circular(radius),
@@ -50,74 +112,131 @@ class BirdCardView extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: Row(
                 children: [
-                  Text(
-                    '#${bird.number.toString().padLeft(3, '0')}',
-                    style: label,
+                  Expanded(
+                    child: Text(
+                      '#${bird.number.toString().padLeft(3, '0')}',
+                      style: label,
+                    ),
                   ),
-                  const Spacer(),
                   Text(
                     card == null ? l.heard : rarityName(l, rarity),
                     style: label,
+                  ),
+                  Expanded(
+                    child: Text(
+                      card == null ? '' : '${card.quality} %',
+                      style: label,
+                      textAlign: TextAlign.end,
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: paper,
-                  borderRadius: BorderRadius.circular(radius - 6),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(radius - 8),
-                        child: BirdPhoto(bird),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      bird.nameIn(l.localeName),
-                      style: text.titleLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      bird.latin,
-                      style: text.bodySmall?.copyWith(
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    for (final key in statKeys)
-                      if (bird.stats.containsKey(
-                        key,
-                      )) // unknown for this species: no row
-                        _StatRow(
-                          label: statName(l, key),
-                          value: card?.stats[key],
-                          stat: key,
-                          bird: bird,
-                          color: frame,
+              child: card != null
+                  ? face
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ImageFiltered(
+                          imageFilter: ui.ImageFilter.blur(
+                            sigmaX: 8,
+                            sigmaY: 8,
+                          ),
+                          child: ColorFiltered(
+                            colorFilter: const ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.saturation,
+                            ),
+                            child: face,
+                          ),
                         ),
-                    const SizedBox(height: 4),
-                    Text(
-                      card == null ? l.heardHint : l.quality(card.quality),
-                      style: text.bodySmall,
-                      textAlign: TextAlign.center,
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  bird.nameIn(l.localeName),
+                                  style: text.headlineSmall,
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(bird.latin, style: _latin(text)),
+                                const SizedBox(height: 16),
+                                Text(l.tryNextTime, style: text.titleMedium),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+TextStyle? _latin(TextTheme text) =>
+    text.bodySmall?.copyWith(fontStyle: FontStyle.italic);
+
+String kindName(AppLocalizations l, String kind) => switch (kind) {
+  'song' => l.song,
+  'call' => l.call,
+  _ => l.alarmCall,
+};
+
+/// Plays a catalog recording: from the phone, or streamed from the catalog if it's not there.
+class PlayButton extends StatefulWidget {
+  const PlayButton(this.file, {required this.color, super.key});
+  final String file;
+  final Color color;
+
+  @override
+  State<PlayButton> createState() => _PlayButtonState();
+}
+
+class _PlayButtonState extends State<PlayButton> {
+  final _player = AudioPlayer();
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  Future<void> _toggle() async {
+    if (_player.playing) return _player.stop();
+    final path = phonePath(widget.file);
+    try {
+      if (path == null) {
+        await _player.setUrl('$baseUrl${widget.file}');
+      } else if (path.startsWith('assets/')) {
+        await _player.setAsset(path);
+      } else {
+        await _player.setFilePath(path);
+      }
+      await _player.seek(Duration.zero);
+      unawaited(_player.play());
+    } on Exception {
+      // Offline and not on the phone: nothing to play.
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<bool>(
+    stream: _player.playingStream,
+    builder: (context, snap) => IconButton.filled(
+      onPressed: _toggle,
+      style: IconButton.styleFrom(backgroundColor: widget.color),
+      icon: Icon(
+        snap.data == true ? Icons.stop : Icons.play_arrow,
+        color: paper,
+      ),
+    ),
+  );
 }
 
 String statName(AppLocalizations l, String key) => switch (key) {
@@ -279,7 +398,8 @@ class _Badge extends StatelessWidget {
   );
 }
 
-/// The bird's photo from the phone (downloaded or bundled); from the web if it's missing.
+/// The bird's photo, never cropped: the whole photo over a blurred, zoomed copy of itself
+/// that fills the box. From the phone (downloaded or bundled), or the web if it's missing.
 class BirdPhoto extends StatelessWidget {
   const BirdPhoto(this.bird, {super.key});
   final Bird bird;
@@ -287,15 +407,42 @@ class BirdPhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = phonePath(bird.photo);
-    if (path == null) {
-      return Image.network(
-        '$baseUrl${bird.photo}',
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => const ColoredBox(color: unknownColor),
-      );
-    }
-    return path.startsWith('assets/')
-        ? Image.asset(path, fit: BoxFit.cover)
-        : Image.file(File(path), fit: BoxFit.cover);
+    final ImageProvider image = path == null
+        ? NetworkImage('$baseUrl${bird.photo}')
+        : path.startsWith('assets/')
+        ? AssetImage(path)
+        : FileImage(File(path));
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ImageFiltered(
+          imageFilter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Image(
+            image: image,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const ColoredBox(color: unknownColor),
+          ),
+        ),
+        Image(
+          image: image,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => const SizedBox(),
+        ),
+      ],
+    );
   }
+}
+
+/// "1st", "2nd", "12th"... in English; "1re", "2e"... in French (espèce is feminine).
+String ordinal(int n, String locale) {
+  if (locale.startsWith('fr')) return n == 1 ? '1re' : '${n}e';
+  final suffix = n % 100 >= 11 && n % 100 <= 13
+      ? 'th'
+      : switch (n % 10) {
+          1 => 'st',
+          2 => 'nd',
+          3 => 'rd',
+          _ => 'th',
+        };
+  return '$n$suffix';
 }

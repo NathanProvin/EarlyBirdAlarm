@@ -105,9 +105,22 @@ class Store extends ChangeNotifier {
           .then((_) => notifyListeners());
 
   /// Picks new birds for every alarm, e.g. after a region change.
-  Future<void> rescheduleAll(String notificationTitle) async {
+  Future<void> rescheduleAll() async {
+    // The banner title last used, in the app's language (the store has no locale).
+    final title = _prefs.getString('notificationTitle') ?? 'Guess the bird!';
     for (final a in alarms.where((a) => a.enabled)) {
-      await save(a, notificationTitle);
+      await save(a, title);
+    }
+  }
+
+  /// Background catch-up with the chosen region (see syncRegion); when its data
+  /// changed, every alarm gets a bird from the new data.
+  Future<void> sync() async {
+    final r = region;
+    if (r == null) return;
+    if (await syncRegion(r, monthFor(DateTime.now()), difficulty)) {
+      await rescheduleAll();
+      notifyListeners();
     }
   }
 
@@ -121,6 +134,7 @@ class Store extends ChangeNotifier {
   /// Saves [a] (adds it if new) and schedules or cancels its ring.
   /// [notificationTitle] is passed in because the store has no locale.
   Future<void> save(AlarmData a, String notificationTitle) async {
+    await _prefs.setString('notificationTitle', notificationTitle);
     await _write([...alarms.where((x) => x.id != a.id), a]);
     if (!a.enabled) {
       await Alarm.stop(a.id);
@@ -140,8 +154,12 @@ class Store extends ChangeNotifier {
         dateTime: at,
         assetAudioPath: phonePath(rec.file),
         payload: jsonEncode({'bird': bird.id, 'rec': rec.file}),
-        volumeSettings: VolumeSettings.fade(
-          fadeDuration: const Duration(seconds: 60),
+        // Fade up over 60 s, but from 30%: starting silent hid the first seconds of song.
+        volumeSettings: VolumeSettings.staircaseFade(
+          fadeSteps: [
+            VolumeFadeStep(Duration.zero, 0.3),
+            VolumeFadeStep(const Duration(seconds: 60), 1),
+          ],
         ),
         notificationSettings: NotificationSettings(
           title: notificationTitle, // big bold line of the banner
@@ -171,6 +189,7 @@ class Store extends ChangeNotifier {
   Future<CardData?> answered(
     int alarmId,
     Bird bird,
+    Recording? recording, // the one that rang, kept on the card
     bool correct,
     String notificationTitle,
   ) async {
@@ -179,7 +198,9 @@ class Store extends ChangeNotifier {
       bird.id,
       ...recent.take(recentCount - 1),
     ]);
-    final card = correct ? rollCard(bird, region) : null;
+    final card = correct
+        ? rollCard(bird, region, recording: recording?.file)
+        : null;
     if (card != null) {
       await _prefs.setString('cards', jsonEncode([...cards, card]));
     }

@@ -20,6 +20,8 @@ Map<String, CardData> bestCards(List<CardData> cards) {
   return best;
 }
 
+enum _View { collected, copies, region }
+
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
 
@@ -28,6 +30,7 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
+  _View _view = _View.collected;
   String? _tier; // rarity filter, null = all
 
   @override
@@ -37,78 +40,101 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
-    // The region's birds, plus cards won in another region.
     final regionIds = {for (final b in birds) b.id};
-    final all = [
-      ...birds,
-      for (final id in best.keys)
-        if (!regionIds.contains(id) && species[id] != null) species[id]!,
-    ]..sort((a, b) => a.number.compareTo(b.number));
-    String rarityOf(Bird b) => best[b.id]?.rarity ?? b.rarity;
+    String rarityOf(Bird b, CardData? c) => c?.rarity ?? b.rarity;
+    int rarest((Bird, CardData?) a, (Bird, CardData?) b) {
+      final t =
+          tiers.indexOf(rarityOf(b.$1, b.$2)) -
+          tiers.indexOf(rarityOf(a.$1, a.$2));
+      return t != 0 ? t : a.$1.number.compareTo(b.$1.number);
+    }
+
+    // (bird, card) entries; a null card is a "?" or "heard" tile (Region view only).
+    final entries = switch (_view) {
+      _View.collected => [
+        for (final c in best.values)
+          if (birdById(c.birdId) case final b?) (b, c as CardData?),
+      ]..sort(rarest),
+      _View.copies => [
+        for (final c in cards)
+          if (birdById(c.birdId) case final b?) (b, c as CardData?),
+      ]..sort(rarest),
+      _View.region => [
+        for (final b in birds) (b, best[b.id]),
+        // Cards won in another region.
+        for (final c in best.values)
+          if (!regionIds.contains(c.birdId) && species[c.birdId] != null)
+            (species[c.birdId]!, c as CardData?),
+      ]..sort((a, b) => a.$1.number.compareTo(b.$1.number)),
+    };
     final shown = [
-      for (final b in all)
-        if (_tier == null || rarityOf(b) == _tier) b,
+      for (final e in entries)
+        if (_tier == null || rarityOf(e.$1, e.$2) == _tier) e,
     ];
     final openable = [
-      for (final b in shown)
-        if (best.containsKey(b.id) || heard.contains(b.id)) b,
+      for (final e in shown)
+        if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
+    final small = text.bodySmall;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-          child: Text(
-            l.progress(
-              best.keys.where(regionIds.contains).length,
-              birds.length,
-            ),
-            style: text.titleMedium,
-          ),
-        ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.fromLTRB(24, 8, 12, 0),
           child: Row(
             children: [
-              for (final t in tiers)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(rarityName(l, t)),
-                    showCheckmark: false,
-                    selected: _tier == t,
-                    selectedColor: rarityColor[t],
-                    onSelected: (on) => setState(() => _tier = on ? t : null),
-                  ),
-                ),
+              Text(
+                '${best.keys.where(regionIds.contains).length}/${birds.length}',
+                style: small,
+              ),
+              const Spacer(),
+              _Menu<_View>(
+                value: _view,
+                items: {
+                  _View.collected: l.viewCollected,
+                  _View.copies: l.viewCopies,
+                  _View.region: l.viewRegion,
+                },
+                onSelected: (v) => setState(() => _view = v),
+              ),
+              _Menu<String?>(
+                value: _tier,
+                items: {
+                  null: l.allRarities,
+                  for (final t in tiers) t: rarityName(l, t),
+                },
+                onSelected: (t) => setState(() => _tier = t),
+              ),
             ],
           ),
         ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              childAspectRatio: 5 / 7,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              childAspectRatio: 0.68,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
             ),
             itemCount: shown.length,
             itemBuilder: (context, i) {
-              final b = shown[i];
-              final open = openable.indexOf(b);
+              final (b, c) = shown[i];
+              final open = openable.indexOf(shown[i]);
               return CardTile(
                 bird: b,
-                owned: cards.where((c) => c.birdId == b.id).length,
-                rarity: best[b.id]?.rarity,
+                owned: c == null
+                    ? 0
+                    : (_view == _View.copies
+                          ? 1
+                          : cards.where((x) => x.birdId == b.id).length),
                 heard: heard.contains(b.id),
+                rarity: c?.rarity,
                 onTap: open < 0
                     ? null
                     : () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) =>
-                              CardPager(birds: openable, initial: open),
+                              CardPager(entries: openable, initial: open),
                         ),
                       ),
               );
@@ -120,47 +146,91 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 }
 
+/// A compact "Label ▾" drop-down menu.
+class _Menu<T> extends StatelessWidget {
+  const _Menu({
+    required this.value,
+    required this.items,
+    required this.onSelected,
+  });
+  final T value;
+  final Map<T, String> items;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) => PopupMenuButton<T>(
+    initialValue: value,
+    onSelected: onSelected,
+    itemBuilder: (_) => [
+      for (final MapEntry(:key, value: label) in items.entries)
+        PopupMenuItem(value: key, child: Text(label)),
+    ],
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(items[value]!, style: Theme.of(context).textTheme.labelLarge),
+          const Icon(Icons.arrow_drop_down, size: 20),
+        ],
+      ),
+    ),
+  );
+}
+
 /// Full cards, swipe left/right between them.
 class CardPager extends StatelessWidget {
-  const CardPager({required this.birds, required this.initial, super.key});
-  final List<Bird> birds;
+  const CardPager({required this.entries, required this.initial, super.key});
+  final List<(Bird, CardData?)> entries;
   final int initial;
 
   @override
   Widget build(BuildContext context) {
     final cards = store.cards;
-    final best = bestCards(cards);
     return Scaffold(
       appBar: AppBar(),
       body: PageView.builder(
         controller: PageController(initialPage: initial),
-        itemCount: birds.length,
-        itemBuilder: (_, i) => Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: CardDetail(
-            bird: birds[i],
-            card: best[birds[i].id],
-            copies: cards.where((c) => c.birdId == birds[i].id).length,
-          ),
-        ),
+        itemCount: entries.length,
+        itemBuilder: (_, i) {
+          final (bird, card) = entries[i];
+          final copies = cards.where((c) => c.birdId == bird.id).length;
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: CardDetail(
+              bird: bird,
+              card: card,
+              header: copies > 1
+                  ? Text(
+                      '×$copies',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    )
+                  : null,
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-/// A card with its copy count and a share button.
+/// A card with round buttons below: Share (left), credits (center), and an optional
+/// close button (right). [header] goes above the card.
 class CardDetail extends StatefulWidget {
   const CardDetail({
     required this.bird,
     this.card,
-    this.copies = 0,
-    this.isNew = false,
+    this.recording,
+    this.header,
+    this.onClose,
     super.key,
   });
   final Bird bird;
   final CardData? card;
-  final int copies;
-  final bool isNew;
+  final Recording?
+  recording; // whose credit to show; defaults to the card's recording
+  final Widget? header;
+  final VoidCallback? onClose;
 
   @override
   State<CardDetail> createState() => _CardDetailState();
@@ -184,13 +254,38 @@ class _CardDetailState extends State<CardDetail> {
     );
   }
 
+  void _credits(Recording? recording) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final credit in [?recording?.credit, widget.bird.photoCredit])
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                credit,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
-    final CardDetail(:bird, :card, :copies, :isNew) = widget;
+    final CardDetail(:bird, :card, :header, :onClose) = widget;
+    final recording =
+        widget.recording ??
+        bird.recordings.where((r) => r.file == card?.recording).firstOrNull;
     return Column(
       children: [
+        ?header,
         Expanded(
           child: Center(
             child: RepaintBoundary(
@@ -200,29 +295,60 @@ class _CardDetailState extends State<CardDetail> {
           ),
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          height: 48,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isNew)
-                Text(
-                  l.newCard,
-                  style: text.titleMedium?.copyWith(color: coral),
-                ),
-              if (copies > 1) Text('×$copies', style: text.titleMedium),
-              if (card != null) ...[
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: () => _share(bird.id),
-                  icon: const Icon(Icons.share_outlined),
-                  label: Text(l.share),
-                ),
-              ],
-            ],
-          ),
+        Row(
+          children: [
+            if (card != null)
+              RoundButton(
+                icon: Icons.share_outlined,
+                tooltip: l.share,
+                onPressed: () => _share(bird.id),
+              )
+            else
+              const SizedBox(width: 56),
+            const Spacer(),
+            IconButton(
+              tooltip: l.credits,
+              icon: const Icon(Icons.info_outline),
+              onPressed: () => _credits(recording),
+            ),
+            const Spacer(),
+            if (onClose != null)
+              RoundButton(
+                icon: Icons.close,
+                tooltip: l.done,
+                onPressed: onClose,
+              )
+            else
+              const SizedBox(width: 56),
+          ],
         ),
       ],
     );
   }
+}
+
+/// A big round button (Share, Close).
+class RoundButton extends StatelessWidget {
+  const RoundButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    super.key,
+  });
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => IconButton.filledTonal(
+    tooltip: tooltip,
+    onPressed: onPressed,
+    iconSize: 28,
+    style: IconButton.styleFrom(
+      fixedSize: const Size(56, 56),
+      backgroundColor: unknownColor,
+      foregroundColor: ink,
+    ),
+    icon: Icon(icon),
+  );
 }

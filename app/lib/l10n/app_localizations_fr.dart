@@ -13,9 +13,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noAlarms => 'Aucune alarme';
 
   @override
-  String get whoIsSinging => 'Qui chante ?';
-
-  @override
   String get guessTheBird => 'Devinez l\'oiseau !';
 
   @override
@@ -65,10 +62,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get allBirds => 'Tous les oiseaux';
 
   @override
-  String get allBirdsHint =>
-      'N\'importe quel oiseau de la région, quelle que soit la saison';
-
-  @override
   String get language => 'Langue';
 
   @override
@@ -102,15 +95,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get heard => 'Entendu';
 
   @override
-  String get heardHint =>
-      'Devinez-le la prochaine fois pour gagner cette carte';
-
-  @override
-  String quality(int percent) {
-    return 'Qualité $percent %';
-  }
-
-  @override
   String get weight => 'Poids';
 
   @override
@@ -123,22 +107,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get flightDistance => 'Vol';
 
   @override
-  String get newCard => 'Nouvelle carte !';
-
-  @override
   String get share => 'Partager';
 
   @override
   String progress(int owned, int total) {
     return '$owned / $total cartes';
   }
-
-  @override
-  String get dataSources =>
-      'Données : GBIF · Wikidata · Wikipédia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons';
-
-  @override
-  String get chooseRegion => 'Où habitez-vous ?';
 
   @override
   String get useMyLocation => 'Utiliser ma position';
@@ -154,9 +128,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get retry => 'Réessayer';
 
   @override
-  String get downloading => 'Téléchargement des oiseaux de votre région…';
-
-  @override
   String nearCell(String lat, String lon) {
     return 'Autour de $lat $lon';
   }
@@ -166,11 +137,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'Position indisponible. Choisissez dans la liste.';
 
   @override
-  String youHeard(String kind) {
-    return 'Vous avez entendu son $kind';
-  }
-
-  @override
   String get song => 'chant';
 
   @override
@@ -178,4 +144,42 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get alarmCall => 'cri d\'alarme';
+
+  @override
+  String get seasonalBirds => 'Oiseaux de saison';
+
+  @override
+  String get credits => 'Crédits';
+
+  @override
+  String get creditsBody =>
+      'Présence et saisons des oiseaux : données d\'observation de GBIF.org.\n\nNoms et photos : Wikidata et Wikimedia Commons (CC0, domaine public, CC BY, CC BY-SA) ; l\'auteur et la licence de chaque photo sont sur sa carte (ⓘ).\n\nChants et cris : enregistrements de xeno-canto.org (CC0, CC BY, CC BY-SA, et CC BY-NC-SA / BY-NC pour quelques espèces sans enregistrement libre) ; l\'auteur et la licence sont sur la carte (ⓘ).\n\nStatistiques des cartes : AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipédia et Wikidata.';
+
+  @override
+  String get tryNextTime => 'Ce sera pour la prochaine fois !';
+
+  @override
+  String newRarityCard(String rarity) {
+    return 'Nouvelle carte $rarity !';
+  }
+
+  @override
+  String speciesCollected(String ordinal) {
+    return '$ordinal espèce collectée !';
+  }
+
+  @override
+  String get streakLost => 'Série perdue';
+
+  @override
+  String get viewCollected => 'Collection';
+
+  @override
+  String get viewCopies => 'Tous les exemplaires';
+
+  @override
+  String get viewRegion => 'Région';
+
+  @override
+  String get allRarities => 'Toutes raretés';
 }

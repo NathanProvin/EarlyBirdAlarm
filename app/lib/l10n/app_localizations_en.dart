@@ -13,9 +13,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAlarms => 'No alarms';
 
   @override
-  String get whoIsSinging => 'Who is singing?';
-
-  @override
   String get guessTheBird => 'Guess the bird!';
 
   @override
@@ -65,9 +62,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allBirds => 'All birds';
 
   @override
-  String get allBirdsHint => 'Any bird of the region, whatever the season';
-
-  @override
   String get language => 'Language';
 
   @override
@@ -101,14 +95,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get heard => 'Heard';
 
   @override
-  String get heardHint => 'Guess it right next time to win this card';
-
-  @override
-  String quality(int percent) {
-    return 'Quality $percent %';
-  }
-
-  @override
   String get weight => 'Weight';
 
   @override
@@ -121,22 +107,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flightDistance => 'Flight';
 
   @override
-  String get newCard => 'New card!';
-
-  @override
   String get share => 'Share';
 
   @override
   String progress(int owned, int total) {
     return '$owned / $total cards';
   }
-
-  @override
-  String get dataSources =>
-      'Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons';
-
-  @override
-  String get chooseRegion => 'Where do you live?';
 
   @override
   String get useMyLocation => 'Use my location';
@@ -152,20 +128,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get downloading => 'Downloading your region\'s birds…';
-
-  @override
   String nearCell(String lat, String lon) {
     return 'Around $lat $lon';
   }
 
   @override
   String get locationDenied => 'Location not available. Choose from the list.';
-
-  @override
-  String youHeard(String kind) {
-    return 'You heard its $kind';
-  }
 
   @override
   String get song => 'song';
@@ -175,4 +143,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alarmCall => 'alarm call';
+
+  @override
+  String get seasonalBirds => 'Seasonal birds';
+
+  @override
+  String get credits => 'Credits';
+
+  @override
+  String get creditsBody =>
+      'Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org recordings (CC0, CC BY, CC BY-SA, and CC BY-NC-SA / BY-NC for a few species with no free recording); each recordist and license are on the card (ⓘ).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.';
+
+  @override
+  String get tryNextTime => 'Try next time!';
+
+  @override
+  String newRarityCard(String rarity) {
+    return 'New $rarity card!';
+  }
+
+  @override
+  String speciesCollected(String ordinal) {
+    return '$ordinal species collected!';
+  }
+
+  @override
+  String get streakLost => 'Streak lost';
+
+  @override
+  String get viewCollected => 'Collected';
+
+  @override
+  String get viewCopies => 'All copies';
+
+  @override
+  String get viewRegion => 'Region';
+
+  @override
+  String get allRarities => 'All rarities';
 }

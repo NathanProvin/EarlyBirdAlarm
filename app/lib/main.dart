@@ -21,8 +21,8 @@ Future<void> main() async {
   await Alarm.init();
   store = await Store.load();
   await initContent(store.region);
-  // Keep songs on the phone for upcoming rings; also runs after each guess (see ring.dart).
-  unawaited(topUpDeck(store.monthFor(DateTime.now()), store.difficulty));
+  // Catch up with the region in the background; also runs after each guess (see ring.dart).
+  unawaited(store.sync());
   runApp(
     ListenableBuilder(
       listenable: store,
@@ -109,24 +109,26 @@ class _HomeScreenState extends State<HomeScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-                  child: Row(
-                    children: [
-                      Text(l.streak(store.streak), style: text.titleMedium),
-                      const Spacer(),
-                      IconButton(
-                        tooltip: l.settings,
-                        icon: const Icon(Icons.settings_outlined),
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SettingsScreen(),
+                // The collection uses the whole screen: no streak / settings row there.
+                if (_tab == 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
+                    child: Row(
+                      children: [
+                        Text(l.streak(store.streak), style: text.titleMedium),
+                        const Spacer(),
+                        IconButton(
+                          tooltip: l.settings,
+                          icon: const Icon(Icons.settings_outlined),
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const SettingsScreen(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 if (_tab == 1)
                   const Expanded(child: CollectionScreen())
                 else if (alarms.isEmpty)

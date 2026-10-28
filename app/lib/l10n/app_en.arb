@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "noAlarms": "No alarms",
-  "whoIsSinging": "Who is singing?",
   "guessTheBird": "Guess the bird!",
   "snooze": "Snooze",
   "snoozeMinutes": "Snooze {minutes} min",
@@ -31,7 +30,6 @@
   "medium": "Medium",
   "hard": "Hard",
   "allBirds": "All birds",
-  "allBirdsHint": "Any bird of the region, whatever the season",
   "language": "Language",
   "systemLanguage": "Phone",
   "region": "Region",
@@ -43,22 +41,12 @@
   "epic": "Epic",
   "legendary": "Legendary",
   "heard": "Heard",
-  "heardHint": "Guess it right next time to win this card",
-  "quality": "Quality {percent} %",
   "weight": "Weight",
   "wingspan": "Wingspan",
   "length": "Length",
   "flightDistance": "Flight",
-  "newCard": "New card!",
   "share": "Share",
   "progress": "{owned} / {total} cards",
-  "@quality": {
-    "placeholders": {
-      "percent": {
-        "type": "int"
-      }
-    }
-  },
   "@progress": {
     "placeholders": {
       "owned": {
@@ -69,16 +57,12 @@
       }
     }
   },
-  "dataSources": "Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons",
-  "chooseRegion": "Where do you live?",
   "useMyLocation": "Use my location",
   "searchRegion": "Search a country or region",
   "offline": "No connection. Connect to the internet to download your region's birds.",
   "retry": "Retry",
-  "downloading": "Downloading your region's birds…",
   "nearCell": "Around {lat} {lon}",
   "locationDenied": "Location not available. Choose from the list.",
-  "youHeard": "You heard its {kind}",
   "song": "song",
   "call": "call",
   "alarmCall": "alarm call",
@@ -92,9 +76,27 @@
       }
     }
   },
-  "@youHeard": {
+  "seasonalBirds": "Seasonal birds",
+  "credits": "Credits",
+  "creditsBody": "Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo's author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org recordings (CC0, CC BY, CC BY-SA, and CC BY-NC-SA / BY-NC for a few species with no free recording); each recordist and license are on the card (ⓘ).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.",
+  "tryNextTime": "Try next time!",
+  "newRarityCard": "New {rarity} card!",
+  "speciesCollected": "{ordinal} species collected!",
+  "streakLost": "Streak lost",
+  "viewCollected": "Collected",
+  "viewCopies": "All copies",
+  "viewRegion": "Region",
+  "allRarities": "All rarities",
+  "@newRarityCard": {
     "placeholders": {
-      "kind": {
+      "rarity": {
+        "type": "String"
+      }
+    }
+  },
+  "@speciesCollected": {
+    "placeholders": {
+      "ordinal": {
         "type": "String"
       }
     }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../birds.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'credits.dart';
 import 'region.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -31,13 +32,15 @@ class SettingsScreen extends StatelessWidget {
               selected: {store.difficulty},
               onSelectionChanged: (s) => store.difficulty = s.single,
             ),
-            const SizedBox(height: 32),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l.allBirds),
-              subtitle: Text(l.allBirdsHint),
-              value: store.allBirds,
-              onChanged: (on) => store.allBirds = on,
+            const SizedBox(height: 12),
+            SegmentedButton<bool>(
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(value: false, label: Text(l.seasonalBirds)),
+                ButtonSegment(value: true, label: Text(l.allBirds)),
+              ],
+              selected: {store.allBirds},
+              onSelectionChanged: (s) => store.allBirds = s.single,
             ),
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
@@ -66,7 +69,15 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 48),
-            Text(l.dataSources, style: text.bodySmall),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l.credits, style: text.bodySmall),
+              trailing: const Icon(Icons.chevron_right, size: 18),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+              ),
+            ),
           ],
         ),
       ),

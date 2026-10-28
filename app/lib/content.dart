@@ -106,31 +106,35 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
   ];
 }
 
-/// Downloads a region (species list, seasons, every photo) and makes it current.
-/// [progress] gets 0-1. False when offline; the previous region stays in place.
-Future<bool> downloadRegion(
+/// Brings the phone up to date with [region] in the background: species list and seasons
+/// (re-fetched weekly, as the catalog is rebuilt), every photo, and the song deck.
+/// Best effort: whatever fails is fetched at the next call (app start, after each guess).
+/// Returns true when new region data arrived, so alarms should pick new birds.
+Future<bool> syncRegion(
   String region,
-  void Function(double) progress,
+  int? month,
+  Difficulty difficulty,
 ) async {
-  if (!await download('species.json') ||
-      !await download('regions/$region.json')) {
-    return false;
+  final regionFile = localFile('regions/$region.json');
+  final stale =
+      !regionFile.existsSync() ||
+      DateTime.now().difference(regionFile.lastModifiedSync()).inDays >= 7;
+  if (stale) {
+    if (!await download('species.json') ||
+        !await download('regions/$region.json')) {
+      return false;
+    }
+    await initContent(region);
   }
-  await initContent(region);
   final photos = [
     for (final b in birds)
       if (!localFile(b.photo).existsSync()) b.photo,
   ];
-  var done = 0;
-  for (final batch in [
-    for (var i = 0; i < photos.length; i += 8) photos.skip(i).take(8),
-  ]) {
-    await Future.wait(
-      batch.map(download),
-    ); // a missing photo is fetched again next time
-    progress((done += batch.length) / photos.length);
+  for (var i = 0; i < photos.length; i += 8) {
+    await Future.wait(photos.skip(i).take(8).map(download));
   }
-  return true;
+  await topUpDeck(month, difficulty);
+  return stale;
 }
 
 /// Keeps [deckSize] songs on the phone for birds that can ring this month at [difficulty],
