@@ -57,7 +57,7 @@ def get(url, params=None, headers=None, binary=False):
     path = CACHE / "http" / hashlib.sha1(cache_key.encode()).hexdigest()
     if not path.exists():
         req = urllib.request.Request(url, headers={"User-Agent": UA, **(headers or {})})
-        for attempt in range(6):
+        for attempt in range(8):
             try:
                 with urllib.request.urlopen(req, timeout=60) as r:
                     data = r.read()
@@ -65,9 +65,9 @@ def get(url, params=None, headers=None, binary=False):
                     raise RuntimeError(data[:200])  # e.g. "search too busy": retry, never cache it
                 break
             except Exception as e:  # network hiccup or rate limit: back off, then give up
-                if attempt == 5:
+                if attempt == 7:
                     raise RuntimeError(f"GET failed: {cache_key}") from e
-                time.sleep(5 * (attempt + 1))
+                time.sleep(15 * (attempt + 1))  # ~7 min in total: rides out short API outages
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
     data = path.read_bytes()
