@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older. Only the collection, alarms and settings: the downloaded catalog is
+     re-fetched after a restore, and including it would exceed the 25 MB backup limit. -->
+<full-backup-content>
+    <include domain="sharedpref" path="FlutterSharedPreferences.xml"/>
+</full-backup-content>

@@ -48,5 +48,12 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [ ] Credits/licenses screen, privacy policy, Play Data Safety form, declarations for full-screen intent and exact alarms
 - [ ] Play Store internal testing
 
+## Future — Social & market (needs accounts; see decisions.md "Accounts")
+- [ ] Anonymous-first accounts + Sign in with Google/Apple; upload of the local collection
+- [ ] Server-minted cards (stat rolls on the server)
+- [ ] Trade cards with friends
+- [ ] Market with an in-game currency (no real money)
+- [ ] Before any monetization: replace or remove NC-licensed recordings
+
 ## Iteration 5 — iOS
 - [ ] Evaluate AlarmKit (iOS 26+) vs the `alarm` package's background audio; check custom-sound support

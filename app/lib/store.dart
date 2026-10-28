@@ -104,6 +104,18 @@ class Store extends ChangeNotifier {
       (id == null ? _prefs.remove('region') : _prefs.setString('region', id))
           .then((_) => notifyListeners());
 
+  /// Schedules every enabled alarm the alarm plugin doesn't have, e.g. after a Google
+  /// backup restore (only our preferences are backed up, not the plugin's schedule).
+  Future<void> healAlarms() async {
+    final scheduled = {for (final a in await Alarm.getAlarms()) a.id};
+    final title = _prefs.getString('notificationTitle') ?? 'Guess the bird!';
+    for (final a in alarms.where(
+      (a) => a.enabled && !scheduled.contains(a.id),
+    )) {
+      await save(a, title);
+    }
+  }
+
   /// Picks new birds for every alarm, e.g. after a region change.
   Future<void> rescheduleAll() async {
     // The banner title last used, in the app's language (the store has no locale).

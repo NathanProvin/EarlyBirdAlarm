@@ -23,6 +23,7 @@ Future<void> main() async {
   await initContent(store.region);
   // Catch up with the region in the background; also runs after each guess (see ring.dart).
   unawaited(store.sync());
+  unawaited(store.healAlarms());
   runApp(
     ListenableBuilder(
       listenable: store,

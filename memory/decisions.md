@@ -25,6 +25,8 @@ An alarm clock (Android first, iOS later). Each ring plays a different bird song
 | Alarms | Multiple alarms: time, repeat days, on/off, snooze length, label |
 | Rotation | New bird per ring, avoiding birds heard recently |
 | Collection | Trading-card collection of the birds you identified (see "Card collection") |
+| Backup | Android Auto Backup of the preferences file only (cards, heard birds, streak, alarms, settings, region; a few KB) to the user's Google account; the downloaded catalog is re-fetched and alarms are rescheduled at app start (decided and verified on the S22, 2026-10-28). No cross-platform sync |
+| Accounts | **Not in v1** (decided 2026-10-28). Required as soon as cards can change hands (trading, market) or the collection must sync across devices/platforms. Then: anonymous-first accounts (local collection uploaded silently), "Sign in with Google/Apple" on demand, **cards minted by the server** (rolls can't be trusted on the phone; earlier cards kept as "pre-season"), market in an in-game currency before any real money (payment, gambling/loot-box and store rules) |
 | Business | Free MVP; monetization decided later. No billing, no account, no tracking |
 | Privacy | Coarse location only, processed on the device; manual region picker as the alternative |
 
