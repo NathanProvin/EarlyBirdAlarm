@@ -33,14 +33,14 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 ### 3c-1 — Pipeline + hosting
 - [ ] Regions: 2°×2° cells (GPS) + European countries + bioregions (USA 8, Canada 4, European Russia); presence and rarity per region
 - [ ] Species built once for all regions (names, photo, 1–5 varied recordings: song/call/alarm, stats); global card numbers; report per region
-- [ ] Site in `pipeline/site/v1/` (species.json, regions.json, regions/, audio/, photos/) pushed to GitHub Pages (`early-bird-content`)
-- [ ] ~30 fallback birds bundled in the app (replace the 232 of N48E002)
+- [ ] Site in `pipeline/site/v1/` (species.json, regions.json, regions/, audio/, photos/) on GitHub Pages: `gh-pages` branch of NathanProvin/EarlyBirdAlarm → https://nathanprovin.github.io/EarlyBirdAlarm/v1/ (3-region test catalog live 2026-10-28; full catalog pending)
+- [x] ~30 fallback birds bundled in the app (`py pipeline/build.py fallback`; rerun after the full catalog)
 
-### 3c-2 — App
-- [ ] Region: "Use my location" (coarse GPS → cell) or country/bioregion list; first launch + Settings
-- [ ] Downloads: region photos + audio deck (~14), topped up at app open and after each guess; offline → fallback birds
-- [ ] Cards keep the rarity and region they were won in; collection = region birds + cards won elsewhere
-- [ ] Vocalizations: ring picks a recording by difficulty (Easy songs, Medium + calls, Hard all); reveal shows Song / Call / Alarm
+### 3c-2 — App (verified on the S22, 2026-10-28, with the 3-region test catalog)
+- [x] Region: "Use my location" (coarse GPS → cell) or country/bioregion list; first launch + Settings
+- [x] Downloads: region photos + audio deck (~14), topped up at app open and after each guess; offline → fallback birds
+- [x] Cards keep the rarity and region they were won in; collection = region birds + cards won elsewhere
+- [x] Vocalizations: ring picks a recording by difficulty (Easy songs, Medium + calls, Hard all); reveal shows Song / Call / Alarm
 
 ## Iteration 4 — Polish and beta
 - [ ] Animations, haptics, dark mode, TalkBack, large text
