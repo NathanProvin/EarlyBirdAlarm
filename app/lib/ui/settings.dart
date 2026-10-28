@@ -57,6 +57,20 @@ class SettingsScreen extends StatelessWidget {
                   store.language = s.single.isEmpty ? null : s.single,
             ),
             const SizedBox(height: 32),
+            Text(l.theme, style: text.titleMedium),
+            const SizedBox(height: 8),
+            SegmentedButton<String>(
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(value: 'system', label: Text(l.systemLanguage)),
+                ButtonSegment(value: 'dawn', label: Text(l.themeDawn)),
+                ButtonSegment(value: 'dusk', label: Text(l.themeDusk)),
+                ButtonSegment(value: 'forest', label: Text(l.themeForest)),
+              ],
+              selected: {store.theme},
+              onSelectionChanged: (s) => store.theme = s.single,
+            ),
+            const SizedBox(height: 32),
             Text(l.region, style: text.titleMedium),
             ListTile(
               contentPadding: EdgeInsets.zero,

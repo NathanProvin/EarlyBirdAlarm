@@ -98,81 +98,87 @@ class BirdCardView extends StatelessWidget {
         ],
       ),
     );
-    return AspectRatio(
-      aspectRatio: 0.68,
-      child: Container(
-        padding: EdgeInsets.all(rarity == 'legendary' && card != null ? 14 : 8),
-        decoration: BoxDecoration(
-          color: frame,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '#${bird.number.toString().padLeft(3, '0')}',
+    // The card is a fixed-size picture: text grows with the phone's font size, up to 1.3×.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: AspectRatio(
+        aspectRatio: 0.68,
+        child: Container(
+          padding: EdgeInsets.all(
+            rarity == 'legendary' && card != null ? 14 : 8,
+          ),
+          decoration: BoxDecoration(
+            color: frame,
+            borderRadius: BorderRadius.circular(radius),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '#${bird.number.toString().padLeft(3, '0')}',
+                        style: label,
+                      ),
+                    ),
+                    Text(
+                      card == null ? l.heard : rarityName(l, rarity),
                       style: label,
                     ),
-                  ),
-                  Text(
-                    card == null ? l.heard : rarityName(l, rarity),
-                    style: label,
-                  ),
-                  Expanded(
-                    child: Text(
-                      card == null ? '' : '${card.quality} %',
-                      style: label,
-                      textAlign: TextAlign.end,
+                    Expanded(
+                      child: Text(
+                        card == null ? '' : '${card.quality} %',
+                        style: label,
+                        textAlign: TextAlign.end,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: card != null
-                  ? face
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ImageFiltered(
-                          imageFilter: ui.ImageFilter.blur(
-                            sigmaX: 8,
-                            sigmaY: 8,
-                          ),
-                          child: ColorFiltered(
-                            colorFilter: const ColorFilter.mode(
-                              Colors.grey,
-                              BlendMode.saturation,
+              Expanded(
+                child: card != null
+                    ? face
+                    : Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ImageFiltered(
+                            imageFilter: ui.ImageFilter.blur(
+                              sigmaX: 8,
+                              sigmaY: 8,
                             ),
-                            child: face,
-                          ),
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  bird.nameIn(l.localeName),
-                                  style: text.headlineSmall,
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(bird.latin, style: _latin(text)),
-                                const SizedBox(height: 16),
-                                Text(l.tryNextTime, style: text.titleMedium),
-                              ],
+                            child: ColorFiltered(
+                              colorFilter: const ColorFilter.mode(
+                                Colors.grey,
+                                BlendMode.saturation,
+                              ),
+                              child: face,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-            ),
-          ],
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    bird.nameIn(l.localeName),
+                                    style: text.headlineSmall,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  Text(bird.latin, style: _latin(text)),
+                                  const SizedBox(height: 16),
+                                  Text(l.tryNextTime, style: text.titleMedium),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -229,6 +235,7 @@ class _PlayButtonState extends State<PlayButton> {
   Widget build(BuildContext context) => StreamBuilder<bool>(
     stream: _player.playingStream,
     builder: (context, snap) => IconButton.filled(
+      tooltip: AppLocalizations.of(context).play,
       onPressed: _toggle,
       style: IconButton.styleFrom(backgroundColor: widget.color),
       icon: Icon(
@@ -276,34 +283,39 @@ class _StatRow extends StatelessWidget {
     final text = Theme.of(context).textTheme.bodyMedium;
     final value = this.value;
     final locale = AppLocalizations.of(context).localeName;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Expanded(flex: 4, child: Text(label, style: text)),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value == null ? '?' : formatStat(stat, value, locale),
-              style: text?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.end,
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Where this roll sits in the species' spread.
-          Expanded(
-            flex: 2,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: value == null ? 0 : percentileOf(bird, stat, value),
-                minHeight: 6,
-                color: color,
-                backgroundColor: unknownColor,
+    // TalkBack reads the row as one item: "Weight, 18 g".
+    return Semantics(
+      label: '$label, ${value == null ? '?' : formatStat(stat, value, locale)}',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Expanded(flex: 4, child: Text(label, style: text)),
+            Expanded(
+              flex: 3,
+              child: Text(
+                value == null ? '?' : formatStat(stat, value, locale),
+                style: text?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.end,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            // Where this roll sits in the species' spread.
+            Expanded(
+              flex: 2,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: value == null ? 0 : percentileOf(bird, stat, value),
+                  minHeight: 6,
+                  color: color,
+                  backgroundColor: unknownColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

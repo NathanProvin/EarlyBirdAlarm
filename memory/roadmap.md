@@ -43,10 +43,26 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Vocalizations: ring picks a recording by difficulty (Easy songs, Medium + calls, Hard all); reveal shows Song / Call / Alarm
 
 ## Iteration 4 — Polish and beta
-- [ ] Animations, haptics, dark mode, TalkBack, large text
-- [ ] Redesign the Snooze button on the ring screen (user request 2026-10-27; works, but the current small text button needs a UI rework — details to be discussed)
-- [ ] Credits/licenses screen, privacy policy, Play Data Safety form, declarations for full-screen intent and exact alarms
-- [ ] Play Store internal testing
+### 4a — Ready to ship, no Play account needed (started 2026-10-28)
+- [x] Package name `com.nathanprovin.earlybird` (permanent once on Play); move the S22's collection to it once
+- [ ] App icon (coral half-sun + ink bird on paper, adaptive + themed) and white-bird notification icon
+- [x] Release signing (upload key in git-ignored `keys/`), release AAB + APK
+- [ ] **Themes** — 3 palettes + Settings → Theme (Follow phone = Dawn by day / Dusk in dark mode | Dawn | Dusk | Forest); cards stay on paper in every theme:
+
+  | Theme | Mood | Background | Text | Accent | Secondary surface |
+  |---|---|---|---|---|---|
+  | Dawn (light) | Warm paper at sunrise | `#F6F1EA` | `#1C1B1A` | coral `#E86A4F` | `#DDD5CA` |
+  | Dusk (dark) | Indigo evening sky, amber last light | `#1A1B2E` | `#ECE8F5` | amber `#F2A541` | `#2C2D45` |
+  | Forest (light) | Pale sage, deep pine | `#EDF0E6` | `#1F2A22` | pine `#1E6B66` | `#D6DDCC` |
+- [ ] Accessibility: TalkBack labels (play button, stats, region list, alarm switches), large text (cards capped at 1.3×)
+- [x] Snooze button redesign (UI round 1: full-width, 64 dp, icon)
+- [x] Credits screen (UI round 1)
+- [x] Privacy policy (EN/FR) on GitHub Pages + link in Credits; `py pipeline/build.py publish`
+- [x] Store listing texts + Data Safety / full-screen intent / exact alarm declarations (`memory/store-listing.md`)
+
+### 4b — Play Store (needs the Play developer account: $25, identity check)
+- [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations
+- [ ] Screenshots and feature graphic
 
 ## Future — Social & market (needs accounts; see decisions.md "Accounts")
 - [ ] Anonymous-first accounts + Sign in with Google/Apple; upload of the local collection

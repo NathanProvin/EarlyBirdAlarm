@@ -18,23 +18,69 @@ const rarityColor = {
 };
 const unknownColor = Color(0xFFDDD5CA); // not discovered yet
 
-final dawnTheme = ThemeData(
-  colorScheme: const ColorScheme.light(
-    primary: coral,
-    onPrimary: ink,
-    surface: paper,
-    onSurface: ink,
-    error: brick,
+/// A color theme (decisions.md "Themes"); success, fail and rarity colors are shared.
+typedef Palette = ({
+  Brightness brightness,
+  Color background,
+  Color text,
+  Color accent,
+  Color onAccent, // button text on the accent (WCAG AA checked)
+  Color surface, // chips, tiles, round buttons
+});
+
+const palettes = <String, Palette>{
+  'dawn': (
+    brightness: Brightness.light,
+    background: paper,
+    text: ink,
+    accent: coral,
+    onAccent: ink,
+    surface: unknownColor,
   ),
-  scaffoldBackgroundColor: paper,
-  shadowColor: Colors.transparent,
-  filledButtonTheme: FilledButtonThemeData(
-    style: FilledButton.styleFrom(
-      minimumSize: const Size.fromHeight(56),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      textStyle: const TextStyle(fontSize: 18),
+  'dusk': (
+    brightness: Brightness.dark,
+    background: Color(0xFF1A1B2E),
+    text: Color(0xFFECE8F5),
+    accent: Color(0xFFF2A541),
+    onAccent: ink,
+    surface: Color(0xFF2C2D45),
+  ),
+  'forest': (
+    brightness: Brightness.light,
+    background: Color(0xFFEDF0E6),
+    text: Color(0xFF1F2A22),
+    accent: Color(0xFF1E6B66),
+    onAccent: Color(0xFFFFFFFF),
+    surface: Color(0xFFD6DDCC),
+  ),
+};
+
+ThemeData themeFor(String name) {
+  final p = palettes[name] ?? palettes['dawn']!;
+  return ThemeData(
+    colorScheme: ColorScheme(
+      brightness: p.brightness,
+      primary: p.accent,
+      onPrimary: p.onAccent,
+      secondary: p.accent,
+      onSecondary: p.onAccent,
+      secondaryContainer: p.surface,
+      onSecondaryContainer: p.text,
+      surface: p.background,
+      onSurface: p.text,
+      error: brick,
+      onError: paper,
     ),
-  ),
-);
+    scaffoldBackgroundColor: p.background,
+    shadowColor: Colors.transparent,
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(56),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        textStyle: const TextStyle(fontSize: 18),
+      ),
+    ),
+  );
+}

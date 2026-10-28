@@ -100,5 +100,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "theme": "Theme",
+  "themeDawn": "Dawn",
+  "themeDusk": "Dusk",
+  "themeForest": "Forest",
+  "play": "Play",
+  "privacyPolicy": "Privacy policy"
 }

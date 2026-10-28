@@ -3,6 +3,7 @@
 Run from the repo root:  py pipeline/build.py            (all regions)
                          py pipeline/build.py N48E002,FR (a few regions, for testing)
                          py pipeline/build.py fallback   (copy the offline birds into the app)
+                         py pipeline/build.py publish    (push the catalog + privacy pages to GitHub Pages)
 Reads GBIF (presence, taxonomy), Wikidata (EN/FR names, photo), Wikimedia Commons (photo
 credits), xeno-canto (recordings), AVONET and Wikipedia (card stats), then writes the static
 site to pipeline/site/v1/ (published on GitHub Pages) and pipeline/report.md.
@@ -14,6 +15,7 @@ import hashlib
 import html
 import json
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -486,9 +488,43 @@ def build_fallback():
     print(f"{len(bundled)} fallback birds:", ", ".join(b["en"] for b in bundled))
 
 
+CONTACT_EMAIL = None  # public contact for the privacy policy; until set, the GitHub issues page
+PAGES = CACHE / "pages"
+PAGES_REPO = "https://github.com/NathanProvin/EarlyBirdAlarm.git"
+
+
+def publish():
+    """Force-push the catalog and the static pages (privacy policy) to the gh-pages branch,
+    which GitHub Pages serves at https://nathanprovin.github.io/EarlyBirdAlarm/.
+    Only the files species.json references are published; the branch keeps no history."""
+    species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
+    files = {b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]}
+    missing = [f for f in files if not (OUT / f).exists()]
+    assert not missing, f"{len(missing)} catalog files missing (e.g. {missing[:3]}): finish the build first"
+    shutil.rmtree(PAGES, ignore_errors=True)
+    regions = [f"regions/{f.name}" for f in (OUT / "regions").iterdir()]
+    for f in [*files, "species.json", "regions.json", *regions]:
+        (PAGES / "v1" / f).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(OUT / f, PAGES / "v1" / f)
+    href, text = ((f"mailto:{CONTACT_EMAIL}", CONTACT_EMAIL) if CONTACT_EMAIL else
+                  ("https://github.com/NathanProvin/EarlyBirdAlarm/issues", "github.com/NathanProvin/EarlyBirdAlarm/issues"))
+    for f in (ROOT.parent / "site-static").iterdir():
+        page = f.read_text(encoding="utf-8").replace("CONTACT_HREF", href).replace("CONTACT_TEXT", text)
+        (PAGES / f.name).write_text(page, encoding="utf-8")
+    (PAGES / ".nojekyll").touch()  # serve files as they are
+    git = lambda *a: subprocess.run(["git", *a], cwd=PAGES, check=True)
+    git("init", "-q", "-b", "gh-pages")
+    git("add", "-A")
+    git("commit", "-q", "-m", f"Catalog: {len(species)} species, {len(regions)} regions")
+    git("push", "-q", "--force", PAGES_REPO, "gh-pages")
+    print(f"published {len(species)} species, {len(regions)} regions, {len(files)} files")
+
+
 def main():
     if sys.argv[1:] == ["fallback"]:
         return build_fallback()
+    if sys.argv[1:] == ["publish"]:
+        return publish()
     xc_key_file = ROOT / "xc_key.txt"
     xc_key = xc_key_file.read_text().strip() if xc_key_file.exists() else None
     overrides = read_csv(ROOT / "overrides.csv")  # "Latin name" -> "xc=123" / "commons=File:x.jpg"

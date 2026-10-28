@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'birds.dart';
 import 'cards.dart';
 import 'content.dart';
+import 'ui/theme.dart';
 
 class AlarmData {
   AlarmData({
@@ -89,6 +90,11 @@ class Store extends ChangeNotifier {
   bool get allBirds => _prefs.getBool('allBirds') ?? false;
   set allBirds(bool on) =>
       _prefs.setBool('allBirds', on).then((_) => notifyListeners());
+
+  /// Color theme: 'system' (Dawn, or Dusk in the phone's dark mode), 'dawn', 'dusk' or 'forest'.
+  String get theme => _prefs.getString('theme') ?? 'system';
+  set theme(String name) =>
+      _prefs.setString('theme', name).then((_) => notifyListeners());
 
   /// 'en', 'fr', or null to follow the phone.
   String? get language => _prefs.getString('language');
@@ -177,6 +183,8 @@ class Store extends ChangeNotifier {
           title: notificationTitle, // big bold line of the banner
           body: a.label.isEmpty ? 'Early Bird' : a.label,
           androidStopAlarmOnDismiss: false, // only a guess stops it
+          icon: 'ic_notification', // white bird, res/drawable
+          iconColor: coral,
         ),
       ),
     );

@@ -182,4 +182,22 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get allRarities => 'Toutes raretés';
+
+  @override
+  String get theme => 'Thème';
+
+  @override
+  String get themeDawn => 'Aube';
+
+  @override
+  String get themeDusk => 'Crépuscule';
+
+  @override
+  String get themeForest => 'Forêt';
+
+  @override
+  String get play => 'Écouter';
+
+  @override
+  String get privacyPolicy => 'Politique de confidentialité';
 }

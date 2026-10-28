@@ -9,7 +9,6 @@ import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'card.dart';
-import 'theme.dart';
 
 /// The best copy of each owned bird, by bird id.
 Map<String, CardData> bestCards(List<CardData> cards) {
@@ -346,8 +345,8 @@ class RoundButton extends StatelessWidget {
     iconSize: 28,
     style: IconButton.styleFrom(
       fixedSize: const Size(56, 56),
-      backgroundColor: unknownColor,
-      foregroundColor: ink,
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
     ),
     icon: Icon(icon),
   );

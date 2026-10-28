@@ -1,4 +1,4 @@
-package com.earlybird.early_bird
+package com.nathanprovin.earlybird
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

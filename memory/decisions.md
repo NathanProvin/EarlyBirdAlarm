@@ -56,7 +56,8 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 ## Design — "Dawn"
 - Flat solid colors only: no gradients, no shadows. One corner radius. Lots of whitespace. One typeface.
 - Light: bg `#F6F1EA` · text `#1C1B1A` · accent `#E86A4F` · success `#3E8E6A` · fail `#C9503C`
-- Dark: bg `#141312`, other tokens mirrored.
+- **Themes** (decided 2026-10-28): Dawn (light, above) · Dusk (dark: bg `#1A1B2E`, text `#ECE8F5`, accent amber `#F2A541`, surface `#2C2D45`) · Forest (light: bg `#EDF0E6`, text `#1F2A22`, accent pine `#1E6B66`, surface `#D6DDCC`). Settings → Theme: Follow phone (default: Dawn / Dusk with the phone's dark mode) | Dawn | Dusk | Forest. Success, fail and rarity colors are the same in every theme; cards are always printed on paper.
+- App ID `com.nathanprovin.earlybird` (decided 2026-10-28, permanent once on Google Play). Icon: coral half-sun on the horizon with an ink bird perched in front, on paper.
 - Coral on paper is about 3:1 contrast, so use it only for large or graphic elements. Body text is always ink.
 - Pop-up: a solid circle scales in (moss ✓ / brick ✕), with haptics and the streak count ticking up or resetting.
 

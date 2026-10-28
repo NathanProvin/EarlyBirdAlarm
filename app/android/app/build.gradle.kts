@@ -1,3 +1,11 @@
+import java.util.Properties
+
+// Upload key for Google Play (git-ignored; see memory/store-listing.md). Without it, release
+// builds fall back to the debug key so `flutter run --release` still works.
+val keyProps = Properties().apply {
+    rootProject.file("key.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -5,7 +13,7 @@ plugins {
 }
 
 android {
-    namespace = "com.earlybird.early_bird"
+    namespace = "com.nathanprovin.earlybird"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,8 +23,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.earlybird.early_bird"
+        applicationId = "com.nathanprovin.earlybird"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -29,11 +36,22 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (!keyProps.isEmpty) {
+                storeFile = file(keyProps.getProperty("storeFile"))
+                storePassword = keyProps.getProperty("storePassword")
+                keyAlias = keyProps.getProperty("keyAlias")
+                keyPassword = keyProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (keyProps.isEmpty) "debug" else "release")
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
     }
 }

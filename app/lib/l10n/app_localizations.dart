@@ -415,6 +415,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All rarities'**
   String get allRarities;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @themeDawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Dawn'**
+  String get themeDawn;
+
+  /// No description provided for @themeDusk.
+  ///
+  /// In en, this message translates to:
+  /// **'Dusk'**
+  String get themeDusk;
+
+  /// No description provided for @themeForest.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get themeForest;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
 }
 
 class _AppLocalizationsDelegate

@@ -142,8 +142,12 @@ class _RingScreenState extends State<RingScreen> {
                     icon: const Icon(Icons.snooze, size: 28),
                     label: Text(l.snooze),
                     style: FilledButton.styleFrom(
-                      backgroundColor: unknownColor,
-                      foregroundColor: ink,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer,
+                      foregroundColor: Theme.of(context)
+                          .colorScheme
+                          .onSecondaryContainer,
                       textStyle: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
@@ -265,7 +269,7 @@ class _GlassLabel extends StatelessWidget {
       filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        color: paper.withValues(alpha: 0.7),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
         child: Text(
           name,
           style: Theme.of(context).textTheme.titleMedium

@@ -29,7 +29,9 @@ Future<void> main() async {
       listenable: store,
       builder: (_, _) => MaterialApp(
         title: 'Early Bird',
-        theme: dawnTheme,
+        theme: themeFor(store.theme == 'system' ? 'dawn' : store.theme),
+        darkTheme: themeFor('dusk'),
+        themeMode: store.theme == 'system' ? ThemeMode.system : ThemeMode.light,
         locale: store.language == null ? null : Locale(store.language!),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -161,10 +163,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 daysText(context, a.days),
                               ].join(' · '),
                             ),
-                            trailing: Switch(
-                              value: a.enabled,
-                              onChanged: (on) =>
-                                  store.save(a..enabled = on, l.guessTheBird),
+                            trailing: Semantics(
+                              // TalkBack: "07:00, Mon Tue, on".
+                              label:
+                                  '${TimeOfDay(hour: a.hour, minute: a.minute).format(context)}, ${daysText(context, a.days)}',
+                              child: Switch(
+                                value: a.enabled,
+                                onChanged: (on) =>
+                                    store.save(a..enabled = on, l.guessTheBird),
+                              ),
                             ),
                           ),
                       ],

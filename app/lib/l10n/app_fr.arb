@@ -52,5 +52,11 @@
   "viewCollected": "Collection",
   "viewCopies": "Tous les exemplaires",
   "viewRegion": "Région",
-  "allRarities": "Toutes raretés"
+  "allRarities": "Toutes raretés",
+  "theme": "Thème",
+  "themeDawn": "Aube",
+  "themeDusk": "Crépuscule",
+  "themeForest": "Forêt",
+  "play": "Écouter",
+  "privacyPolicy": "Politique de confidentialité"
 }
