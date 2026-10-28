@@ -105,8 +105,8 @@ class Store extends ChangeNotifier {
   int get nextId => alarms.fold(0, (m, a) => a.id > m ? a.id : m) + 1;
 
   /// Saves [a] (adds it if new) and schedules or cancels its ring.
-  /// [notificationBody] is passed in because the store has no locale.
-  Future<void> save(AlarmData a, String notificationBody) async {
+  /// [notificationTitle] is passed in because the store has no locale.
+  Future<void> save(AlarmData a, String notificationTitle) async {
     await _write([...alarms.where((x) => x.id != a.id), a]);
     if (!a.enabled) {
       await Alarm.stop(a.id);
@@ -124,8 +124,8 @@ class Store extends ChangeNotifier {
           fadeDuration: const Duration(seconds: 60),
         ),
         notificationSettings: NotificationSettings(
-          title: a.label.isEmpty ? 'Early Bird' : a.label,
-          body: notificationBody,
+          title: notificationTitle, // big bold line of the banner
+          body: a.label.isEmpty ? 'Early Bird' : a.label,
           androidStopAlarmOnDismiss: false, // only a guess stops it
         ),
       ),
@@ -152,7 +152,7 @@ class Store extends ChangeNotifier {
     int alarmId,
     Bird bird,
     bool correct,
-    String notificationBody,
+    String notificationTitle,
   ) async {
     await _prefs.setInt('streak', correct ? streak + 1 : 0);
     await _prefs.setStringList('recent', [
@@ -173,7 +173,7 @@ class Store extends ChangeNotifier {
       return card;
     }
     if (a.days.isEmpty) a.enabled = false;
-    await save(a, notificationBody);
+    await save(a, notificationTitle);
     return card;
   }
 

@@ -42,7 +42,7 @@ class _RingScreenState extends State<RingScreen> {
       widget.alarm.id,
       _bird,
       correct,
-      AppLocalizations.of(context).openToAnswer,
+      AppLocalizations.of(context).guessTheBird,
     );
     setState(() => _correct = correct);
     HapticFeedback.heavyImpact();

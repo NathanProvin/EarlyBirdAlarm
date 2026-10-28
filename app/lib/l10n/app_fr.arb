@@ -2,7 +2,7 @@
   "@@locale": "fr",
   "noAlarms": "Aucune alarme",
   "whoIsSinging": "Qui chante ?",
-  "openToAnswer": "Qui chante ? Ouvrez pour répondre.",
+  "guessTheBird": "Devinez l'oiseau !",
   "snooze": "Répéter",
   "snoozeMinutes": "Répéter après {minutes} min",
   "streak": "Série {count}",

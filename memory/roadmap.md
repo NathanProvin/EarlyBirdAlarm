@@ -23,11 +23,11 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Settings screen: difficulty, "All birds", **language picker** (Phone / English / Français — user request 2026-10-27), region shown
 
 ## Iteration 3b — Card collection (TCG) — see decisions.md "Card collection"
-- [ ] Pipeline: 5 rarity tiers (replace the 3), card number, stats (weight, wingspan, length, flight distance) with mean + spread per species; coverage report for stats
-- [ ] Card widget (5 rarity colors, photo, names, 4 stats, quality %, number) — the reveal screen becomes the card
-- [ ] Correct guess = new card with Gaussian-rolled stats; wrong guess = "heard" silhouette
-- [ ] Collection tab (bottom bar: Alarms | Collection): 3-column grid, progress, rarity filter, tap → full card, swipe between cards, ×N duplicates
-- [ ] Share a card as a PNG via the share sheet (`share_plus`)
+- [x] Pipeline: 5 rarity tiers (replace the 3), card number, stats (weight, wingspan, length, flight distance) with mean + spread per species; coverage report for stats
+- [x] Card widget (5 rarity colors, photo, names, 4 stats, quality %, number) — the reveal screen becomes the card
+- [x] Correct guess = new card with Gaussian-rolled stats; wrong guess = "heard" silhouette
+- [x] Collection tab (bottom bar: Alarms | Collection): 3-column grid, progress, rarity filter, tap → full card, swipe between cards, ×N duplicates
+- [x] Share a card as a PNG via the share sheet (`share_plus`)
 
 ## Iteration 3c — Full catalog
 - [ ] ~30 fallback birds bundled

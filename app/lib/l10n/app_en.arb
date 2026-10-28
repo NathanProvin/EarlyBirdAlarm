@@ -2,7 +2,7 @@
   "@@locale": "en",
   "noAlarms": "No alarms",
   "whoIsSinging": "Who is singing?",
-  "openToAnswer": "Who is singing? Open to answer.",
+  "guessTheBird": "Guess the bird!",
   "snooze": "Snooze",
   "snoozeMinutes": "Snooze {minutes} min",
   "@snoozeMinutes": {

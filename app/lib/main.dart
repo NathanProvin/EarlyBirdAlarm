@@ -148,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             trailing: Switch(
                               value: a.enabled,
                               onChanged: (on) =>
-                                  store.save(a..enabled = on, l.openToAnswer),
+                                  store.save(a..enabled = on, l.guessTheBird),
                             ),
                           ),
                       ],

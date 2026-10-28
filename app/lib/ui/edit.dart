@@ -53,7 +53,7 @@ class _EditScreenState extends State<EditScreen> {
     _a
       ..label = _label.text.trim()
       ..enabled = true;
-    await store.save(_a, AppLocalizations.of(context).openToAnswer);
+    await store.save(_a, AppLocalizations.of(context).guessTheBird);
     if (mounted) Navigator.of(context).pop();
   }
 

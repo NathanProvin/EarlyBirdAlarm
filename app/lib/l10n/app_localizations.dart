@@ -110,11 +110,11 @@ abstract class AppLocalizations {
   /// **'Who is singing?'**
   String get whoIsSinging;
 
-  /// No description provided for @openToAnswer.
+  /// No description provided for @guessTheBird.
   ///
   /// In en, this message translates to:
-  /// **'Who is singing? Open to answer.'**
-  String get openToAnswer;
+  /// **'Guess the bird!'**
+  String get guessTheBird;
 
   /// No description provided for @snooze.
   ///

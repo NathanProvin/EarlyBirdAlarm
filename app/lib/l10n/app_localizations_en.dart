@@ -16,7 +16,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoIsSinging => 'Who is singing?';
 
   @override
-  String get openToAnswer => 'Who is singing? Open to answer.';
+  String get guessTheBird => 'Guess the bird!';
 
   @override
   String get snooze => 'Snooze';
