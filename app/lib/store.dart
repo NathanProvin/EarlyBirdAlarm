@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'birds.dart';
 import 'cards.dart';
+import 'content.dart';
 
 class AlarmData {
   AlarmData({
@@ -97,6 +98,19 @@ class Store extends ChangeNotifier {
               : _prefs.setString('language', code))
           .then((_) => notifyListeners());
 
+  /// Region id from the catalog (a GPS cell like N48E002, or a country / bioregion like FR, US-NE).
+  String? get region => _prefs.getString('region');
+  set region(String? id) =>
+      (id == null ? _prefs.remove('region') : _prefs.setString('region', id))
+          .then((_) => notifyListeners());
+
+  /// Picks new birds for every alarm, e.g. after a region change.
+  Future<void> rescheduleAll(String notificationTitle) async {
+    for (final a in alarms.where((a) => a.enabled)) {
+      await save(a, notificationTitle);
+    }
+  }
+
   /// The month whose birds ring at [at], or null with "All birds".
   int? monthFor(DateTime at) => allBirds ? null : at.month;
 
@@ -113,13 +127,19 @@ class Store extends ChangeNotifier {
       return;
     }
     final at = nextRing(a, DateTime.now());
-    final bird = pickBird(recent, monthFor(at), difficulty);
+    // Only a recording already on the phone can ring; the bundled birds are the last resort.
+    final (bird, rec) =
+        pickBird(recent, monthFor(at), difficulty, onPhone) ??
+        species.values
+            .where((b) => b.recordings.any(onPhone))
+            .map((b) => (b, b.recordings.firstWhere(onPhone)))
+            .first;
     await Alarm.set(
       alarmSettings: AlarmSettings(
         id: a.id,
         dateTime: at,
-        assetAudioPath: bird.audio,
-        payload: bird.id,
+        assetAudioPath: phonePath(rec.file),
+        payload: jsonEncode({'bird': bird.id, 'rec': rec.file}),
         volumeSettings: VolumeSettings.fade(
           fadeDuration: const Duration(seconds: 60),
         ),
@@ -159,7 +179,7 @@ class Store extends ChangeNotifier {
       bird.id,
       ...recent.take(recentCount - 1),
     ]);
-    final card = correct ? rollCard(bird) : null;
+    final card = correct ? rollCard(bird, region) : null;
     if (card != null) {
       await _prefs.setString('cards', jsonEncode([...cards, card]));
     }

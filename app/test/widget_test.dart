@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:early_bird/birds.dart';
@@ -6,54 +5,69 @@ import 'package:early_bird/cards.dart';
 import 'package:early_bird/store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// id, order, family, months
+// id, order, family, months, recording kinds
 const _fake = [
-  ('robin', 'Passeriformes', 'Muscicapidae', {'5': 'common', '10': 'common'}),
-  ('redstart', 'Passeriformes', 'Muscicapidae', {'5': 'uncommon'}),
-  ('flycatcher', 'Passeriformes', 'Muscicapidae', {'5': 'epic'}),
-  ('chaffinch', 'Passeriformes', 'Fringillidae', {'5': 'common'}),
-  ('tit', 'Passeriformes', 'Paridae', {'5': 'common'}),
-  ('pigeon', 'Columbiformes', 'Columbidae', {'5': 'common'}),
-  ('dove', 'Columbiformes', 'Columbidae', {'5': 'common'}),
-  ('woodpecker', 'Piciformes', 'Picidae', {'5': 'common'}),
-  ('heron', 'Pelecaniformes', 'Ardeidae', {'5': 'uncommon'}),
-  ('warbler', 'Passeriformes', 'Phylloscopidae', {'10': 'rare'}),
+  (
+    'robin',
+    'Passeriformes',
+    'Muscicapidae',
+    {5: 'common', 10: 'common'},
+    ['song', 'call', 'alarm'],
+  ),
+  ('redstart', 'Passeriformes', 'Muscicapidae', {5: 'uncommon'}, ['song']),
+  ('flycatcher', 'Passeriformes', 'Muscicapidae', {5: 'epic'}, ['call']),
+  ('chaffinch', 'Passeriformes', 'Fringillidae', {5: 'common'}, ['song']),
+  ('tit', 'Passeriformes', 'Paridae', {5: 'common'}, ['song', 'call']),
+  ('pigeon', 'Columbiformes', 'Columbidae', {5: 'common'}, ['song']),
+  ('dove', 'Columbiformes', 'Columbidae', {5: 'common'}, ['song']),
+  ('woodpecker', 'Piciformes', 'Picidae', {5: 'common'}, ['song']),
+  ('heron', 'Pelecaniformes', 'Ardeidae', {5: 'uncommon'}, ['call']),
+  ('warbler', 'Passeriformes', 'Phylloscopidae', {10: 'rare'}, ['call']),
 ];
 
 Bird _b(String id) => birdById(id)!;
+bool _all(Recording r) => true;
 
 void main() {
   setUp(() {
-    birds = parseCatalog(
-      jsonEncode({
-        'cell': 'TEST',
-        'birds': [
-          for (final (id, order, family, months) in _fake)
-            {
-              'id': id, 'latin': id, 'en': id, 'fr': id, //
-              'order': order, 'family': family, 'months': months,
-              'audio': 'audio/$id.m4a', 'photo': 'photos/$id.jpg',
-              'audioCredit': 'a', 'photoCredit': 'p',
-              'rarity': months.values.first,
-              'number': _fake.indexWhere((f) => f.$1 == id) + 1,
-              'stats': {
-                'weight': [20, 2],
-                'wingspan': [22, 1],
-                'length': null,
-                'distance': [0, 50],
+    birds = [
+      for (final (i, (id, order, family, months, kinds)) in _fake.indexed)
+        Bird.fromJson({
+          'id': id, 'latin': id, 'en': id, 'fr': id, //
+          'order': order, 'family': family,
+          'photo': 'photos/$id.jpg', 'photoCredit': 'p', 'number': i + 1,
+          'recordings': [
+            for (final (n, k) in kinds.indexed)
+              {
+                'file': 'audio/$id-${n + 1}.m4a',
+                'kind': k,
+                'credit': 'c',
+                if (id == 'heron') 'nc': true,
               },
-            },
-        ],
-      }),
-    );
+          ],
+          'stats': {
+            'weight': [20, 2],
+            'wingspan': [22, 1],
+            'length': null,
+            'distance': [0, 50],
+          },
+        }, months),
+    ];
   });
 
   test('catalog parsing', () {
     expect(birds.length, _fake.length);
-    expect(_b('robin').audio, 'assets/content/audio/robin.m4a');
+    expect(_b('robin').recordings.map((r) => r.kind), [
+      'song',
+      'call',
+      'alarm',
+    ]);
     expect(_b('robin').months, {5: 'common', 10: 'common'});
+    expect(_b('robin').rarity, 'common');
     expect(_b('redstart').tierIn(null), 'uncommon');
     expect(_b('warbler').tierIn(5), isNull);
+    expect(_b('heron').recordings.single.nc, isTrue);
+    expect(_b('robin').recordings.first.nc, isFalse);
   });
 
   test('pool follows season and difficulty', () {
@@ -72,14 +86,43 @@ void main() {
     expect(pool(5, Difficulty.hard)[_b('robin')], 16);
   });
 
-  test('pickBird avoids recent birds, falls back when all are recent', () {
+  test(
+    'vocalizations follow difficulty; no song falls back to the best recording',
+    () {
+      List<String> kinds(String id, Difficulty d) =>
+          _b(id).playable(d).map((r) => r.kind).toList();
+      expect(kinds('robin', Difficulty.easy), ['song']);
+      expect(kinds('robin', Difficulty.medium), ['song', 'call']);
+      expect(kinds('robin', Difficulty.hard), ['song', 'call', 'alarm']);
+      expect(kinds('heron', Difficulty.easy), ['call']);
+    },
+  );
+
+  test('pickBird: only recordings on the phone, avoids recent birds', () {
     for (var seed = 0; seed < 50; seed++) {
-      expect(
-        pickBird(['tit'], 10, Difficulty.hard, Random(seed)).id,
-        isNot('tit'),
-      );
+      final (bird, rec) = pickBird(
+        ['tit'],
+        10,
+        Difficulty.hard,
+        _all,
+        Random(seed),
+      )!;
+      expect(bird.id, isNot('tit'));
+      expect(bird.recordings, contains(rec));
+      // Easy rings a song when the bird has one.
+      final (b2, r2) = pickBird([], 5, Difficulty.easy, _all, Random(seed))!;
+      if (b2.recordings.any((r) => r.kind == 'song')) expect(r2.kind, 'song');
     }
-    expect(pickBird(['robin'], 10, Difficulty.easy).id, 'robin');
+    expect(pickBird(['robin'], 10, Difficulty.easy, _all)!.$1.id, 'robin');
+    // Only the warbler's call is on the phone: it's the only bird that can ring.
+    final onlyWarbler = pickBird(
+      [],
+      10,
+      Difficulty.hard,
+      (r) => r.file == 'audio/warbler-1.m4a',
+    )!;
+    expect(onlyWarbler.$1.id, 'warbler');
+    expect(pickBird([], 5, Difficulty.easy, (r) => false), isNull);
   });
 
   test('choices: 4 distinct birds from the right groups', () {
@@ -96,36 +139,36 @@ void main() {
       expect(easy.every((b) => b.order != 'Passeriformes'), isTrue);
       final hard = choicesFor(_b('robin'), 5, Difficulty.hard, r)
         ..remove(_b('robin'));
-      expect(
-        hard.where((b) => b.family == 'Muscicapidae').length,
-        2,
-      ); // redstart + flycatcher
+      expect(hard.where((b) => b.family == 'Muscicapidae').length, 2);
       expect(hard.every((b) => b.order == 'Passeriformes'), isTrue);
     }
   });
 
-  test('cards: rolls stay within ±2 sd, unknown stats are left out', () {
+  test('cards: rolls stay within ±2 sd, keep rarity and region', () {
     expect(_b('robin').stats.keys, ['weight', 'wingspan', 'distance']);
-    expect(_b('robin').number, 1);
-    expect(_b('flycatcher').rarity, 'epic');
     for (var seed = 0; seed < 200; seed++) {
-      final c = rollCard(_b('robin'), Random(seed));
+      final c = rollCard(_b('robin'), 'FR', Random(seed));
       expect(c.stats['weight'], inInclusiveRange(16, 24));
       expect(c.stats['wingspan'], inInclusiveRange(20, 24));
       expect(c.stats['distance'], inInclusiveRange(0, 100)); // never negative
       expect(c.stats.containsKey('length'), isFalse);
       expect(c.quality, inInclusiveRange(0, 100));
-      expect(CardData.fromJson(c.toJson()).stats, c.stats);
+      expect((c.rarity, c.region), ('common', 'FR'));
+      final back = CardData.fromJson(c.toJson());
+      expect(back.stats, c.stats); // maps compare by content only outside records
+      expect((back.rarity, back.region), ('common', 'FR'));
     }
-    final mean = CardData(
-      birdId: 'robin',
-      stats: {},
-      quality: 0,
-      earned: DateTime(2026),
-    );
+    // A card from before 3c has no rarity or region.
+    final old = CardData.fromJson({
+      'bird': 'robin',
+      'stats': <String, dynamic>{},
+      'quality': 50,
+      'earned': '2026-10-27T07:00:00',
+    });
+    expect((old.rarity, old.region), (null, null));
+    expect(old.toJson().containsKey('rarity'), isFalse);
     expect(percentileOf(_b('robin'), 'weight', 20), closeTo(0.5, 1e-6));
     expect(percentileOf(_b('robin'), 'weight', 24), closeTo(0.977, 1e-3));
-    expect(mean.toJson()['bird'], 'robin');
   });
 
   test('nextRing', () {

@@ -37,9 +37,17 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
+    // The region's birds, plus cards won in another region.
+    final regionIds = {for (final b in birds) b.id};
+    final all = [
+      ...birds,
+      for (final id in best.keys)
+        if (!regionIds.contains(id) && species[id] != null) species[id]!,
+    ]..sort((a, b) => a.number.compareTo(b.number));
+    String rarityOf(Bird b) => best[b.id]?.rarity ?? b.rarity;
     final shown = [
-      for (final b in [...birds]..sort((a, b) => a.number.compareTo(b.number)))
-        if (_tier == null || b.rarity == _tier) b,
+      for (final b in all)
+        if (_tier == null || rarityOf(b) == _tier) b,
     ];
     final openable = [
       for (final b in shown)
@@ -51,7 +59,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
           child: Text(
-            l.progress(best.length, birds.length),
+            l.progress(
+              best.keys.where(regionIds.contains).length,
+              birds.length,
+            ),
             style: text.titleMedium,
           ),
         ),
@@ -90,6 +101,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               return CardTile(
                 bird: b,
                 owned: cards.where((c) => c.birdId == b.id).length,
+                rarity: best[b.id]?.rarity,
                 heard: heard.contains(b.id),
                 onTap: open < 0
                     ? null

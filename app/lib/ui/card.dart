@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../birds.dart';
 import '../cards.dart';
+import '../content.dart';
 import '../l10n/app_localizations.dart';
 import 'theme.dart';
 
@@ -25,7 +28,10 @@ class BirdCardView extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final card = this.card;
-    final frame = card == null ? unknownColor : rarityColor[bird.rarity]!;
+    final rarity =
+        card?.rarity ??
+        bird.rarity; // the card keeps the rarity it was won with
+    final frame = card == null ? unknownColor : rarityColor[rarity]!;
     final label = text.labelLarge?.copyWith(
       color: card == null ? ink : paper,
       fontWeight: FontWeight.bold,
@@ -33,7 +39,7 @@ class BirdCardView extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 5 / 7,
       child: Container(
-        padding: EdgeInsets.all(bird.rarity == 'legendary' ? 14 : 8),
+        padding: EdgeInsets.all(rarity == 'legendary' ? 14 : 8),
         decoration: BoxDecoration(
           color: frame,
           borderRadius: BorderRadius.circular(radius),
@@ -50,7 +56,7 @@ class BirdCardView extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    card == null ? l.heard : rarityName(l, bird.rarity),
+                    card == null ? l.heard : rarityName(l, rarity),
                     style: label,
                   ),
                 ],
@@ -69,7 +75,7 @@ class BirdCardView extends StatelessWidget {
                     Expanded(
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(radius - 8),
-                        child: Image.asset(bird.photo, fit: BoxFit.cover),
+                        child: BirdPhoto(bird),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -191,10 +197,12 @@ class CardTile extends StatelessWidget {
     required this.bird,
     required this.owned,
     required this.heard,
+    this.rarity,
     this.onTap,
     super.key,
   });
   final Bird bird;
+  final String? rarity; // of the best copy owned
   final int owned; // copies earned
   final bool heard;
   final VoidCallback? onTap;
@@ -215,7 +223,9 @@ class CardTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: owned > 0 ? rarityColor[bird.rarity] : unknownColor,
+            color: owned > 0
+                ? rarityColor[rarity ?? bird.rarity]
+                : unknownColor,
             borderRadius: BorderRadius.circular(radius - 6),
           ),
           child: Stack(
@@ -224,7 +234,7 @@ class CardTile extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(radius - 10),
                 child: owned > 0
-                    ? Image.asset(bird.photo, fit: BoxFit.cover)
+                    ? BirdPhoto(bird)
                     : heard
                     ? Opacity(
                         opacity: 0.5,
@@ -233,7 +243,7 @@ class CardTile extends StatelessWidget {
                             Colors.grey,
                             BlendMode.saturation,
                           ),
-                          child: Image.asset(bird.photo, fit: BoxFit.cover),
+                          child: BirdPhoto(bird),
                         ),
                       )
                     : ColoredBox(
@@ -267,4 +277,25 @@ class _Badge extends StatelessWidget {
     ),
     child: Text(text, style: Theme.of(context).textTheme.labelSmall),
   );
+}
+
+/// The bird's photo from the phone (downloaded or bundled); from the web if it's missing.
+class BirdPhoto extends StatelessWidget {
+  const BirdPhoto(this.bird, {super.key});
+  final Bird bird;
+
+  @override
+  Widget build(BuildContext context) {
+    final path = phonePath(bird.photo);
+    if (path == null) {
+      return Image.network(
+        '$baseUrl${bird.photo}',
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => const ColoredBox(color: unknownColor),
+      );
+    }
+    return path.startsWith('assets/')
+        ? Image.asset(path, fit: BoxFit.cover)
+        : Image.file(File(path), fit: BoxFit.cover);
+  }
 }

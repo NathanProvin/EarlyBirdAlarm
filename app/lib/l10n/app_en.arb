@@ -35,7 +35,6 @@
   "language": "Language",
   "systemLanguage": "Phone",
   "region": "Region",
-  "northernFrance": "Northern France",
   "alarms": "Alarms",
   "collection": "Collection",
   "common": "Common",
@@ -70,5 +69,34 @@
       }
     }
   },
-  "dataSources": "Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons"
+  "dataSources": "Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons",
+  "chooseRegion": "Where do you live?",
+  "useMyLocation": "Use my location",
+  "searchRegion": "Search a country or region",
+  "offline": "No connection. Connect to the internet to download your region's birds.",
+  "retry": "Retry",
+  "downloading": "Downloading your region's birds…",
+  "nearCell": "Around {lat} {lon}",
+  "locationDenied": "Location not available. Choose from the list.",
+  "youHeard": "You heard its {kind}",
+  "song": "song",
+  "call": "call",
+  "alarmCall": "alarm call",
+  "@nearCell": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lon": {
+        "type": "String"
+      }
+    }
+  },
+  "@youHeard": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  }
 }

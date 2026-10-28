@@ -2,6 +2,7 @@
 
 Run from the repo root:  py pipeline/build.py            (all regions)
                          py pipeline/build.py N48E002,FR (a few regions, for testing)
+                         py pipeline/build.py fallback   (copy the offline birds into the app)
 Reads GBIF (presence, taxonomy), Wikidata (EN/FR names, photo), Wikimedia Commons (photo
 credits), xeno-canto (recordings), AVONET and Wikipedia (card stats), then writes the static
 site to pipeline/site/v1/ (published on GitHub Pages) and pipeline/report.md.
@@ -449,7 +450,45 @@ def read_csv(path):
         return {row[0].strip(): row[1].strip() for row in csv.reader(f) if len(row) >= 2}
 
 
+FALLBACK = ROOT.parent / "app" / "assets" / "content"
+FALLBACK_PER_CONTINENT = 15
+
+
+def build_fallback():
+    """Bundle the commonest birds of Europe and of North America in the app, with one song each,
+    so an alarm still rings with a real bird when the phone is offline."""
+    species = {b["id"]: b for b in json.loads((OUT / "species.json").read_text(encoding="utf-8"))}
+    score = {"eu": {}, "na": {}}  # bird id -> regions where it's common
+    for f in (OUT / "regions").iterdir():
+        rid = f.stem
+        continent = "na" if rid.startswith(("US-", "CA-")) or (rid[0] in "NS" and "W" in rid) else "eu"
+        for bird, months in json.loads(f.read_text(encoding="utf-8")).items():
+            if "common" in months.values():
+                score[continent][bird] = score[continent].get(bird, 0) + 1
+    chosen = []
+    for continent in ("eu", "na"):
+        ranked = sorted(score[continent], key=lambda b: -score[continent][b])
+        chosen += [b for b in ranked if b not in chosen][:FALLBACK_PER_CONTINENT]
+    for sub in ("audio", "photos"):
+        (FALLBACK / sub).mkdir(parents=True, exist_ok=True)
+        for f in (FALLBACK / sub).iterdir():
+            f.unlink()
+    bundled = []
+    for bid in chosen:
+        b = dict(species[bid])
+        recs = sorted(b["recordings"], key=lambda r: (r.get("nc", False), r["kind"] != "song"))
+        b["recordings"] = recs[:1]  # one song keeps the APK small
+        for f in (b["photo"], b["recordings"][0]["file"]):
+            (FALLBACK / f).write_bytes((OUT / f).read_bytes())
+        bundled.append(b)
+    (FALLBACK / "catalog.json").unlink(missing_ok=True)  # old single-region format
+    write_json(FALLBACK / "species.json", bundled)
+    print(f"{len(bundled)} fallback birds:", ", ".join(b["en"] for b in bundled))
+
+
 def main():
+    if sys.argv[1:] == ["fallback"]:
+        return build_fallback()
     xc_key_file = ROOT / "xc_key.txt"
     xc_key = xc_key_file.read_text().strip() if xc_key_file.exists() else None
     overrides = read_csv(ROOT / "overrides.csv")  # "Latin name" -> "xc=123" / "commons=File:x.jpg"

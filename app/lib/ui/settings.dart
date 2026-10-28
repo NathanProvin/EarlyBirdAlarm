@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../birds.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'region.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -54,9 +55,16 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(l.region, style: text.titleMedium),
-            const SizedBox(height: 8),
-            // shortcut: one bundled region until the region picker in Iteration 3c.
-            Text(l.northernFrance, style: text.bodyLarge),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                store.region == null ? '—' : regionName(l, store.region!),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
+              ),
+            ),
             const SizedBox(height: 48),
             Text(l.dataSources, style: text.bodySmall),
           ],

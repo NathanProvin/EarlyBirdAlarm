@@ -1,12 +1,15 @@
+import 'dart:async';
+
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'birds.dart';
+import 'content.dart';
 import 'l10n/app_localizations.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
+import 'ui/region.dart';
 import 'ui/ring.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
@@ -16,8 +19,10 @@ late final Store store;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Alarm.init();
-  await loadBirds();
   store = await Store.load();
+  await initContent(store.region);
+  // Keep songs on the phone for upcoming rings; also runs after each guess (see ring.dart).
+  unawaited(topUpDeck(store.monthFor(DateTime.now()), store.difficulty));
   runApp(
     ListenableBuilder(
       listenable: store,
@@ -48,6 +53,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     Permission.notification.request();
+    if (store.region == null) {
+      // First launch: where do you live?
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const RegionScreen())),
+      );
+    }
     Alarm.ringing.listen((set) {
       final alarm = set.alarms.firstOrNull;
       if (alarm == null || alarm.id == _ringingId || !mounted) return;

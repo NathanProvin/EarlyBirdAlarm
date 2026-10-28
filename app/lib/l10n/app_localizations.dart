@@ -224,12 +224,6 @@ abstract class AppLocalizations {
   /// **'Region'**
   String get region;
 
-  /// No description provided for @northernFrance.
-  ///
-  /// In en, this message translates to:
-  /// **'Northern France'**
-  String get northernFrance;
-
   /// No description provided for @alarms.
   ///
   /// In en, this message translates to:
@@ -337,6 +331,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data: GBIF · Wikidata · Wikipedia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons'**
   String get dataSources;
+
+  /// No description provided for @chooseRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you live?'**
+  String get chooseRegion;
+
+  /// No description provided for @useMyLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get useMyLocation;
+
+  /// No description provided for @searchRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a country or region'**
+  String get searchRegion;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Connect to the internet to download your region\'s birds.'**
+  String get offline;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading your region\'s birds…'**
+  String get downloading;
+
+  /// No description provided for @nearCell.
+  ///
+  /// In en, this message translates to:
+  /// **'Around {lat} {lon}'**
+  String nearCell(String lat, String lon);
+
+  /// No description provided for @locationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location not available. Choose from the list.'**
+  String get locationDenied;
+
+  /// No description provided for @youHeard.
+  ///
+  /// In en, this message translates to:
+  /// **'You heard its {kind}'**
+  String youHeard(String kind);
+
+  /// No description provided for @song.
+  ///
+  /// In en, this message translates to:
+  /// **'song'**
+  String get song;
+
+  /// No description provided for @call.
+  ///
+  /// In en, this message translates to:
+  /// **'call'**
+  String get call;
+
+  /// No description provided for @alarmCall.
+  ///
+  /// In en, this message translates to:
+  /// **'alarm call'**
+  String get alarmCall;
 }
 
 class _AppLocalizationsDelegate

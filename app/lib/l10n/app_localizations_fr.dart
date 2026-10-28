@@ -78,9 +78,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get region => 'Région';
 
   @override
-  String get northernFrance => 'Nord de la France';
-
-  @override
   String get alarms => 'Alarmes';
 
   @override
@@ -139,4 +136,46 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get dataSources =>
       'Données : GBIF · Wikidata · Wikipédia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons';
+
+  @override
+  String get chooseRegion => 'Où habitez-vous ?';
+
+  @override
+  String get useMyLocation => 'Utiliser ma position';
+
+  @override
+  String get searchRegion => 'Chercher un pays ou une région';
+
+  @override
+  String get offline =>
+      'Pas de connexion. Connectez-vous à Internet pour télécharger les oiseaux de votre région.';
+
+  @override
+  String get retry => 'Réessayer';
+
+  @override
+  String get downloading => 'Téléchargement des oiseaux de votre région…';
+
+  @override
+  String nearCell(String lat, String lon) {
+    return 'Autour de $lat $lon';
+  }
+
+  @override
+  String get locationDenied =>
+      'Position indisponible. Choisissez dans la liste.';
+
+  @override
+  String youHeard(String kind) {
+    return 'Vous avez entendu son $kind';
+  }
+
+  @override
+  String get song => 'chant';
+
+  @override
+  String get call => 'cri';
+
+  @override
+  String get alarmCall => 'cri d\'alarme';
 }

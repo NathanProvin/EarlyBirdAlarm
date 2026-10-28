@@ -1,11 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../birds.dart';
 import '../cards.dart';
+import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
 
@@ -22,7 +27,15 @@ class RingScreen extends StatefulWidget {
 
 class _RingScreenState extends State<RingScreen> {
   // An alarm set before an app update may name a bird that's gone; ask about any bird then.
-  late final Bird _bird = birdById(widget.alarm.payload ?? '') ?? birds.first;
+  late final Map<String, dynamic> _payload = _parsePayload(
+    widget.alarm.payload,
+  );
+  // An alarm set before an app update may name a bird that's gone; ask about any bird then.
+  late final Bird _bird =
+      birdById(_payload['bird'] as String? ?? '') ?? birds.first;
+  late final Recording? _rec = _bird.recordings
+      .where((r) => r.file == _payload['rec'])
+      .firstOrNull;
   late final List<Bird> _choices = choicesFor(
     _bird,
     store.monthFor(widget.alarm.dateTime),
@@ -46,11 +59,18 @@ class _RingScreenState extends State<RingScreen> {
     );
     setState(() => _correct = correct);
     HapticFeedback.heavyImpact();
+    // The app is open every morning: a good time to fetch songs for the next rings.
+    unawaited(topUpDeck(store.monthFor(DateTime.now()), store.difficulty));
     await Future<void>.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (_) => RevealScreen(bird: _bird, card: card, isNew: isNew),
+        builder: (_) => RevealScreen(
+          bird: _bird,
+          recording: _rec,
+          card: card,
+          isNew: isNew,
+        ),
       ),
     );
   }
@@ -162,11 +182,7 @@ class _Choice extends StatelessWidget {
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(radius),
-              child: Image.asset(
-                bird.photo,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: SizedBox(width: double.infinity, child: BirdPhoto(bird)),
             ),
           ),
           const SizedBox(height: 8),
@@ -186,11 +202,14 @@ class _Choice extends StatelessWidget {
 class RevealScreen extends StatelessWidget {
   const RevealScreen({
     required this.bird,
+    this.recording,
     this.card,
     this.isNew = false,
     super.key,
   });
   final Bird bird;
+  final Recording?
+  recording; // the one that rang; null for alarms set before 3c
   final CardData? card; // null after a wrong guess
   final bool isNew;
 
@@ -220,7 +239,15 @@ class RevealScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                for (final credit in [bird.audioCredit, bird.photoCredit])
+                if (recording case final r?)
+                  Text(
+                    l.youHeard(kindName(l, r.kind)),
+                    style: text.titleMedium,
+                  ),
+                for (final credit in [
+                  if (recording case final r?) r.credit,
+                  bird.photoCredit,
+                ])
                   Text(
                     credit,
                     style: text.bodySmall,
@@ -239,3 +266,18 @@ class RevealScreen extends StatelessWidget {
     );
   }
 }
+
+/// Alarm payload: {"bird": id, "rec": file}; before 3c it was just the bird id.
+Map<String, dynamic> _parsePayload(String? payload) {
+  try {
+    return jsonDecode(payload ?? '') as Map<String, dynamic>;
+  } on FormatException {
+    return {'bird': payload};
+  }
+}
+
+String kindName(AppLocalizations l, String kind) => switch (kind) {
+  'song' => l.song,
+  'call' => l.call,
+  _ => l.alarmCall,
+};

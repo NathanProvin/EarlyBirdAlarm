@@ -21,7 +21,6 @@
   "language": "Langue",
   "systemLanguage": "Téléphone",
   "region": "Région",
-  "northernFrance": "Nord de la France",
   "alarms": "Alarmes",
   "collection": "Collection",
   "common": "Commune",
@@ -39,5 +38,17 @@
   "newCard": "Nouvelle carte !",
   "share": "Partager",
   "progress": "{owned} / {total} cartes",
-  "dataSources": "Données : GBIF · Wikidata · Wikipédia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons"
+  "dataSources": "Données : GBIF · Wikidata · Wikipédia · AVONET (Tobias et al. 2022, CC BY 4.0) · xeno-canto · Wikimedia Commons",
+  "chooseRegion": "Où habitez-vous ?",
+  "useMyLocation": "Utiliser ma position",
+  "searchRegion": "Chercher un pays ou une région",
+  "offline": "Pas de connexion. Connectez-vous à Internet pour télécharger les oiseaux de votre région.",
+  "retry": "Réessayer",
+  "downloading": "Téléchargement des oiseaux de votre région…",
+  "nearCell": "Autour de {lat} {lon}",
+  "locationDenied": "Position indisponible. Choisissez dans la liste.",
+  "youHeard": "Vous avez entendu son {kind}",
+  "song": "chant",
+  "call": "cri",
+  "alarmCall": "cri d'alarme"
 }
