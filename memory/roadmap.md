@@ -38,7 +38,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 ### 3c-2 — App
 - [ ] Region: "Use my location" (coarse GPS → cell) or country/bioregion list; first launch + Settings
-- [ ] Downloads: region photos + audio deck (~14), daily background top-up (`workmanager`); offline → fallback birds
+- [ ] Downloads: region photos + audio deck (~14), topped up at app open and after each guess; offline → fallback birds
 - [ ] Cards keep the rarity and region they were won in; collection = region birds + cards won elsewhere
 - [ ] Vocalizations: ring picks a recording by difficulty (Easy songs, Medium + calls, Hard all); reveal shows Song / Call / Alarm
 
