@@ -579,8 +579,12 @@ def main():
                 src.write_bytes(get(rec["file"], binary=True))
                 length = min(30, max(rec["seconds"] - 1, 5))
                 try:  # -vn: some files carry a cover image
-                    ffmpeg("-ss", "1", "-t", str(length), "-i", str(src), "-vn",
-                           "-af", f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st={length - 2}:d=2",
+                    # Leading silence is trimmed so the bird is heard the moment the alarm starts;
+                    # 15 s of margin is decoded so the clip is still `length` long after trimming.
+                    ffmpeg("-ss", "1", "-t", str(length + 15), "-i", str(src), "-vn",
+                           "-af", "silenceremove=start_periods=1:start_threshold=-45dB,"
+                                  f"atrim=0:{length},asetpts=PTS-STARTPTS,"
+                                  f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st={length - 2}:d=2",
                            "-ac", "1", "-ar", "44100", "-c:a", "aac", "-b:a", "48k", str(audio_out))
                 except subprocess.CalledProcessError:
                     audio_out.unlink(missing_ok=True)
