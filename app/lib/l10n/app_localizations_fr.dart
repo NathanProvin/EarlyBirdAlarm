@@ -172,10 +172,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get streakLost => 'Série perdue';
 
   @override
-  String get viewCollected => 'Collection';
+  String get viewSpecies => 'Espèces';
 
   @override
-  String get viewCopies => 'Tous les exemplaires';
+  String get viewAll => 'Toutes';
 
   @override
   String get viewRegion => 'Région';
@@ -202,7 +202,20 @@ class AppLocalizationsFr extends AppLocalizations {
   String get privacyPolicy => 'Politique de confidentialité';
 
   @override
-  String get birdsSetting => 'Oiseaux';
+  String get easyInfo => 'Chants des oiseaux communs.';
+
+  @override
+  String get mediumInfo => 'Chants et cris, jusqu\'aux oiseaux rares.';
+
+  @override
+  String get hardInfo =>
+      'Tous les sons, cris d\'alarme compris, de tous les oiseaux.';
+
+  @override
+  String get seasonalInfo => 'Seulement les oiseaux présents ce mois-ci.';
+
+  @override
+  String get allBirdsInfo => 'Les oiseaux de toutes les saisons.';
 
   @override
   String get creditsSubtitle => 'Sources, licences et confidentialité';

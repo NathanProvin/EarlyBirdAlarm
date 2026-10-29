@@ -58,6 +58,51 @@ String ringsIn(AppLocalizations l, AlarmData a, [DateTime? now]) {
   return l.ringsInMinutes(min);
 }
 
+/// A thin bar that fills over the last 24 h before [alarm] rings, pulsing gently.
+class _RingBar extends StatefulWidget {
+  const _RingBar(this.alarm);
+  final AlarmData alarm;
+
+  @override
+  State<_RingBar> createState() => _RingBarState();
+}
+
+class _RingBarState extends State<_RingBar>
+    with SingleTickerProviderStateMixin {
+  late final _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 1),
+    lowerBound: 0.6,
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final left = nextRing(widget.alarm, now).difference(now);
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: ringsIn(AppLocalizations.of(context), widget.alarm, now),
+      excludeSemantics: true,
+      child: FadeTransition(
+        opacity: _pulse,
+        child: LinearProgressIndicator(
+          value: (1 - left.inMinutes / (24 * 60)).clamp(0.0, 1.0),
+          minHeight: 4,
+          borderRadius: BorderRadius.circular(2),
+          color: scheme.primary,
+          backgroundColor: scheme.secondaryContainer,
+        ),
+      ),
+    );
+  }
+}
+
 class _HomeScreenState extends State<HomeScreen> {
   int? _ringingId; // guards against pushing the ring screen twice
   int _tab = 0; // 0 = alarms, 1 = collection
@@ -108,15 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
       listenable: store,
       builder: (context, _) {
         final alarms = store.alarms;
-        final now = DateTime.now();
-        final next = alarms
-            .where((a) => a.enabled)
-            .map((a) => (a, nextRing(a, now)))
-            .fold<(AlarmData, DateTime)?>(
-              null,
-              (best, e) => best == null || e.$2.isBefore(best.$2) ? e : best,
-            )
-            ?.$1;
         return Scaffold(
           floatingActionButton: _tab != 0
               ? null
@@ -175,42 +211,67 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       children: [
                         for (final a in alarms)
-                          ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                            ),
+                          InkWell(
                             onTap: () => _edit(a),
-                            title: Text(
-                              TimeOfDay(
-                                hour: a.hour,
-                                minute: a.minute,
-                              ).format(context),
-                              style: text.displaySmall,
-                            ),
-                            subtitle: Text.rich(
-                              TextSpan(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                12,
+                                16,
+                                12,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Time, days and switch on one row.
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: TimeOfDay(
+                                                  hour: a.hour,
+                                                  minute: a.minute,
+                                                ).format(context),
+                                                style: text.displaySmall,
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    '  ${daysText(context, a.days)}',
+                                                style: text.bodyLarge,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Semantics(
+                                        // TalkBack: "07:00, Mon Tue, on".
+                                        label:
+                                            '${TimeOfDay(hour: a.hour, minute: a.minute).format(context)}, ${daysText(context, a.days)}',
+                                        child: Switch(
+                                          value: a.enabled,
+                                          onChanged: (on) => store.save(
+                                            a..enabled = on,
+                                            l.guessTheBird,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   if (a.label.isNotEmpty)
-                                    TextSpan(
-                                      text: '${a.label} · ',
-                                      style: const TextStyle(
+                                    Text(
+                                      a.label,
+                                      style: text.bodyLarge?.copyWith(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  TextSpan(text: daysText(context, a.days)),
-                                  if (a == next)
-                                    TextSpan(text: '\n${ringsIn(l, a)}'),
+                                  if (a.enabled) ...[
+                                    const SizedBox(height: 8),
+                                    _RingBar(a),
+                                  ],
                                 ],
-                              ),
-                            ),
-                            trailing: Semantics(
-                              // TalkBack: "07:00, Mon Tue, on".
-                              label:
-                                  '${TimeOfDay(hour: a.hour, minute: a.minute).format(context)}, ${daysText(context, a.days)}',
-                              child: Switch(
-                                value: a.enabled,
-                                onChanged: (on) =>
-                                    store.save(a..enabled = on, l.guessTheBird),
                               ),
                             ),
                           ),

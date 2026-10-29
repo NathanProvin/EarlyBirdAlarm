@@ -23,9 +23,15 @@ String rarityName(AppLocalizations l, String tier) => switch (tier) {
 /// The full trading card. Without [card] the bird is only "heard": a grey, blurred card
 /// showing just its name and "Try next time!".
 class BirdCardView extends StatelessWidget {
-  const BirdCardView({required this.bird, this.card, super.key});
+  const BirdCardView({
+    required this.bird,
+    this.card,
+    this.copies = 1,
+    super.key,
+  });
   final Bird bird;
   final CardData? card;
+  final int copies; // > 1 shows a "×3" badge on the photo
 
   @override
   Widget build(BuildContext context) =>
@@ -56,9 +62,20 @@ class BirdCardView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(radius - 8),
-              child: BirdPhoto(bird),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(radius - 8),
+                  child: BirdPhoto(bird),
+                ),
+                if (copies > 1)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: _Badge('×$copies', style: text.titleMedium),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -325,97 +342,83 @@ class _StatRow extends StatelessWidget {
   }
 }
 
-/// Small grid tile: owned cards show the photo in the rarity frame, heard birds are
-/// greyed out, undiscovered ones are a "?".
+/// Grid cell: won and heard birds show the full card scaled down; undiscovered ones
+/// are a quiet "?" tile in the app theme's colors.
 class CardTile extends StatelessWidget {
   const CardTile({
     required this.bird,
-    required this.owned,
     required this.heard,
-    this.rarity,
+    this.card,
+    this.copies = 1,
     this.onTap,
     super.key,
   });
   final Bird bird;
-  final String? rarity; // of the best copy owned
-  final int owned; // copies earned
+  final CardData? card; // the copy shown, null if not won
+  final int copies;
   final bool heard;
   final VoidCallback? onTap;
 
-  // Undiscovered tiles use the app theme's quiet colors; won cards are on paper.
   @override
   Widget build(BuildContext context) {
     final app = Theme.of(context).colorScheme;
-    return Theme(
-      data: cardTheme,
-      child: Builder(builder: (context) => _build(context, app)),
-    );
-  }
-
-  Widget _build(BuildContext context, ColorScheme app) {
-    final text = Theme.of(context).textTheme;
     final number = '#${bird.number.toString().padLeft(3, '0')}';
+    final known = card != null || heard;
     return Semantics(
       button: onTap != null,
-      label: owned > 0 || heard
+      label: known
           ? '$number ${bird.nameIn(AppLocalizations.of(context).localeName)}'
           : number,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(radius - 6),
-        child: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: owned > 0
-                ? rarityColor[rarity ?? bird.rarity]
-                : app.secondaryContainer,
-            borderRadius: BorderRadius.circular(radius - 6),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(radius - 10),
-                child: owned > 0
-                    ? BirdPhoto(bird)
-                    : heard
-                    ? Opacity(
-                        opacity: 0.5,
-                        child: ColorFiltered(
-                          colorFilter: const ColorFilter.mode(
-                            Colors.grey,
-                            BlendMode.saturation,
-                          ),
-                          child: BirdPhoto(bird),
-                        ),
-                      )
-                    : ColoredBox(
-                        color: app.surface,
-                        child: Center(
-                          child: Text(
-                            '?',
-                            style: text.headlineMedium?.copyWith(
+        borderRadius: BorderRadius.circular(radius),
+        // Laid out at full-card size, then shrunk, so it looks exactly like the big card.
+        child: known
+            ? IgnorePointer(
+                child: FittedBox(
+                  child: SizedBox(
+                    width: 340,
+                    height: 340 / 0.68,
+                    child: BirdCardView(bird: bird, card: card, copies: copies),
+                  ),
+                ),
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  color: app.surface,
+                  border: Border.all(color: app.secondaryContainer, width: 4),
+                  borderRadius: BorderRadius.circular(radius),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Center(
+                      child: Text(
+                        '?',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
                               color: app.onSurface.withValues(alpha: 0.5),
                             ),
-                          ),
-                        ),
                       ),
+                    ),
+                    Positioned(
+                      left: 8,
+                      bottom: 8,
+                      child: Theme(data: cardTheme, child: _Badge(number)),
+                    ),
+                  ],
+                ),
               ),
-              Positioned(left: 4, bottom: 4, child: _Badge(number)),
-              if (owned > 1)
-                Positioned(right: 4, top: 4, child: _Badge('×$owned')),
-            ],
-          ),
-        ),
       ),
     );
   }
 }
 
 class _Badge extends StatelessWidget {
-  const _Badge(this.text);
+  const _Badge(this.text, {this.style});
   final String text;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -424,7 +427,7 @@ class _Badge extends StatelessWidget {
       color: paper,
       borderRadius: BorderRadius.circular(radius),
     ),
-    child: Text(text, style: Theme.of(context).textTheme.labelSmall),
+    child: Text(text, style: style ?? Theme.of(context).textTheme.labelSmall),
   );
 }
 

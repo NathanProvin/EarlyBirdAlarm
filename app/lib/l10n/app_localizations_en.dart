@@ -171,10 +171,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get streakLost => 'Streak lost';
 
   @override
-  String get viewCollected => 'Collected';
+  String get viewSpecies => 'Species';
 
   @override
-  String get viewCopies => 'All copies';
+  String get viewAll => 'All';
 
   @override
   String get viewRegion => 'Region';
@@ -201,7 +201,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyPolicy => 'Privacy policy';
 
   @override
-  String get birdsSetting => 'Birds';
+  String get easyInfo => 'Songs of common birds.';
+
+  @override
+  String get mediumInfo => 'Songs and calls, up to rare birds.';
+
+  @override
+  String get hardInfo => 'Every sound, alarm calls included, of every bird.';
+
+  @override
+  String get seasonalInfo => 'Only birds present this month.';
+
+  @override
+  String get allBirdsInfo => 'Birds of every season.';
 
   @override
   String get creditsSubtitle => 'Sources, licenses and privacy';

@@ -20,6 +20,18 @@ class SettingsScreen extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(24),
           children: [
+            Text(l.region, style: text.titleMedium),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                store.region == null ? '—' : regionName(l, store.region!),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
+              ),
+            ),
+            const SizedBox(height: 32),
             Text(l.difficulty, style: text.titleMedium),
             const SizedBox(height: 8),
             SegmentedButton<Difficulty>(
@@ -32,9 +44,7 @@ class SettingsScreen extends StatelessWidget {
               selected: {store.difficulty},
               onSelectionChanged: (s) => store.difficulty = s.single,
             ),
-            const SizedBox(height: 32),
-            Text(l.birdsSetting, style: text.titleMedium),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             SegmentedButton<bool>(
               showSelectedIcon: false,
               segments: [
@@ -43,6 +53,15 @@ class SettingsScreen extends StatelessWidget {
               ],
               selected: {store.allBirds},
               onSelectionChanged: (s) => store.allBirds = s.single,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${switch (store.difficulty) {
+                Difficulty.easy => l.easyInfo,
+                Difficulty.medium => l.mediumInfo,
+                Difficulty.hard => l.hardInfo,
+              }} ${store.allBirds ? l.allBirdsInfo : l.seasonalInfo}',
+              style: text.bodySmall,
             ),
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
@@ -71,18 +90,6 @@ class SettingsScreen extends StatelessWidget {
               ],
               selected: {store.theme},
               onSelectionChanged: (s) => store.theme = s.single,
-            ),
-            const SizedBox(height: 32),
-            Text(l.region, style: text.titleMedium),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                store.region == null ? '—' : regionName(l, store.region!),
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
-              ),
             ),
             const SizedBox(height: 32),
             Text(l.credits, style: text.titleMedium),

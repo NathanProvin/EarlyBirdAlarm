@@ -20,7 +20,7 @@ Map<String, CardData> bestCards(List<CardData> cards) {
   return best;
 }
 
-enum _View { collected, copies, region }
+enum _View { all, species, region }
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -30,13 +30,12 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  _View _view = _View.collected;
+  _View _view = _View.all;
   String? _tier; // rarity filter, null = all
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
@@ -51,12 +50,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
     // (bird, card) entries; a null card is a "?" or "heard" tile (Region view only).
     final entries = switch (_view) {
-      _View.collected => [
-        for (final c in best.values)
+      _View.all => [
+        for (final c in cards)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ]..sort(rarest),
-      _View.copies => [
-        for (final c in cards)
+      _View.species => [
+        for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ]..sort(rarest),
       _View.region => [
@@ -75,25 +74,23 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final e in shown)
         if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
-    final small = text.bodySmall;
+    final regionLabel = store.region == null
+        ? l.viewRegion
+        : regionName(l, store.region!);
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 12, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
             children: [
-              Text(
-                '${best.keys.where(regionIds.contains).length}/${birds.length}'
-                '${store.region == null ? '' : ' · ${regionName(l, store.region!)}'}',
-                style: small,
-              ),
-              const Spacer(),
+              // Each view shows its count, e.g. "France (7/353)".
               _Menu<_View>(
                 value: _view,
                 items: {
-                  _View.collected: l.viewCollected,
-                  _View.copies: l.viewCopies,
-                  _View.region: l.viewRegion,
+                  _View.all: '${l.viewAll} (${cards.length})',
+                  _View.species: '${l.viewSpecies} (${best.length})',
+                  _View.region:
+                      '$regionLabel (${best.keys.where(regionIds.contains).length}/${birds.length})',
                 },
                 onSelected: (v) => setState(() => _view = v),
               ),
@@ -112,10 +109,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
           child: GridView.builder(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+              crossAxisCount: 2,
               childAspectRatio: 0.68,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
             ),
             itemCount: shown.length,
             itemBuilder: (context, i) {
@@ -123,13 +120,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
               final open = openable.indexOf(shown[i]);
               return CardTile(
                 bird: b,
-                owned: c == null
-                    ? 0
-                    : (_view == _View.copies
-                          ? 1
-                          : cards.where((x) => x.birdId == b.id).length),
+                card: c,
+                copies: _view == _View.all
+                    ? 1
+                    : cards.where((x) => x.birdId == b.id).length,
                 heard: heard.contains(b.id),
-                rarity: c?.rarity,
                 onTap: open < 0
                     ? null
                     : () => Navigator.of(context).push(

@@ -392,17 +392,17 @@ abstract class AppLocalizations {
   /// **'Streak lost'**
   String get streakLost;
 
-  /// No description provided for @viewCollected.
+  /// No description provided for @viewSpecies.
   ///
   /// In en, this message translates to:
-  /// **'Collected'**
-  String get viewCollected;
+  /// **'Species'**
+  String get viewSpecies;
 
-  /// No description provided for @viewCopies.
+  /// No description provided for @viewAll.
   ///
   /// In en, this message translates to:
-  /// **'All copies'**
-  String get viewCopies;
+  /// **'All'**
+  String get viewAll;
 
   /// No description provided for @viewRegion.
   ///
@@ -452,11 +452,35 @@ abstract class AppLocalizations {
   /// **'Privacy policy'**
   String get privacyPolicy;
 
-  /// No description provided for @birdsSetting.
+  /// No description provided for @easyInfo.
   ///
   /// In en, this message translates to:
-  /// **'Birds'**
-  String get birdsSetting;
+  /// **'Songs of common birds.'**
+  String get easyInfo;
+
+  /// No description provided for @mediumInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Songs and calls, up to rare birds.'**
+  String get mediumInfo;
+
+  /// No description provided for @hardInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Every sound, alarm calls included, of every bird.'**
+  String get hardInfo;
+
+  /// No description provided for @seasonalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Only birds present this month.'**
+  String get seasonalInfo;
+
+  /// No description provided for @allBirdsInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Birds of every season.'**
+  String get allBirdsInfo;
 
   /// No description provided for @creditsSubtitle.
   ///

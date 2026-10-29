@@ -60,6 +60,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Privacy policy (EN/FR) on GitHub Pages + link in Credits; `py pipeline/build.py publish`
 - [x] Store listing texts + Data Safety / full-screen intent / exact alarm declarations (`memory/store-listing.md`)
 - [x] UI review round 2 (2026-10-29): Settings headings (Birds, Credits); centered round Share/ⓘ buttons; 7 round day toggles on one row; "7/353 · France" counter; quiet "?" tiles in the app theme; "Rings in 7 h 05" + bold alarm label; weight 1.2 kg; app version in Credits; haptics (tap when right, buzz when wrong, heavy on a new card). Not chosen: ✓ on selected options, region list ✓, card flip, grid→card transition
+- [x] UI round 3 (2026-10-29, user's comments): collection in 2 columns of full mini-cards; views All (default) | Species (best copy, rarest first) | Region, counts in the view menu ("France (7/353)"), top-left corner freed; Settings: Region first, Seasonal/All under Difficulty with a one-line description; alarm rows: time + days + switch on one row, name below, pulsing 24 h progress bar for active alarms
 
 ### 4b — Play Store (needs the Play developer account: $25, identity check)
 - [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations
