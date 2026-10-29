@@ -32,6 +32,7 @@ MY_NAME = "Nathan Provin"  # credit for your own photos without a credits.csv li
 TIERS = ["common", "uncommon", "rare", "epic", "legendary"]
 SHARES = [0.01, 0.0025, 0.0005, 0.0001]
 RARE_MIN = 20
+WORKERS = 2  # parallel API requests: 4 was faster but heavy on memory and GBIF rate limits
 MIN_RECORDS = 1000  # regions (mostly sea cells) with fewer bird records a year are skipped
 AVONET_URL = "https://ndownloader.figshare.com/files/34480856"  # Tobias et al. 2022, CC BY 4.0
 
@@ -533,7 +534,7 @@ def main():
     print("1/6 GBIF presence per region")
     only = sys.argv[1].split(",") if len(sys.argv) > 1 else None  # e.g. "N48E002,FR" for a quick test run
     regions = [r for r in region_list() if not only or r[0] in only]
-    with ThreadPoolExecutor(4) as pool:  # more trips GBIF rate limits
+    with ThreadPoolExecutor(WORKERS) as pool:  # more trips GBIF rate limits
         pres = dict(zip([r[0] for r in regions], pool.map(lambda r: presence(r[4]), regions)))
     regions = [r for r in regions if pres[r[0]]]
     keys = sorted({k for r in regions for k in pres[r[0]]})
@@ -542,7 +543,7 @@ def main():
                  for k in keys}  # commonest tier anywhere: decides how many recordings it gets
     print(f"    {len(regions)} regions, {len(keys)} species")
     print("2/6 GBIF taxonomy")
-    with ThreadPoolExecutor(4) as pool:
+    with ThreadPoolExecutor(WORKERS) as pool:
         taxa = dict(zip(keys, pool.map(lambda k: get(f"https://api.gbif.org/v1/species/{k}"), keys)))
     print("3/6 Wikidata names and photos")
     wd = wikidata(keys)
@@ -689,7 +690,7 @@ def add_card_data(birds):
     """Card number (taxonomic order over all species) and stats [mean, sd]."""
     mass = avonet()
     spans = wikidata_wingspans([b["latin"] for b in birds] + [b["_wd_latin"] for b in birds if b["_wd_latin"]])
-    with ThreadPoolExecutor(4) as pool:  # ~24 small GBIF count queries per bird; more trips rate limits
+    with ThreadPoolExecutor(WORKERS) as pool:  # ~24 small GBIF count queries per bird; more trips rate limits
         km = dict(zip([b["id"] for b in birds], pool.map(lambda b: flight_km(b["_key"]), birds)))
     ratios = []
     for b in birds:
