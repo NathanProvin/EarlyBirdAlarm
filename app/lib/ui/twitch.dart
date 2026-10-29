@@ -72,12 +72,13 @@ class _TwitchScreenState extends State<TwitchScreen> {
         ),
         // Only the countdown: the pile itself shows how many are left.
         SizedBox(
-          height: 48,
+          height: 64,
           child: charges < twitchMax
               ? Text(
                   '${next.inMinutes.toString().padLeft(2, '0')}:'
                   '${(next.inSeconds % 60).toString().padLeft(2, '0')}',
-                  style: text.titleLarge?.copyWith(
+                  style: text.displaySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 )

@@ -140,6 +140,8 @@ class _BottomBar extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // A little lower than centre: lines up with the big circle's middle.
+                const SizedBox(height: 10),
                 Badge(
                   isLabelVisible: badge > 0,
                   label: Text('$badge'),
