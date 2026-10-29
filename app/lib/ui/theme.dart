@@ -55,6 +55,9 @@ const palettes = <String, Palette>{
   ),
 };
 
+/// Cards are printed on paper in every theme, so they always use Dawn's colors.
+final cardTheme = themeFor('dawn');
+
 ThemeData themeFor(String name) {
   final p = palettes[name] ?? palettes['dawn']!;
   return ThemeData(

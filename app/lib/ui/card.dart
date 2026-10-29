@@ -28,7 +28,10 @@ class BirdCardView extends StatelessWidget {
   final CardData? card;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      Theme(data: cardTheme, child: Builder(builder: _build));
+
+  Widget _build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final card = this.card;
@@ -339,7 +342,10 @@ class CardTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      Theme(data: cardTheme, child: Builder(builder: _build));
+
+  Widget _build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final number = '#${bird.number.toString().padLeft(3, '0')}';
     return Semantics(
