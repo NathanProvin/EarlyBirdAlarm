@@ -221,6 +221,33 @@ class AppLocalizationsFr extends AppLocalizations {
   String get creditsSubtitle => 'Sources, licences et confidentialité';
 
   @override
+  String get twitch => 'Cocheur';
+
+  @override
+  String get twitchInfo =>
+      'Entraînez votre oreille : chaque bonne réponse gagne une carte.';
+
+  @override
+  String get start => 'Commencer';
+
+  @override
+  String nextQuizIn(String time) {
+    return 'Prochain quiz dans $time';
+  }
+
+  @override
+  String get quizzesFull => '5/5, prêt !';
+
+  @override
+  String get listenAgain => 'Réécouter';
+
+  @override
+  String get series => 'Séries';
+
+  @override
+  String get comingSoon => 'Bientôt';
+
+  @override
   String version(String version) {
     return 'Version $version';
   }

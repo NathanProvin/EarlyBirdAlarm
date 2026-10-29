@@ -488,6 +488,54 @@ abstract class AppLocalizations {
   /// **'Sources, licenses and privacy'**
   String get creditsSubtitle;
 
+  /// No description provided for @twitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitch'**
+  String get twitch;
+
+  /// No description provided for @twitchInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Train your ear: every right answer wins a card.'**
+  String get twitchInfo;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @nextQuizIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next quiz in {time}'**
+  String nextQuizIn(String time);
+
+  /// No description provided for @quizzesFull.
+  ///
+  /// In en, this message translates to:
+  /// **'5/5, ready!'**
+  String get quizzesFull;
+
+  /// No description provided for @listenAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen again'**
+  String get listenAgain;
+
+  /// No description provided for @series.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get series;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
   /// No description provided for @version.
   ///
   /// In en, this message translates to:

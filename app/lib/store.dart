@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/foundation.dart';
@@ -60,6 +61,27 @@ DateTime nextRing(AlarmData a, DateTime now) {
   }
 }
 
+/// Twitch mode: up to [twitchMax] quizzes, one more every [twitchEvery]. The count is
+/// derived from one timestamp: whole periods elapsed since [start], capped.
+const twitchMax = 5;
+const twitchEvery = Duration(minutes: 10);
+
+int twitchCharges(DateTime start, DateTime now) =>
+    min(twitchMax, now.difference(start).inSeconds ~/ twitchEvery.inSeconds);
+
+/// Time until the next quiz comes back (meaningless when full).
+Duration twitchNextIn(DateTime start, DateTime now) =>
+    twitchEvery -
+    Duration(
+      seconds: now.difference(start).inSeconds % twitchEvery.inSeconds,
+    );
+
+/// The new start after using one quiz: charges above the cap are dropped first.
+DateTime twitchUse(DateTime start, DateTime now) {
+  final full = now.subtract(twitchEvery * twitchMax);
+  return (start.isBefore(full) ? full : start).add(twitchEvery);
+}
+
 /// How many recently heard birds a new ring avoids.
 const recentCount = 10;
 
@@ -77,6 +99,17 @@ class Store extends ChangeNotifier {
   ]..sort((a, b) => (a.hour * 60 + a.minute).compareTo(b.hour * 60 + b.minute));
 
   int get streak => _prefs.getInt('streak') ?? 0;
+
+  /// See [twitchCharges]; a new player starts full.
+  DateTime get twitchStart =>
+      DateTime.fromMillisecondsSinceEpoch(_prefs.getInt('twitchStart') ?? 0);
+
+  /// Uses one Twitch quiz (the caller checks there is one).
+  Future<void> useTwitch() async {
+    final start = twitchUse(twitchStart, DateTime.now());
+    await _prefs.setInt('twitchStart', start.millisecondsSinceEpoch);
+    notifyListeners();
+  }
 
   /// Ids of the last birds heard, newest first.
   List<String> get recent => _prefs.getStringList('recent') ?? [];
@@ -159,13 +192,7 @@ class Store extends ChangeNotifier {
       return;
     }
     final at = nextRing(a, DateTime.now());
-    // Only a recording already on the phone can ring; the bundled birds are the last resort.
-    final (bird, rec) =
-        pickBird(recent, monthFor(at), difficulty, onPhone) ??
-        species.values
-            .where((b) => b.recordings.any(onPhone))
-            .map((b) => (b, b.recordings.firstWhere(onPhone)))
-            .first;
+    final (bird, rec) = pickNext(at);
     await Alarm.set(
       alarmSettings: AlarmSettings(
         id: a.id,
@@ -190,6 +217,15 @@ class Store extends ChangeNotifier {
     );
   }
 
+  /// The bird and recording to play at [at]. Only a recording already on the phone can
+  /// play; the bundled birds are the last resort.
+  (Bird, Recording) pickNext(DateTime at) =>
+      pickBird(recent, monthFor(at), difficulty, onPhone) ??
+      species.values
+          .where((b) => b.recordings.any(onPhone))
+          .map((b) => (b, b.recordings.firstWhere(onPhone)))
+          .first;
+
   Future<void> delete(AlarmData a) async {
     await Alarm.stop(a.id);
     await _write(alarms.where((x) => x.id != a.id).toList());
@@ -205,15 +241,18 @@ class Store extends ChangeNotifier {
   Set<String> get heard => {...?_prefs.getStringList('heard')};
 
   /// Records a guess (a correct one wins a card, returned), then schedules
-  /// the alarm's next ring or turns it off.
+  /// the alarm's next ring or turns it off. A null [alarmId] is a Twitch quiz:
+  /// the wake-up streak and alarms are left alone.
   Future<CardData?> answered(
-    int alarmId,
+    int? alarmId,
     Bird bird,
     Recording? recording, // the one that rang, kept on the card
     bool correct,
     String notificationTitle,
   ) async {
-    await _prefs.setInt('streak', correct ? streak + 1 : 0);
+    if (alarmId != null) {
+      await _prefs.setInt('streak', correct ? streak + 1 : 0);
+    }
     await _prefs.setStringList('recent', [
       bird.id,
       ...recent.take(recentCount - 1),
@@ -228,7 +267,7 @@ class Store extends ChangeNotifier {
       'heard',
       (correct ? (heard..remove(bird.id)) : {...heard, bird.id}).toList(),
     );
-    final a = byId(alarmId);
+    final a = alarmId == null ? null : byId(alarmId);
     if (a == null) {
       notifyListeners();
       return card;

@@ -10,6 +10,7 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'card.dart';
 import 'region.dart';
+import 'theme.dart';
 
 /// The best copy of each owned bird, by bird id.
 Map<String, CardData> bestCards(List<CardData> cards) {
@@ -74,6 +75,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final e in shown)
         if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
+    // The region's many "?" stay 3 per row; won cards are shown whole 2 per row.
+    final compact = _view == _View.region;
     final regionLabel = store.region == null
         ? l.viewRegion
         : regionName(l, store.region!);
@@ -83,24 +86,46 @@ class _CollectionScreenState extends State<CollectionScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           child: Row(
             children: [
-              // Each view shows its count, e.g. "France (7/353)".
-              _Menu<_View>(
-                value: _view,
-                items: {
-                  _View.all: '${l.viewAll} (${cards.length})',
-                  _View.species: '${l.viewSpecies} (${best.length})',
-                  _View.region:
-                      '$regionLabel (${best.keys.where(regionIds.contains).length}/${birds.length})',
-                },
-                onSelected: (v) => setState(() => _view = v),
+              // The menus shrink with "…" so Series always fits.
+              Expanded(
+                child: Row(
+                  children: [
+                    // Each view shows its count, e.g. "France (7/353)".
+                    Flexible(
+                      flex: 3,
+                      child: _Menu<_View>(
+                        value: _view,
+                        items: {
+                          _View.all: '${l.viewAll} (${cards.length})',
+                          _View.species: '${l.viewSpecies} (${best.length})',
+                          _View.region:
+                              '$regionLabel (${best.keys.where(regionIds.contains).length}/${birds.length})',
+                        },
+                        onSelected: (v) => setState(() => _view = v),
+                      ),
+                    ),
+                    Flexible(
+                      flex: 2,
+                      child: _Menu<String?>(
+                        value: _tier,
+                        items: {
+                          null: l.allRarities,
+                          for (final t in tiers) t: rarityName(l, t),
+                        },
+                        colors: rarityColor,
+                        onSelected: (t) => setState(() => _tier = t),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              _Menu<String?>(
-                value: _tier,
-                items: {
-                  null: l.allRarities,
-                  for (final t in tiers) t: rarityName(l, t),
-                },
-                onSelected: (t) => setState(() => _tier = t),
+              // Placeholder for the "Series" concept to come.
+              TextButton.icon(
+                onPressed: () => ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l.comingSoon))),
+                icon: const Icon(Icons.collections_bookmark_outlined),
+                label: Text(l.series),
               ),
             ],
           ),
@@ -108,11 +133,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
         Expanded(
           child: GridView.builder(
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: compact ? 3 : 2,
               childAspectRatio: 0.68,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              mainAxisSpacing: compact ? 8 : 12,
+              crossAxisSpacing: compact ? 8 : 12,
             ),
             itemCount: shown.length,
             itemBuilder: (context, i) {
@@ -125,6 +150,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     ? 1
                     : cards.where((x) => x.birdId == b.id).length,
                 heard: heard.contains(b.id),
+                compact: compact,
                 onTap: open < 0
                     ? null
                     : () => Navigator.of(context).push(
@@ -148,10 +174,12 @@ class _Menu<T> extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onSelected,
+    this.colors = const {},
   });
   final T value;
   final Map<T, String> items;
   final ValueChanged<T> onSelected;
+  final Map<T, Color> colors; // optional text color per item (rarities)
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<T>(
@@ -159,14 +187,26 @@ class _Menu<T> extends StatelessWidget {
     onSelected: onSelected,
     itemBuilder: (_) => [
       for (final MapEntry(:key, value: label) in items.entries)
-        PopupMenuItem(value: key, child: Text(label)),
+        PopupMenuItem(
+          value: key,
+          child: Text(label, style: TextStyle(color: colors[key])),
+        ),
     ],
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(items[value]!, style: Theme.of(context).textTheme.labelLarge),
+          Flexible(
+            child: Text(
+              items[value]!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(color: colors[value]),
+            ),
+          ),
           const Icon(Icons.arrow_drop_down, size: 20),
         ],
       ),

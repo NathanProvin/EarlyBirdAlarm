@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../birds.dart';
 import '../cards.dart';
@@ -18,9 +19,14 @@ import 'theme.dart';
 // See MainActivity.kt: true keeps the app over the lock screen after the alarm stops.
 const _lockScreen = MethodChannel('early_bird/lock_screen');
 
+/// The quiz: a ringing [alarm], or a Twitch [training] quiz that plays its song in the
+/// app, can be left (the quiz is lost) and doesn't touch the streak.
 class RingScreen extends StatefulWidget {
-  const RingScreen({required this.alarm, super.key});
-  final AlarmSettings alarm;
+  const RingScreen({required AlarmSettings this.alarm, super.key})
+    : training = null;
+  const RingScreen.training(this.training, {super.key}) : alarm = null;
+  final AlarmSettings? alarm;
+  final (Bird, Recording)? training;
 
   @override
   State<RingScreen> createState() => _RingScreenState();
@@ -30,21 +36,39 @@ enum _Mark { none, correct, wrong, faded }
 
 class _RingScreenState extends State<RingScreen> {
   late final Map<String, dynamic> _payload = _parsePayload(
-    widget.alarm.payload,
+    widget.alarm?.payload,
   );
   // An alarm set before an app update may name a bird that's gone; ask about any bird then.
   late final Bird _bird =
-      birdById(_payload['bird'] as String? ?? '') ?? birds.first;
-  late final Recording? _rec = _bird.recordings
-      .where((r) => r.file == _payload['rec'])
-      .firstOrNull;
+      widget.training?.$1 ??
+      birdById(_payload['bird'] as String? ?? '') ??
+      birds.first;
+  late final Recording? _rec =
+      widget.training?.$2 ??
+      _bird.recordings.where((r) => r.file == _payload['rec']).firstOrNull;
   late final List<Bird> _choices = choicesFor(
     _bird,
-    store.monthFor(widget.alarm.dateTime),
+    store.monthFor(widget.alarm?.dateTime ?? DateTime.now()),
     store.difficulty,
   );
   late final int _oldStreak = store.streak;
+  final _player = AudioPlayer(); // Twitch only: alarms play through the plugin
   Bird? _tapped;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.training != null) {
+      _player.setLoopMode(LoopMode.one);
+      playRecording(_player, _rec!.file);
+    }
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
 
   _Mark _markOf(Bird b) => switch (_tapped) {
     null => _Mark.none,
@@ -60,14 +84,18 @@ class _RingScreenState extends State<RingScreen> {
     bird == _bird ? HapticFeedback.mediumImpact() : HapticFeedback.vibrate();
     // The answer stays on screen for 2 s, while the guess is saved.
     final shown = Future<void>.delayed(const Duration(seconds: 2));
-    await _lockScreen.invokeMethod<void>('hold', true);
-    await Alarm.stop(widget.alarm.id);
+    if (widget.alarm case final alarm?) {
+      await _lockScreen.invokeMethod<void>('hold', true);
+      await Alarm.stop(alarm.id);
+    } else {
+      await _player.stop();
+    }
     final correct = bird == _bird;
     if (!mounted) return;
     final firstOfSpecies =
         correct && !store.cards.any((c) => c.birdId == _bird.id);
     final card = await store.answered(
-      widget.alarm.id,
+      widget.alarm?.id,
       _bird,
       _rec,
       correct,
@@ -86,18 +114,20 @@ class _RingScreenState extends State<RingScreen> {
           card: card,
           firstOfSpecies: firstOfSpecies,
           streakLost: !correct && _oldStreak > 0,
+          training: widget.training != null,
         ),
       ),
     );
   }
 
   Future<void> _snooze() async {
+    final alarm = widget.alarm!;
     if (_tapped != null) return;
-    final minutes = store.byId(widget.alarm.id)?.snoozeMinutes ?? 10;
-    await Alarm.stop(widget.alarm.id);
+    final minutes = store.byId(alarm.id)?.snoozeMinutes ?? 10;
+    await Alarm.stop(alarm.id);
     // Same settings, so the same bird plays again.
     await Alarm.set(
-      alarmSettings: widget.alarm.copyWith(
+      alarmSettings: alarm.copyWith(
         dateTime: DateTime.now().add(Duration(minutes: minutes)),
       ),
     );
@@ -107,8 +137,13 @@ class _RingScreenState extends State<RingScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final button = FilledButton.styleFrom(
+      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+      foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+      textStyle: Theme.of(context).textTheme.titleLarge,
+    );
     return PopScope(
-      canPop: false,
+      canPop: widget.training != null,
       child: Scaffold(
         body: SafeArea(
           child: Padding(
@@ -139,20 +174,31 @@ class _RingScreenState extends State<RingScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 64,
-                  child: FilledButton.tonalIcon(
-                    onPressed: _snooze,
-                    icon: const Icon(Icons.snooze, size: 28),
-                    label: Text(l.snooze),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .secondaryContainer,
-                      foregroundColor: Theme.of(context)
-                          .colorScheme
-                          .onSecondaryContainer,
-                      textStyle: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ),
+                  child: widget.training == null
+                      ? FilledButton.tonalIcon(
+                          onPressed: _snooze,
+                          icon: const Icon(Icons.snooze, size: 28),
+                          label: Text(l.snooze),
+                          style: button,
+                        )
+                      : StreamBuilder<bool>(
+                          stream: _player.playingStream,
+                          builder: (context, playing) => FilledButton.tonalIcon(
+                            onPressed: _tapped != null
+                                ? null
+                                : () => playing.data == true
+                                      ? _player.pause()
+                                      : _player.play(),
+                            icon: Icon(
+                              playing.data == true
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                              size: 28,
+                            ),
+                            label: Text(l.listenAgain),
+                            style: button,
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -294,6 +340,7 @@ class RevealScreen extends StatelessWidget {
     this.card,
     this.firstOfSpecies = false,
     this.streakLost = false,
+    this.training = false,
     super.key,
   });
   final Bird bird;
@@ -301,6 +348,7 @@ class RevealScreen extends StatelessWidget {
   recording; // the one that rang; null for alarms set before 3c
   final CardData? card; // null after a wrong guess
   final bool firstOfSpecies, streakLost;
+  final bool training; // Twitch quiz: no streak line
 
   @override
   Widget build(BuildContext context) {
@@ -346,10 +394,11 @@ class RevealScreen extends StatelessWidget {
                       )
                     else if (card != null && copies > 1)
                       Text('×$copies', style: text.titleMedium),
-                    Text(
-                      streakLost ? l.streakLost : l.streak(store.streak),
-                      style: text.bodySmall,
-                    ),
+                    if (!training)
+                      Text(
+                        streakLost ? l.streakLost : l.streak(store.streak),
+                        style: text.bodySmall,
+                      ),
                   ],
                 ),
               ),

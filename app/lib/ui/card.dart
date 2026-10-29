@@ -214,7 +214,25 @@ String kindName(AppLocalizations l, String kind) => switch (kind) {
   _ => l.alarmCall,
 };
 
-/// Plays a catalog recording: from the phone, or streamed from the catalog if it's not there.
+/// Plays a catalog recording from the start: from the phone, or streamed from the
+/// catalog if it's not there.
+Future<void> playRecording(AudioPlayer player, String file) async {
+  final path = phonePath(file);
+  try {
+    if (path == null) {
+      await player.setUrl('$baseUrl$file');
+    } else if (path.startsWith('assets/')) {
+      await player.setAsset(path);
+    } else {
+      await player.setFilePath(path);
+    }
+    await player.seek(Duration.zero);
+    unawaited(player.play());
+  } on Exception {
+    // Offline and not on the phone: nothing to play.
+  }
+}
+
 class PlayButton extends StatefulWidget {
   const PlayButton(this.file, {required this.color, super.key});
   final String file;
@@ -235,20 +253,7 @@ class _PlayButtonState extends State<PlayButton> {
 
   Future<void> _toggle() async {
     if (_player.playing) return _player.stop();
-    final path = phonePath(widget.file);
-    try {
-      if (path == null) {
-        await _player.setUrl('$baseUrl${widget.file}');
-      } else if (path.startsWith('assets/')) {
-        await _player.setAsset(path);
-      } else {
-        await _player.setFilePath(path);
-      }
-      await _player.seek(Duration.zero);
-      unawaited(_player.play());
-    } on Exception {
-      // Offline and not on the phone: nothing to play.
-    }
+    await playRecording(_player, widget.file);
   }
 
   @override
@@ -350,6 +355,7 @@ class CardTile extends StatelessWidget {
     required this.heard,
     this.card,
     this.copies = 1,
+    this.compact = false,
     this.onTap,
     super.key,
   });
@@ -357,6 +363,7 @@ class CardTile extends StatelessWidget {
   final CardData? card; // the copy shown, null if not won
   final int copies;
   final bool heard;
+  final bool compact; // 3 per row: just the photo in its rarity frame
   final VoidCallback? onTap;
 
   @override
@@ -374,7 +381,9 @@ class CardTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(radius),
         // Laid out at full-card size, then shrunk, so it looks exactly like the big card.
-        child: known
+        child: known && compact
+            ? _photoTile(number)
+            : known
             ? IgnorePointer(
                 child: FittedBox(
                   child: SizedBox(
@@ -413,6 +422,50 @@ class CardTile extends StatelessWidget {
       ),
     );
   }
+}
+
+extension on CardTile {
+  /// The photo in its rarity frame (greyed out if only heard), with its number.
+  Widget _photoTile(String number) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: card == null
+          ? unknownColor
+          : rarityColor[card!.rarity ?? bird.rarity],
+      borderRadius: BorderRadius.circular(radius - 6),
+    ),
+    child: Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(radius - 10),
+          child: card != null
+              ? BirdPhoto(bird)
+              : Opacity(
+                  opacity: 0.5,
+                  child: ColorFiltered(
+                    colorFilter: const ColorFilter.mode(
+                      Colors.grey,
+                      BlendMode.saturation,
+                    ),
+                    child: BirdPhoto(bird),
+                  ),
+                ),
+        ),
+        Positioned(
+          left: 4,
+          bottom: 4,
+          child: Theme(data: cardTheme, child: _Badge(number)),
+        ),
+        if (copies > 1)
+          Positioned(
+            right: 4,
+            top: 4,
+            child: Theme(data: cardTheme, child: _Badge('×$copies')),
+          ),
+      ],
+    ),
+  );
 }
 
 class _Badge extends StatelessWidget {

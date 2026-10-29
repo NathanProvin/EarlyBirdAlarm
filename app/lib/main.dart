@@ -13,6 +13,7 @@ import 'ui/region.dart';
 import 'ui/ring.dart';
 import 'ui/settings.dart';
 import 'ui/theme.dart';
+import 'ui/twitch.dart';
 
 late final Store store;
 
@@ -103,9 +104,128 @@ class _RingBarState extends State<_RingBar>
   }
 }
 
+/// Twitch | Alarms | Collection. Alarms, the app's purpose, is a big accent circle in
+/// the middle; the two others are small and muted until selected.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({
+    required this.tab,
+    required this.onSelect,
+    required this.ready,
+  });
+  final int tab;
+  final ValueChanged<int> onSelect;
+  final int ready; // Twitch quizzes available, shown as a badge
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    Widget side(int i, IconData icon, String label, {int badge = 0}) {
+      final on = tab == i;
+      final color = on ? scheme.primary : scheme.onSurface.withValues(alpha: 0.6);
+      return Expanded(
+        child: Semantics(
+          button: true,
+          selected: on,
+          label: label,
+          excludeSemantics: true,
+          child: InkWell(
+            onTap: () => onSelect(i),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Badge(
+                    isLabelVisible: badge > 0,
+                    label: Text('$badge'),
+                    backgroundColor: scheme.primary,
+                    textColor: scheme.onPrimary,
+                    child: Icon(icon, size: 22, color: color),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(label, style: text.labelSmall?.copyWith(color: color)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final alarmsOn = tab == 1;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: scheme.secondaryContainer)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            side(0, Icons.travel_explore, l.twitch, badge: ready),
+            Expanded(
+              child: Semantics(
+                button: true,
+                selected: alarmsOn,
+                label: l.alarms,
+                excludeSemantics: true,
+                child: GestureDetector(
+                  onTap: () => onSelect(1),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // A ring around the circle marks the open tab.
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: alarmsOn
+                                  ? scheme.primary
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 32,
+                            backgroundColor: scheme.primary,
+                            child: Icon(
+                              Icons.alarm,
+                              size: 32,
+                              color: scheme.onPrimary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l.alarms,
+                          style: text.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            side(2, Icons.style_outlined, l.collection),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _HomeScreenState extends State<HomeScreen> {
   int? _ringingId; // guards against pushing the ring screen twice
-  int _tab = 0; // 0 = alarms, 1 = collection
+  int _tab = 1; // 0 = Twitch, 1 = alarms, 2 = collection
   late final Timer _tick; // keeps "Rings in …" current
 
   @override
@@ -154,32 +274,23 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, _) {
         final alarms = store.alarms;
         return Scaffold(
-          floatingActionButton: _tab != 0
+          floatingActionButton: _tab != 1
               ? null
               : FloatingActionButton(
                   elevation: 0,
                   onPressed: _edit,
                   child: const Icon(Icons.add),
                 ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _tab,
-            onDestinationSelected: (i) => setState(() => _tab = i),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.alarm),
-                label: l.alarms,
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.style_outlined),
-                label: l.collection,
-              ),
-            ],
+          bottomNavigationBar: _BottomBar(
+            tab: _tab,
+            onSelect: (i) => setState(() => _tab = i),
+            ready: twitchCharges(store.twitchStart, DateTime.now()),
           ),
           body: SafeArea(
             child: Column(
               children: [
-                // The collection uses the whole screen: no streak / settings row there.
-                if (_tab == 0)
+                // Other tabs use the whole screen: no streak / settings row there.
+                if (_tab == 1)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
                     child: Row(
@@ -198,7 +309,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                if (_tab == 1)
+                if (_tab == 0)
+                  const Expanded(child: TwitchScreen())
+                else if (_tab == 2)
                   const Expanded(child: CollectionScreen())
                 else if (alarms.isEmpty)
                   Expanded(

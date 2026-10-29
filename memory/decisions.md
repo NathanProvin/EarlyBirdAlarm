@@ -49,7 +49,9 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
   - Each card rolls each stat from a **Gaussian around the species mean** (spread: real AVONET spread where available, otherwise a fixed coefficient of variation per stat), clamped to ±2σ. Rolled once when the card is earned; never changes.
   - **Quality %** = average percentile of the 4 rolls. Duplicates are kept (×N); the collection shows the best copy.
 - **Card design:** portrait 5:7, flat solid frame in the rarity color (Legendary: thicker frame), photo, name in the app language + Latin, rarity label, 4 stats with a small bar, quality %, number `#042 / 272`. No gradients, no shadows, one radius (Dawn rules still apply). The reveal screen *is* the card.
-- **Collection tab:** bottom bar Alarms | Collection. 3-column grid sorted by number, progress "42 / 272", rarity filter chips, undiscovered birds of the region as "?" placeholders, tap → full card, swipe between cards.
+- **Collection tab** (UI rounds 3–4): views All (default, every copy) | Species (best copy, rarest first) | Region (3 columns, "?" for undiscovered), counts in the view menu ("France (9/353)"); All/Species show full mini-cards 2 per row; rarity menu in rarity colors; "Series" button (concept to come). Tap → full card, swipe between cards.
+- **Bottom bar:** Twitch | **Alarms** (big accent circle, the main action) | Collection (small, muted until selected).
+- **Twitch mode ("Cocheur", decided 2026-10-29):** training quizzes that win cards like alarms do. Up to 5 stacked, +1 every 10 min (derived from one timestamp, nothing runs in the background), countdown shown to the second. Starting uses one; leaving forfeits it. Doesn't touch the wake-up streak. Same bird pick as alarms (season, difficulty, recent, songs on the phone).
 - **Sharing (moved into v1):** a share button turns the card into a PNG for the phone's share sheet (`share_plus`). No account, no server.
 - **Not in v1:** trading between players (needs accounts + a server), packs, any paid item.
 

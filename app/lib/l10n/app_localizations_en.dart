@@ -219,6 +219,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creditsSubtitle => 'Sources, licenses and privacy';
 
   @override
+  String get twitch => 'Twitch';
+
+  @override
+  String get twitchInfo => 'Train your ear: every right answer wins a card.';
+
+  @override
+  String get start => 'Start';
+
+  @override
+  String nextQuizIn(String time) {
+    return 'Next quiz in $time';
+  }
+
+  @override
+  String get quizzesFull => '5/5, ready!';
+
+  @override
+  String get listenAgain => 'Listen again';
+
+  @override
+  String get series => 'Series';
+
+  @override
+  String get comingSoon => 'Coming soon';
+
+  @override
   String version(String version) {
     return 'Version $version';
   }

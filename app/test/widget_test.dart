@@ -8,6 +8,7 @@ import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/card.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // id, order, family, months, recording kinds
 const _fake = [
@@ -210,6 +211,39 @@ void main() {
     expect(formatStat('weight', 12400, 'en'), '12 kg');
     expect(formatStat('weight', 8.5, 'en'), '8.5 g');
     expect(formatStat('distance', 292, 'en'), '292 km');
+  });
+
+  test('Twitch quizzes: 5 max, one more every 10 min', () {
+    final t0 = DateTime(2026, 10, 29, 8);
+    final fresh = DateTime.fromMillisecondsSinceEpoch(0);
+    expect(twitchCharges(fresh, t0), 5); // a new player starts full
+    var start = twitchUse(fresh, t0);
+    expect(twitchCharges(start, t0), 4);
+    expect(twitchNextIn(start, t0), const Duration(minutes: 10));
+    final later = t0.add(const Duration(minutes: 3, seconds: 20));
+    expect(twitchCharges(start, later), 4);
+    expect(twitchNextIn(start, later), const Duration(minutes: 6, seconds: 40));
+    expect(twitchCharges(start, t0.add(const Duration(minutes: 10))), 5);
+    expect(twitchCharges(start, t0.add(const Duration(hours: 5))), 5); // capped
+    for (var i = 0; i < 4; i++) {
+      start = twitchUse(start, t0);
+    }
+    expect(twitchCharges(start, t0), 0);
+    // Using one when full long after: the excess is dropped, 4 left.
+    final much = t0.add(const Duration(days: 1));
+    expect(twitchCharges(twitchUse(start, much), much), 4);
+  });
+
+  test('a Twitch answer wins a card but leaves the streak alone', () async {
+    SharedPreferences.setMockInitialValues({'streak': 3});
+    final s = await Store.load();
+    final card = await s.answered(null, _b('robin'), null, true, '');
+    expect(card, isNotNull);
+    expect(s.cards.length, 1);
+    expect(s.streak, 3);
+    await s.answered(null, _b('robin'), null, false, '');
+    expect(s.streak, 3);
+    expect(s.heard, {'robin'});
   });
 
   test('ordinals for "nth species collected"', () {
