@@ -25,6 +25,9 @@ Guess which bird is singing among 4 photos to stop the alarm. Right answer? You 
 • Easy, Medium and Hard: songs only, then calls and alarm calls
 • 5 rarities, from Common to Legendary — rare birds ring rarely
 • A card collection to complete, with your best copies and streaks
+• Twitch Zone: open a free booster every 10 minutes to train your ear and win more cards
+• Series to complete — gulls, owls, birds of prey, birders' legends… — each one earns a bonus booster
+• Four bird themes: Blackbird, Greenfinch, Blue Tit and Gull
 • Share your cards with friends
 • Multiple alarms, repeat days, snooze, gentle fade-in
 • Works offline once your region is downloaded
@@ -40,6 +43,9 @@ Devinez quel oiseau chante parmi 4 photos pour arrêter l'alarme. Bonne réponse
 • Facile, Moyen, Difficile : chants seuls, puis cris et cris d'alarme
 • 5 raretés, de Commune à Légendaire — les oiseaux rares sonnent rarement
 • Une collection de cartes à compléter, vos meilleurs exemplaires et vos séries
+• Zone Cocheur : ouvrez un booster gratuit toutes les 10 minutes pour entraîner votre oreille et gagner d'autres cartes
+• Des séries à compléter — goélands, chouettes, rapaces, légendes des cocheurs… — chacune rapporte un booster bonus
+• Quatre thèmes d'oiseaux : Merle, Verdier, Mésange bleue et Goéland
 • Partagez vos cartes avec vos amis
 • Plusieurs alarmes, jours de répétition, répétition, montée progressive du volume
 • Fonctionne hors ligne une fois votre région téléchargée
@@ -80,5 +86,7 @@ GBIF.org (occurrences), Wikidata (CC0), Wikimedia Commons photos (per-photo lice
 6. Alarms list.
 7. Region choice ("Use my location").
 8. Blackbird (dark) theme, one screen.
+9. Twitch Zone: the floating booster pile with its countdown.
+10. Series: a page of badges with one foil (completed) ring.
 
 Feature graphic (1024×500): the app icon's sun and bird + "Wake up to birdsong".
