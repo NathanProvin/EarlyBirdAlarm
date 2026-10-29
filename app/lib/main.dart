@@ -31,8 +31,8 @@ Future<void> main() async {
       listenable: store,
       builder: (_, _) => MaterialApp(
         title: 'Early Bird',
-        theme: themeFor(store.theme == 'system' ? 'dawn' : store.theme),
-        darkTheme: themeFor('dusk'),
+        theme: themeFor(store.theme == 'system' ? lightTheme : store.theme),
+        darkTheme: themeFor(darkTheme),
         themeMode: store.theme == 'system' ? ThemeMode.system : ThemeMode.light,
         locale: store.language == null ? null : Locale(store.language!),
         localizationsDelegates: AppLocalizations.localizationsDelegates,

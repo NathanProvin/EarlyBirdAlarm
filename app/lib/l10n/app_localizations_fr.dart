@@ -182,13 +182,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get theme => 'Thème';
 
   @override
-  String get themeDawn => 'Aube';
+  String get themeBlackbird => 'Merle';
 
   @override
-  String get themeDusk => 'Crépuscule';
+  String get themeGreenfinch => 'Verdier';
 
   @override
-  String get themeForest => 'Forêt';
+  String get themeBlueTit => 'Mésange';
+
+  @override
+  String get themeGull => 'Goéland';
 
   @override
   String get play => 'Écouter';

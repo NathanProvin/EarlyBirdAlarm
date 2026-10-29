@@ -28,38 +28,64 @@ typedef Palette = ({
   Color surface, // chips, tiles, round buttons
 });
 
+/// The bird themes (decisions.md "Themes"), all WCAG AA checked: text on background and
+/// on surface ≥ 4.5, accent on background ≥ 3, button text on the accent ≥ 4.5.
 const palettes = <String, Palette>{
-  'dawn': (
-    brightness: Brightness.light,
-    background: paper,
-    text: ink,
-    accent: coral,
-    onAccent: ink,
-    surface: unknownColor,
-  ),
-  'dusk': (
+  // Slate plumage, orange-yellow beak.
+  'blackbird': (
     brightness: Brightness.dark,
-    background: Color(0xFF1A1B2E),
-    text: Color(0xFFECE8F5),
-    accent: Color(0xFFF2A541),
+    background: Color(0xFF1E2124),
+    text: Color(0xFFECEAE6),
+    accent: Color(0xFFE8A33D),
     onAccent: ink,
-    surface: Color(0xFF2C2D45),
+    surface: Color(0xFF2F3337),
   ),
-  'forest': (
+  // Deep soft green, bright yellow wing flash.
+  'greenfinch': (
+    brightness: Brightness.dark,
+    background: Color(0xFF243020),
+    text: Color(0xFFEEF3E3),
+    accent: Color(0xFFF2D43A),
+    onAccent: ink,
+    surface: Color(0xFF34432D),
+  ),
+  // Pale sky, cobalt cap.
+  'bluetit': (
     brightness: Brightness.light,
-    background: Color(0xFFEDF0E6),
-    text: Color(0xFF1F2A22),
-    accent: Color(0xFF1E6B66),
+    background: Color(0xFFEEF3F7),
+    text: Color(0xFF1D2A36),
+    accent: Color(0xFF2F6DB5),
     onAccent: Color(0xFFFFFFFF),
-    surface: Color(0xFFD6DDCC),
+    surface: Color(0xFFD5E1EA),
+  ),
+  // Creamy white, black wingtips, the brick-red spot on the bill.
+  'gull': (
+    brightness: Brightness.light,
+    background: Color(0xFFFAF7F0),
+    text: Color(0xFF1A1A1A),
+    accent: Color(0xFFB5442E),
+    onAccent: Color(0xFFFFFFFF),
+    surface: Color(0xFFE2E3E0),
   ),
 };
 
-/// Cards are printed on paper in every theme, so they always use Dawn's colors.
-final cardTheme = themeFor('dawn');
+/// "Phone" follows the phone's dark mode with these two.
+const lightTheme = 'bluetit', darkTheme = 'blackbird';
 
-ThemeData themeFor(String name) {
-  final p = palettes[name] ?? palettes['dawn']!;
+/// Cards are printed on paper in every theme: ink on paper, coral accents.
+final cardTheme = _themeOf((
+  brightness: Brightness.light,
+  background: paper,
+  text: ink,
+  accent: coral,
+  onAccent: ink,
+  surface: unknownColor,
+));
+
+ThemeData themeFor(String name) =>
+    _themeOf(palettes[name] ?? palettes[lightTheme]!);
+
+ThemeData _themeOf(Palette p) {
   return ThemeData(
     colorScheme: ColorScheme(
       brightness: p.brightness,

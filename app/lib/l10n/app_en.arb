@@ -94,9 +94,10 @@
     }
   },
   "theme": "Theme",
-  "themeDawn": "Dawn",
-  "themeDusk": "Dusk",
-  "themeForest": "Forest",
+  "themeBlackbird": "Blackbird",
+  "themeGreenfinch": "Greenfinch",
+  "themeBlueTit": "Blue Tit",
+  "themeGull": "Gull",
   "play": "Play",
   "privacyPolicy": "Privacy policy",
   "easyInfo": "Songs of common birds.",

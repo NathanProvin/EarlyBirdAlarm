@@ -79,6 +79,6 @@ GBIF.org (occurrences), Wikidata (CC0), Wikimedia Commons photos (per-photo lice
 5. A Legendary card full screen.
 6. Alarms list.
 7. Region choice ("Use my location").
-8. Dusk theme, one screen.
+8. Blackbird (dark) theme, one screen.
 
 Feature graphic (1024×500): the app icon's sun and bird + "Wake up to birdsong".

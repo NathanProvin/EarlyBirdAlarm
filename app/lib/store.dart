@@ -154,8 +154,12 @@ class Store extends ChangeNotifier {
   set allBirds(bool on) =>
       _prefs.setBool('allBirds', on).then((_) => notifyListeners());
 
-  /// Color theme: 'system' (Dawn, or Dusk in the phone's dark mode), 'dawn', 'dusk' or 'forest'.
-  String get theme => _prefs.getString('theme') ?? 'system';
+  /// Color theme: 'system' (Blue Tit, or Blackbird in the phone's dark mode) or a bird
+  /// of [palettes]. A theme from an older version (dawn, dusk, forest) falls back to 'system'.
+  String get theme => switch (_prefs.getString('theme')) {
+    final t? when palettes.containsKey(t) => t,
+    _ => 'system',
+  };
   set theme(String name) =>
       _prefs.setString('theme', name).then((_) => notifyListeners());
 

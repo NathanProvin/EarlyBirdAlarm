@@ -5,6 +5,88 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'credits.dart';
 import 'region.dart';
+import 'theme.dart';
+
+/// A theme to pick: a disc of its background with its accent in the middle ("Phone":
+/// half light theme, half dark theme), its name below, a ring when selected.
+class _ThemeSwatch extends StatelessWidget {
+  const _ThemeSwatch(this.value, this.label);
+  final String value, label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final on = store.theme == value;
+    Widget disc(Palette p) => ColoredBox(
+      color: p.background,
+      child: Center(
+        child: Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle),
+        ),
+      ),
+    );
+    final face = switch (palettes[value]) {
+      final p? => disc(p),
+      null => Row(
+        children: [
+          for (final t in [lightTheme, darkTheme])
+            Expanded(child: ColoredBox(color: palettes[t]!.background)),
+        ],
+      ),
+    };
+    return Semantics(
+      button: true,
+      selected: on,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () => store.theme = value,
+        borderRadius: BorderRadius.circular(radius),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: on ? scheme.primary : Colors.transparent,
+                    width: 2.5,
+                  ),
+                ),
+                child: Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: scheme.onSurface.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: face,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: on ? scheme.primary : null,
+                  fontWeight: on ? FontWeight.bold : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -80,16 +162,17 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(l.theme, style: text.titleMedium),
             const SizedBox(height: 8),
-            SegmentedButton<String>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: 'system', label: Text(l.systemLanguage)),
-                ButtonSegment(value: 'dawn', label: Text(l.themeDawn)),
-                ButtonSegment(value: 'dusk', label: Text(l.themeDusk)),
-                ButtonSegment(value: 'forest', label: Text(l.themeForest)),
+            Row(
+              children: [
+                for (final (value, label) in [
+                  ('system', l.systemLanguage),
+                  ('blackbird', l.themeBlackbird),
+                  ('greenfinch', l.themeGreenfinch),
+                  ('bluetit', l.themeBlueTit),
+                  ('gull', l.themeGull),
+                ])
+                  Expanded(child: _ThemeSwatch(value, label)),
               ],
-              selected: {store.theme},
-              onSelectionChanged: (s) => store.theme = s.single,
             ),
             const SizedBox(height: 32),
             Text(l.credits, style: text.titleMedium),

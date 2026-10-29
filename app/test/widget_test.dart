@@ -329,13 +329,13 @@ void main() {
       final s = await Store.load();
       final small = seriesStates(birds, s.cards, s.bestStreak);
       expect(small.map((x) => x.id), [
-      'small',
-      perfectWeek,
-      fullSet,
-      collector,
-      localExpert,
-      rareFinds,
-    ]);
+        'small',
+        perfectWeek,
+        fullSet,
+        collector,
+        localExpert,
+        rareFinds,
+      ]);
       expect(small[0].total, 4);
       expect(
         small[0].face!.id,
@@ -356,6 +356,15 @@ void main() {
       expect(s.twitchStart, start); // …the timed boosters are untouched
     },
   );
+
+  test('a theme from an older version falls back to Phone', () async {
+    SharedPreferences.setMockInitialValues({'theme': 'dusk'});
+    final s = await Store.load();
+    expect(s.theme, 'system');
+    s.theme = 'gull';
+    await Future<void>.delayed(Duration.zero);
+    expect(s.theme, 'gull');
+  });
 
   test('ordinals for "nth species collected"', () {
     expect(

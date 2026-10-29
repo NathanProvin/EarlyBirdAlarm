@@ -416,23 +416,29 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get theme;
 
-  /// No description provided for @themeDawn.
+  /// No description provided for @themeBlackbird.
   ///
   /// In en, this message translates to:
-  /// **'Dawn'**
-  String get themeDawn;
+  /// **'Blackbird'**
+  String get themeBlackbird;
 
-  /// No description provided for @themeDusk.
+  /// No description provided for @themeGreenfinch.
   ///
   /// In en, this message translates to:
-  /// **'Dusk'**
-  String get themeDusk;
+  /// **'Greenfinch'**
+  String get themeGreenfinch;
 
-  /// No description provided for @themeForest.
+  /// No description provided for @themeBlueTit.
   ///
   /// In en, this message translates to:
-  /// **'Forest'**
-  String get themeForest;
+  /// **'Blue Tit'**
+  String get themeBlueTit;
+
+  /// No description provided for @themeGull.
+  ///
+  /// In en, this message translates to:
+  /// **'Gull'**
+  String get themeGull;
 
   /// No description provided for @play.
   ///
