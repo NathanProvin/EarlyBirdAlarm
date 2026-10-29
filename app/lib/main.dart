@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
           bottomNavigationBar: _BottomBar(
             tab: _tab,
             onSelect: (i) => setState(() => _tab = i),
-            ready: twitchCharges(store.twitchStart, DateTime.now()),
+            ready: store.twitchReady(DateTime.now()),
           ),
           // The pages run under the glass bar; their lists pad their ends by
           // MediaQuery's bottom padding, which then includes the bar.

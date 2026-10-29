@@ -11,6 +11,7 @@ import '../main.dart';
 import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
+import 'series.dart';
 import 'theme.dart';
 
 /// The best copy of each owned bird, by bird id.
@@ -120,11 +121,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   ],
                 ),
               ),
-              // Placeholder for the "Series" concept to come.
               TextButton.icon(
-                onPressed: () =>
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(l.comingSoon))),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const SeriesScreen()),
+                ),
                 icon: const Icon(Icons.collections_bookmark_outlined),
                 label: Text(l.series),
               ),

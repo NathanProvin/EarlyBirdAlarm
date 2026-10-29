@@ -62,7 +62,9 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] UI review round 2 (2026-10-29): Settings headings (Birds, Credits); centered round Share/ⓘ buttons; 7 round day toggles on one row; "7/353 · France" counter; quiet "?" tiles in the app theme; "Rings in 7 h 05" + bold alarm label; weight 1.2 kg; app version in Credits; haptics (tap when right, buzz when wrong, heavy on a new card). Not chosen: ✓ on selected options, region list ✓, card flip, grid→card transition
 - [x] UI round 3 (2026-10-29, user's comments): collection in 2 columns of full mini-cards; views All (default) | Species (best copy, rarest first) | Region, counts in the view menu ("France (7/353)"), top-left corner freed; Settings: Region first, Seasonal/All under Difficulty with a one-line description; alarm rows: time + days + switch on one row, name below, pulsing 24 h progress bar for active alarms
 - [x] UI round 4 (2026-10-29): Region view back to 3 columns; rarity menu colored; "Series" placeholder button; Twitch mode tab (5 quizzes, +1 / 10 min, countdown); bottom bar Twitch | Alarms (main) | Collection
-- [ ] Series: concept to come (user)
+- [x] Twitch Zone boosters (pile, foil, tap to tear), card flip reveal with particles, glass bottom bar (2026-10-29)
+- [x] Series: 2×3 badge pages, families / themes / Birders' legends / achievements, +1 booster per completion (2026-10-29)
+- [ ] Series: check `series.md` names against the full catalog after the full run (`py pipeline/build.py series`), user review of the hand-picked lists
 
 ### 4b — Play Store (needs the Play developer account: $25, identity check)
 - [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations

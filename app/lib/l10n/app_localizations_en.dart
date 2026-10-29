@@ -232,7 +232,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get series => 'Series';
 
   @override
-  String get comingSoon => 'Coming soon';
+  String seriesComplete(String name) {
+    return 'Series complete: $name! +1 booster';
+  }
+
+  @override
+  String get legendaryHunter => 'Legendary hunter';
+
+  @override
+  String get perfectWeek => 'Perfect week';
+
+  @override
+  String get fullSet => 'Full set';
 
   @override
   String version(String version) {

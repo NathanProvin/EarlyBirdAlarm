@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'birds.dart';
 import 'cards.dart';
 import 'content.dart';
+import 'series.dart';
 import 'ui/theme.dart';
 
 class AlarmData {
@@ -102,11 +103,42 @@ class Store extends ChangeNotifier {
   DateTime get twitchStart =>
       DateTime.fromMillisecondsSinceEpoch(_prefs.getInt('twitchStart') ?? 0);
 
-  /// Uses one Twitch quiz (the caller checks there is one).
+  /// Boosters won by completing series: on top of the timed ones, used first.
+  int get twitchBonus => _prefs.getInt('twitchBonus') ?? 0;
+
+  /// Twitch quizzes available now: the timed ones plus the bonus.
+  int twitchReady(DateTime now) =>
+      twitchCharges(twitchStart, now) + twitchBonus;
+
+  /// Uses one Twitch quiz (the caller checks there is one): a bonus one first, so the
+  /// timed ones keep coming back.
   Future<void> useTwitch() async {
-    final start = twitchUse(twitchStart, DateTime.now());
-    await _prefs.setInt('twitchStart', start.millisecondsSinceEpoch);
+    if (twitchBonus > 0) {
+      await _prefs.setInt('twitchBonus', twitchBonus - 1);
+    } else {
+      final start = twitchUse(twitchStart, DateTime.now());
+      await _prefs.setInt('twitchStart', start.millisecondsSinceEpoch);
+    }
     notifyListeners();
+  }
+
+  /// The longest streak ever (for the "Perfect week" achievement).
+  int get bestStreak => max(_prefs.getInt('bestStreak') ?? 0, streak);
+
+  /// Series and achievements completed for the first time since the last call: each gives
+  /// one bonus booster, once ("region:id" for series, the id for achievements).
+  Future<List<SeriesState>> claimSeries() async {
+    final done = {...?_prefs.getStringList('seriesDone')};
+    String key(SeriesState s) => s.series == null ? s.id : '$region:${s.id}';
+    final fresh = [
+      for (final s in seriesStates(birds, cards, bestStreak))
+        if (s.complete && !done.contains(key(s))) s,
+    ];
+    if (fresh.isEmpty) return fresh;
+    await _prefs.setStringList('seriesDone', [...done, ...fresh.map(key)]);
+    await _prefs.setInt('twitchBonus', twitchBonus + fresh.length);
+    notifyListeners();
+    return fresh;
   }
 
   /// Ids of the last birds heard, newest first.
@@ -249,6 +281,10 @@ class Store extends ChangeNotifier {
     String notificationTitle,
   ) async {
     if (alarmId != null) {
+      await _prefs.setInt(
+        'bestStreak',
+        bestStreak,
+      ); // before a miss resets the streak
       await _prefs.setInt('streak', correct ? streak + 1 : 0);
     }
     await _prefs.setStringList('recent', [

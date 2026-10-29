@@ -489,6 +489,44 @@ def build_fallback():
     print(f"{len(bundled)} fallback birds:", ", ".join(b["en"] for b in bundled))
 
 
+def parse_series(text):
+    """series.md -> [{id, en, fr, signature, order, family, genus, birds}] (rule lists of names)."""
+    series, current, key = [], None, None
+    for line in text.splitlines():
+        if line.startswith("## ") and "|" in line:
+            sid, en, fr, sig = [p.strip() for p in line[3:].split("|")]
+            current = {"id": sid, "en": en, "fr": fr, "signature": sig}
+            series.append(current)
+        elif current and re.match(r"^(order|family|genus|birds):", line):
+            key, _, rest = line.partition(":")
+            current[key] = [n.strip() for n in rest.split(",") if n.strip()]
+        elif current and key and line.startswith("  "):  # continuation of a long list
+            current[key] += [n.strip() for n in line.split(",") if n.strip()]
+        else:
+            key = None
+    return series
+
+
+def build_series():
+    """Resolve pipeline/series.md against the catalog into site/v1/series.json (also bundled in the
+    app): [{id, en, fr, signature, birds}] with bird ids. A few KB: the app filters by region."""
+    species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
+    by_latin = {b["latin"]: b["id"] for b in species}
+    out = []
+    for s in parse_series((ROOT / "series.md").read_text(encoding="utf-8")):
+        ids = [b["id"] for b in species
+               if b["order"] in s.get("order", []) or b["family"] in s.get("family", [])
+               or b["latin"].split()[0] in s.get("genus", []) or b["latin"] in s.get("birds", [])]
+        missing = [n for n in s.get("birds", []) if n not in by_latin]
+        if missing:
+            print(f"    {s['id']}: not in the catalog: {', '.join(missing)}")
+        out.append({"id": s["id"], "en": s["en"], "fr": s["fr"],
+                    "signature": by_latin.get(s["signature"]), "birds": ids})
+        print(f"    {s['id']}: {len(ids)} birds")
+    write_json(OUT / "series.json", out)
+    write_json(FALLBACK / "series.json", out)
+
+
 CONTACT_EMAIL = None  # public contact for the privacy policy; until set, the GitHub issues page
 PAGES = CACHE / "pages"
 PAGES_REPO = "https://github.com/NathanProvin/EarlyBirdAlarm.git"
@@ -504,7 +542,7 @@ def publish():
     assert not missing, f"{len(missing)} catalog files missing (e.g. {missing[:3]}): finish the build first"
     shutil.rmtree(PAGES, ignore_errors=True)
     regions = [f"regions/{f.name}" for f in (OUT / "regions").iterdir()]
-    for f in [*files, "species.json", "regions.json", *regions]:
+    for f in [*files, "species.json", "regions.json", "series.json", *regions]:
         (PAGES / "v1" / f).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(OUT / f, PAGES / "v1" / f)
     href, text = ((f"mailto:{CONTACT_EMAIL}", CONTACT_EMAIL) if CONTACT_EMAIL else
@@ -526,6 +564,8 @@ def main():
         return build_fallback()
     if sys.argv[1:] == ["publish"]:
         return publish()
+    if sys.argv[1:] == ["series"]:
+        return build_series()
     xc_key_file = ROOT / "xc_key.txt"
     xc_key = xc_key_file.read_text().strip() if xc_key_file.exists() else None
     overrides = read_csv(ROOT / "overrides.csv")  # "Latin name" -> "xc=123" / "commons=File:x.jpg"
@@ -679,6 +719,7 @@ def main():
     write_json(OUT / "regions.json", [{"id": rid, "kind": kind, "en": en, "fr": fr} for rid, kind, en, fr, _ in regions])
     write_json(OUT / "species.json", [{k: v for k, v in b.items() if not k.startswith("_")} for b in birds])
     write_report(birds, dropped, regions, region_birds)
+    build_series()
     print(f"    {len(birds)} birds kept, {len(dropped)} dropped, {len(regions)} regions. See pipeline/report.md")
 
 

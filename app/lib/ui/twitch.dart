@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -63,7 +64,8 @@ class _TwitchScreenState extends State<TwitchScreen> {
           child: Center(
             child: FittedBox(
               child: BoosterPile(
-                count: charges,
+                // Bonus boosters from series add to the pile, drawn up to 5 high.
+                count: min(store.twitchReady(now), twitchMax),
                 onTorn: _open,
                 label: l.openBooster,
               ),

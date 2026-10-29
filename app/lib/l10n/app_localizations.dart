@@ -518,11 +518,29 @@ abstract class AppLocalizations {
   /// **'Series'**
   String get series;
 
-  /// No description provided for @comingSoon.
+  /// No description provided for @seriesComplete.
   ///
   /// In en, this message translates to:
-  /// **'Coming soon'**
-  String get comingSoon;
+  /// **'Series complete: {name}! +1 booster'**
+  String seriesComplete(String name);
+
+  /// No description provided for @legendaryHunter.
+  ///
+  /// In en, this message translates to:
+  /// **'Legendary hunter'**
+  String get legendaryHunter;
+
+  /// No description provided for @perfectWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect week'**
+  String get perfectWeek;
+
+  /// No description provided for @fullSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Full set'**
+  String get fullSet;
 
   /// No description provided for @version.
   ///

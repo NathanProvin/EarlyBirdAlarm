@@ -4,6 +4,7 @@ import 'package:early_bird/birds.dart';
 import 'package:early_bird/cards.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
+import 'package:early_bird/series.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
@@ -299,6 +300,47 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600)); // done, sparks gone
     expect(find.byType(CardBack), findsNothing);
   });
+
+  test(
+    'series: region filter, progress, one-time reward, bonus booster',
+    () async {
+      allSeries = [
+        Series.fromJson({
+          'id': 'small', 'en': 'Small', 'fr': 'Petits', 'signature': 'gone', //
+          'birds': ['tit', 'robin', 'chaffinch', 'redstart', 'gone'],
+        }),
+        Series.fromJson({
+          'id': 'doves',
+          'en': 'Doves',
+          'fr': 'Colombes',
+          'signature': 'dove', //
+          'birds': ['pigeon', 'dove', 'gone'], // only 2 in the region: hidden
+        }),
+      ];
+      SharedPreferences.setMockInitialValues({'streak': 8});
+      final s = await Store.load();
+      final small = seriesStates(birds, s.cards, s.bestStreak);
+      expect(small.map((x) => x.id), ['small', perfectWeek, fullSet]);
+      expect(small[0].total, 4);
+      expect(
+        small[0].face!.id,
+        'robin',
+      ); // signature not in the region: first by number
+      expect(small[1].complete, isTrue); // an 8-day streak is a perfect week
+      for (final id in ['robin', 'redstart', 'tit']) {
+        await s.answered(null, _b(id), null, true, '');
+      }
+      expect((await s.claimSeries()).map((x) => x.id), [perfectWeek]);
+      await s.answered(null, _b('chaffinch'), null, true, '');
+      expect((await s.claimSeries()).map((x) => x.id), ['small']);
+      expect(await s.claimSeries(), isEmpty); // rewarded once
+      expect(s.twitchBonus, 2);
+      final start = s.twitchStart;
+      await s.useTwitch();
+      expect(s.twitchBonus, 1); // the bonus goes first…
+      expect(s.twitchStart, start); // …the timed boosters are untouched
+    },
+  );
 
   test('ordinals for "nth species collected"', () {
     expect(

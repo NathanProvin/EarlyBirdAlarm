@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import 'birds.dart';
+import 'series.dart';
 
 /// The catalog built by pipeline/build.py, on GitHub Pages (decisions.md "Delivery").
 const baseUrl = 'https://nathanprovin.github.io/EarlyBirdAlarm/v1/';
@@ -59,6 +60,15 @@ Future<void> initContent(String? region) async {
     for (final MapEntry(:key, :value) in byId.entries)
       key: Bird.fromJson(value),
   };
+  final seriesFile = localFile('series.json');
+  allSeries = [
+    for (final j in jsonDecode(
+      seriesFile.existsSync()
+          ? seriesFile.readAsStringSync()
+          : await rootBundle.loadString('assets/content/series.json'),
+    ) as List)
+      Series.fromJson(j as Map<String, dynamic>),
+  ];
   final regionFile = localFile('regions/$region.json');
   if (region != null && regionFile.existsSync()) {
     final months =
@@ -124,6 +134,7 @@ Future<bool> syncRegion(
         !await download('regions/$region.json')) {
       return false;
     }
+    await download('series.json'); // optional: the bundled copy is the fallback
     await initContent(region);
   }
   final photos = [
