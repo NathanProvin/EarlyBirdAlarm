@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
@@ -104,8 +105,9 @@ class _RingBarState extends State<_RingBar>
   }
 }
 
-/// Twitch | Alarms | Collection. Alarms, the app's purpose, is a big accent circle in
-/// the middle; the two others are small and muted until selected.
+/// Twitch | Alarms | Collection on frosted glass: the page shows through, blurred.
+/// Alarms, the app's purpose, is a big accent circle in the middle; the two others are
+/// small and muted until selected.
 class _BottomBar extends StatelessWidget {
   const _BottomBar({
     required this.tab,
@@ -135,23 +137,19 @@ class _BottomBar extends StatelessWidget {
           excludeSemantics: true,
           child: InkWell(
             onTap: () => onSelect(i),
-            child: Padding(
-              // Anchored low, under the flat part of the bar's edge.
-              padding: const EdgeInsets.only(top: _BarShape.edge, bottom: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Badge(
-                    isLabelVisible: badge > 0,
-                    label: Text('$badge'),
-                    backgroundColor: scheme.primary,
-                    textColor: scheme.onPrimary,
-                    child: Icon(icon, size: 22, color: color),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(label, style: text.labelSmall?.copyWith(color: color)),
-                ],
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Badge(
+                  isLabelVisible: badge > 0,
+                  label: Text('$badge'),
+                  backgroundColor: scheme.primary,
+                  textColor: scheme.onPrimary,
+                  child: Icon(icon, size: 22, color: color),
+                ),
+                const SizedBox(height: 4),
+                Text(label, style: text.labelSmall?.copyWith(color: color)),
+              ],
             ),
           ),
         ),
@@ -160,90 +158,67 @@ class _BottomBar extends StatelessWidget {
 
     final alarmsOn = tab == 1;
     final inset = MediaQuery.paddingOf(context).bottom; // gesture bar
-    return CustomPaint(
-      painter: _BarShape(scheme.secondaryContainer),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: inset),
-        child: SizedBox(
-          height: 76,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              side(0, Icons.music_note, l.twitch, badge: ready),
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  selected: alarmsOn,
-                  label: l.alarms,
-                  excludeSemantics: true,
-                  child: GestureDetector(
-                    onTap: () => onSelect(1),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      // A ring around the circle marks the open tab; the bar's bump
-                      // curves around it.
-                      child: Container(
-                        margin: const EdgeInsets.only(top: _BarShape.bump - 31),
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: alarmsOn
-                                ? scheme.primary
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                        ),
-                        child: CircleAvatar(
-                          radius: 26,
-                          backgroundColor: scheme.primary,
-                          child: Icon(
-                            Icons.alarm,
-                            size: 28,
-                            color: scheme.onPrimary,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surface.withValues(alpha: 0.65),
+            border: Border(
+              top: BorderSide(color: scheme.onSurface.withValues(alpha: 0.08)),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(bottom: inset),
+            child: SizedBox(
+              height: 72,
+              child: Row(
+                children: [
+                  side(0, Icons.music_note, l.twitch, badge: ready),
+                  Expanded(
+                    child: Semantics(
+                      button: true,
+                      selected: alarmsOn,
+                      label: l.alarms,
+                      excludeSemantics: true,
+                      child: GestureDetector(
+                        onTap: () => onSelect(1),
+                        child: Center(
+                          // A ring around the circle marks the open tab.
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: alarmsOn
+                                    ? scheme.primary
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 26,
+                              backgroundColor: scheme.primary,
+                              child: Icon(
+                                Icons.alarm,
+                                size: 28,
+                                color: scheme.onPrimary,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                  side(2, Icons.style_outlined, l.collection),
+                ],
               ),
-              side(2, Icons.style_outlined, l.collection),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-}
-
-/// The bar's background: flat at [edge] from the top, rising in a smooth bump around
-/// the Alarms circle (its centre [bump] from the top).
-class _BarShape extends CustomPainter {
-  const _BarShape(this.color);
-  final Color color;
-  static const edge = 24.0, bump = 37.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    const half = 64.0; // half-width of the bump at its base
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, edge)
-        ..lineTo(cx - half, edge)
-        ..cubicTo(cx - half * 0.55, edge, cx - 40, 0, cx, 0)
-        ..cubicTo(cx + 40, 0, cx + half * 0.55, edge, cx + half, edge)
-        ..lineTo(size.width, edge)
-        ..lineTo(size.width, size.height)
-        ..lineTo(0, size.height)
-        ..close(),
-      Paint()..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BarShape oldDelegate) => oldDelegate.color != color;
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -306,7 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onSelect: (i) => setState(() => _tab = i),
             ready: twitchCharges(store.twitchStart, DateTime.now()),
           ),
+          // The pages run under the glass bar; their lists pad their ends by
+          // MediaQuery's bottom padding, which then includes the bar.
+          extendBody: true,
           body: SafeArea(
+            bottom: false,
             child: Column(
               children: [
                 // Other tabs use the whole screen: no streak / settings row there.

@@ -83,6 +83,8 @@ class _TwitchScreenState extends State<TwitchScreen> {
                 )
               : null,
         ),
+        // Clear of the glass bottom bar.
+        SizedBox(height: MediaQuery.paddingOf(context).bottom),
       ],
     );
   }

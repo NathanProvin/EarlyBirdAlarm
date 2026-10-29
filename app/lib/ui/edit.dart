@@ -68,9 +68,8 @@ class _EditScreenState extends State<EditScreen> {
     final scheme = Theme.of(context).colorScheme;
     final on = _a.days.contains(d);
     // 2024-01-01 is a Monday, so day d is January d.
-    final name = DateFormat.EEEE(
-      Localizations.localeOf(context).toString(),
-    ).format(DateTime(2024, 1, d));
+    final name = DateFormat.EEEE(Localizations.localeOf(context).toString())
+        .format(DateTime(2024, 1, d));
     return IconButton(
       tooltip: name,
       isSelected: on,

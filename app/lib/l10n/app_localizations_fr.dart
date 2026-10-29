@@ -159,11 +159,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tryNextTime => 'Ce sera pour la prochaine fois !';
 
   @override
-  String newRarityCard(String rarity) {
-    return 'Nouvelle carte $rarity !';
-  }
-
-  @override
   String speciesCollected(String ordinal) {
     return '$ordinal espèce collectée !';
   }

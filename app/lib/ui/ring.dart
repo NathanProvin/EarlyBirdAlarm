@@ -12,7 +12,6 @@ import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
-import 'booster.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
@@ -331,9 +330,9 @@ class _GlassLabel extends StatelessWidget {
   );
 }
 
-/// After the guess: a won card first plays [CardReveal] (out of a booster in Twitch),
-/// then the card and its buttons; a wrong guess shows the "heard" card at once.
-class RevealScreen extends StatefulWidget {
+/// After the guess: a won card flips face up in place (with sparks of its rarity), a
+/// wrong guess shows the blurred "heard" card with its name.
+class RevealScreen extends StatelessWidget {
   const RevealScreen({
     required this.bird,
     this.recording,
@@ -342,56 +341,6 @@ class RevealScreen extends StatefulWidget {
     this.streakLost = false,
     this.training = false,
     super.key,
-  });
-  final Bird bird;
-  final Recording? recording;
-  final CardData? card;
-  final bool firstOfSpecies, streakLost, training;
-
-  @override
-  State<RevealScreen> createState() => _RevealScreenState();
-}
-
-class _RevealScreenState extends State<RevealScreen> {
-  late bool _revealed = widget.card == null;
-
-  @override
-  Widget build(BuildContext context) {
-    final w = widget;
-    if (_revealed) {
-      return _RevealDetail(
-        bird: w.bird,
-        recording: w.recording,
-        card: w.card,
-        firstOfSpecies: w.firstOfSpecies,
-        streakLost: w.streakLost,
-        training: w.training,
-      );
-    }
-    return PopScope(
-      canPop: false, // a few seconds, then the card can be closed
-      child: Scaffold(
-        body: SafeArea(
-          child: CardReveal(
-            front: BirdCardView(bird: w.bird, card: w.card),
-            color: rarityColor[w.card!.rarity ?? w.bird.rarity]!,
-            fromBooster: w.training,
-            onDone: () => setState(() => _revealed = true),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RevealDetail extends StatelessWidget {
-  const _RevealDetail({
-    required this.bird,
-    this.recording,
-    this.card,
-    this.firstOfSpecies = false,
-    this.streakLost = false,
-    this.training = false,
   });
   final Bird bird;
   final Recording?
@@ -420,21 +369,11 @@ class _RevealDetail extends StatelessWidget {
               card: card,
               recording: recording,
               onClose: () => Navigator.of(context).pop(),
+              flipIn: card != null,
               header: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Column(
                   children: [
-                    if (card != null)
-                      Text(
-                        l.newRarityCard(
-                          rarityName(l, card.rarity ?? bird.rarity),
-                        ),
-                        style: text.headlineMedium?.copyWith(
-                          color: rarityColor[card.rarity ?? bird.rarity],
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
                     if (firstOfSpecies)
                       Text(
                         l.speciesCollected(

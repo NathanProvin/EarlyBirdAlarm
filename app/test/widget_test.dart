@@ -278,22 +278,26 @@ void main() {
     expect(torn, 1);
   });
 
-  testWidgets('card reveal ends within 0.9 s', (tester) async {
-    var done = false;
+  testWidgets('card flip: the back first, the face from mid-flip on', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: CardReveal(
-          front: const SizedBox(),
-          color: Colors.blue,
-          fromBooster: true,
-          onDone: () => done = true,
+      const MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            child: CardFlip(color: Colors.blue, child: Text('face')),
+          ),
         ),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 450)); // mid-flip, sparks
-    expect(done, isFalse);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(done, isTrue);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.byType(CardBack), findsOneWidget);
+    expect(find.text('face'), findsNothing);
+    await tester.pump(const Duration(milliseconds: 400)); // past mid-flip
+    expect(find.text('face'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 600)); // done, sparks gone
+    expect(find.byType(CardBack), findsNothing);
   });
 
   test('ordinals for "nth species collected"', () {

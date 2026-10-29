@@ -240,15 +240,6 @@ class _TearClipper extends CustomClipper<Path> {
   bool shouldReclip(_TearClipper oldClipper) => false;
 }
 
-/// The bottom part of a torn booster.
-class OpenBooster extends StatelessWidget {
-  const OpenBooster({super.key});
-
-  @override
-  Widget build(BuildContext context) =>
-      const ClipPath(clipper: _TearClipper(strip: false), child: BoosterFace());
-}
-
 const boosterWidth = 200.0;
 const boosterHeight = 290.0;
 
@@ -453,8 +444,8 @@ class _BoosterPileState extends State<BoosterPile>
   }
 }
 
-/// Sparks flying out from behind the card in its rarity [color] (and some white),
-/// shrinking and fading as [t] goes 0 → 1.
+/// Particles flying out from behind a card in its rarity [color] (and some white),
+/// shrinking and fading as [t] goes 0 → 1; [reach] is the card's width.
 class _Sparks extends CustomPainter {
   const _Sparks(this.sparks, this.t, this.color, this.reach);
   final List<(double, double, double)> sparks;
@@ -465,12 +456,15 @@ class _Sparks extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     for (final (i, (angle, speed, r)) in sparks.indexed) {
-      final d = reach * speed * t;
+      // From just inside the card's edge outward, so they peek out from behind it.
+      final d = reach * (0.35 + speed * t);
       canvas.drawCircle(
         c + Offset(cos(angle), sin(angle)) * d,
         r * (1 - t * 0.7),
         Paint()
-          ..color = (i.isEven ? color : Colors.white).withValues(alpha: 1 - t),
+          ..color = (i.isEven ? color : Colors.white).withValues(
+            alpha: 0.9 * (1 - t),
+          ),
       );
     }
   }
@@ -479,55 +473,54 @@ class _Sparks extends CustomPainter {
   bool shouldRepaint(_Sparks old) => old.t != t;
 }
 
-/// The card reveal (0.9 s): the card flips on the spot from its back to [front] while
-/// the open booster drops away ([fromBooster]; alarms: it rises from just below),
-/// then a burst and sparks of [color] spread behind it; then [onDone].
-class CardReveal extends StatefulWidget {
-  const CardReveal({
-    required this.front,
-    required this.color,
-    required this.onDone,
-    this.fromBooster = false,
-    super.key,
-  });
-  final Widget front;
+/// A card just won: it flips face up in place, from its [CardBack] to [child], and a
+/// discreet spray of particles in its rarity [color] comes out from behind it.
+class CardFlip extends StatefulWidget {
+  const CardFlip({required this.color, required this.child, super.key});
   final Color color;
-  final VoidCallback onDone;
-  final bool fromBooster;
+  final Widget child;
 
   @override
-  State<CardReveal> createState() => _CardRevealState();
+  State<CardFlip> createState() => _CardFlipState();
 }
 
-class _CardRevealState extends State<CardReveal>
+class _CardFlipState extends State<CardFlip>
     with SingleTickerProviderStateMixin {
   late final _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 900),
+    duration: const Duration(milliseconds: 1000),
   );
-  bool _buzzed = false;
-  // Particles: an angle, a reach and a size each, fixed for this reveal.
+  // Particles: an angle, a speed and a size each, fixed for this reveal.
   late final List<(double, double, double)> _sparks;
+  bool _buzzed = false;
 
   @override
   void initState() {
     super.initState();
     final r = Random();
     _sparks = List.generate(
-      28,
+      20,
       (_) => (
         r.nextDouble() * 2 * pi,
-        0.5 + r.nextDouble() * 0.7,
-        2 + r.nextDouble() * 4,
+        0.3 + r.nextDouble() * 0.3,
+        1.5 + r.nextDouble() * 2,
       ),
     );
-    _c.addListener(() {
-      if (!_buzzed && _c.value > 0.35) {
-        _buzzed = true;
-        HapticFeedback.heavyImpact(); // the card turns face up
+    // Flip once the screen has finished sliding in, so the whole flip is seen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arriving = ModalRoute.of(context)?.animation;
+      if (arriving == null || arriving.isCompleted) {
+        _c.forward();
+      } else {
+        void go(AnimationStatus s) {
+          if (s != AnimationStatus.completed) return;
+          arriving.removeStatusListener(go);
+          if (mounted) _c.forward();
+        }
+
+        arriving.addStatusListener(go);
       }
     });
-    _c.forward().then((_) => widget.onDone());
   }
 
   @override
@@ -536,86 +529,47 @@ class _CardRevealState extends State<CardReveal>
     super.dispose();
   }
 
-  /// [t] mapped to 0..1 over [a]..[b] of the animation, eased.
-  double _phase(double t, double a, double b) =>
-      Curves.easeInOut.transform(((t - a) / (b - a)).clamp(0.0, 1.0));
-
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) {
-      final w = min(box.maxWidth - 48, (box.maxHeight - 48) * 0.68);
-      final h = w / 0.68;
-      return AnimatedBuilder(
-        animation: _c,
-        builder: (context, _) {
-          final t = _c.value;
-          // The card is already out: the booster drops away while it flips on the
-          // spot (alarms: it rises from just below), then the burst and sparks.
-          final rise = widget.fromBooster
-              ? 0.0
-              : h * 0.3 * (1 - _phase(t, 0, 0.3));
-          final flip = pi * _phase(t, 0.1, 0.55);
-          final burst = Curves.easeOut.transform(
-            ((t - 0.45) / 0.55).clamp(0.0, 1.0),
-          );
-          final faceUp = flip > pi / 2;
-          return Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              if (burst > 0) ...[
-                Opacity(
-                  opacity: 0.6 * (1 - burst),
-                  child: Container(
-                    width: w * (0.8 + burst),
-                    height: w * (0.8 + burst),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: widget.color,
-                    ),
-                  ),
-                ),
-                CustomPaint(
-                  size: Size(w, h),
-                  painter: _Sparks(_sparks, burst, widget.color, w),
-                ),
-              ],
-              Transform.translate(
-                offset: Offset(0, rise),
-                child: Opacity(
-                  opacity: widget.fromBooster
-                      ? 1
-                      : _phase(t, 0, 0.15), // fades in from below
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: Matrix4.identity()
-                      ..setEntry(3, 2, 0.001)
-                      ..rotateY(faceUp ? flip - pi : flip),
-                    child: SizedBox(
-                      width: w,
-                      height: h,
-                      child: faceUp ? widget.front : const CardBack(),
-                    ),
+  Widget build(BuildContext context) {
+    // Each face is painted once and reused while it turns: smooth frames.
+    final front = RepaintBoundary(child: widget.child);
+    const back = RepaintBoundary(child: CardBack());
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final flip =
+            pi *
+            Curves.easeInOutCubic.transform((_c.value / 0.55).clamp(0.0, 1.0));
+        final faceUp = flip > pi / 2;
+        if (faceUp && !_buzzed) {
+          _buzzed = true;
+          HapticFeedback.heavyImpact(); // the card turns face up
+        }
+        final t = Curves.easeOut.transform(
+          ((_c.value - 0.4) / 0.6).clamp(0.0, 1.0),
+        );
+        return Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            if (t > 0 && t < 1)
+              Positioned.fill(
+                child: LayoutBuilder(
+                  builder: (_, box) => CustomPaint(
+                    painter: _Sparks(_sparks, t, widget.color, box.maxWidth),
                   ),
                 ),
               ),
-              // The open booster, in front of the card, then dropping away.
-              if (widget.fromBooster && t < 0.35)
-                Transform.translate(
-                  offset: Offset(0, h * 0.35 + h * _phase(t, 0, 0.35)),
-                  child: Opacity(
-                    opacity: 1 - _phase(t, 0.1, 0.35),
-                    child: SizedBox(
-                      width: w * 1.08,
-                      height: h * 1.08,
-                      child: const OpenBooster(),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
-      );
-    },
-  );
+            Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateY(faceUp ? flip - pi : flip),
+              child: faceUp ? front : back,
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

@@ -374,12 +374,6 @@ abstract class AppLocalizations {
   /// **'Try next time!'**
   String get tryNextTime;
 
-  /// No description provided for @newRarityCard.
-  ///
-  /// In en, this message translates to:
-  /// **'New {rarity} card!'**
-  String newRarityCard(String rarity);
-
   /// No description provided for @speciesCollected.
   ///
   /// In en, this message translates to:

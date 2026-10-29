@@ -34,8 +34,10 @@ class BirdCardView extends StatelessWidget {
   final int copies; // > 1 shows a "×3" badge on the photo
 
   @override
-  Widget build(BuildContext context) =>
-      Theme(data: cardTheme, child: Builder(builder: _build));
+  Widget build(BuildContext context) => Theme(
+    data: cardTheme,
+    child: Builder(builder: _build),
+  );
 
   Widget _build(BuildContext context) {
     final l = AppLocalizations.of(context);

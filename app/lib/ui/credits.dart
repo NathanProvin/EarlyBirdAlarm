@@ -32,9 +32,8 @@ class CreditsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           FutureBuilder(
-            future: const MethodChannel(
-              'early_bird/version',
-            ).invokeMethod<String>('get'),
+            future: const MethodChannel('early_bird/version')
+                .invokeMethod<String>('get'),
             builder: (context, v) => Text(
               v.hasData ? l.version(v.data!) : '',
               style: Theme.of(context).textTheme.bodySmall,

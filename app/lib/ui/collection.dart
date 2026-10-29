@@ -8,6 +8,7 @@ import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
 import 'theme.dart';
@@ -121,9 +122,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
               ),
               // Placeholder for the "Series" concept to come.
               TextButton.icon(
-                onPressed: () => ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(l.comingSoon))),
+                onPressed: () =>
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(l.comingSoon))),
                 icon: const Icon(Icons.collections_bookmark_outlined),
                 label: Text(l.series),
               ),
@@ -132,7 +133,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
         ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+            // The last row scrolls clear of the glass bottom bar.
+            padding: EdgeInsets.fromLTRB(
+              12,
+              4,
+              12,
+              12 + MediaQuery.paddingOf(context).bottom,
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: compact ? 3 : 2,
               childAspectRatio: 0.68,
@@ -202,9 +209,8 @@ class _Menu<T> extends StatelessWidget {
               items[value]!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(color: colors[value]),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: colors[value]),
             ),
           ),
           const Icon(Icons.arrow_drop_down, size: 20),
@@ -259,10 +265,12 @@ class CardDetail extends StatefulWidget {
     this.recording,
     this.header,
     this.onClose,
+    this.flipIn = false,
     super.key,
   });
   final Bird bird;
   final CardData? card;
+  final bool flipIn; // a card just won flips face up with sparks (see CardFlip)
   final Recording?
   recording; // whose credit to show; defaults to the card's recording
   final Widget? header;
@@ -312,6 +320,13 @@ class _CardDetailState extends State<CardDetail> {
     ),
   );
 
+  Widget _flip(Widget face) => widget.flipIn && widget.card != null
+      ? CardFlip(
+          color: rarityColor[widget.card!.rarity ?? widget.bird.rarity]!,
+          child: face,
+        )
+      : face;
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -324,9 +339,11 @@ class _CardDetailState extends State<CardDetail> {
         ?header,
         Expanded(
           child: Center(
-            child: RepaintBoundary(
-              key: _boundary,
-              child: BirdCardView(bird: bird, card: card),
+            child: _flip(
+              RepaintBoundary(
+                key: _boundary,
+                child: BirdCardView(bird: bird, card: card),
+              ),
             ),
           ),
         ),

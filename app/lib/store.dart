@@ -72,9 +72,7 @@ int twitchCharges(DateTime start, DateTime now) =>
 /// Time until the next quiz comes back (meaningless when full).
 Duration twitchNextIn(DateTime start, DateTime now) =>
     twitchEvery -
-    Duration(
-      seconds: now.difference(start).inSeconds % twitchEvery.inSeconds,
-    );
+    Duration(seconds: now.difference(start).inSeconds % twitchEvery.inSeconds);
 
 /// The new start after using one quiz: charges above the cap are dropped first.
 DateTime twitchUse(DateTime start, DateTime now) {
