@@ -5,8 +5,9 @@ import 'package:early_bird/cards.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
 import 'package:early_bird/store.dart';
+import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -244,6 +245,33 @@ void main() {
     await s.answered(null, _b('robin'), null, false, '');
     expect(s.streak, 3);
     expect(s.heard, {'robin'});
+  });
+
+  testWidgets('booster: a swipe across the top tears it, a short one does not', (
+    tester,
+  ) async {
+    var torn = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: BoosterPile(count: 3, onTorn: () => torn++, label: 'Open'),
+        ),
+      ),
+    );
+    final pile = tester.getRect(find.byType(BoosterPile));
+    final top = Offset(pile.center.dx - 60, pile.top + 40 + 30); // top of booster
+    await tester.dragFrom(top, const Offset(20, 0));
+    await tester.pump(const Duration(milliseconds: 400)); // the float never settles
+    expect(torn, 0);
+    await tester.dragFrom(top, const Offset(120, 0));
+    await tester.pump(); // the strip starts flying off…
+    await tester.pump(const Duration(milliseconds: 400)); // …and is gone
+    expect(torn, 1);
+    // The bottom half doesn't tear.
+    await tester.dragFrom(pile.center + const Offset(-60, 80), const Offset(150, 0));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(torn, 1);
   });
 
   test('ordinals for "nth species collected"', () {

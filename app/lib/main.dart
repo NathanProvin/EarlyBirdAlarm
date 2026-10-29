@@ -124,7 +124,9 @@ class _BottomBar extends StatelessWidget {
 
     Widget side(int i, IconData icon, String label, {int badge = 0}) {
       final on = tab == i;
-      final color = on ? scheme.primary : scheme.onSurface.withValues(alpha: 0.6);
+      final color = on
+          ? scheme.primary
+          : scheme.onSurface.withValues(alpha: 0.6);
       return Expanded(
         child: Semantics(
           button: true,
@@ -134,7 +136,7 @@ class _BottomBar extends StatelessWidget {
           child: InkWell(
             onTap: () => onSelect(i),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -156,17 +158,14 @@ class _BottomBar extends StatelessWidget {
     }
 
     final alarmsOn = tab == 1;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border(top: BorderSide(color: scheme.secondaryContainer)),
-      ),
-      child: SafeArea(
-        top: false,
+    // No background or line: the bar is just three buttons on the page.
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: 68,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            side(0, Icons.travel_explore, l.twitch, badge: ready),
+            side(0, Icons.music_note, l.twitch, badge: ready),
             Expanded(
               child: Semantics(
                 button: true,
@@ -175,41 +174,26 @@ class _BottomBar extends StatelessWidget {
                 excludeSemantics: true,
                 child: GestureDetector(
                   onTap: () => onSelect(1),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // A ring around the circle marks the open tab.
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: alarmsOn
-                                  ? scheme.primary
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                          child: CircleAvatar(
-                            radius: 32,
-                            backgroundColor: scheme.primary,
-                            child: Icon(
-                              Icons.alarm,
-                              size: 32,
-                              color: scheme.onPrimary,
-                            ),
-                          ),
+                  child: Center(
+                    // A ring around the circle marks the open tab.
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: alarmsOn ? scheme.primary : Colors.transparent,
+                          width: 2,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l.alarms,
-                          style: text.labelMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 26,
+                        backgroundColor: scheme.primary,
+                        child: Icon(
+                          Icons.alarm,
+                          size: 28,
+                          color: scheme.onPrimary,
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -237,10 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _tick = Timer.periodic(
-      const Duration(seconds: 20),
-      (_) => setState(() {}),
-    );
+    _tick = Timer.periodic(const Duration(seconds: 20), (_) => setState(() {}));
     Permission.notification.request();
     if (store.region == null) {
       // First launch: where do you live?

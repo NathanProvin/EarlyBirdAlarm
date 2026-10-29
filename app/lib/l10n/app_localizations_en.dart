@@ -222,18 +222,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get twitch => 'Twitch';
 
   @override
-  String get twitchInfo => 'Train your ear: every right answer wins a card.';
+  String get twitchInfo => 'Train and earn cards';
 
   @override
-  String get start => 'Start';
+  String get twitchZone => 'Twitch Zone';
 
   @override
-  String nextQuizIn(String time) {
-    return 'Next quiz in $time';
-  }
-
-  @override
-  String get quizzesFull => '5/5, ready!';
+  String get openBooster => 'Open a booster';
 
   @override
   String get listenAgain => 'Listen again';

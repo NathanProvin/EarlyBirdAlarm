@@ -224,19 +224,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get twitch => 'Cocheur';
 
   @override
-  String get twitchInfo =>
-      'Entraînez votre oreille : chaque bonne réponse gagne une carte.';
+  String get twitchInfo => 'Entraînez-vous et gagnez des cartes';
 
   @override
-  String get start => 'Commencer';
+  String get twitchZone => 'Zone Cocheur';
 
   @override
-  String nextQuizIn(String time) {
-    return 'Prochain quiz dans $time';
-  }
-
-  @override
-  String get quizzesFull => '5/5, prêt !';
+  String get openBooster => 'Ouvrir un booster';
 
   @override
   String get listenAgain => 'Réécouter';

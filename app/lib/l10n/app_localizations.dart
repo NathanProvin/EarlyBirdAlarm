@@ -497,26 +497,20 @@ abstract class AppLocalizations {
   /// No description provided for @twitchInfo.
   ///
   /// In en, this message translates to:
-  /// **'Train your ear: every right answer wins a card.'**
+  /// **'Train and earn cards'**
   String get twitchInfo;
 
-  /// No description provided for @start.
+  /// No description provided for @twitchZone.
   ///
   /// In en, this message translates to:
-  /// **'Start'**
-  String get start;
+  /// **'Twitch Zone'**
+  String get twitchZone;
 
-  /// No description provided for @nextQuizIn.
+  /// No description provided for @openBooster.
   ///
   /// In en, this message translates to:
-  /// **'Next quiz in {time}'**
-  String nextQuizIn(String time);
-
-  /// No description provided for @quizzesFull.
-  ///
-  /// In en, this message translates to:
-  /// **'5/5, ready!'**
-  String get quizzesFull;
+  /// **'Open a booster'**
+  String get openBooster;
 
   /// No description provided for @listenAgain.
   ///
