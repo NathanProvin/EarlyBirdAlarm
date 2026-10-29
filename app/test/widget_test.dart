@@ -282,23 +282,31 @@ void main() {
   testWidgets('card flip: the back first, the face from mid-flip on', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Center(
-          child: SizedBox(
-            width: 200,
-            child: CardFlip(color: Colors.blue, child: Text('face')),
+    // Common: the burst only; Legendary: every effect layer gets painted.
+    for (final rarity in ['common', 'legendary']) {
+      await tester.pumpWidget(
+        MaterialApp(
+          key: ValueKey(rarity),
+          home: Center(
+            child: SizedBox(
+              width: 200,
+              child: CardFlip(rarity: rarity, child: const Text('face')),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(find.byType(CardBack), findsOneWidget);
-    expect(find.text('face'), findsNothing);
-    await tester.pump(const Duration(milliseconds: 400)); // past mid-flip
-    expect(find.text('face'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 600)); // done, sparks gone
-    expect(find.byType(CardBack), findsNothing);
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(CardBack), findsOneWidget);
+      expect(find.text('face'), findsNothing);
+      await tester.pump(const Duration(milliseconds: 400)); // past mid-flip
+      expect(find.text('face'), findsOneWidget);
+      for (var i = 0; i < 25; i++) {
+        await tester.pump(
+          const Duration(milliseconds: 100),
+        ); // sparkles run out
+      }
+      expect(find.byType(CardBack), findsNothing);
+    }
   });
 
   test(
@@ -320,7 +328,14 @@ void main() {
       SharedPreferences.setMockInitialValues({'streak': 8});
       final s = await Store.load();
       final small = seriesStates(birds, s.cards, s.bestStreak);
-      expect(small.map((x) => x.id), ['small', perfectWeek, fullSet]);
+      expect(small.map((x) => x.id), [
+      'small',
+      perfectWeek,
+      fullSet,
+      collector,
+      localExpert,
+      rareFinds,
+    ]);
       expect(small[0].total, 4);
       expect(
         small[0].face!.id,

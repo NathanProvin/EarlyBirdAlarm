@@ -518,12 +518,6 @@ abstract class AppLocalizations {
   /// **'Series'**
   String get series;
 
-  /// No description provided for @seriesComplete.
-  ///
-  /// In en, this message translates to:
-  /// **'Series complete: {name}! +1 booster'**
-  String seriesComplete(String name);
-
   /// No description provided for @legendaryHunter.
   ///
   /// In en, this message translates to:
@@ -541,6 +535,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Full set'**
   String get fullSet;
+
+  /// No description provided for @collector.
+  ///
+  /// In en, this message translates to:
+  /// **'Collector'**
+  String get collector;
+
+  /// No description provided for @localExpert.
+  ///
+  /// In en, this message translates to:
+  /// **'Local expert'**
+  String get localExpert;
+
+  /// No description provided for @rareFinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Rare finds'**
+  String get rareFinds;
 
   /// No description provided for @version.
   ///

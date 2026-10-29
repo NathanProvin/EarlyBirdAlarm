@@ -234,11 +234,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get series => 'Séries';
 
   @override
-  String seriesComplete(String name) {
-    return 'Série complète : $name ! +1 booster';
-  }
-
-  @override
   String get legendaryHunter => 'Chasseur de légendes';
 
   @override
@@ -246,6 +241,15 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get fullSet => 'Toutes les raretés';
+
+  @override
+  String get collector => 'Collectionneur';
+
+  @override
+  String get localExpert => 'Expert local';
+
+  @override
+  String get rareFinds => 'Belles trouvailles';
 
   @override
   String version(String version) {

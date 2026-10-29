@@ -23,7 +23,10 @@ List<Series> allSeries = [];
 
 /// Game achievements, computed from play rather than from bird groups.
 const legendaryHunter = 'legendary-hunter', perfectWeek = 'perfect-week';
-const fullSet = 'full-set';
+const fullSet = 'full-set',
+    collector = 'collector',
+    localExpert = 'local-expert';
+const rareFinds = 'rare-finds';
 
 /// A series or an achievement as it stands for the player.
 class SeriesState {
@@ -84,6 +87,26 @@ List<SeriesState> seriesStates(
           .whereType<String>()
           .length,
       total: tiers.length,
+    ),
+    // 100 cards, duplicates included.
+    SeriesState(id: collector, owned: min(cards.length, 100), total: 100),
+    // 50 species of the region.
+    SeriesState(
+      id: localExpert,
+      owned: min(have.where(byId.containsKey).length, 50),
+      total: 50,
+    ),
+    // 5 cards Rare or better.
+    SeriesState(
+      id: rareFinds,
+      owned: min(
+        cards.where((c) {
+          final r = c.rarity ?? birdById(c.birdId)?.rarity;
+          return r != null && tiers.indexOf(r) >= tiers.indexOf('rare');
+        }).length,
+        5,
+      ),
+      total: 5,
     ),
   ];
 }

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../birds.dart';
 import 'theme.dart';
 
 /// The app icon (half-sun on the horizon, perched bird), drawn from the shapes of
@@ -444,40 +445,159 @@ class _BoosterPileState extends State<BoosterPile>
   }
 }
 
-/// Particles flying out from behind a card in its rarity [color] (and some white),
-/// shrinking and fading as [t] goes 0 → 1; [reach] is the card's width.
-class _Sparks extends CustomPainter {
-  const _Sparks(this.sparks, this.t, this.color, this.reach);
-  final List<(double, double, double)> sparks;
-  final double t, reach;
+/// A point on the edge of a [size] box, [p] (0..1) of the way round from the top left,
+/// pushed [out] beyond it.
+Offset _onEdge(Size size, double p, double out) {
+  final (w, h) = (size.width, size.height);
+  final d = (p % 1) * 2 * (w + h);
+  if (d < w) return Offset(d, -out);
+  if (d < w + h) return Offset(w + out, d - w);
+  if (d < 2 * w + h) return Offset(w - (d - w - h), h + out);
+  return Offset(-out, h - (d - 2 * w - h));
+}
+
+/// A four-pointed star of radius [r] at [c].
+Path _star(Offset c, double r) => Path()
+  ..addPolygon([
+    for (var i = 0; i < 8; i++)
+      c +
+          Offset(cos(i * pi / 4 - pi / 2), sin(i * pi / 4 - pi / 2)) *
+              (i.isEven ? r : r * 0.25),
+  ], true);
+
+/// The reveal's effects at [ms] since it began, richer with the rarity [level] (0 common …
+/// 4 legendary). [behind]: the burst of particles from behind the card; otherwise what
+/// shows over it: twinkling stars round the edge (uncommon+), glints orbiting the edge
+/// (epic+), and a sheen across the card (legendary).
+class _Sparkle extends CustomPainter {
+  const _Sparkle(
+    this.fx,
+    this.ms,
+    this.level,
+    this.color, {
+    required this.behind,
+  });
+  final _Effects fx;
+  final double ms;
+  final int level;
   final Color color;
+  final bool behind;
+
+  Color _tint(int i, double alpha) => (i.isEven ? color : Colors.white)
+      .withValues(alpha: alpha.clamp(0.0, 1.0));
 
   @override
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
-    for (final (i, (angle, speed, r)) in sparks.indexed) {
-      // From just inside the card's edge outward, so they peek out from behind it.
-      final d = reach * (0.35 + speed * t);
-      canvas.drawCircle(
-        c + Offset(cos(angle), sin(angle)) * d,
-        r * (1 - t * 0.7),
-        Paint()
-          ..color = (i.isEven ? color : Colors.white).withValues(
-            alpha: 0.9 * (1 - t),
+    final end = _CardFlipState.lengthMs(level);
+    final fade = ((end - ms) / 300).clamp(
+      0.0,
+      1.0,
+    ); // everything fades at the end
+    if (behind) {
+      final t = ((ms - 450) / (700 + 100 * level)).clamp(0.0, 1.0);
+      if (t == 0 || t == 1) return;
+      final e = Curves.easeOut.transform(t);
+      for (final (i, (angle, speed, r)) in fx.burst.indexed) {
+        canvas.drawCircle(
+          c + Offset(cos(angle), sin(angle)) * size.width * (0.35 + speed * e),
+          r * (1 - e * 0.7),
+          Paint()..color = _tint(i, 0.9 * (1 - e)),
+        );
+      }
+      return;
+    }
+    for (final (i, (p, out, phase, period, r)) in fx.twinkles.indexed) {
+      final s = sin(2 * pi * (ms - 500) / period + phase);
+      if (ms < 500 || s <= 0) continue;
+      final at = _onEdge(size, p, out);
+      canvas.drawPath(_star(at, r * s), Paint()..color = _tint(i, s * fade));
+    }
+    for (var i = 0; i < fx.orbits; i++) {
+      if (ms < 500) break;
+      final p = i / fx.orbits + (ms - 500) / (end - 500);
+      final at = _onEdge(size, p, 2);
+      canvas
+        ..drawCircle(
+          at,
+          9,
+          Paint()
+            ..color = color.withValues(alpha: 0.6 * fade)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+        )
+        ..drawCircle(
+          at,
+          2.5,
+          Paint()..color = Colors.white.withValues(alpha: fade),
+        );
+    }
+    if (level == 4 && ms > 600 && ms < 1400) {
+      // One sheen across the face, top left to bottom right.
+      final x = (ms - 600) / 800 * 3 - 1.5;
+      canvas
+        ..save()
+        ..clipRRect(
+          RRect.fromRectAndRadius(
+            Offset.zero & size,
+            const Radius.circular(radius),
           ),
-      );
+        )
+        ..drawRect(
+          Offset.zero & size,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment(x - 1, -1),
+              end: Alignment(x + 1, 1),
+              colors: [
+                Colors.white.withValues(alpha: 0),
+                Colors.white.withValues(alpha: 0.4),
+                Colors.white.withValues(alpha: 0),
+              ],
+              stops: const [0.4, 0.5, 0.6],
+            ).createShader(Offset.zero & size),
+        )
+        ..restore();
     }
   }
 
   @override
-  bool shouldRepaint(_Sparks old) => old.t != t;
+  bool shouldRepaint(_Sparkle old) => old.ms != ms;
 }
 
-/// A card just won: it flips face up in place, from its [CardBack] to [child], and a
-/// discreet spray of particles in its rarity [color] comes out from behind it.
+/// The random parts of one reveal, drawn once.
+class _Effects {
+  _Effects(int level) {
+    final r = Random();
+    burst = List.generate(
+      const [10, 16, 24, 34, 48][level],
+      (_) => (
+        r.nextDouble() * 2 * pi,
+        0.3 + r.nextDouble() * (0.3 + 0.1 * level),
+        1.5 + r.nextDouble() * 2 + 0.4 * level,
+      ),
+    );
+    twinkles = List.generate(
+      const [0, 6, 10, 14, 20][level],
+      (_) => (
+        r.nextDouble(), // where on the edge
+        4 + r.nextDouble() * 14, // how far out
+        r.nextDouble() * 2 * pi, // phase
+        500 + r.nextDouble() * 400, // twinkle period, ms
+        3 + r.nextDouble() * 4 + level, // size
+      ),
+    );
+    orbits = const [0, 0, 0, 2, 3][level];
+  }
+  late final List<(double, double, double)> burst;
+  late final List<(double, double, double, double, double)> twinkles;
+  late final int orbits;
+}
+
+/// A card just won: it flips face up in place, from its [CardBack] to [child], with
+/// sparkles of its [rarity] that grow richer from Common to Legendary.
 class CardFlip extends StatefulWidget {
-  const CardFlip({required this.color, required this.child, super.key});
-  final Color color;
+  const CardFlip({required this.rarity, required this.child, super.key});
+  final String rarity;
   final Widget child;
 
   @override
@@ -486,26 +606,20 @@ class CardFlip extends StatefulWidget {
 
 class _CardFlipState extends State<CardFlip>
     with SingleTickerProviderStateMixin {
+  /// The whole reveal: 1.1 s for a Common card, up to 2.5 s for a Legendary one.
+  static double lengthMs(int level) => 1100.0 + 350 * level;
+
+  late final int _level = max(0, tiers.indexOf(widget.rarity));
+  late final _fx = _Effects(_level);
   late final _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1000),
+    duration: Duration(milliseconds: lengthMs(_level).round()),
   );
-  // Particles: an angle, a speed and a size each, fixed for this reveal.
-  late final List<(double, double, double)> _sparks;
   bool _buzzed = false;
 
   @override
   void initState() {
     super.initState();
-    final r = Random();
-    _sparks = List.generate(
-      20,
-      (_) => (
-        r.nextDouble() * 2 * pi,
-        0.3 + r.nextDouble() * 0.3,
-        1.5 + r.nextDouble() * 2,
-      ),
-    );
     // Flip once the screen has finished sliding in, so the whole flip is seen.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final arriving = ModalRoute.of(context)?.animation;
@@ -534,32 +648,31 @@ class _CardFlipState extends State<CardFlip>
     // Each face is painted once and reused while it turns: smooth frames.
     final front = RepaintBoundary(child: widget.child);
     const back = RepaintBoundary(child: CardBack());
+    final color = rarityColor[widget.rarity] ?? rarityColor['common']!;
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
+        final ms = _c.value * lengthMs(_level);
         final flip =
-            pi *
-            Curves.easeInOutCubic.transform((_c.value / 0.55).clamp(0.0, 1.0));
+            pi * Curves.easeInOutCubic.transform((ms / 550).clamp(0.0, 1.0));
         final faceUp = flip > pi / 2;
         if (faceUp && !_buzzed) {
           _buzzed = true;
           HapticFeedback.heavyImpact(); // the card turns face up
         }
-        final t = Curves.easeOut.transform(
-          ((_c.value - 0.4) / 0.6).clamp(0.0, 1.0),
+        final running = _c.isAnimating;
+        Widget fx({required bool behind}) => Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _Sparkle(_fx, ms, _level, color, behind: behind),
+            ),
+          ),
         );
         return Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            if (t > 0 && t < 1)
-              Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (_, box) => CustomPaint(
-                    painter: _Sparks(_sparks, t, widget.color, box.maxWidth),
-                  ),
-                ),
-              ),
+            if (running) fx(behind: true),
             Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()
@@ -567,6 +680,7 @@ class _CardFlipState extends State<CardFlip>
                 ..rotateY(faceUp ? flip - pi : flip),
               child: faceUp ? front : back,
             ),
+            if (running && faceUp) fx(behind: false),
           ],
         );
       },

@@ -14,7 +14,6 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'card.dart';
 import 'collection.dart';
-import 'series.dart';
 import 'theme.dart';
 
 // See MainActivity.kt: true keeps the app over the lock screen after the alarm stops.
@@ -103,14 +102,11 @@ class _RingScreenState extends State<RingScreen> {
       AppLocalizations.of(context).guessTheBird,
     );
     // A won card may complete a series (or a streak an achievement): +1 booster each.
-    final completed = await store.claimSeries();
+    await store.claimSeries();
     // The app is open every morning: a good time to fetch songs for the next rings.
     unawaited(store.sync());
     await shown;
     if (!mounted) return;
-    final completedNames = [
-      for (final s in completed) seriesName(AppLocalizations.of(context), s),
-    ];
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => RevealScreen(
@@ -120,7 +116,6 @@ class _RingScreenState extends State<RingScreen> {
           firstOfSpecies: firstOfSpecies,
           streakLost: !correct && _oldStreak > 0,
           training: widget.training != null,
-          completed: completedNames,
         ),
       ),
     );
@@ -347,10 +342,8 @@ class RevealScreen extends StatelessWidget {
     this.firstOfSpecies = false,
     this.streakLost = false,
     this.training = false,
-    this.completed = const [],
     super.key,
   });
-  final List<String> completed; // series just completed, by name
   final Bird bird;
   final Recording?
   recording; // the one that rang; null for alarms set before 3c
@@ -383,15 +376,6 @@ class RevealScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Column(
                   children: [
-                    for (final name in completed)
-                      Text(
-                        l.seriesComplete(name),
-                        style: text.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
                     if (firstOfSpecies)
                       Text(
                         l.speciesCollected(

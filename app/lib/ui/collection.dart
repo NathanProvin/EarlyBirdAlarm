@@ -321,10 +321,7 @@ class _CardDetailState extends State<CardDetail> {
   );
 
   Widget _flip(Widget face) => widget.flipIn && widget.card != null
-      ? CardFlip(
-          color: rarityColor[widget.card!.rarity ?? widget.bird.rarity]!,
-          child: face,
-        )
+      ? CardFlip(rarity: widget.card!.rarity ?? widget.bird.rarity, child: face)
       : face;
 
   @override

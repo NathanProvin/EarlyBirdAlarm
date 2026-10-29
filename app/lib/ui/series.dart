@@ -15,6 +15,9 @@ String seriesName(AppLocalizations l, SeriesState s) =>
     switch (s.id) {
       legendaryHunter => l.legendaryHunter,
       perfectWeek => l.perfectWeek,
+      collector => l.collector,
+      localExpert => l.localExpert,
+      rareFinds => l.rareFinds,
       _ => l.fullSet,
     };
 
@@ -40,6 +43,13 @@ class _SeriesScreenState extends State<SeriesScreen> {
     ];
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
+      // Back within the thumb's reach, bottom right.
+      floatingActionButton: FloatingActionButton.small(
+        elevation: 0,
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Icon(Icons.arrow_back),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -116,6 +126,9 @@ class _Badge extends StatelessWidget {
       legendaryHunter => Icons.auto_awesome,
       perfectWeek => Icons.local_fire_department,
       fullSet => Icons.style,
+      collector => Icons.collections_bookmark,
+      localExpert => Icons.place,
+      rareFinds => Icons.diamond,
       _ => Icons.flutter_dash, // a series whose birds have no photo
     };
     final inner = face != null
