@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -84,53 +83,104 @@ class BoosterFace extends StatelessWidget {
   Widget build(BuildContext context) {
     const silver = Color(0xFFDADBE0);
     final accent = Theme.of(context).colorScheme.primary;
-    final x = shine * 3 - 1.5; // the sweep crosses the wrapper as shine goes 0 → 1
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [silver, accent, silver],
-          ),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment(x - 1, -1),
-                  end: Alignment(x + 1, 1),
-                  colors: [
-                    Colors.white.withValues(alpha: 0),
-                    Colors.white.withValues(alpha: 0.45),
-                    Colors.white.withValues(alpha: 0),
-                  ],
-                  stops: const [0.4, 0.5, 0.6],
-                ),
-              ),
+    final x =
+        shine * 3 - 1.5; // the sweep crosses the wrapper as shine goes 0 → 1
+    return Container(
+      // A thin dark edge sets each booster apart in the pile.
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: ink.withValues(alpha: 0.35), width: 1.5),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [silver, accent, silver],
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Logo(),
-                const SizedBox(height: 16),
-                Text(
-                  'Early Bird',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: ink,
-                    fontWeight: FontWeight.bold,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment(x - 1, -1),
+                    end: Alignment(x + 1, 1),
+                    colors: [
+                      Colors.white.withValues(alpha: 0),
+                      Colors.white.withValues(alpha: 0.45),
+                      Colors.white.withValues(alpha: 0),
+                    ],
+                    stops: const [0.4, 0.5, 0.6],
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              const CustomPaint(painter: _FoilTexture()),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Logo(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Early Bird',
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(color: ink, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Foil grain (fine diagonal lines) and the crimped seals at the top and bottom.
+class _FoilTexture extends CustomPainter {
+  const _FoilTexture();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final grain = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..strokeWidth = 1;
+    for (var d = -size.height; d < size.width; d += 6) {
+      canvas.drawLine(
+        Offset(d, size.height),
+        Offset(d + size.height, 0),
+        grain,
+      );
+    }
+    const seal = 14.0;
+    final band = Paint()..color = ink.withValues(alpha: 0.12);
+    final ridge = Paint()
+      ..color = ink.withValues(alpha: 0.2)
+      ..strokeWidth = 1;
+    final light = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..strokeWidth = 1;
+    for (final top in [0.0, size.height - seal]) {
+      canvas.drawRect(Rect.fromLTWH(0, top, size.width, seal), band);
+      for (var x = 2.0; x < size.width; x += 4) {
+        canvas.drawLine(Offset(x, top + 2), Offset(x, top + seal - 2), ridge);
+      }
+    }
+    // A highlight just inside each seal, as on a pressed wrapper.
+    canvas
+      ..drawLine(const Offset(0, seal + 1), Offset(size.width, seal + 1), light)
+      ..drawLine(
+        Offset(0, size.height - seal - 1),
+        Offset(size.width, size.height - seal - 1),
+        light,
+      );
+  }
+
+  @override
+  bool shouldRepaint(_FoilTexture oldDelegate) => false;
 }
 
 /// The back of a card: paper with the logo, in the "unknown" frame.
@@ -195,17 +245,15 @@ class OpenBooster extends StatelessWidget {
   const OpenBooster({super.key});
 
   @override
-  Widget build(BuildContext context) => const ClipPath(
-    clipper: _TearClipper(strip: false),
-    child: BoosterFace(),
-  );
+  Widget build(BuildContext context) =>
+      const ClipPath(clipper: _TearClipper(strip: false), child: BoosterFace());
 }
 
 const boosterWidth = 200.0;
 const boosterHeight = 290.0;
 
-/// [count] boosters in a loose pile that floats and leans toward the finger. Swiping
-/// across the top part of the top booster tears it open, then [onTorn] runs.
+/// [count] boosters in a loose pile that floats and leans toward the finger. A tap
+/// tears the top one open, then [onTorn] runs.
 class BoosterPile extends StatefulWidget {
   const BoosterPile({
     required this.count,
@@ -240,12 +288,9 @@ class _BoosterPileState extends State<BoosterPile>
   )..repeat();
   late final _fly = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 350),
+    duration: const Duration(milliseconds: 300),
   );
   Offset _tilt = Offset.zero; // -1..1 from the centre, follows the finger
-  Offset? _start; // where a tear began
-  double _tear = 0; // 0..1 how far the strip is lifted
-  double _side = 1; // 1 = torn left to right
 
   @override
   void dispose() {
@@ -256,72 +301,44 @@ class _BoosterPileState extends State<BoosterPile>
 
   Size get _box => const Size(_w + 2 * _margin, _h + 2 * _margin);
 
-  void _onStart(DragStartDetails d) {
-    final p = d.localPosition;
-    // Tolerant: anywhere on the top half of the booster, or just above it.
-    final inZone =
-        p.dy > _margin - 32 &&
-        p.dy < _margin + _h * 0.5 &&
-        p.dx > _margin - 24 &&
-        p.dx < _margin + _w + 24;
-    _start = widget.count > 0 && !_fly.isAnimating && inZone ? p : null;    _onMove(d.localPosition);
-  }
-
   void _onMove(Offset p) {
     final c = _box.center(Offset.zero);
-    setState(() {
-      _tilt = Offset(
+    setState(
+      () => _tilt = Offset(
         ((p.dx - c.dx) / (_box.width / 2)).clamp(-1.0, 1.0),
         ((p.dy - c.dy) / (_box.height / 2)).clamp(-1.0, 1.0),
-      );
-      if (_start case final s?) {
-        final dx = p.dx - s.dx;
-        if (dx.abs() > 4) _side = dx.sign;
-        final t = (dx.abs() / (_w * 0.6)).clamp(0.0, 1.0);
-        if ((t * 4).floor() > (_tear * 4).floor()) {
-          HapticFeedback.selectionClick(); // a tick as the tear goes on
-        }
-        _tear = t;
-      }
-    });
+      ),
+    );
   }
 
-  Future<void> _onEnd(DragEndDetails d) async {
-    final fling = d.velocity.pixelsPerSecond.dx.abs() > 600;    setState(() => _tilt = Offset.zero);
-    if (_start == null) return;
-    _start = null;
-    if (_tear > 0.3 || (fling && _tear > 0.1)) {
-      await _open();
-    } else {
-      setState(() => _tear = 0);
-    }
-  }
-
+  /// One tap: the top strip lifts, tears off and flies away, then [onTorn].
   Future<void> _open() async {
+    if (widget.count == 0 || _fly.isAnimating) return;
     HapticFeedback.mediumImpact();
-    setState(() => _tear = 1);
-    await _fly.forward(from: 0);
+    final flown = _fly.forward(from: 0);
+    // The quiz starts fading in while the strip is still flying off.
+    await Future<void>.delayed(const Duration(milliseconds: 150));
     widget.onTorn();
-    if (mounted) {
-      setState(() => _tear = 0);
-      _fly.reset();
-    }
+    await flown;
+    if (mounted) _fly.reset();
   }
 
   Widget _top() {
     final strip = AnimatedBuilder(
       animation: _fly,
       builder: (_, child) {
-        final f = Curves.easeIn.transform(_fly.value);
+        // The first 40%: the strip lifts from its left end; then it flies off.
+        final lift = (_fly.value / 0.4).clamp(0.0, 1.0);
+        final f = Curves.easeIn.transform(
+          ((_fly.value - 0.4) / 0.6).clamp(0.0, 1.0),
+        );
         return Opacity(
           opacity: 1 - f,
           child: Transform.translate(
-            offset: Offset(_side * f * 220, -f * 160),
+            offset: Offset(f * 220, -f * 160),
             child: Transform.rotate(
-              angle: -_side * (_tear * 0.35 + f * 0.6),
-              alignment: _side > 0
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
+              angle: -(lift * 0.35 + f * 0.6),
+              alignment: Alignment.centerLeft,
               child: child,
             ),
           ),
@@ -354,11 +371,11 @@ class _BoosterPileState extends State<BoosterPile>
       onTap: n > 0 ? _open : null,
       excludeSemantics: true,
       child: GestureDetector(
-        // Measure the tear from where the finger landed, so quick flicks count.
-        dragStartBehavior: DragStartBehavior.down,
-        onPanStart: _onStart,
+        onTap: _open,
+        // Dragging only tilts the pile.
+        onPanStart: (d) => _onMove(d.localPosition),
         onPanUpdate: (d) => _onMove(d.localPosition),
-        onPanEnd: _onEnd,
+        onPanEnd: (_) => setState(() => _tilt = Offset.zero),
         child: SizedBox.fromSize(
           size: _box,
           child: TweenAnimationBuilder<Offset>(
@@ -402,12 +419,26 @@ class _BoosterPileState extends State<BoosterPile>
                             ),
                         child: Transform.rotate(
                           angle: _angles[depth],
-                          child: SizedBox(
-                            width: _w,
-                            height: _h,
-                            child: depth == 0
-                                ? _top()
-                                : BoosterFace(shine: 0.5 + tilt.dx / 3),
+                          // The one shadow the Dawn rules allow: boosters are objects.
+                          // It shifts against the tilt, as if lit from above.
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(radius),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 14,
+                                  offset: Offset(-tilt.dx * 6, 6 - tilt.dy * 4),
+                                ),
+                              ],
+                            ),
+                            child: SizedBox(
+                              width: _w,
+                              height: _h,
+                              child: depth == 0
+                                  ? _top()
+                                  : BoosterFace(shine: 0.5 + tilt.dx / 3),
+                            ),
                           ),
                         ),
                       ),
@@ -422,8 +453,35 @@ class _BoosterPileState extends State<BoosterPile>
   }
 }
 
-/// The card reveal: the card rises (out of an open booster if [fromBooster]), flips from
-/// its back to [front], and a burst of [color] spreads behind it; then [onDone].
+/// Sparks flying out from behind the card in its rarity [color] (and some white),
+/// shrinking and fading as [t] goes 0 → 1.
+class _Sparks extends CustomPainter {
+  const _Sparks(this.sparks, this.t, this.color, this.reach);
+  final List<(double, double, double)> sparks;
+  final double t, reach;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    for (final (i, (angle, speed, r)) in sparks.indexed) {
+      final d = reach * speed * t;
+      canvas.drawCircle(
+        c + Offset(cos(angle), sin(angle)) * d,
+        r * (1 - t * 0.7),
+        Paint()
+          ..color = (i.isEven ? color : Colors.white).withValues(alpha: 1 - t),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Sparks old) => old.t != t;
+}
+
+/// The card reveal (0.9 s): the card flips on the spot from its back to [front] while
+/// the open booster drops away ([fromBooster]; alarms: it rises from just below),
+/// then a burst and sparks of [color] spread behind it; then [onDone].
 class CardReveal extends StatefulWidget {
   const CardReveal({
     required this.front,
@@ -445,15 +503,26 @@ class _CardRevealState extends State<CardReveal>
     with SingleTickerProviderStateMixin {
   late final _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1900),
+    duration: const Duration(milliseconds: 900),
   );
   bool _buzzed = false;
+  // Particles: an angle, a reach and a size each, fixed for this reveal.
+  late final List<(double, double, double)> _sparks;
 
   @override
   void initState() {
     super.initState();
+    final r = Random();
+    _sparks = List.generate(
+      28,
+      (_) => (
+        r.nextDouble() * 2 * pi,
+        0.5 + r.nextDouble() * 0.7,
+        2 + r.nextDouble() * 4,
+      ),
+    );
     _c.addListener(() {
-      if (!_buzzed && _c.value > 0.6) {
+      if (!_buzzed && _c.value > 0.35) {
         _buzzed = true;
         HapticFeedback.heavyImpact(); // the card turns face up
       }
@@ -480,17 +549,21 @@ class _CardRevealState extends State<CardReveal>
         animation: _c,
         builder: (context, _) {
           final t = _c.value;
-          // Rise: out of the booster (up, then back to the centre) or from below.
+          // The card is already out: the booster drops away while it flips on the
+          // spot (alarms: it rises from just below), then the burst and sparks.
           final rise = widget.fromBooster
-              ? -h * 0.55 * _phase(t, 0, 0.25) + h * 0.55 * _phase(t, 0.3, 0.45)
-              : h * (1 - _phase(t, 0, 0.4));
-          final flip = pi * _phase(t, 0.45, 0.75);
-          final burst = _phase(t, 0.7, 1);
+              ? 0.0
+              : h * 0.3 * (1 - _phase(t, 0, 0.3));
+          final flip = pi * _phase(t, 0.1, 0.55);
+          final burst = Curves.easeOut.transform(
+            ((t - 0.45) / 0.55).clamp(0.0, 1.0),
+          );
           final faceUp = flip > pi / 2;
           return Stack(
             alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
-              if (burst > 0)
+              if (burst > 0) ...[
                 Opacity(
                   opacity: 0.6 * (1 - burst),
                   child: Container(
@@ -502,12 +575,17 @@ class _CardRevealState extends State<CardReveal>
                     ),
                   ),
                 ),
+                CustomPaint(
+                  size: Size(w, h),
+                  painter: _Sparks(_sparks, burst, widget.color, w),
+                ),
+              ],
               Transform.translate(
                 offset: Offset(0, rise),
                 child: Opacity(
                   opacity: widget.fromBooster
                       ? 1
-                      : _phase(t, 0, 0.2), // fades in from below
+                      : _phase(t, 0, 0.15), // fades in from below
                   child: Transform(
                     alignment: Alignment.center,
                     transform: Matrix4.identity()
@@ -522,11 +600,11 @@ class _CardRevealState extends State<CardReveal>
                 ),
               ),
               // The open booster, in front of the card, then dropping away.
-              if (widget.fromBooster && t < 0.45)
+              if (widget.fromBooster && t < 0.35)
                 Transform.translate(
-                  offset: Offset(0, h * 0.2 + h * _phase(t, 0.25, 0.45)),
+                  offset: Offset(0, h * 0.35 + h * _phase(t, 0, 0.35)),
                   child: Opacity(
-                    opacity: 1 - _phase(t, 0.3, 0.45),
+                    opacity: 1 - _phase(t, 0.1, 0.35),
                     child: SizedBox(
                       width: w * 1.08,
                       height: h * 1.08,

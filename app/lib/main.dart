@@ -136,9 +136,10 @@ class _BottomBar extends StatelessWidget {
           child: InkWell(
             onTap: () => onSelect(i),
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              // Anchored low, under the flat part of the bar's edge.
+              padding: const EdgeInsets.only(top: _BarShape.edge, bottom: 6),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Badge(
                     isLabelVisible: badge > 0,
@@ -158,53 +159,91 @@ class _BottomBar extends StatelessWidget {
     }
 
     final alarmsOn = tab == 1;
-    // No background or line: the bar is just three buttons on the page.
-    return SafeArea(
-      top: false,
-      child: SizedBox(
-        height: 68,
-        child: Row(
-          children: [
-            side(0, Icons.music_note, l.twitch, badge: ready),
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: alarmsOn,
-                label: l.alarms,
-                excludeSemantics: true,
-                child: GestureDetector(
-                  onTap: () => onSelect(1),
-                  child: Center(
-                    // A ring around the circle marks the open tab.
-                    child: Container(
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: alarmsOn ? scheme.primary : Colors.transparent,
-                          width: 2,
+    final inset = MediaQuery.paddingOf(context).bottom; // gesture bar
+    return CustomPaint(
+      painter: _BarShape(scheme.secondaryContainer),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: inset),
+        child: SizedBox(
+          height: 76,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              side(0, Icons.music_note, l.twitch, badge: ready),
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: alarmsOn,
+                  label: l.alarms,
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    onTap: () => onSelect(1),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      // A ring around the circle marks the open tab; the bar's bump
+                      // curves around it.
+                      child: Container(
+                        margin: const EdgeInsets.only(top: _BarShape.bump - 31),
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: alarmsOn
+                                ? scheme.primary
+                                : Colors.transparent,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child: CircleAvatar(
-                        radius: 26,
-                        backgroundColor: scheme.primary,
-                        child: Icon(
-                          Icons.alarm,
-                          size: 28,
-                          color: scheme.onPrimary,
+                        child: CircleAvatar(
+                          radius: 26,
+                          backgroundColor: scheme.primary,
+                          child: Icon(
+                            Icons.alarm,
+                            size: 28,
+                            color: scheme.onPrimary,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            side(2, Icons.style_outlined, l.collection),
-          ],
+              side(2, Icons.style_outlined, l.collection),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// The bar's background: flat at [edge] from the top, rising in a smooth bump around
+/// the Alarms circle (its centre [bump] from the top).
+class _BarShape extends CustomPainter {
+  const _BarShape(this.color);
+  final Color color;
+  static const edge = 24.0, bump = 37.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    const half = 64.0; // half-width of the bump at its base
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, edge)
+        ..lineTo(cx - half, edge)
+        ..cubicTo(cx - half * 0.55, edge, cx - 40, 0, cx, 0)
+        ..cubicTo(cx + 40, 0, cx + half * 0.55, edge, cx + half, edge)
+        ..lineTo(size.width, edge)
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close(),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BarShape oldDelegate) => oldDelegate.color != color;
 }
 
 class _HomeScreenState extends State<HomeScreen> {

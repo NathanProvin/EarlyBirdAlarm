@@ -23,10 +23,7 @@ class _TwitchScreenState extends State<TwitchScreen> {
   @override
   void initState() {
     super.initState();
-    _tick = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => setState(() {}),
-    );
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
   }
 
   @override
@@ -40,7 +37,12 @@ class _TwitchScreenState extends State<TwitchScreen> {
     await store.useTwitch();
     if (!mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => RingScreen.training(quiz)),
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 250),
+        pageBuilder: (_, _, _) => RingScreen.training(quiz),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+      ),
     );
   }
 

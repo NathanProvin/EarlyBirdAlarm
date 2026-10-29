@@ -207,7 +207,10 @@ void main() {
         AlarmData(id: 1, hour: h, minute: m, days: days);
     expect(ringsIn(l, at(8, 5), mon8), 'Rings in 5 min'); // 4.5 min, rounded up
     expect(ringsIn(l, at(15, 7), mon8), 'Rings in 7 h 07');
-    expect(ringsIn(l, at(7, 0, {DateTime.wednesday}), mon8), 'Rings in 1 d 23 h');
+    expect(
+      ringsIn(l, at(7, 0, {DateTime.wednesday}), mon8),
+      'Rings in 1 d 23 h',
+    );
     expect(formatStat('weight', 1080, 'en'), '1.1 kg');
     expect(formatStat('weight', 12400, 'en'), '12 kg');
     expect(formatStat('weight', 8.5, 'en'), '8.5 g');
@@ -247,31 +250,50 @@ void main() {
     expect(s.heard, {'robin'});
   });
 
-  testWidgets('booster: a swipe across the top tears it, a short one does not', (
+  testWidgets('booster: a tap opens it, a drag only tilts the pile', (
     tester,
   ) async {
     var torn = 0;
-    await tester.pumpWidget(
+    Future<void> pileOf(int n) => tester.pumpWidget(
       MaterialApp(
         home: Center(
-          child: BoosterPile(count: 3, onTorn: () => torn++, label: 'Open'),
+          child: BoosterPile(count: n, onTorn: () => torn++, label: 'Open'),
         ),
       ),
     );
-    final pile = tester.getRect(find.byType(BoosterPile));
-    final top = Offset(pile.center.dx - 60, pile.top + 40 + 30); // top of booster
-    await tester.dragFrom(top, const Offset(20, 0));
-    await tester.pump(const Duration(milliseconds: 400)); // the float never settles
+    await pileOf(3);
+    final pile = find.byType(BoosterPile);
+    await tester.drag(pile, const Offset(120, 0));
+    await tester.pump(); // the float never settles: pump frames by hand
+    await tester.pump(const Duration(milliseconds: 500));
     expect(torn, 0);
-    await tester.dragFrom(top, const Offset(120, 0));
+    await tester.tap(pile);
     await tester.pump(); // the strip starts flying off…
-    await tester.pump(const Duration(milliseconds: 400)); // …and is gone
+    await tester.pump(const Duration(milliseconds: 500)); // …and is gone
     expect(torn, 1);
-    // The bottom half doesn't tear.
-    await tester.dragFrom(pile.center + const Offset(-60, 80), const Offset(150, 0));
+    await pileOf(0); // nothing to open
+    await tester.tap(pile);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 500));
     expect(torn, 1);
+  });
+
+  testWidgets('card reveal ends within 0.9 s', (tester) async {
+    var done = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CardReveal(
+          front: const SizedBox(),
+          color: Colors.blue,
+          fromBooster: true,
+          onDone: () => done = true,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 450)); // mid-flip, sparks
+    expect(done, isFalse);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(done, isTrue);
   });
 
   test('ordinals for "nth species collected"', () {
