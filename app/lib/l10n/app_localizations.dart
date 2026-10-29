@@ -451,6 +451,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy policy'**
   String get privacyPolicy;
+
+  /// No description provided for @birdsSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Birds'**
+  String get birdsSetting;
+
+  /// No description provided for @creditsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources, licenses and privacy'**
+  String get creditsSubtitle;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String version(String version);
+
+  /// No description provided for @ringsInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings in {days} d {hours} h'**
+  String ringsInDays(int days, int hours);
+
+  /// No description provided for @ringsInHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings in {hours} h {minutes}'**
+  String ringsInHours(int hours, String minutes);
+
+  /// No description provided for @ringsInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Rings in {minutes} min'**
+  String ringsInMinutes(int minutes);
 }
 
 class _AppLocalizationsDelegate

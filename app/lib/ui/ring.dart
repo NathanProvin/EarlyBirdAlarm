@@ -56,7 +56,8 @@ class _RingScreenState extends State<RingScreen> {
   Future<void> _guess(Bird bird) async {
     if (_tapped != null) return;
     setState(() => _tapped = bird);
-    HapticFeedback.heavyImpact();
+    // A short tap when right, a longer buzz when wrong.
+    bird == _bird ? HapticFeedback.mediumImpact() : HapticFeedback.vibrate();
     // The answer stays on screen for 2 s, while the guess is saved.
     final shown = Future<void>.delayed(const Duration(seconds: 2));
     await _lockScreen.invokeMethod<void>('hold', true);
@@ -76,6 +77,7 @@ class _RingScreenState extends State<RingScreen> {
     unawaited(store.sync());
     await shown;
     if (!mounted) return;
+    if (card != null) HapticFeedback.heavyImpact(); // new card!
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
         builder: (_) => RevealScreen(

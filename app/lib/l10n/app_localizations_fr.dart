@@ -200,4 +200,30 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get privacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String get birdsSetting => 'Oiseaux';
+
+  @override
+  String get creditsSubtitle => 'Sources, licences et confidentialité';
+
+  @override
+  String version(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String ringsInDays(int days, int hours) {
+    return 'Sonne dans $days j $hours h';
+  }
+
+  @override
+  String ringsInHours(int hours, String minutes) {
+    return 'Sonne dans $hours h $minutes';
+  }
+
+  @override
+  String ringsInMinutes(int minutes) {
+    return 'Sonne dans $minutes min';
+  }
 }

@@ -48,13 +48,34 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// "Rings in 7 h 05", rounded up to the minute.
+String ringsIn(AppLocalizations l, AlarmData a, [DateTime? now]) {
+  now ??= DateTime.now();
+  final m = (nextRing(a, now).difference(now).inSeconds / 60).ceil();
+  final (d, h, min) = (m ~/ 1440, m % 1440 ~/ 60, m % 60);
+  if (d > 0) return l.ringsInDays(d, h);
+  if (h > 0) return l.ringsInHours(h, min.toString().padLeft(2, '0'));
+  return l.ringsInMinutes(min);
+}
+
 class _HomeScreenState extends State<HomeScreen> {
   int? _ringingId; // guards against pushing the ring screen twice
   int _tab = 0; // 0 = alarms, 1 = collection
+  late final Timer _tick; // keeps "Rings in …" current
+
+  @override
+  void dispose() {
+    _tick.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    _tick = Timer.periodic(
+      const Duration(seconds: 20),
+      (_) => setState(() {}),
+    );
     Permission.notification.request();
     if (store.region == null) {
       // First launch: where do you live?
@@ -87,6 +108,15 @@ class _HomeScreenState extends State<HomeScreen> {
       listenable: store,
       builder: (context, _) {
         final alarms = store.alarms;
+        final now = DateTime.now();
+        final next = alarms
+            .where((a) => a.enabled)
+            .map((a) => (a, nextRing(a, now)))
+            .fold<(AlarmData, DateTime)?>(
+              null,
+              (best, e) => best == null || e.$2.isBefore(best.$2) ? e : best,
+            )
+            ?.$1;
         return Scaffold(
           floatingActionButton: _tab != 0
               ? null
@@ -157,11 +187,21 @@ class _HomeScreenState extends State<HomeScreen> {
                               ).format(context),
                               style: text.displaySmall,
                             ),
-                            subtitle: Text(
-                              [
-                                if (a.label.isNotEmpty) a.label,
-                                daysText(context, a.days),
-                              ].join(' · '),
+                            subtitle: Text.rich(
+                              TextSpan(
+                                children: [
+                                  if (a.label.isNotEmpty)
+                                    TextSpan(
+                                      text: '${a.label} · ',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  TextSpan(text: daysText(context, a.days)),
+                                  if (a == next)
+                                    TextSpan(text: '\n${ringsIn(l, a)}'),
+                                ],
+                              ),
                             ),
                             trailing: Semantics(
                               // TalkBack: "07:00, Mon Tue, on".

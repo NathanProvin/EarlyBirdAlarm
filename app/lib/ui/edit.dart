@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
 import '../main.dart';
@@ -62,6 +63,32 @@ class _EditScreenState extends State<EditScreen> {
     if (mounted) Navigator.of(context).pop();
   }
 
+  /// A round day toggle; TalkBack reads the full day name.
+  Widget _day(BuildContext context, int d) {
+    final scheme = Theme.of(context).colorScheme;
+    final on = _a.days.contains(d);
+    // 2024-01-01 is a Monday, so day d is January d.
+    final name = DateFormat.EEEE(
+      Localizations.localeOf(context).toString(),
+    ).format(DateTime(2024, 1, d));
+    return IconButton(
+      tooltip: name,
+      isSelected: on,
+      onPressed: () => setState(
+        () => _a.days = on ? ({..._a.days}..remove(d)) : {..._a.days, d},
+      ),
+      style: IconButton.styleFrom(
+        fixedSize: const Size(40, 40),
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // 7 × 48 dp don't fit
+        backgroundColor: on ? scheme.primary : null,
+        foregroundColor: on ? scheme.onPrimary : scheme.onSurface,
+        side: on ? null : BorderSide(color: scheme.onSurface),
+      ),
+      icon: Text(weekday(context, d)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -87,21 +114,9 @@ class _EditScreenState extends State<EditScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
+          Row(
             children: [
-              for (var d = 1; d <= 7; d++)
-                FilterChip(
-                  label: Text(weekday(context, d)),
-                  showCheckmark: false,
-                  selected: _a.days.contains(d),
-                  onSelected: (on) => setState(
-                    () => _a.days = on
-                        ? {..._a.days, d}
-                        : ({..._a.days}..remove(d)),
-                  ),
-                ),
+              for (var d = 1; d <= 7; d++) Expanded(child: _day(context, d)),
             ],
           ),
           const SizedBox(height: 24),

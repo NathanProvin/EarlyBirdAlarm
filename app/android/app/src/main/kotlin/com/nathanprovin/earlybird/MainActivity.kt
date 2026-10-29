@@ -21,5 +21,10 @@ class MainActivity : FlutterActivity() {
                 setShowWhenLocked(holdLockScreen)
                 result.success(null)
             }
+        // The app version for the Credits screen.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/version")
+            .setMethodCallHandler { _, result ->
+                result.success(packageManager.getPackageInfo(packageName, 0).versionName)
+            }
     }
 }

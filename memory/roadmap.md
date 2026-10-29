@@ -59,6 +59,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - [x] Credits screen (UI round 1)
 - [x] Privacy policy (EN/FR) on GitHub Pages + link in Credits; `py pipeline/build.py publish`
 - [x] Store listing texts + Data Safety / full-screen intent / exact alarm declarations (`memory/store-listing.md`)
+- [x] UI review round 2 (2026-10-29): Settings headings (Birds, Credits); centered round Share/ⓘ buttons; 7 round day toggles on one row; "7/353 · France" counter; quiet "?" tiles in the app theme; "Rings in 7 h 05" + bold alarm label; weight 1.2 kg; app version in Credits; haptics (tap when right, buzz when wrong, heavy on a new card). Not chosen: ✓ on selected options, region list ✓, card flip, grid→card transition
 
 ### 4b — Play Store (needs the Play developer account: $25, identity check)
 - [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations

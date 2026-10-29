@@ -106,5 +106,15 @@
   "themeDusk": "Dusk",
   "themeForest": "Forest",
   "play": "Play",
-  "privacyPolicy": "Privacy policy"
+  "privacyPolicy": "Privacy policy",
+  "birdsSetting": "Birds",
+  "creditsSubtitle": "Sources, licenses and privacy",
+  "version": "Version {version}",
+  "@version": {"placeholders": {"version": {"type": "String"}}},
+  "ringsInDays": "Rings in {days} d {hours} h",
+  "@ringsInDays": {"placeholders": {"days": {"type": "int"}, "hours": {"type": "int"}}},
+  "ringsInHours": "Rings in {hours} h {minutes}",
+  "@ringsInHours": {"placeholders": {"hours": {"type": "int"}, "minutes": {"type": "String"}}},
+  "ringsInMinutes": "Rings in {minutes} min",
+  "@ringsInMinutes": {"placeholders": {"minutes": {"type": "int"}}}
 }

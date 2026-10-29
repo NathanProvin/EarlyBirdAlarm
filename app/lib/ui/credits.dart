@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../content.dart';
@@ -27,6 +28,16 @@ class CreditsScreen extends StatelessWidget {
               onPressed: () =>
                   launchUrl(Uri.parse(baseUrl.replaceFirst('v1/', page))),
               child: Text(l.privacyPolicy),
+            ),
+          ),
+          const SizedBox(height: 24),
+          FutureBuilder(
+            future: const MethodChannel(
+              'early_bird/version',
+            ).invokeMethod<String>('get'),
+            builder: (context, v) => Text(
+              v.hasData ? l.version(v.data!) : '',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
         ],

@@ -32,7 +32,9 @@ class SettingsScreen extends StatelessWidget {
               selected: {store.difficulty},
               onSelectionChanged: (s) => store.difficulty = s.single,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 32),
+            Text(l.birdsSetting, style: text.titleMedium),
+            const SizedBox(height: 8),
             SegmentedButton<bool>(
               showSelectedIcon: false,
               segments: [
@@ -82,12 +84,12 @@ class SettingsScreen extends StatelessWidget {
                 MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
+            Text(l.credits, style: text.titleMedium),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(l.credits, style: text.bodySmall),
-              trailing: const Icon(Icons.chevron_right, size: 18),
+              title: Text(l.creditsSubtitle),
+              trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
               ),

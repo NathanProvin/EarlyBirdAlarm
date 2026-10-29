@@ -9,6 +9,7 @@ import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'card.dart';
+import 'region.dart';
 
 /// The best copy of each owned bird, by bird id.
 Map<String, CardData> bestCards(List<CardData> cards) {
@@ -82,7 +83,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
           child: Row(
             children: [
               Text(
-                '${best.keys.where(regionIds.contains).length}/${birds.length}',
+                '${best.keys.where(regionIds.contains).length}/${birds.length}'
+                '${store.region == null ? '' : ' · ${regionName(l, store.region!)}'}',
                 style: small,
               ),
               const Spacer(),
@@ -213,8 +215,8 @@ class CardPager extends StatelessWidget {
   }
 }
 
-/// A card with round buttons below: Share (left), credits (center), and an optional
-/// close button (right). [header] goes above the card.
+/// A card with centered round buttons below: Share, credits, and an optional close
+/// button. [header] goes above the card.
 class CardDetail extends StatefulWidget {
   const CardDetail({
     required this.bird,
@@ -295,30 +297,26 @@ class _CardDetailState extends State<CardDetail> {
         ),
         const SizedBox(height: 12),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 24,
           children: [
             if (card != null)
               RoundButton(
                 icon: Icons.share_outlined,
                 tooltip: l.share,
                 onPressed: () => _share(bird.id),
-              )
-            else
-              const SizedBox(width: 56),
-            const Spacer(),
-            IconButton(
+              ),
+            RoundButton(
+              icon: Icons.info_outline,
               tooltip: l.credits,
-              icon: const Icon(Icons.info_outline),
               onPressed: () => _credits(recording),
             ),
-            const Spacer(),
             if (onClose != null)
               RoundButton(
                 icon: Icons.close,
                 tooltip: l.done,
                 onPressed: onClose,
-              )
-            else
-              const SizedBox(width: 56),
+              ),
           ],
         ),
       ],

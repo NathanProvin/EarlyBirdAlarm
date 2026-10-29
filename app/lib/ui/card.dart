@@ -257,15 +257,16 @@ String statName(AppLocalizations l, String key) => switch (key) {
 };
 
 String formatStat(String key, double v, String locale) {
+  final (value, unit) = switch (key) {
+    'weight' => v >= 1000 ? (v / 1000, 'kg') : (v, 'g'),
+    'distance' => (v, 'km'),
+    _ => (v, 'cm'),
+  };
   final n = NumberFormat.decimalPatternDigits(
     locale: locale,
-    decimalDigits: v < 10 ? 1 : 0,
+    decimalDigits: value < 10 ? 1 : 0,
   );
-  return switch (key) {
-    'weight' => v >= 1000 ? '${n.format(v / 1000)} kg' : '${n.format(v)} g',
-    'distance' => '${n.format(v)} km',
-    _ => '${n.format(v)} cm',
-  };
+  return '${n.format(value)} $unit';
 }
 
 class _StatRow extends StatelessWidget {
@@ -341,11 +342,17 @@ class CardTile extends StatelessWidget {
   final bool heard;
   final VoidCallback? onTap;
 
+  // Undiscovered tiles use the app theme's quiet colors; won cards are on paper.
   @override
-  Widget build(BuildContext context) =>
-      Theme(data: cardTheme, child: Builder(builder: _build));
+  Widget build(BuildContext context) {
+    final app = Theme.of(context).colorScheme;
+    return Theme(
+      data: cardTheme,
+      child: Builder(builder: (context) => _build(context, app)),
+    );
+  }
 
-  Widget _build(BuildContext context) {
+  Widget _build(BuildContext context, ColorScheme app) {
     final text = Theme.of(context).textTheme;
     final number = '#${bird.number.toString().padLeft(3, '0')}';
     return Semantics(
@@ -362,7 +369,7 @@ class CardTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: owned > 0
                 ? rarityColor[rarity ?? bird.rarity]
-                : unknownColor,
+                : app.secondaryContainer,
             borderRadius: BorderRadius.circular(radius - 6),
           ),
           child: Stack(
@@ -384,9 +391,14 @@ class CardTile extends StatelessWidget {
                         ),
                       )
                     : ColoredBox(
-                        color: paper,
+                        color: app.surface,
                         child: Center(
-                          child: Text('?', style: text.headlineMedium),
+                          child: Text(
+                            '?',
+                            style: text.headlineMedium?.copyWith(
+                              color: app.onSurface.withValues(alpha: 0.5),
+                            ),
+                          ),
                         ),
                       ),
               ),

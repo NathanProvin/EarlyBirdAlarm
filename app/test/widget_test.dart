@@ -2,8 +2,11 @@ import 'dart:math';
 
 import 'package:early_bird/birds.dart';
 import 'package:early_bird/cards.dart';
+import 'package:early_bird/l10n/app_localizations.dart';
+import 'package:early_bird/main.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/card.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // id, order, family, months, recording kinds
@@ -193,6 +196,20 @@ void main() {
       nextRing(at(7, {DateTime.saturday}), mon8),
       DateTime(2026, 10, 31, 7),
     );
+  });
+
+  test('ringsIn and stat formats', () {
+    final l = lookupAppLocalizations(const Locale('en'));
+    final mon8 = DateTime(2026, 10, 26, 8, 0, 30); // a Monday
+    AlarmData at(int h, int m, [Set<int> days = const {}]) =>
+        AlarmData(id: 1, hour: h, minute: m, days: days);
+    expect(ringsIn(l, at(8, 5), mon8), 'Rings in 5 min'); // 4.5 min, rounded up
+    expect(ringsIn(l, at(15, 7), mon8), 'Rings in 7 h 07');
+    expect(ringsIn(l, at(7, 0, {DateTime.wednesday}), mon8), 'Rings in 1 d 23 h');
+    expect(formatStat('weight', 1080, 'en'), '1.1 kg');
+    expect(formatStat('weight', 12400, 'en'), '12 kg');
+    expect(formatStat('weight', 8.5, 'en'), '8.5 g');
+    expect(formatStat('distance', 292, 'en'), '292 km');
   });
 
   test('ordinals for "nth species collected"', () {
