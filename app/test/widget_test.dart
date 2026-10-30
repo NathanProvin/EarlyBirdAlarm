@@ -102,7 +102,7 @@ void main() {
     ]) {
       final seen = <String, int>{};
       for (var i = 0; i < 20000; i++) {
-        final t = drawRarity(d, r);
+        final t = drawRarity(d, random: r);
         seen[t] = (seen[t] ?? 0) + 1;
       }
       for (final (i, t) in tiers.indexed) {
@@ -112,6 +112,32 @@ void main() {
           reason: '$d $t',
         );
       }
+    }
+  });
+
+  test('card rarity leans toward the bird: scarce birds, rare cards', () {
+    Map<String, double> shares(String birdTier) {
+      final r = Random(3);
+      final seen = <String, int>{};
+      for (var i = 0; i < 20000; i++) {
+        final t = drawRarity(Difficulty.hard, birdTier: birdTier, random: r);
+        seen[t] = (seen[t] ?? 0) + 1;
+      }
+      return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
+    }
+
+    // Hard, tilt 2: a common bird 49/34/13/3/0.4 %, a legendary one 7/19/31/29/14 %.
+    final common = shares('common'), legendary = shares('legendary');
+    expect(common['common'], closeTo(0.49, 0.015));
+    expect(common['legendary'], lessThan(0.01));
+    expect(legendary['common'], closeTo(0.07, 0.01));
+    expect(legendary['legendary'], closeTo(0.14, 0.012));
+    // Easy never gives a Legendary card, even for a legendary bird.
+    for (var i = 0; i < 2000; i++) {
+      expect(
+        drawRarity(Difficulty.easy, birdTier: 'legendary'),
+        isNot('legendary'),
+      );
     }
   });
 

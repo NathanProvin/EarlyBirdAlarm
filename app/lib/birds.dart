@@ -47,11 +47,28 @@ const cardOdds = {
   },
 };
 
-/// The rarity of a card won at [difficulty], drawn from [cardOdds].
-String drawRarity(Difficulty difficulty, [Random? random]) {
-  final odds = cardOdds[difficulty]!;
-  var r = (random ?? Random()).nextInt(odds.values.reduce((a, b) => a + b));
-  return odds.entries.firstWhere((e) => (r -= e.value) < 0).key;
+/// How strongly a card's rarity leans toward its bird's scarcity: each rarity's odds are
+/// divided by this for every tier between it and the bird's tier (decided 2026-10-30).
+const rarityTilt = 2.0;
+
+/// The rarity of a card won at [difficulty]: [cardOdds], tilted toward [birdTier] (how
+/// scarce the bird is this month) so a scarce bird rarely comes as a Common card and a
+/// common one rarely as a Legendary.
+String drawRarity(Difficulty difficulty, {String? birdTier, Random? random}) {
+  final bird = birdTier == null ? null : tiers.indexOf(birdTier);
+  final w = {
+    for (final (i, t) in tiers.indexed)
+      t:
+          cardOdds[difficulty]![t]! /
+          (bird == null ? 1 : pow(rarityTilt, (i - bird).abs())),
+  };
+  var r = (random ?? Random()).nextDouble() * w.values.reduce((a, b) => a + b);
+  return w.entries
+      .firstWhere(
+        (e) => e.value > 0 && (r -= e.value) < 0,
+        orElse: () => w.entries.lastWhere((e) => e.value > 0),
+      )
+      .key;
 }
 
 /// Vocalizations that can ring at each difficulty (decisions.md "Vocalizations").

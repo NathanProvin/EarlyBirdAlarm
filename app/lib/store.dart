@@ -295,12 +295,16 @@ class Store extends ChangeNotifier {
       bird.id,
       ...recent.take(recentCount - 1),
     ]);
-    // The bird was drafted when the alarm was set; the card's rarity is drawn now.
+    // The bird was drafted when the alarm was set; the card's rarity is drawn now,
+    // leaning toward how scarce the bird is this month (all year with "All birds").
     final card = correct
         ? rollCard(
             bird,
             region,
-            rarity: drawRarity(difficulty),
+            rarity: drawRarity(
+              difficulty,
+              birdTier: bird.tierIn(monthFor(DateTime.now())) ?? bird.rarity,
+            ),
             recording: recording?.file,
           )
         : null;
