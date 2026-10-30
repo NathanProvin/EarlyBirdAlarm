@@ -693,11 +693,15 @@ def main():
     print("5/6 card stats")
     add_card_data(birds)
     files = set()
+    # The licence is the credit's last part ("Name · XC123 · CC BY-NC 4.0"): a name can contain
+    # "NC" too (photo "Bernard DUPONT from FRANCE" stopped the 2026-10-29 run).
+    nc = lambda credit: "-NC" in credit.rsplit(" · ", 1)[-1]
+    assert nc("A from FRANCE · XC1 · CC BY-NC-SA 4.0") and not nc("A from FRANCE · CC BY-SA 2.0")
     for b in birds:  # self-check: the app must never get a file that's missing or non-free
         files |= {b["photo"], *(r["file"] for r in b["recordings"])}
         assert all((OUT / f).exists() for f in files), b["id"]
-        assert "NC" not in b["photoCredit"], b["id"]
-        assert all(("NC" in r["credit"]) == bool(r.get("nc")) for r in b["recordings"]), b["id"]  # NC only if flagged
+        assert not nc(b["photoCredit"]), b["id"]
+        assert all(nc(r["credit"]) == bool(r.get("nc")) for r in b["recordings"]), b["id"]  # NC only if flagged
         assert all(r["kind"] in KINDS for r in b["recordings"]), b["id"]
     keep = {b["id"] for b in birds}
     for f in [*(OUT / "audio").iterdir(), *(OUT / "photos").iterdir()]:
