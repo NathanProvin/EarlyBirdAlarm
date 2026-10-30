@@ -13,6 +13,7 @@ import 'ui/edit.dart';
 import 'ui/region.dart';
 import 'ui/ring.dart';
 import 'ui/settings.dart';
+import 'ui/streak.dart';
 import 'ui/theme.dart';
 import 'ui/twitch.dart';
 
@@ -296,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
                     child: Row(
                       children: [
-                        Text(l.streak(store.streak), style: text.titleMedium),
+                        StreakPill(store.streak),
                         const Spacer(),
                         IconButton(
                           tooltip: l.settings,

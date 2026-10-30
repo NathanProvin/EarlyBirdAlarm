@@ -35,15 +35,15 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 - **Earning:** a **correct guess** adds the bird's card to the collection. A wrong guess leaves a grey "heard" silhouette that a later correct guess turns into the card.
 - **Rarity, 5 tiers**, one scale used everywhere (card color, which birds ring, weights). Based on the species' share of GBIF bird records in the cell, in its best month (thresholds tuned from the report):
 
-  | Tier | Color | Ring weight | Can ring at |
-  |---|---|---|---|
-  | Common | stone `#8C857B` | 16 | Easy, Medium, Hard |
-  | Uncommon | fern `#4F8F5B` | 8 | Easy, Medium, Hard |
-  | Rare | sky `#3B7DB8` | 4 | Medium, Hard |
-  | Epic | plum `#8A4FB0` | 2 | Hard |
-  | Legendary | gold `#D9A21B` | 1 | Hard |
+  | Tier | Color | Card odds Easy | Medium | Hard |
+  |---|---|---|---|---|
+  | Common | stone `#8C857B` | 60 % | 45 % | 25 % |
+  | Uncommon | fern `#4F8F5B` | 32 % | 32 % | 34 % |
+  | Rare | sky `#3B7DB8` | 7 % | 16 % | 27 % |
+  | Epic | plum `#8A4FB0` | 1 % | 6 % | 13 % |
+  | Legendary | gold `#D9A21B` | 0 % | 1 % | 3 % |
 
-  The monthly tier still decides *when* a bird can ring (season); the card shows the species' fixed tier.
+  **Card odds (decided 2026-10-30, `cardOdds` in `app/lib/birds.dart`):** each ring first draws the card tier from the difficulty's column, then a bird of that tier among those that can ring now (around this month — any month with "All birds" — with a song on the phone, not heard recently); a tier with no such bird drops out and the others scale up. Replaces the old per-month weights 16/8/4/2/1 + allowed tiers, which in practice gave ~80 % Common cards at every difficulty (France, October). The card shows the species' fixed tier (its commonest of the year in the region).
 - **Stats (4):** Weight (g), Wingspan (cm), Length (cm), Flight distance (km).
   - Sources: weight from AVONET (CC BY 4.0, credited); wingspan and length from Wikidata (CC0), missing values estimated from AVONET wing length and mass by a fit on species that have both; flight distance = distance between the species' January and June GBIF occurrence centroids (≈0 for sedentary birds).
   - Each card rolls each stat from a **Gaussian around the species mean** (spread: real AVONET spread where available, otherwise a fixed coefficient of variation per stat), clamped to ±2σ. Rolled once when the card is earned; never changes.
