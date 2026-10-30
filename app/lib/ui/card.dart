@@ -219,10 +219,11 @@ class BirdCardView extends StatelessWidget {
   }
 }
 
-/// The background of a won card: card stock tinted with its rarity [color], engraved with
-/// a guilloche (interlaced waves, as on a banknote) that grows stronger with the rarity
-/// [level] (0 Common … 4 Legendary), plus a foil sheen on Legendary cards. Faint enough
-/// for the text to stay as readable as on plain paper.
+/// The background of a won card: card stock tinted with its rarity [color] and printed
+/// with the pattern of its rarity [level] (0 Common … 4 Legendary), all equally faint so
+/// the text reads as on plain paper: a guilloche (interlaced waves, as on a banknote) for
+/// Common and Uncommon, a diamond lattice for Rare, feather quills for Epic, and the soft
+/// shadow of foliage for Legendary.
 class _CardStock extends CustomPainter {
   const _CardStock(this.color, this.level);
   final Color color;
@@ -230,43 +231,85 @@ class _CardStock extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final box = Offset.zero & size;
     canvas.drawRect(
-      box,
-      Paint()..color = color.withValues(alpha: 0.05 + 0.01 * level),
+      Offset.zero & size,
+      Paint()..color = color.withValues(alpha: 0.05),
     );
-    final wave = Paint()
+    final line = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8 + 0.05 * level
-      ..color = color.withValues(alpha: 0.12 + 0.04 * level);
-    const rowGap = 12.0;
-    for (var row = -1; row < size.height / rowGap + 1; row++) {
+      ..strokeWidth = 0.8
+      ..color = color.withValues(alpha: 0.12);
+    switch (level) {
+      case 2:
+        _lattice(canvas, size, line);
+      case 3:
+        _quills(canvas, size, line);
+      case 4:
+        _foliage(canvas, size);
+      default:
+        _guilloche(canvas, size, line);
+    }
+  }
+
+  void _guilloche(Canvas canvas, Size size, Paint line) {
+    const gap = 12.0;
+    for (var row = -1; row < size.height / gap + 1; row++) {
       for (final phase in [0.0, pi]) {
         final path = Path();
         for (var x = 0.0; x <= size.width; x += 3) {
-          final y = row * rowGap + 7 * sin(x / 20 + phase + row * 0.5);
+          final y = row * gap + 7 * sin(x / 20 + phase + row * 0.5);
           x == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
         }
-        canvas.drawPath(path, wave);
+        canvas.drawPath(path, line);
       }
     }
-    if (level == 4) {
-      // A still foil sheen across the card.
-      canvas.drawRect(
-        box,
-        Paint()
-          ..shader = LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0),
-              Colors.white.withValues(alpha: 0.35),
-              color.withValues(alpha: 0.12),
-              Colors.white.withValues(alpha: 0),
-            ],
-            stops: const [0.25, 0.45, 0.55, 0.75],
-          ).createShader(box),
-      );
+  }
+
+  void _lattice(Canvas canvas, Size size, Paint line) {
+    for (var d = -size.height; d < size.width; d += 9) {
+      canvas
+        ..drawLine(Offset(d, 0), Offset(d + size.height, size.height), line)
+        ..drawLine(Offset(d, size.height), Offset(d + size.height, 0), line);
+    }
+  }
+
+  /// Rows of quills: a shaft with barbs slanting up on both sides, offset row to row.
+  void _quills(Canvas canvas, Size size, Paint line) {
+    const colGap = 26.0, barbGap = 5.0, length = 70.0;
+    for (var top = -20.0; top < size.height; top += length) {
+      final shift = ((top / length).round().isEven ? 0.0 : colGap / 2);
+      for (var x = shift - colGap; x < size.width + colGap; x += colGap) {
+        canvas.drawLine(Offset(x, top), Offset(x, top + length - 6), line);
+        for (var y = top + 6; y < top + length - 6; y += barbGap) {
+          canvas
+            ..drawLine(Offset(x, y), Offset(x - 9, y - 7), line)
+            ..drawLine(Offset(x, y), Offset(x + 9, y - 7), line);
+        }
+      }
+    }
+  }
+
+  /// The blurred shadow of leaves, as if the card lay under a branch.
+  void _foliage(Canvas canvas, Size size) {
+    final r = Random(7); // the same branch on every Legendary card
+    final shade = Paint()
+      ..color = Color.lerp(color, ink, 0.4)!.withValues(alpha: 0.11)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+    for (var i = 0; i < 22; i++) {
+      final len = 26 + r.nextDouble() * 34;
+      canvas
+        ..save()
+        ..translate(r.nextDouble() * size.width, r.nextDouble() * size.height)
+        ..rotate(r.nextDouble() * 2 * pi)
+        ..drawPath(
+          // A leaf: two arcs meeting at a point at each end.
+          Path()
+            ..moveTo(0, -len / 2)
+            ..quadraticBezierTo(len * 0.38, 0, 0, len / 2)
+            ..quadraticBezierTo(-len * 0.38, 0, 0, -len / 2),
+          shade,
+        )
+        ..restore();
     }
   }
 
