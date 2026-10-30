@@ -2,16 +2,45 @@
 
 Iterative: each step ends with something that runs on a real Android device. Placeholders first, real content later. See `decisions.md` for rules and choices.
 
-## Status — end of session 2026-10-29
-- **App:** Iteration 4a polish done (UI rounds 2–4, Twitch Zone with boosters, card flip reveal with rarity sparkles, Series with achievements, glass bottom bar, 4 bird themes). Everything committed and pushed; the S22 runs a **profile** build of the latest commit (`flutter build apk --profile`, installed with `adb install --no-streaming -r`; same debug signature, data kept).
-- **Not yet seen on the phone** (installed, phone was locked): Settings → Theme swatches and the 4 bird themes, the 3 new achievements + back button on the Series screen, the rarity-scaled sparkles (Epic/Legendary especially), the countdown/bottom-bar tweaks.
-- **Pipeline:** the full catalog run (`py pipeline/build.py`, WORKERS=2) was still at step 5/6 (card stats) at the end of the session, log in `pipeline/cache/run.log`. It now also writes `series.json` at the end.
-- **Next session, in order:**
-  1. Check the run finished (`pipeline/cache/run.log`, `pipeline/report.md`); then `py pipeline/build.py fallback` and `py pipeline/build.py publish` (publishes `series.json` too); tick 3c-1.
-  2. `py pipeline/build.py series` output: fix the Latin names "not in the catalog" in `pipeline/series.md` (GBIF spelling), review the hand-picked lists with the user.
-  3. Look at the unverified items above on the S22 (unlock the phone; it locks itself when the USB link drops).
-  4. Open questions for the user: "Flight 0.0 km" on resident birds (show "—" or "Resident"?); Legendary hunter is 0/66 in France (keep, or make it "5 Legendary cards"?); badge photos of narrow pictures show side bands (fill the circle?).
-  5. Then 4a leftovers (icon/notification icon check, accessibility pass), and 4b when the Play account exists.
+## Status — 2026-10-30
+- **App:** feature-complete for a first free Android release; Iteration 4a polish done (see below). Everything committed and pushed; the S22 runs a **profile** build of the latest commit (`flutter build apk --profile`, installed with `adb install --no-streaming -r`; same debug signature, data kept). Test builds have a dev-only "preview a card reveal" row at the bottom of Credits.
+- **Pipeline:** the full catalog run (`py pipeline/build.py`, WORKERS=2, started 2026-10-29 14:49) is at step 5/6 (card stats: ~24 GBIF queries per species for flight distances), 1,212 regions and 1,629 species kept; expected to finish 2026-10-30 ~16:00–16:30 if the PC doesn't sleep (it paused overnight once). Log: `pipeline/cache/run.log`. It also writes `series.json` at the end.
+- **Next:** see "Next steps to release" below, starting with A.
+
+## Next steps to release (decided 2026-10-30)
+The fastest path: finish **A** today; create the Play developer account **now, in parallel** (identity check and the 14-day closed test are the long, unavoidable waits); meanwhile **B** and **C**.
+
+### A — Finish the content (when the catalog run ends)
+- [ ] Review `pipeline/report.md`: dropped species, stats coverage, regions
+- [ ] `py pipeline/build.py fallback`: re-pick the 30 bundled offline birds from the full catalog (writes their `continent` tags)
+- [ ] `py pipeline/build.py series`: fix the Latin names "not in the catalog" in `pipeline/series.md` (GBIF spelling); user review of the hand-picked lists (Birds in black, Garden songbirds, Rainbow birds, Night singers, Eagles, Birders' legends)
+- [ ] `py pipeline/build.py publish`: full catalog + `series.json` online; tick 3c-1
+- [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
+
+### B — Close the 4a leftovers
+- [ ] User check on the phone: app icon (home screen, themed icon) and the white-bird notification icon
+- [ ] Accessibility pass: TalkBack on every screen, largest font size
+- [ ] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively)
+- [ ] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish`
+
+### C — Release build
+- [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
+- [ ] Move the user's collection before switching from the test build: the Play build is signed differently, so Android sees another install. Export the prefs file with adb (as for the package rename, scratchpad copies) or rely on Android Auto Backup (verified in 4a); otherwise cards and streak stay on the test build
+
+### D — Google Play (= 4b; needs the user)
+- [ ] Create the Play developer account ($25, identity verification: can take days)
+- [ ] **Closed test: at least 12 testers for 14 consecutive days** (required for new personal accounts before production) — recruit early: friends, family, birding groups
+- [ ] Store listing: texts ready in `memory/store-listing.md`; still to make: 512 × 512 icon (export from the vector), 1024 × 500 feature graphic, phone screenshots (list in the file)
+- [ ] Declarations (answers drafted in `memory/store-listing.md`): Data safety (no data collected), full-screen intent and exact alarms (core alarm-clock features), media-playback foreground service (Play may ask for a short video), content rating (Everyone), target audience, no ads
+- [ ] Internal test → closed test (14 days) → production
+
+### Optional — not blocking a free Android release
+- [ ] iOS (Iteration 5)
+- [ ] Accounts, card trading, market (see "Future")
+- [ ] Replace or remove the NC-licensed recordings (mandatory only before any monetization, ads included)
+- [ ] Play Store polish: localized screenshots (FR), a promo video
+- [ ] Phone-tilt parallax (gyroscope) for boosters and cards, if the finger version isn't enough
+- [ ] Slimmer app: 20 bundled birds instead of 30 (−2 MB) now that the deck rotates
 - **Working notes:** Gradle heap is capped at 3 GB (`app/android/gradle.properties`) and Gradle is stopped after each build so the pipeline keeps enough memory. Before and after each phone session, read the saved settings (`adb shell run-as com.nathanprovin.earlybird cat shared_prefs/FlutterSharedPreferences.xml`): the user also uses the phone, and automated taps can land on the wrong screen. Screen recordings (`adb shell screenrecord`) + `.tools/ffmpeg` contact sheets are the way to check animations.
 
 ## Iteration 0 — Setup
@@ -92,11 +121,21 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 #### Bottom bar & themes
 - [x] Bottom bar: **frosted glass** (blur + translucent surface) over the pages, Twitch (music note + count badge) | Alarms (52 dp accent circle, ring when open) | Collection; pages scroll under it. History: plain → shaped "bump" background → glass (user).
-- [x] **4 bird themes + Phone**, picked with round swatches in Settings: Blackbird (dark), Serin (dark), Blue Tit (light), Gull (light); Phone = Blue Tit by day, Blackbird in dark mode; old saved themes fall back to Phone. Not seen on the phone yet.
+- [x] **4 bird themes + Phone**: Blackbird (dark), Serin (dark, renamed from Greenfinch, mossier green), Blue Tit (light), Gull / FR Mouette (light, the Black-headed Gull); Phone = Blue Tit by day, Blackbird in dark mode; old saved themes fall back to Phone. Picker = a row of drawn birds in each theme's plumage with palette dots (2026-10-30). Selected Settings options filled with the theme accent, others neutral.
 
-### 4b — Play Store (needs the Play developer account: $25, identity check)
-- [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations
-- [ ] Screenshots and feature graphic
+#### 2026-10-30 (all on the S22; details in decisions.md)
+- [x] Streak pill top left: the theme's animated bird (asleep / bobbing / hopping with a flame / flapping) + the count
+- [x] "Resident" instead of "0.0 km" flight distance
+- [x] **Pick = bird first, then card rarity:** bird drafted as before (scarce species a little more often: 16/9/6/3/2), then the card's rarity from the difficulty's odds (Easy 60/32/7/1/0, Medium 45/32/16/6/1, Hard 25/34/27/13/3), tilted toward the bird's scarcity (×½ per tier of distance). Rarest copy = best copy; Legendary hunter = 5 Legendary cards
+- [x] **Deck rotation:** only downloaded, not-just-heard songs count, so each answer brings a new species; bundled birds only as a fallback (they had filled the deck: nothing had ever been downloaded); ≤ 60 songs kept; offline first launch keeps the user's continent's bundled birds
+- [x] **Stats with a fat upward tail** (shared "specimen" factor, Student-t): quality ≥ 80 % for ~8.5 % of cards (was 1.7 %)
+- [x] **Card stock per rarity**, all faint: guilloche (Common, Uncommon), wide lattice (Rare), foliage shadow (Epic), golden camouflage (Legendary)
+- [x] **Cards in 3D:** full-screen cards tilt toward a held finger (no sway); glossy plastic shine on Epic and Legendary sliding with the tilt
+- [x] Reveal: fireworks from the card's border + aura, scaled by rarity; discreet haptics on booster opening and on each reveal step
+- [x] Dev-only reveal preview per rarity (Credits, test builds only; nothing saved)
+
+### 4b — Play Store
+See "Next steps to release", D.
 
 ## Future — Social & market (needs accounts; see decisions.md "Accounts")
 - [ ] Anonymous-first accounts + Sign in with Google/Apple; upload of the local collection
