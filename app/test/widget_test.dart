@@ -77,36 +77,42 @@ void main() {
     expect(_b('robin').recordings.first.nc, isFalse);
   });
 
-  test('pool: birds around this month, weighted by the card odds', () {
+  test('pool follows season and difficulty', () {
     Set<String> ids(int? m, Difficulty d) =>
         pool(m, d).keys.map((b) => b.id).toSet();
-    expect(ids(10, Difficulty.easy), {'robin', 'warbler'}); // Rare: 7 % at Easy
-    expect(
-      ids(5, Difficulty.easy),
-      contains('flycatcher'),
-    ); // Epic: 1 % at Easy
+    expect(ids(10, Difficulty.easy), {'robin'});
+    expect(ids(10, Difficulty.hard), {'robin', 'warbler'});
+    expect(ids(5, Difficulty.medium), containsAll(['redstart', 'heron']));
+    expect(ids(5, Difficulty.medium), isNot(contains('flycatcher')));
     expect(ids(null, Difficulty.hard).length, _fake.length); // "All birds"
     expect(
       pool(1, Difficulty.easy).length,
       _fake.length,
     ); // empty month falls back
-    // May at Hard: 6 Common birds share 25 %, 2 Uncommon 34 %, 1 Epic 13 %.
-    expect(pool(5, Difficulty.hard)[_b('robin')], closeTo(25 / 6, 1e-9));
-    expect(pool(5, Difficulty.hard)[_b('heron')], 17);
-    expect(pool(5, Difficulty.hard)[_b('flycatcher')], 13);
+    expect(pool(5, Difficulty.hard)[_b('flycatcher')], 3); // Epic this month
+    expect(pool(5, Difficulty.hard)[_b('robin')], 16); // Common this month
   });
 
-  test('card tiers come up with the odds of the difficulty', () {
+  test('card rarity: drawn from the odds of the difficulty', () {
     final r = Random(7);
-    final seen = <String, int>{};
-    for (var i = 0; i < 20000; i++) {
-      final b = pickBird([], 5, Difficulty.hard, _all, r)!.$1;
-      seen[b.rarity] = (seen[b.rarity] ?? 0) + 1;
+    for (final (d, odds) in [
+      (Difficulty.easy, [60, 32, 7, 1, 0]),
+      (Difficulty.medium, [45, 32, 16, 6, 1]),
+      (Difficulty.hard, [25, 34, 27, 13, 3]),
+    ]) {
+      final seen = <String, int>{};
+      for (var i = 0; i < 20000; i++) {
+        final t = drawRarity(d, r);
+        seen[t] = (seen[t] ?? 0) + 1;
+      }
+      for (final (i, t) in tiers.indexed) {
+        expect(
+          (seen[t] ?? 0) / 20000,
+          closeTo(odds[i] / 100, 0.012),
+          reason: '$d $t',
+        );
+      }
     }
-    // No Rare or Legendary bird in May: Common 25, Uncommon 34, Epic 13 out of 72.
-    expect(seen['common']! / 20000, closeTo(25 / 72, 0.02));
-    expect(seen['uncommon']! / 20000, closeTo(34 / 72, 0.02));
-    expect(seen['epic']! / 20000, closeTo(13 / 72, 0.02));
   });
 
   test(
@@ -136,11 +142,8 @@ void main() {
       final (b2, r2) = pickBird([], 5, Difficulty.easy, _all, Random(seed))!;
       if (b2.recordings.any((r) => r.kind == 'song')) expect(r2.kind, 'song');
     }
-    // Every bird of October heard recently: they can still ring.
-    expect(
-      pickBird(['robin', 'warbler'], 10, Difficulty.easy, _all)!.$1.id,
-      isIn(['robin', 'warbler']),
-    );
+    // The only bird of October at Easy was heard recently: it can still ring.
+    expect(pickBird(['robin'], 10, Difficulty.easy, _all)!.$1.id, 'robin');
     // Only the warbler's call is on the phone: it's the only bird that can ring.
     final onlyWarbler = pickBird(
       [],
@@ -177,6 +180,7 @@ void main() {
       final c = rollCard(
         _b('robin'),
         'FR',
+        rarity: 'epic', // a card's rarity is its own, not the species'
         recording: 'audio/robin-2.m4a',
         random: Random(seed),
       );
@@ -185,13 +189,13 @@ void main() {
       expect(c.stats['distance'], inInclusiveRange(0, 100)); // never negative
       expect(c.stats.containsKey('length'), isFalse);
       expect(c.quality, inInclusiveRange(0, 100));
-      expect((c.rarity, c.region), ('common', 'FR'));
+      expect((c.rarity, c.region), ('epic', 'FR'));
       final back = CardData.fromJson(c.toJson());
       expect(
         back.stats,
         c.stats,
       ); // maps compare by content only outside records
-      expect((back.rarity, back.region), ('common', 'FR'));
+      expect((back.rarity, back.region), ('epic', 'FR'));
       expect(back.recording, 'audio/robin-2.m4a');
     }
     // A card from before 3c has no rarity or region.
@@ -351,6 +355,7 @@ void main() {
       final small = seriesStates(birds, s.cards, s.bestStreak);
       expect(small.map((x) => x.id), [
         'small',
+        legendaryHunter, // now always: 5 Legendary cards
         perfectWeek,
         fullSet,
         collector,
@@ -362,7 +367,10 @@ void main() {
         small[0].face!.id,
         'robin',
       ); // signature not in the region: first by number
-      expect(small[1].complete, isTrue); // an 8-day streak is a perfect week
+      expect(
+        small.firstWhere((x) => x.id == perfectWeek).complete,
+        isTrue,
+      ); // an 8-day streak is a perfect week
       for (final id in ['robin', 'redstart', 'tit']) {
         await s.answered(null, _b(id), null, true, '');
       }

@@ -295,8 +295,14 @@ class Store extends ChangeNotifier {
       bird.id,
       ...recent.take(recentCount - 1),
     ]);
+    // The bird was drafted when the alarm was set; the card's rarity is drawn now.
     final card = correct
-        ? rollCard(bird, region, recording: recording?.file)
+        ? rollCard(
+            bird,
+            region,
+            rarity: drawRarity(difficulty),
+            recording: recording?.file,
+          )
         : null;
     if (card != null) {
       await _prefs.setString('cards', jsonEncode([...cards, card]));

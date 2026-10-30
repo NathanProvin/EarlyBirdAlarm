@@ -5,7 +5,24 @@ enum Difficulty { easy, medium, hard }
 /// Rarity tiers, most common first.
 const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
-/// Chance (%) that a ring is a bird of each card tier, by difficulty (decided 2026-10-30).
+/// Step 1 of a ring, the bird: how often a species rings, by how common it is this month
+/// in the region (scarce birds a little more often than the 16/8/4/2/1 of 3b; 2026-10-30),
+/// and which of those tiers each difficulty drafts from.
+const _weight = {
+  'common': 16,
+  'uncommon': 9,
+  'rare': 6,
+  'epic': 3,
+  'legendary': 2,
+};
+const _allowed = {
+  Difficulty.easy: {'common', 'uncommon'},
+  Difficulty.medium: {'common', 'uncommon', 'rare'},
+  Difficulty.hard: {'common', 'uncommon', 'rare', 'epic', 'legendary'},
+};
+
+/// Step 2, the card won: its rarity (%) by difficulty, drawn independently of the bird
+/// (decided 2026-10-30). A Blackbird can come as a Legendary copy.
 const cardOdds = {
   Difficulty.easy: {
     'common': 60,
@@ -30,19 +47,11 @@ const cardOdds = {
   },
 };
 
-/// Pick weights that make the card tiers of [bs] come up with [cardOdds]: each tier's
-/// share split evenly among its birds. A tier with no bird here drops out and the
-/// others scale up; a tier at 0 % never rings.
-Map<Bird, double> _weights(Iterable<Bird> bs, Difficulty difficulty) {
+/// The rarity of a card won at [difficulty], drawn from [cardOdds].
+String drawRarity(Difficulty difficulty, [Random? random]) {
   final odds = cardOdds[difficulty]!;
-  final count = <String, int>{};
-  for (final b in bs) {
-    count[b.rarity] = (count[b.rarity] ?? 0) + 1;
-  }
-  return {
-    for (final b in bs)
-      if (odds[b.rarity]! > 0) b: odds[b.rarity]! / count[b.rarity]!,
-  };
+  var r = (random ?? Random()).nextInt(odds.values.reduce((a, b) => a + b));
+  return odds.entries.firstWhere((e) => (r -= e.value) < 0).key;
 }
 
 /// Vocalizations that can ring at each difficulty (decisions.md "Vocalizations").
@@ -103,7 +112,8 @@ class Bird {
 
   String nameIn(String locale) => locale.startsWith('fr') ? nameFr : name;
 
-  /// Card tier: the bird's commonest tier of the year in the region.
+  /// How common the species is: its commonest tier of the year in the region. Cards
+  /// have their own rarity (drawn when won); this one is for cards from before 2026-10-30.
   String get rarity => tierIn(null) ?? 'legendary';
 
   /// The tier in [month], or the most common tier of the year when [month] is null.
@@ -130,13 +140,14 @@ Map<String, Bird> species = {};
 Bird? birdById(String id) =>
     birds.where((b) => b.id == id).firstOrNull ?? species[id];
 
-/// Birds that can ring in [month] (around that month; null = any month) at [difficulty],
-/// with their pick weight (see [cardOdds]). Falls back to every bird so a ring always has one.
-Map<Bird, double> pool(int? month, Difficulty difficulty) {
-  final p = _weights(
-    birds.where((b) => month == null || b.months.containsKey(month)),
-    difficulty,
-  );
+/// Birds that can ring in [month] (null = any month) at [difficulty], with their pick weight.
+/// Falls back to every bird so a ring always has one.
+Map<Bird, int> pool(int? month, Difficulty difficulty) {
+  final p = {
+    for (final b in birds)
+      if (_allowed[difficulty]!.contains(b.tierIn(month)))
+        b: _weight[b.tierIn(month)]!,
+  };
   return p.isNotEmpty ? p : {for (final b in birds) b: 1};
 }
 
@@ -150,22 +161,15 @@ Map<Bird, double> pool(int? month, Difficulty difficulty) {
   Random? random,
 ]) {
   random ??= Random();
-  final all = [
-    for (final b in pool(month, difficulty).keys)
-      if (b.playable(difficulty).any(onPhone)) b,
-  ];
+  final all = {
+    for (final MapEntry(key: b, value: w) in pool(month, difficulty).entries)
+      if (b.playable(difficulty).any(onPhone)) b: w,
+  };
   if (all.isEmpty) return null;
-  final fresh = all.where((b) => !recent.contains(b.id)).toList();
-  // Odds shared among the birds that can actually ring now.
-  var p = _weights(fresh.isNotEmpty ? fresh : all, difficulty);
-  if (p.isEmpty) p = {for (final b in all) b: 1};
-  var r = random.nextDouble() * p.values.reduce((a, b) => a + b);
-  final bird = p.entries
-      .firstWhere(
-        (e) => (r -= e.value) < 0,
-        orElse: () => p.entries.last, // rounding at the very end
-      )
-      .key;
+  final fresh = {...all}..removeWhere((b, _) => recent.contains(b.id));
+  final p = fresh.isNotEmpty ? fresh : all;
+  var r = random.nextInt(p.values.reduce((a, b) => a + b));
+  final bird = p.entries.firstWhere((e) => (r -= e.value) < 0).key;
   final recs = bird.playable(difficulty).where(onPhone).toList();
   return (bird, recs[random.nextInt(recs.length)]);
 }

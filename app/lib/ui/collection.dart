@@ -14,11 +14,17 @@ import 'region.dart';
 import 'series.dart';
 import 'theme.dart';
 
-/// The best copy of each owned bird, by bird id.
+/// A card's rarity; cards from before 3c have none and take their species' tier.
+String cardRarity(CardData c) =>
+    c.rarity ?? birdById(c.birdId)?.rarity ?? 'common';
+
+/// The best copy of each owned bird, by bird id: the rarest, then the best quality.
 Map<String, CardData> bestCards(List<CardData> cards) {
   final best = <String, CardData>{};
+  int score(CardData c) => tiers.indexOf(cardRarity(c)) * 1000 + c.quality;
   for (final c in cards) {
-    if ((best[c.birdId]?.quality ?? -1) < c.quality) best[c.birdId] = c;
+    if (best[c.birdId] case final b? when score(b) >= score(c)) continue;
+    best[c.birdId] = c;
   }
   return best;
 }
@@ -43,11 +49,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final best = bestCards(cards);
     final heard = store.heard;
     final regionIds = {for (final b in birds) b.id};
-    String rarityOf(Bird b, CardData? c) => c?.rarity ?? b.rarity;
+    // Rarity belongs to cards: a bird not won yet has none (the filter hides it).
+    String? rarityOf(Bird b, CardData? c) => c == null ? null : cardRarity(c);
+    int rank((Bird, CardData?) e) =>
+        e.$2 == null ? -1 : tiers.indexOf(cardRarity(e.$2!));
     int rarest((Bird, CardData?) a, (Bird, CardData?) b) {
-      final t =
-          tiers.indexOf(rarityOf(b.$1, b.$2)) -
-          tiers.indexOf(rarityOf(a.$1, a.$2));
+      final t = rank(b) - rank(a);
       return t != 0 ? t : a.$1.number.compareTo(b.$1.number);
     }
 

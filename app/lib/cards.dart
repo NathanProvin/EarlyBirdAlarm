@@ -49,10 +49,12 @@ class CardData {
   };
 }
 
-/// Rolls each stat from a Gaussian around the species mean, clamped to ±2 sd.
+/// Rolls each stat from a Gaussian around the species mean, clamped to ±2 sd. The
+/// card's [rarity] is drawn apart (see drawRarity) and doesn't change the stats.
 CardData rollCard(
   Bird bird,
   String? region, {
+  required String rarity,
   String? recording,
   Random? random,
 }) {
@@ -72,7 +74,7 @@ CardData rollCard(
         : (100 * percentiles.reduce((a, b) => a + b) / percentiles.length)
               .round(),
     earned: DateTime.now(),
-    rarity: bird.rarity,
+    rarity: rarity,
     region: region,
     recording: recording,
   );

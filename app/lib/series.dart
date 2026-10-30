@@ -57,10 +57,12 @@ List<SeriesState> seriesStates(
   final have = {for (final c in cards) c.birdId};
   final byId = {for (final b in region) b.id: b};
   int owned(List<Bird> bs) => bs.where((b) => have.contains(b.id)).length;
-  final legendary = [
-    for (final b in region)
-      if (b.rarity == 'legendary') b,
-  ];
+  // Rarity belongs to cards (drawn when won); old cards take their species' tier.
+  String? rarityOf(CardData c) => c.rarity ?? birdById(c.birdId)?.rarity;
+  int atLeast(String tier) => cards.where((c) {
+    final r = rarityOf(c);
+    return r != null && tiers.indexOf(r) >= tiers.indexOf(tier);
+  }).length;
   return [
     for (final s in allSeries)
       if ([for (final id in s.birds) ?byId[id]]..sort(_byNumber) case final bs
@@ -73,19 +75,16 @@ List<SeriesState> seriesStates(
           total: bs.length,
           face: byId[s.signature] ?? bs.first,
         ),
-    if (legendary.isNotEmpty)
-      SeriesState(
-        id: legendaryHunter,
-        birds: legendary,
-        owned: owned(legendary),
-        total: legendary.length,
-      ),
+    // 5 Legendary cards.
+    SeriesState(
+      id: legendaryHunter,
+      owned: min(atLeast('legendary'), 5),
+      total: 5,
+    ),
     SeriesState(id: perfectWeek, owned: min(bestStreak, 7), total: 7),
     SeriesState(
       id: fullSet,
-      owned: {for (final c in cards) c.rarity ?? birdById(c.birdId)?.rarity}
-          .whereType<String>()
-          .length,
+      owned: {for (final c in cards) rarityOf(c)}.whereType<String>().length,
       total: tiers.length,
     ),
     // 100 cards, duplicates included.
@@ -97,17 +96,7 @@ List<SeriesState> seriesStates(
       total: 50,
     ),
     // 5 cards Rare or better.
-    SeriesState(
-      id: rareFinds,
-      owned: min(
-        cards.where((c) {
-          final r = c.rarity ?? birdById(c.birdId)?.rarity;
-          return r != null && tiers.indexOf(r) >= tiers.indexOf('rare');
-        }).length,
-        5,
-      ),
-      total: 5,
-    ),
+    SeriesState(id: rareFinds, owned: min(atLeast('rare'), 5), total: 5),
   ];
 }
 
