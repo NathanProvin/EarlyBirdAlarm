@@ -185,7 +185,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeBlackbird => 'Merle';
 
   @override
-  String get themeGreenfinch => 'Verdier';
+  String get themeSerin => 'Serin';
 
   @override
   String get themeBlueTit => 'Mésange';

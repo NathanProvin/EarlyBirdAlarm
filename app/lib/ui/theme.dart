@@ -40,8 +40,8 @@ const palettes = <String, Palette>{
     onAccent: ink,
     surface: Color(0xFF2F3337),
   ),
-  // Deep soft green, bright yellow wing flash.
-  'greenfinch': (
+  // Deep soft green, the serin's bright yellow.
+  'serin': (
     brightness: Brightness.dark,
     background: Color(0xFF243020),
     text: Color(0xFFEEF3E3),

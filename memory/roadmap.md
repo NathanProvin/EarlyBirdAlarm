@@ -92,7 +92,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 #### Bottom bar & themes
 - [x] Bottom bar: **frosted glass** (blur + translucent surface) over the pages, Twitch (music note + count badge) | Alarms (52 dp accent circle, ring when open) | Collection; pages scroll under it. History: plain → shaped "bump" background → glass (user).
-- [x] **4 bird themes + Phone**, picked with round swatches in Settings: Blackbird (dark), Greenfinch (dark), Blue Tit (light), Gull (light); Phone = Blue Tit by day, Blackbird in dark mode; old saved themes fall back to Phone. Not seen on the phone yet.
+- [x] **4 bird themes + Phone**, picked with round swatches in Settings: Blackbird (dark), Serin (dark), Blue Tit (light), Gull (light); Phone = Blue Tit by day, Blackbird in dark mode; old saved themes fall back to Phone. Not seen on the phone yet.
 
 ### 4b — Play Store (needs the Play developer account: $25, identity check)
 - [ ] Create the Play Console app, upload the AAB to internal testing, submit the declarations

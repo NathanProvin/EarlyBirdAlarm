@@ -422,11 +422,11 @@ abstract class AppLocalizations {
   /// **'Blackbird'**
   String get themeBlackbird;
 
-  /// No description provided for @themeGreenfinch.
+  /// No description provided for @themeSerin.
   ///
   /// In en, this message translates to:
-  /// **'Greenfinch'**
-  String get themeGreenfinch;
+  /// **'Serin'**
+  String get themeSerin;
 
   /// No description provided for @themeBlueTit.
   ///
