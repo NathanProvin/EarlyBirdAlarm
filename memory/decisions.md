@@ -20,8 +20,8 @@ An alarm clock (Android first, iOS later). Each ring plays a different bird song
 | Region | Either **GPS** → the 2°×2° cell around you (computed on the phone), or **pick from a list**: European countries; USA, Canada and Russia split into bioregions (decided 2026-10-28). Rarity is computed per region and **frozen on the card** when it's won |
 | Languages | English + French UI and common names; scientific name always shown |
 | Wake flow | Volume fades up over ~60s → snooze (same bird) → pick 1 of 4 → success/failure pop-up → reveal (photo, names, Latin name, credits). **No fact text** |
-| Gamification | Streak = consecutive correct guesses; a wrong guess resets it; snooze doesn't affect it |
-| Difficulty | User setting Easy / Medium / Hard. Decides which rarity tiers can ring (weighted, rarer = less often) and the wrong choices (another order / the same order / the same family) |
+| Gamification | Streak = consecutive correct guesses; a wrong guess resets it; snooze doesn't affect it. Shown top left of Alarms as a pill (2026-10-30): the theme's bird + the count; the bird sleeps at 0, bobs at 1–2, hops with a flame from 3, hops and flaps with a bigger flame from 7 (bigger again from 14). No details sheet |
+| Difficulty | User setting Easy / Medium / Hard. Decides the card odds (see "Card collection"), the kinds of recordings, and the wrong choices (another order / the same order / the same family) |
 | Alarms | Multiple alarms: time, repeat days, on/off, snooze length, label |
 | Rotation | New bird per ring, avoiding birds heard recently |
 | Collection | Trading-card collection of the birds you identified (see "Card collection") |
