@@ -201,7 +201,7 @@ void main() {
     }
   });
 
-  test('cards: rolls stay within ±2 sd, keep rarity and region', () {
+  test('cards: rolls stay within ±3 sd, keep rarity and region', () {
     expect(_b('robin').stats.keys, ['weight', 'wingspan', 'distance']);
     for (var seed = 0; seed < 200; seed++) {
       final c = rollCard(
@@ -211,9 +211,9 @@ void main() {
         recording: 'audio/robin-2.m4a',
         random: Random(seed),
       );
-      expect(c.stats['weight'], inInclusiveRange(16, 24));
-      expect(c.stats['wingspan'], inInclusiveRange(20, 24));
-      expect(c.stats['distance'], inInclusiveRange(0, 100)); // never negative
+      expect(c.stats['weight'], inInclusiveRange(14, 26));
+      expect(c.stats['wingspan'], inInclusiveRange(19, 25));
+      expect(c.stats['distance'], inInclusiveRange(0, 150)); // never negative
       expect(c.stats.containsKey('length'), isFalse);
       expect(c.quality, inInclusiveRange(0, 100));
       expect((c.rarity, c.region), ('epic', 'FR'));
@@ -420,6 +420,19 @@ void main() {
     s.theme = 'gull';
     await Future<void>.delayed(Duration.zero);
     expect(s.theme, 'gull');
+  });
+
+  test('card quality: a fat upward tail, few poor cards', () {
+    // The fake robin has 3 stats (weight, wingspan, distance).
+    final r = Random(11);
+    final q = [
+      for (var i = 0; i < 20000; i++)
+        rollCard(_b('robin'), null, rarity: 'common', random: r).quality,
+    ];
+    double share(bool Function(int) f) => q.where(f).length / q.length;
+    expect(share((x) => x >= 80), inInclusiveRange(0.06, 0.13));
+    expect(share((x) => x >= 95), inInclusiveRange(0.008, 0.04));
+    expect(share((x) => x <= 20), lessThan(0.03));
   });
 
   test('continent of a region, or of the phone before any region', () {

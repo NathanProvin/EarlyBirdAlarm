@@ -49,8 +49,13 @@ class CardData {
   };
 }
 
-/// Rolls each stat from a Gaussian around the species mean, clamped to ±2 sd. The
-/// card's [rarity] is drawn apart (see drawRarity) and doesn't change the stats.
+/// Rolls each stat around the species mean, in standard deviations z (clamped to ±3):
+/// z = 0.8 × a "fine specimen" factor shared by the card + 0.6 × the stat's own noise.
+/// The shared factor has a fat upward tail (Student-t, 3 degrees of freedom) and only a
+/// narrow downward spread, so great cards turn up now and then and poor ones rarely:
+/// quality ≥ 80 % for ~8.5 % of cards, ≥ 95 % for ~1.7 %, ≤ 20 % for ~1 % (decided
+/// 2026-10-30; before: independent normals, 1.7 % / 0 % / 1.7 %). The card's [rarity] is
+/// drawn apart (see drawRarity) and doesn't change the stats.
 CardData rollCard(
   Bird bird,
   String? region, {
@@ -59,8 +64,11 @@ CardData rollCard(
   Random? random,
 }) {
   final r = random ?? Random();
+  final t = _studentT3(r);
+  final specimen = t > 0 ? t : -_normal(r).abs() * 0.35;
   final rolls = {
-    for (final e in bird.stats.entries) e.key: (e.value, _gaussian(r)),
+    for (final e in bird.stats.entries)
+      e.key: (e.value, (0.8 * specimen + 0.6 * _normal(r)).clamp(-3.0, 3.0)),
   };
   final percentiles = [for (final (_, z) in rolls.values) _cdf(z)];
   return CardData(
@@ -80,10 +88,15 @@ CardData rollCard(
   );
 }
 
-/// Standard normal value (Box-Muller), clamped to ±2.
-double _gaussian(Random r) {
-  final z = sqrt(-2 * log(1 - r.nextDouble())) * cos(2 * pi * r.nextDouble());
-  return z.clamp(-2, 2);
+/// Standard normal value (Box-Muller).
+double _normal(Random r) =>
+    sqrt(-2 * log(1 - r.nextDouble())) * cos(2 * pi * r.nextDouble());
+
+/// Student-t with 3 degrees of freedom, scaled to variance 1: like a normal, with fat tails.
+double _studentT3(Random r) {
+  final chi2 = [for (var i = 0; i < 3; i++) pow(_normal(r), 2)]
+      .reduce((a, b) => a + b);
+  return _normal(r) / sqrt(chi2 / 3) / sqrt(3);
 }
 
 /// Where [value] sits in the species' spread for [stat], 0-1 (for the stat bars).

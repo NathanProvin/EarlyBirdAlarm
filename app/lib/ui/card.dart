@@ -55,69 +55,78 @@ class BirdCardView extends StatelessWidget {
         .where((r) => r.file == card?.recording)
         .firstOrNull;
     final face = Container(
-      padding: const EdgeInsets.all(12),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: paper,
         borderRadius: BorderRadius.circular(radius - 6),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(radius - 8),
-                  child: BirdPhoto(bird),
-                ),
-                if (copies > 1)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: _Badge('×$copies', style: text.titleMedium),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
+      // A won card is printed on textured card stock tinted with its rarity.
+      child: CustomPaint(
+        painter: card == null ? null : _CardStock(frame),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Text(
-                      bird.nameIn(l.localeName),
-                      style: text.titleLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(radius - 8),
+                      child: BirdPhoto(bird),
                     ),
-                    Text(bird.latin, style: _latin(text)),
+                    if (copies > 1)
+                      Positioned(
+                        right: 8,
+                        top: 8,
+                        child: _Badge('×$copies', style: text.titleMedium),
+                      ),
                   ],
                 ),
               ),
-              // The recording this card was won with, to hear it again.
-              if (recording != null)
-                Column(
-                  children: [
-                    PlayButton(recording.file, color: frame),
-                    Text(kindName(l, recording.kind), style: _latin(text)),
-                  ],
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          bird.nameIn(l.localeName),
+                          style: text.titleLarge,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(bird.latin, style: _latin(text)),
+                      ],
+                    ),
+                  ),
+                  // The recording this card was won with, to hear it again.
+                  if (recording != null)
+                    Column(
+                      children: [
+                        PlayButton(recording.file, color: frame),
+                        Text(kindName(l, recording.kind), style: _latin(text)),
+                      ],
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              for (final key in statKeys)
+                if (bird.stats.containsKey(
+                  key,
+                )) // unknown for this species: no row
+                  _StatRow(
+                    label: statName(l, key),
+                    value: card?.stats[key],
+                    stat: key,
+                    bird: bird,
+                    color: frame,
+                  ),
             ],
           ),
-          const SizedBox(height: 8),
-          for (final key in statKeys)
-            if (bird.stats.containsKey(key)) // unknown for this species: no row
-              _StatRow(
-                label: statName(l, key),
-                value: card?.stats[key],
-                stat: key,
-                bird: bird,
-                color: frame,
-              ),
-        ],
+        ),
       ),
     );
     // The card is a fixed-size picture: text grows with the phone's font size, up to 1.3×.
@@ -205,6 +214,40 @@ class BirdCardView extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The background of a won card: card stock tinted with its rarity [color] — a light
+/// wash, a fine diamond lattice and a deeper tint toward the edges, all faint enough for
+/// the text to read as on plain paper.
+class _CardStock extends CustomPainter {
+  const _CardStock(this.color);
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    canvas.drawRect(box, Paint()..color = color.withValues(alpha: 0.06));
+    final line = Paint()
+      ..color = color.withValues(alpha: 0.08)
+      ..strokeWidth = 0.7;
+    const step = 9.0;
+    for (var d = -size.height; d < size.width; d += step) {
+      canvas
+        ..drawLine(Offset(d, 0), Offset(d + size.height, size.height), line)
+        ..drawLine(Offset(d, size.height), Offset(d + size.height, 0), line);
+    }
+    canvas.drawRect(
+      box,
+      Paint()
+        ..shader = RadialGradient(
+          radius: 0.8,
+          colors: [color.withValues(alpha: 0), color.withValues(alpha: 0.14)],
+        ).createShader(box),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CardStock oldDelegate) => oldDelegate.color != color;
 }
 
 TextStyle? _latin(TextTheme text) =>
