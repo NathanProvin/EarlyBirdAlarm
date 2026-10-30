@@ -4,7 +4,8 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 ## Status — 2026-10-30
 - **App:** feature-complete for a first free Android release; Iteration 4a polish done (see below). Everything committed and pushed; the S22 runs a **profile** build of the latest commit (`flutter build apk --profile`, installed with `adb install --no-streaming -r`; same debug signature, data kept). Test builds have a dev-only "preview a card reveal" row at the bottom of Credits.
-- **Pipeline:** the full catalog run (`py pipeline/build.py`, WORKERS=2, started 2026-10-29 14:49) is at step 5/6 (card stats: ~24 GBIF queries per species for flight distances), 1,212 regions and 1,629 species kept; expected to finish 2026-10-30 ~16:00–16:30 if the PC doesn't sleep (it paused overnight once). Log: `pipeline/cache/run.log`. It also writes `series.json` at the end.
+- **Pipeline / catalog:** full catalog built and published 2026-10-30: **1,710 species, 1,212 regions** (1,159 GPS cells named "France · North"…, 40 countries, 13 bioregions) + 20 "coming soon" placeholder countries. A publish force-pushes ~800 MB in one go (`gh-pages` is rebuilt from scratch): needs a stable connection (one Wi-Fi cut cost two retries).
+- **Phone:** the user's card collection was wiped 2026-10-30 to start fresh (backups in the session scratchpad); streak, alarms and settings kept.
 - **Next:** see "Next steps to release" below, starting with A.
 
 ## Next steps to release (decided 2026-10-30)
@@ -19,6 +20,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] Published 2026-10-30 (full catalog + `series.json` online, live ~2 min after the push)
 - [x] **Rescue of dropped birds (2026-10-30):** two automatic fallbacks in the pipeline — xeno-canto lookup by exact English name (its taxonomy differs from GBIF's: Antigone vs Grus canadensis) and a Commons search when the Wikidata photos aren't free (skipping paintings, maps, eggs…). **1,710 species kept (+81), 171 dropped** (88 no EN/FR name, 82 no usable free recording — mostly seabirds and Mediterranean specialists, e.g. American White Pelican —, 1 no free photo: Cooper's Hawk). Eagles series fixed (Aquila clanga / pomarina). Fallback birds re-picked (Ruby-crowned Kinglet in). Published again
 - [ ] Optional: hand-pick the remaining widespread drops in `pipeline/overrides.csv` (`xc=…` / `commons=File:…`), and the 88 "no EN/FR name" species
+- [x] Region naming: cells kept (local lists), named after their country + compass part; Collection groups views by name; placeholder countries listed greyed
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
@@ -45,6 +47,8 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [ ] Play Store polish: localized screenshots (FR), a promo video
 - [ ] Phone-tilt parallax (gyroscope) for boosters and cards, if the finger version isn't enough
 - [ ] Slimmer app: 20 bundled birds instead of 30 (−2 MB) now that the deck rotates
+- [ ] **German and Spanish** (~1 day; plan from 2026-10-30): one language list `en, fr, de, es` in the pipeline (the app's comes from the ARB files); 1) generalize with EN/FR only — a `name(json, locale)` helper replaces the 6 `startsWith('fr')` checks, Wikidata query / region / series names loop over the list; 2) add `app_de.arb` / `app_es.arb` (83 strings, native proofreading), bird names from Wikidata `de`/`es` labels (**missing ones fall back to English; only EN + FR stay mandatory**, so no new drops), country names from Wikidata by ISO code (only the 13 bioregions, 9 compass words and 18 series names hand-written), German/Spanish ordinals, privacy policy pages DE/ES (legal text), language setting as a dropdown; 3) rerun the pipeline (new Wikidata name queries only); 4) layout check on the phone in German (long words). New names are extra fields next to `en`/`fr` in the catalog, so older app versions keep working (no `v2`). Optional: Play listing DE/ES. First, one query to count the 1,710 birds missing a German / Spanish name
+- [ ] Faster publish: push on top of the online `gh-pages` (only changed files are sent) instead of ~800 MB from scratch
 - **Working notes:** Gradle heap is capped at 3 GB (`app/android/gradle.properties`) and Gradle is stopped after each build so the pipeline keeps enough memory. Before and after each phone session, read the saved settings (`adb shell run-as com.nathanprovin.earlybird cat shared_prefs/FlutterSharedPreferences.xml`): the user also uses the phone, and automated taps can land on the wrong screen. Screen recordings (`adb shell screenrecord`) + `.tools/ffmpeg` contact sheets are the way to check animations.
 
 ## Iteration 0 — Setup
