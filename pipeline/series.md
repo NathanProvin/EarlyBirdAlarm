@@ -82,7 +82,7 @@ birds: Luscinia megarhynchos, Caprimulgus europaeus, Strix aluco, Bubo bubo, Otu
 
 ## eagles | Eagles | Aigles | Aquila chrysaetos
 birds: Aquila chrysaetos, Haliaeetus albicilla, Haliaeetus leucocephalus, Aquila heliaca,
-  Aquila adalberti, Clanga clanga, Clanga pomarina, Hieraaetus pennatus, Aquila fasciata,
+  Aquila adalberti, Aquila clanga, Aquila pomarina, Hieraaetus pennatus, Aquila fasciata,
   Circaetus gallicus, Pandion haliaetus
 
 ## Birders' legends
