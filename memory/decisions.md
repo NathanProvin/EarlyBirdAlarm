@@ -1,4 +1,4 @@
-﻿# Early Bird Alarm â€” Decisions & Rules
+# Early Bird Alarm â€” Decisions & Rules
 
 ## Concept
 An alarm clock (Android first, iOS later). Each ring plays a different bird song or call. The user guesses the bird (1 of 4) to dismiss the alarm, then sees the answer.
