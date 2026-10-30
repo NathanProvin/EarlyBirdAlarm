@@ -194,7 +194,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get themeBlueTit => 'Mésange';
 
   @override
-  String get themeGull => 'Goéland';
+  String get themeGull => 'Mouette';
 
   @override
   String get play => 'Écouter';

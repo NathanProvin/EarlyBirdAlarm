@@ -114,6 +114,7 @@ ThemeData _themeOf(Palette p) {
     // The chosen option (Settings) is filled with the theme's accent.
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: SegmentedButton.styleFrom(
+        foregroundColor: p.text, // the other options stay neutral
         selectedBackgroundColor: p.accent,
         selectedForegroundColor: p.onAccent,
       ),

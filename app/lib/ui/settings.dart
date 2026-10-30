@@ -47,14 +47,15 @@ const _plumage = <String, _Plumage>{
     beak: Color(0xFF2B2B2B),
     eyeRing: null,
   ),
+  // The Black-headed Gull (mouette rieuse): chocolate hood, red bill and legs.
   'gull': (
     body: Color(0xFFFFFFFF),
     belly: Color(0xFFFFFFFF),
     wing: Color(0xFFB9BEC4),
-    cap: Color(0xFFFFFFFF),
+    cap: Color(0xFF4A3830), // the whole head: its hood
     cheek: null,
-    beak: Color(0xFFF2C94C),
-    eyeRing: null,
+    beak: Color(0xFFB5442E),
+    eyeRing: Color(0xFFFFFFFF),
   ),
 };
 
@@ -62,7 +63,7 @@ const _plumage = <String, _Plumage>{
 class _BirdPainter extends CustomPainter {
   const _BirdPainter(this.p, {required this.gull});
   final _Plumage p;
-  final bool gull; // black wingtip and the red spot on the bill
+  final bool gull; // black wingtip, a hood over the whole head, red legs
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -107,7 +108,7 @@ class _BirdPainter extends CustomPainter {
     // Head with its cap (the top of the head), cheek, eye, beak, legs.
     const head = Offset(70, 40);
     canvas
-      ..drawCircle(head, 17, fill(p.body))
+      ..drawCircle(head, 17, fill(gull ? p.cap : p.body))
       ..save()
       ..clipPath(Path()..addOval(Rect.fromCircle(center: head, radius: 17)))
       ..drawRect(const Rect.fromLTWH(50, 20, 40, 13), fill(p.cap))
@@ -129,11 +130,8 @@ class _BirdPainter extends CustomPainter {
         ], true),
         fill(p.beak),
       );
-    if (gull) {
-      canvas.drawCircle(const Offset(90, 43), 2, fill(const Color(0xFFB5442E)));
-    }
     final leg = Paint()
-      ..color = const Color(0xFF6B5E55)
+      ..color = gull ? p.beak : const Color(0xFF6B5E55)
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
     canvas

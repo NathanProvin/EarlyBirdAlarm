@@ -45,7 +45,7 @@ Devinez quel oiseau chante parmi 4 photos pour arrêter l'alarme. Bonne réponse
 • Une collection de cartes à compléter, vos meilleurs exemplaires et vos séries
 • Zone Cocheur : ouvrez un booster gratuit toutes les 10 minutes pour entraîner votre oreille et gagner d'autres cartes
 • Des séries à compléter — goélands, chouettes, rapaces, légendes des cocheurs… — chacune rapporte un booster bonus
-• Quatre thèmes d'oiseaux : Merle, Serin, Mésange bleue et Goéland
+• Quatre thèmes d'oiseaux : Merle, Serin, Mésange bleue et Mouette
 • Partagez vos cartes avec vos amis
 • Plusieurs alarmes, jours de répétition, répétition, montée progressive du volume
 • Fonctionne hors ligne une fois votre région téléchargée
