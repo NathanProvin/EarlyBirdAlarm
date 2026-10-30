@@ -345,6 +345,13 @@ class _CardDetailState extends State<CardDetail> {
           // In 3D like the boosters; the shared picture is taken inside, flat.
           child: Center(
             child: CardTilt(
+              // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
+              shine:
+                  card != null &&
+                  tiers.indexOf(cardRarity(card)) >= tiers.indexOf('epic'),
+              shineAfter: widget.flipIn
+                  ? const Duration(milliseconds: 1100)
+                  : Duration.zero,
               child: _flip(
                 RepaintBoundary(
                   key: _boundary,

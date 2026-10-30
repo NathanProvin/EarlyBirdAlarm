@@ -435,7 +435,7 @@ void main() {
     expect(share((x) => x <= 20), lessThan(0.03));
   });
 
-  testWidgets('card tilt: sways on its own, follows a held finger', (
+  testWidgets('card tilt: flat at rest, follows a held finger, shine moves', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -444,7 +444,15 @@ void main() {
           child: SizedBox(
             width: 200,
             height: 300,
-            child: CardTilt(child: ColoredBox(color: Colors.red)),
+            child: CardTilt(
+              shine: true,
+              // A card has its own size (the tilt stacks the shine over it).
+              child: SizedBox(
+                width: 200,
+                height: 300,
+                child: ColoredBox(color: Colors.red),
+              ),
+            ),
           ),
         ),
       ),
@@ -457,20 +465,37 @@ void main() {
           ),
         )
         .transform;
+    Alignment shine() =>
+        ((tester
+                                .widget<DecoratedBox>(
+                                  find.descendant(
+                                    of: find.byType(CardTilt),
+                                    matching: find.byType(DecoratedBox),
+                                  ),
+                                )
+                                .decoration
+                            as BoxDecoration)
+                        .gradient!
+                    as LinearGradient)
+                .begin
+            as Alignment;
     await tester.pump(const Duration(milliseconds: 900));
-    final swaying = now().clone();
-    await tester.pump(const Duration(milliseconds: 900));
-    expect(now(), isNot(swaying)); // it moves without a touch
-    // Held at the right edge: turned toward the right.
+    expect(now().entry(0, 2), 0); // no sway: flat until touched
+    final resting = shine();
+    // Held at the right edge: turned toward the right, the reflection slides along.
     final g = await tester.startGesture(
       tester.getCenter(find.byType(CardTilt)) + const Offset(95, 0),
     );
     await tester.pump(const Duration(milliseconds: 600)); // long press
     await g.moveBy(const Offset(1, 0));
-    await tester.pump(const Duration(milliseconds: 200));
-    final held = now();
+    await tester.pump(); // the tween starts…
+    await tester.pump(const Duration(milliseconds: 300)); // …and settles
+    expect(now().entry(0, 2), greaterThan(0.2)); // rotateY toward the finger
+    expect(shine().x, greaterThan(resting.x + 1));
     await g.up();
-    expect(held.entry(0, 2), greaterThan(0.2)); // rotateY toward the finger
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(now().entry(0, 2), closeTo(0, 1e-6)); // back to flat
   });
 
   test('continent of a region, or of the phone before any region', () {

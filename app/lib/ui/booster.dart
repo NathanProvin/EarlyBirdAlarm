@@ -721,36 +721,43 @@ class _CardFlipState extends State<CardFlip>
   }
 }
 
-/// A card shown in 3D, like the boosters: it sways gently on its own, and follows the
-/// finger while pressed and held (a long press, so swipes between cards still work).
+/// A card shown in 3D, like the boosters: flat at rest, it follows the finger while
+/// pressed and held (a long press, so swipes between cards still work). With [shine]
+/// (Epic and Legendary cards), a glossy plastic reflection slides across it as it tilts;
+/// it shows after [shineAfter], so it doesn't sit flat over a card that's still flipping.
 class CardTilt extends StatefulWidget {
-  const CardTilt({required this.child, super.key});
+  const CardTilt({
+    required this.child,
+    this.shine = false,
+    this.shineAfter = Duration.zero,
+    super.key,
+  });
   final Widget child;
+  final bool shine;
+  final Duration shineAfter;
 
   @override
   State<CardTilt> createState() => _CardTiltState();
 }
 
-class _CardTiltState extends State<CardTilt>
-    with SingleTickerProviderStateMixin {
-  late final _sway = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 7),
-  )..repeat();
+class _CardTiltState extends State<CardTilt> {
   Offset? _finger; // -1..1 from the centre while held
+  bool _shining = false;
 
   @override
-  void dispose() {
-    _sway.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    Future<void>.delayed(widget.shineAfter, () {
+      if (mounted) setState(() => _shining = true);
+    });
   }
 
-  void _follow(Offset p, Size size) => setState(
-    () => _finger = Offset(
+  void _follow(Offset p, Size size) => setState(() {
+    _finger = Offset(
       (p.dx / size.width * 2 - 1).clamp(-1.0, 1.0),
       (p.dy / size.height * 2 - 1).clamp(-1.0, 1.0),
-    ),
-  );
+    );
+  });
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -758,23 +765,54 @@ class _CardTiltState extends State<CardTilt>
       onLongPressStart: (d) => _follow(d.localPosition, box.biggest),
       onLongPressMoveUpdate: (d) => _follow(d.localPosition, box.biggest),
       onLongPressEnd: (_) => setState(() => _finger = null),
-      child: AnimatedBuilder(
-        animation: _sway,
-        builder: (context, child) {
-          final t = 2 * pi * _sway.value;
-          final tilt = _finger ?? Offset(0.35 * sin(t), 0.2 * sin(2 * t));
-          return TweenAnimationBuilder<Offset>(
-            tween: Tween(end: tilt),
-            duration: const Duration(milliseconds: 120),
-            builder: (context, v, child) => Transform(
-              alignment: Alignment.center,
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.0012)
-                ..rotateX(-v.dy * 0.3)
-                ..rotateY(v.dx * 0.3),
-              child: child,
+      child: TweenAnimationBuilder<Offset>(
+        tween: Tween(end: _finger ?? Offset.zero),
+        duration: const Duration(milliseconds: 160),
+        builder: (context, v, child) {
+          // Where the highlight band sits: upper left at rest, sliding with the tilt.
+          final s = -0.5 + 1.4 * v.dx + 0.7 * v.dy;
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0012)
+              ..rotateX(-v.dy * 0.3)
+              ..rotateY(v.dx * 0.3),
+            child: Stack(
+              children: [
+                child!,
+                if (widget.shine)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedOpacity(
+                        opacity: _shining ? 1 : 0,
+                        duration: const Duration(milliseconds: 400),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(radius),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment(s - 1, -1),
+                                end: Alignment(s + 1, 1),
+                                colors: [
+                                  for (final a in const [
+                                    0.0,
+                                    0.1,
+                                    0.32,
+                                    0.1,
+                                    0.0,
+                                  ])
+                                    Colors.white.withValues(alpha: a),
+                                ],
+                                stops: const [0.3, 0.45, 0.5, 0.55, 0.7],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            child: child,
           );
         },
         child: widget.child,
