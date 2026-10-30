@@ -461,31 +461,31 @@ abstract class AppLocalizations {
   /// No description provided for @easyInfo.
   ///
   /// In en, this message translates to:
-  /// **'Songs of common birds.'**
+  /// **'Common birds, songs only'**
   String get easyInfo;
 
   /// No description provided for @mediumInfo.
   ///
   /// In en, this message translates to:
-  /// **'Songs and calls, up to rare birds.'**
+  /// **'Less common birds, songs & calls'**
   String get mediumInfo;
 
   /// No description provided for @hardInfo.
   ///
   /// In en, this message translates to:
-  /// **'Every sound, alarm calls included, of every bird.'**
+  /// **'Rarer birds, all vocalizations'**
   String get hardInfo;
 
   /// No description provided for @seasonalInfo.
   ///
   /// In en, this message translates to:
-  /// **'Only birds present this month.'**
+  /// **'Only birds present this month'**
   String get seasonalInfo;
 
   /// No description provided for @allBirdsInfo.
   ///
   /// In en, this message translates to:
-  /// **'Birds of every season.'**
+  /// **'All birds in the region'**
   String get allBirdsInfo;
 
   /// No description provided for @creditsSubtitle.

@@ -203,20 +203,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get privacyPolicy => 'Politique de confidentialité';
 
   @override
-  String get easyInfo => 'Chants des oiseaux communs.';
+  String get easyInfo => 'Oiseaux communs, chants seulement';
 
   @override
-  String get mediumInfo => 'Chants et cris, jusqu\'aux oiseaux rares.';
+  String get mediumInfo => 'Oiseaux moins communs, chants et cris';
 
   @override
-  String get hardInfo =>
-      'Tous les sons, cris d\'alarme compris, de tous les oiseaux.';
+  String get hardInfo => 'Oiseaux plus rares, tous les sons';
 
   @override
-  String get seasonalInfo => 'Seulement les oiseaux présents ce mois-ci.';
+  String get seasonalInfo => 'Seulement les oiseaux présents ce mois-ci';
 
   @override
-  String get allBirdsInfo => 'Les oiseaux de toutes les saisons.';
+  String get allBirdsInfo => 'Tous les oiseaux de la région';
 
   @override
   String get creditsSubtitle => 'Sources, licences et confidentialité';

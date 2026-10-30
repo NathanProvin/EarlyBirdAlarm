@@ -194,7 +194,13 @@ class SettingsScreen extends StatelessWidget {
               selected: {store.difficulty},
               onSelectionChanged: (s) => store.difficulty = s.single,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 6),
+            Text(switch (store.difficulty) {
+              Difficulty.easy => l.easyInfo,
+              Difficulty.medium => l.mediumInfo,
+              Difficulty.hard => l.hardInfo,
+            }, style: text.bodySmall),
+            const SizedBox(height: 14),
             SegmentedButton<bool>(
               showSelectedIcon: false,
               segments: [
@@ -204,13 +210,9 @@ class SettingsScreen extends StatelessWidget {
               selected: {store.allBirds},
               onSelectionChanged: (s) => store.allBirds = s.single,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              '${switch (store.difficulty) {
-                Difficulty.easy => l.easyInfo,
-                Difficulty.medium => l.mediumInfo,
-                Difficulty.hard => l.hardInfo,
-              }} ${store.allBirds ? l.allBirdsInfo : l.seasonalInfo}',
+              store.allBirds ? l.allBirdsInfo : l.seasonalInfo,
               style: text.bodySmall,
             ),
             const SizedBox(height: 32),

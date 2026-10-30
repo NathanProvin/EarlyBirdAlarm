@@ -109,6 +109,17 @@ Future<void> initContent(String? region) async {
   }
 }
 
+final _regionBirds = <String, Set<String>>{};
+
+/// The bird ids of [region] when its list is on the phone, else null (see [download]).
+Set<String>? regionBirdIds(String region) {
+  if (_regionBirds[region] case final ids?) return ids;
+  final f = localFile('regions/$region.json');
+  if (!f.existsSync()) return null;
+  return _regionBirds[region] =
+      (jsonDecode(f.readAsStringSync()) as Map<String, dynamic>).keys.toSet();
+}
+
 /// Downloads one catalog file to the phone; false on any network error.
 Future<bool> download(String path) async {
   try {

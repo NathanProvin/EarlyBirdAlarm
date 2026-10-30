@@ -202,19 +202,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyPolicy => 'Privacy policy';
 
   @override
-  String get easyInfo => 'Songs of common birds.';
+  String get easyInfo => 'Common birds, songs only';
 
   @override
-  String get mediumInfo => 'Songs and calls, up to rare birds.';
+  String get mediumInfo => 'Less common birds, songs & calls';
 
   @override
-  String get hardInfo => 'Every sound, alarm calls included, of every bird.';
+  String get hardInfo => 'Rarer birds, all vocalizations';
 
   @override
-  String get seasonalInfo => 'Only birds present this month.';
+  String get seasonalInfo => 'Only birds present this month';
 
   @override
-  String get allBirdsInfo => 'Birds of every season.';
+  String get allBirdsInfo => 'All birds in the region';
 
   @override
   String get creditsSubtitle => 'Sources, licenses and privacy';

@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../birds.dart';
 import '../cards.dart';
+import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'booster.dart';
@@ -29,7 +30,8 @@ Map<String, CardData> bestCards(List<CardData> cards) {
   return best;
 }
 
-enum _View { all, species, region }
+// Views: every copy, the best copy of each species, or a region's birds (its id).
+const _all = 'all', _species = 'species';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -39,8 +41,22 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  _View _view = _View.all;
+  String _view = _all;
   String? _tier; // rarity filter, null = all
+  final _fetching = <String>{}; // other regions' bird lists being downloaded
+
+  /// The bird ids of [region]; for another region, its list is fetched once (to count
+  /// "2/500") and meanwhile only the cards won there are known (null).
+  Set<String>? _birdsOf(String region) {
+    if (region == store.region) return {for (final b in birds) b.id};
+    final ids = regionBirdIds(region);
+    if (ids == null && _fetching.add(region)) {
+      download('regions/$region.json').then((ok) {
+        if (ok && mounted) setState(() {});
+      });
+    }
+    return ids;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +64,20 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
-    final regionIds = {for (final b in birds) b.id};
+    // The current region first, then every other region a card was won in, most cards first.
+    final wonIn = <String, int>{};
+    for (final c in cards) {
+      if (c.region case final r? when r != store.region) {
+        wonIn[r] = (wonIn[r] ?? 0) + 1;
+      }
+    }
+    final regions = [
+      ?store.region,
+      ...(wonIn.keys.toList()..sort((a, b) => wonIn[b]! - wonIn[a]!)),
+    ];
+    if (_view != _all && _view != _species && !regions.contains(_view)) {
+      _view = _all; // that region is gone (e.g. its cards were the only link)
+    }
     // Rarity belongs to cards: a bird not won yet has none (the filter hides it).
     String? rarityOf(Bird b, CardData? c) => c == null ? null : cardRarity(c);
     int rank((Bird, CardData?) e) =>
@@ -58,22 +87,26 @@ class _CollectionScreenState extends State<CollectionScreen> {
       return t != 0 ? t : a.$1.number.compareTo(b.$1.number);
     }
 
-    // (bird, card) entries; a null card is a "?" or "heard" tile (Region view only).
+    // A region's species: its whole list when known, else the species won there.
+    Set<String> idsOf(String r) =>
+        _birdsOf(r) ??
+        {
+          for (final c in cards)
+            if (c.region == r) c.birdId,
+        };
+    // (bird, card) entries; a null card is a "?" or "heard" tile (region views only).
     final entries = switch (_view) {
-      _View.all => [
+      _all => [
         for (final c in cards)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ]..sort(rarest),
-      _View.species => [
+      _species => [
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ]..sort(rarest),
-      _View.region => [
-        for (final b in birds) (b, best[b.id]),
-        // Cards won in another region.
-        for (final c in best.values)
-          if (!regionIds.contains(c.birdId) && species[c.birdId] != null)
-            (species[c.birdId]!, c as CardData?),
+      final region => [
+        for (final id in idsOf(region))
+          if (birdById(id) case final b?) (b, best[id]),
       ]..sort((a, b) => a.$1.number.compareTo(b.$1.number)),
     };
     final shown = [
@@ -85,10 +118,15 @@ class _CollectionScreenState extends State<CollectionScreen> {
         if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
     // The region's many "?" stay 3 per row; won cards are shown whole 2 per row.
-    final compact = _view == _View.region;
-    final regionLabel = store.region == null
-        ? l.viewRegion
-        : regionName(l, store.region!);
+    final compact = _view != _all && _view != _species;
+    // "France (7/353)"; "USA — Northeast (2)" until that region's list has arrived.
+    String regionLabel(String r) {
+      final known = _birdsOf(r);
+      final ids = idsOf(r);
+      final owned = ids.where(best.containsKey).length;
+      return '${regionName(l, r)} ($owned${known == null ? '' : '/${ids.length}'})';
+    }
+
     return Column(
       children: [
         Padding(
@@ -102,13 +140,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     // Each view shows its count, e.g. "France (7/353)".
                     Flexible(
                       flex: 3,
-                      child: _Menu<_View>(
+                      child: _Menu<String>(
                         value: _view,
                         items: {
-                          _View.all: '${l.viewAll} (${cards.length})',
-                          _View.species: '${l.viewSpecies} (${best.length})',
-                          _View.region:
-                              '$regionLabel (${best.keys.where(regionIds.contains).length}/${birds.length})',
+                          _all: '${l.viewAll} (${cards.length})',
+                          _species: '${l.viewSpecies} (${best.length})',
+                          for (final r in regions) r: regionLabel(r),
                         },
                         onSelected: (v) => setState(() => _view = v),
                       ),
@@ -160,7 +197,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               return CardTile(
                 bird: b,
                 card: c,
-                copies: _view == _View.all
+                copies: _view == _all
                     ? 1
                     : cards.where((x) => x.birdId == b.id).length,
                 heard: heard.contains(b.id),
