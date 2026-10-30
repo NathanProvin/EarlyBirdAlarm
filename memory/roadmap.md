@@ -11,9 +11,12 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 The fastest path: finish **A** today; create the Play developer account **now, in parallel** (identity check and the 14-day closed test are the long, unavoidable waits); meanwhile **B** and **C**.
 
 ### A — Finish the content (when the catalog run ends)
-- [ ] Review `pipeline/report.md`: dropped species, stats coverage, regions
-- [ ] `py pipeline/build.py fallback`: re-pick the 30 bundled offline birds from the full catalog (writes their `continent` tags)
-- [ ] `py pipeline/build.py series`: fix the Latin names "not in the catalog" in `pipeline/series.md` (GBIF spelling); user review of the hand-picked lists (Birds in black, Garden songbirds, Rainbow birds, Night singers, Eagles, Birders' legends)
+- [x] Full run done 2026-10-30 13:21 (first attempt stopped at the NC self-check: "FRANCE" in a photographer's name; check fixed, rerun from cache in ~1 min): **1,629 species, 1,212 regions, 4,723 recordings** (2,021 song, 2,252 call, 450 alarm), 253 species dropped
+- [x] Review `pipeline/report.md`. Findings: drops are 110 "no free recording", 88 "no EN/FR name", 55 "no free photo" — some very widespread birds among them (Sandhill Crane, Ruby-crowned Kinglet, Double-crested Cormorant, American White Pelican, Cooper's Hawk…): fixable later with `pipeline/overrides.csv` (`commons=File:…` / `xc=…`). 895 species use NC recordings (fine for a free app). Stats: only 499 species have all 4; wingspan missing for 825, length for 572 (298 estimated) — those cards show fewer stat rows. 42 regions have < 50 birds; median 267
+- [x] `py pipeline/build.py fallback`: 15 EU + 15 NA bundled birds re-picked, with `continent` (6.3 MB)
+- [x] Series from the full catalog (`series.json`, 17 KB): only names missing are Clanga clanga / pomarina (both spotted eagles were dropped: no free photo / recording) and Gymnogyps californianus (not in the regions) — no spelling fix needed
+- [ ] User review of the hand-picked series lists (Birds in black, Garden songbirds, Rainbow birds, Night singers, Eagles, Birders' legends) in `pipeline/series.md`
+- [ ] Recover the widespread dropped birds via `pipeline/overrides.csv` (optional before release, worth it for North America)
 - [ ] `py pipeline/build.py publish`: full catalog + `series.json` online; tick 3c-1
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
