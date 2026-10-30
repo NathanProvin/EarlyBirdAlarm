@@ -16,8 +16,9 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] `py pipeline/build.py fallback`: 15 EU + 15 NA bundled birds re-picked, with `continent` (6.3 MB)
 - [x] Series from the full catalog (`series.json`, 17 KB): only names missing are Clanga clanga / pomarina (both spotted eagles were dropped: no free photo / recording) and Gymnogyps californianus (not in the regions) — no spelling fix needed
 - [ ] User review of the hand-picked series lists (Birds in black, Garden songbirds, Rainbow birds, Night singers, Eagles, Birders' legends) in `pipeline/series.md`
-- [ ] Recover the widespread dropped birds via `pipeline/overrides.csv` (optional before release, worth it for North America)
-- [ ] `py pipeline/build.py publish`: full catalog + `series.json` online; tick 3c-1
+- [x] Published 2026-10-30 (full catalog + `series.json` online, live ~2 min after the push)
+- [x] **Rescue of dropped birds (2026-10-30):** two automatic fallbacks in the pipeline — xeno-canto lookup by exact English name (its taxonomy differs from GBIF's: Antigone vs Grus canadensis) and a Commons search when the Wikidata photos aren't free (skipping paintings, maps, eggs…). **1,710 species kept (+81), 171 dropped** (88 no EN/FR name, 82 no usable free recording — mostly seabirds and Mediterranean specialists, e.g. American White Pelican —, 1 no free photo: Cooper's Hawk). Eagles series fixed (Aquila clanga / pomarina). Fallback birds re-picked (Ruby-crowned Kinglet in). Published again
+- [ ] Optional: hand-pick the remaining widespread drops in `pipeline/overrides.csv` (`xc=…` / `commons=File:…`), and the 88 "no EN/FR name" species
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
@@ -75,9 +76,9 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 
 ## Iteration 3c — Full catalog
 ### 3c-1 — Pipeline + hosting
-- [ ] Regions: 2°×2° cells (GPS) + European countries + bioregions (USA 8, Canada 4, European Russia); presence and rarity per region
-- [ ] Species built once for all regions (names, photo, 1–5 varied recordings: song/call/alarm, stats); global card numbers; report per region
-- [ ] Site in `pipeline/site/v1/` (species.json, regions.json, regions/, audio/, photos/) on GitHub Pages: `gh-pages` branch of NathanProvin/EarlyBirdAlarm → https://nathanprovin.github.io/EarlyBirdAlarm/v1/ (3-region test catalog live 2026-10-28; full catalog pending)
+- [x] Regions: 2°×2° cells (GPS) + European countries + bioregions (USA 8, Canada 4, European Russia); presence and rarity per region
+- [x] Species built once for all regions (names, photo, 1–5 varied recordings: song/call/alarm, stats); global card numbers; report per region
+- [x] Site in `pipeline/site/v1/` (species.json, regions.json, regions/, audio/, photos/) on GitHub Pages: `gh-pages` branch of NathanProvin/EarlyBirdAlarm → https://nathanprovin.github.io/EarlyBirdAlarm/v1/ (full catalog live 2026-10-30: 1,710 species, 1,212 regions)
 - [x] ~30 fallback birds bundled in the app (`py pipeline/build.py fallback`; rerun after the full catalog)
 
 ### 3c-2 — App (verified on the S22, 2026-10-28, with the 3-region test catalog)
