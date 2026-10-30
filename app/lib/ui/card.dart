@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -62,7 +63,9 @@ class BirdCardView extends StatelessWidget {
       ),
       // A won card is printed on textured card stock tinted with its rarity.
       child: CustomPaint(
-        painter: card == null ? null : _CardStock(frame),
+        painter: card == null
+            ? null
+            : _CardStock(frame, max(0, tiers.indexOf(rarity))),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -216,38 +219,60 @@ class BirdCardView extends StatelessWidget {
   }
 }
 
-/// The background of a won card: card stock tinted with its rarity [color] — a light
-/// wash, a fine diamond lattice and a deeper tint toward the edges, all faint enough for
-/// the text to read as on plain paper.
+/// The background of a won card: card stock tinted with its rarity [color], engraved with
+/// a guilloche (interlaced waves, as on a banknote) that grows stronger with the rarity
+/// [level] (0 Common … 4 Legendary), plus a foil sheen on Legendary cards. Faint enough
+/// for the text to stay as readable as on plain paper.
 class _CardStock extends CustomPainter {
-  const _CardStock(this.color);
+  const _CardStock(this.color, this.level);
   final Color color;
+  final int level;
 
   @override
   void paint(Canvas canvas, Size size) {
     final box = Offset.zero & size;
-    canvas.drawRect(box, Paint()..color = color.withValues(alpha: 0.06));
-    final line = Paint()
-      ..color = color.withValues(alpha: 0.08)
-      ..strokeWidth = 0.7;
-    const step = 9.0;
-    for (var d = -size.height; d < size.width; d += step) {
-      canvas
-        ..drawLine(Offset(d, 0), Offset(d + size.height, size.height), line)
-        ..drawLine(Offset(d, size.height), Offset(d + size.height, 0), line);
-    }
     canvas.drawRect(
       box,
-      Paint()
-        ..shader = RadialGradient(
-          radius: 0.8,
-          colors: [color.withValues(alpha: 0), color.withValues(alpha: 0.14)],
-        ).createShader(box),
+      Paint()..color = color.withValues(alpha: 0.05 + 0.01 * level),
     );
+    final wave = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8 + 0.05 * level
+      ..color = color.withValues(alpha: 0.12 + 0.04 * level);
+    const rowGap = 12.0;
+    for (var row = -1; row < size.height / rowGap + 1; row++) {
+      for (final phase in [0.0, pi]) {
+        final path = Path();
+        for (var x = 0.0; x <= size.width; x += 3) {
+          final y = row * rowGap + 7 * sin(x / 20 + phase + row * 0.5);
+          x == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+        }
+        canvas.drawPath(path, wave);
+      }
+    }
+    if (level == 4) {
+      // A still foil sheen across the card.
+      canvas.drawRect(
+        box,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white.withValues(alpha: 0),
+              Colors.white.withValues(alpha: 0.35),
+              color.withValues(alpha: 0.12),
+              Colors.white.withValues(alpha: 0),
+            ],
+            stops: const [0.25, 0.45, 0.55, 0.75],
+          ).createShader(box),
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(_CardStock oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(_CardStock oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.level != level;
 }
 
 TextStyle? _latin(TextTheme text) =>
