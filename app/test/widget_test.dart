@@ -435,6 +435,44 @@ void main() {
     expect(share((x) => x <= 20), lessThan(0.03));
   });
 
+  testWidgets('card tilt: sways on its own, follows a held finger', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 200,
+            height: 300,
+            child: CardTilt(child: ColoredBox(color: Colors.red)),
+          ),
+        ),
+      ),
+    );
+    Matrix4 now() => tester
+        .widget<Transform>(
+          find.descendant(
+            of: find.byType(CardTilt),
+            matching: find.byType(Transform),
+          ),
+        )
+        .transform;
+    await tester.pump(const Duration(milliseconds: 900));
+    final swaying = now().clone();
+    await tester.pump(const Duration(milliseconds: 900));
+    expect(now(), isNot(swaying)); // it moves without a touch
+    // Held at the right edge: turned toward the right.
+    final g = await tester.startGesture(
+      tester.getCenter(find.byType(CardTilt)) + const Offset(95, 0),
+    );
+    await tester.pump(const Duration(milliseconds: 600)); // long press
+    await g.moveBy(const Offset(1, 0));
+    await tester.pump(const Duration(milliseconds: 200));
+    final held = now();
+    await g.up();
+    expect(held.entry(0, 2), greaterThan(0.2)); // rotateY toward the finger
+  });
+
   test('continent of a region, or of the phone before any region', () {
     expect(continentOf('US-NE', null), 'na');
     expect(continentOf('CA-ON', 'FR'), 'na'); // the region wins over the phone

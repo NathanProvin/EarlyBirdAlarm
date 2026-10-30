@@ -720,3 +720,65 @@ class _CardFlipState extends State<CardFlip>
     );
   }
 }
+
+/// A card shown in 3D, like the boosters: it sways gently on its own, and follows the
+/// finger while pressed and held (a long press, so swipes between cards still work).
+class CardTilt extends StatefulWidget {
+  const CardTilt({required this.child, super.key});
+  final Widget child;
+
+  @override
+  State<CardTilt> createState() => _CardTiltState();
+}
+
+class _CardTiltState extends State<CardTilt>
+    with SingleTickerProviderStateMixin {
+  late final _sway = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 7),
+  )..repeat();
+  Offset? _finger; // -1..1 from the centre while held
+
+  @override
+  void dispose() {
+    _sway.dispose();
+    super.dispose();
+  }
+
+  void _follow(Offset p, Size size) => setState(
+    () => _finger = Offset(
+      (p.dx / size.width * 2 - 1).clamp(-1.0, 1.0),
+      (p.dy / size.height * 2 - 1).clamp(-1.0, 1.0),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) => GestureDetector(
+      onLongPressStart: (d) => _follow(d.localPosition, box.biggest),
+      onLongPressMoveUpdate: (d) => _follow(d.localPosition, box.biggest),
+      onLongPressEnd: (_) => setState(() => _finger = null),
+      child: AnimatedBuilder(
+        animation: _sway,
+        builder: (context, child) {
+          final t = 2 * pi * _sway.value;
+          final tilt = _finger ?? Offset(0.35 * sin(t), 0.2 * sin(2 * t));
+          return TweenAnimationBuilder<Offset>(
+            tween: Tween(end: tilt),
+            duration: const Duration(milliseconds: 120),
+            builder: (context, v, child) => Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0012)
+                ..rotateX(-v.dy * 0.3)
+                ..rotateY(v.dx * 0.3),
+              child: child,
+            ),
+            child: child,
+          );
+        },
+        child: widget.child,
+      ),
+    ),
+  );
+}

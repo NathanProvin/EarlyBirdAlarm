@@ -222,8 +222,8 @@ class BirdCardView extends StatelessWidget {
 /// The background of a won card: card stock tinted with its rarity [color] and printed
 /// with the pattern of its rarity [level] (0 Common … 4 Legendary), all equally faint so
 /// the text reads as on plain paper: a guilloche (interlaced waves, as on a banknote) for
-/// Common and Uncommon, a diamond lattice for Rare, feather quills for Epic, and the soft
-/// shadow of foliage for Legendary.
+/// Common and Uncommon, a wide diamond lattice for Rare, the soft shadow of foliage for
+/// Epic, and a golden camouflage for Legendary.
 class _CardStock extends CustomPainter {
   const _CardStock(this.color, this.level);
   final Color color;
@@ -243,9 +243,9 @@ class _CardStock extends CustomPainter {
       case 2:
         _lattice(canvas, size, line);
       case 3:
-        _quills(canvas, size, line);
-      case 4:
         _foliage(canvas, size);
+      case 4:
+        _camouflage(canvas, size);
       default:
         _guilloche(canvas, size, line);
     }
@@ -266,36 +266,20 @@ class _CardStock extends CustomPainter {
   }
 
   void _lattice(Canvas canvas, Size size, Paint line) {
-    for (var d = -size.height; d < size.width; d += 9) {
+    for (var d = -size.height; d < size.width; d += 18) {
       canvas
         ..drawLine(Offset(d, 0), Offset(d + size.height, size.height), line)
         ..drawLine(Offset(d, size.height), Offset(d + size.height, 0), line);
     }
   }
 
-  /// Rows of quills: a shaft with barbs slanting up on both sides, offset row to row.
-  void _quills(Canvas canvas, Size size, Paint line) {
-    const colGap = 26.0, barbGap = 5.0, length = 70.0;
-    for (var top = -20.0; top < size.height; top += length) {
-      final shift = ((top / length).round().isEven ? 0.0 : colGap / 2);
-      for (var x = shift - colGap; x < size.width + colGap; x += colGap) {
-        canvas.drawLine(Offset(x, top), Offset(x, top + length - 6), line);
-        for (var y = top + 6; y < top + length - 6; y += barbGap) {
-          canvas
-            ..drawLine(Offset(x, y), Offset(x - 9, y - 7), line)
-            ..drawLine(Offset(x, y), Offset(x + 9, y - 7), line);
-        }
-      }
-    }
-  }
-
   /// The blurred shadow of leaves, as if the card lay under a branch.
   void _foliage(Canvas canvas, Size size) {
-    final r = Random(7); // the same branch on every Legendary card
+    final r = Random(7); // the same branch on every Epic card
     final shade = Paint()
       ..color = Color.lerp(color, ink, 0.4)!.withValues(alpha: 0.11)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
-    for (var i = 0; i < 22; i++) {
+    for (var i = 0; i < 44; i++) {
       final len = 26 + r.nextDouble() * 34;
       canvas
         ..save()
@@ -310,6 +294,37 @@ class _CardStock extends CustomPainter {
           shade,
         )
         ..restore();
+    }
+  }
+
+  /// Camouflage: overlapping irregular blobs in three shades of the card's gold, from
+  /// light to shadow, the darker ones on top.
+  void _camouflage(Canvas canvas, Size size) {
+    final r = Random(11); // the same pattern on every Legendary card
+    final shades = [
+      // Overlapping patches add up: kept lighter than the other patterns' lines.
+      Color.lerp(color, Colors.white, 0.3)!.withValues(alpha: 0.09),
+      color.withValues(alpha: 0.07),
+      Color.lerp(color, ink, 0.55)!.withValues(alpha: 0.06),
+    ];
+    for (final shade in shades) {
+      for (var i = 0; i < 9; i++) {
+        final c = Offset(
+          r.nextDouble() * size.width,
+          r.nextDouble() * size.height,
+        );
+        final base = 18 + r.nextDouble() * 22;
+        final (p1, p2) = (r.nextDouble() * 2 * pi, r.nextDouble() * 2 * pi);
+        final blob = Path();
+        for (var a = 0.0; a <= 2 * pi + 0.01; a += 0.2) {
+          // A wobbly radius gives the irregular, lobed edge of a camouflage patch.
+          final rad =
+              base * (1 + 0.3 * sin(2 * a + p1) + 0.18 * sin(3 * a + p2));
+          final pt = c + Offset(cos(a) * rad * 1.5, sin(a) * rad);
+          a == 0 ? blob.moveTo(pt.dx, pt.dy) : blob.lineTo(pt.dx, pt.dy);
+        }
+        canvas.drawPath(blob..close(), Paint()..color = shade);
+      }
     }
   }
 

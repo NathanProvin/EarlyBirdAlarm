@@ -342,11 +342,14 @@ class _CardDetailState extends State<CardDetail> {
       children: [
         ?header,
         Expanded(
+          // In 3D like the boosters; the shared picture is taken inside, flat.
           child: Center(
-            child: _flip(
-              RepaintBoundary(
-                key: _boundary,
-                child: BirdCardView(bird: bird, card: card),
+            child: CardTilt(
+              child: _flip(
+                RepaintBoundary(
+                  key: _boundary,
+                  child: BirdCardView(bird: bird, card: card),
+                ),
               ),
             ),
           ),
