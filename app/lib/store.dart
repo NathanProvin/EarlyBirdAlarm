@@ -203,9 +203,29 @@ class Store extends ChangeNotifier {
   Future<void> sync() async {
     final r = region;
     if (r == null) return;
-    if (await syncRegion(r, monthFor(DateTime.now()), difficulty)) {
+    // Songs of scheduled alarms must stay on the phone through the clean-up.
+    final scheduled = {
+      for (final a in await Alarm.getAlarms()) ?_songOf(a.payload),
+    };
+    if (await syncRegion(
+      r,
+      monthFor(DateTime.now()),
+      difficulty,
+      heard: recent.toSet(), // the deck rotates past the birds just heard
+      keep: scheduled,
+    )) {
       await rescheduleAll();
       notifyListeners();
+    }
+  }
+
+  /// The song file an alarm will play, from its payload {"bird", "rec"} (null if older).
+  static String? _songOf(String? payload) {
+    try {
+      return (jsonDecode(payload ?? '') as Map<String, dynamic>)['rec']
+          as String?;
+    } on Object {
+      return null;
     }
   }
 
@@ -252,8 +272,9 @@ class Store extends ChangeNotifier {
   }
 
   /// The bird and recording to play at [at]. Only a recording already on the phone can
-  /// play; the bundled birds are the last resort.
+  /// play: the downloaded deck first, then the bundled birds of the region, then any.
   (Bird, Recording) pickNext(DateTime at) =>
+      pickBird(recent, monthFor(at), difficulty, downloaded) ??
       pickBird(recent, monthFor(at), difficulty, onPhone) ??
       species.values
           .where((b) => b.recordings.any(onPhone))

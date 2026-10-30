@@ -468,17 +468,19 @@ def build_fallback():
         for bird, months in json.loads(f.read_text(encoding="utf-8")).items():
             if "common" in months.values():
                 score[continent][bird] = score[continent].get(bird, 0) + 1
-    chosen = []
+    chosen, continent_of = [], {}  # the app keeps only the user's continent offline
     for continent in ("eu", "na"):
         ranked = sorted(score[continent], key=lambda b: -score[continent][b])
-        chosen += [b for b in ranked if b not in chosen][:FALLBACK_PER_CONTINENT]
+        picks = [b for b in ranked if b not in chosen][:FALLBACK_PER_CONTINENT]
+        chosen += picks
+        continent_of |= dict.fromkeys(picks, continent)
     for sub in ("audio", "photos"):
         (FALLBACK / sub).mkdir(parents=True, exist_ok=True)
         for f in (FALLBACK / sub).iterdir():
             f.unlink()
     bundled = []
     for bid in chosen:
-        b = dict(species[bid])
+        b = dict(species[bid], continent=continent_of[bid])
         recs = sorted(b["recordings"], key=lambda r: (r.get("nc", False), r["kind"] != "song"))
         b["recordings"] = recs[:1]  # one song keeps the APK small
         for f in (b["photo"], b["recordings"][0]["file"]):

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:early_bird/birds.dart';
 import 'package:early_bird/cards.dart';
+import 'package:early_bird/content.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
 import 'package:early_bird/series.dart';
@@ -419,6 +420,17 @@ void main() {
     s.theme = 'gull';
     await Future<void>.delayed(Duration.zero);
     expect(s.theme, 'gull');
+  });
+
+  test('continent of a region, or of the phone before any region', () {
+    expect(continentOf('US-NE', null), 'na');
+    expect(continentOf('CA-ON', 'FR'), 'na'); // the region wins over the phone
+    expect(continentOf('N42W072', null), 'na'); // a 2° cell in America
+    expect(continentOf('N48E002', 'US'), 'eu');
+    expect(continentOf('FR', null), 'eu');
+    expect(continentOf(null, 'US'), 'na');
+    expect(continentOf(null, 'FR'), 'eu');
+    expect(continentOf(null, null), 'eu');
   });
 
   test('ordinals for "nth species collected"', () {

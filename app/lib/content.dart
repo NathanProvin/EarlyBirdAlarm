@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -29,6 +30,18 @@ String? phonePath(String path) {
 }
 
 bool onPhone(Recording r) => phonePath(r.file) != null;
+
+/// Downloaded for the region (the deck), as opposed to bundled with the app.
+bool downloaded(Recording r) => localFile(r.file).existsSync();
+
+/// "na" or "eu": the continent of [region] (a list id like US-NE / CA-ON, or a 2° cell
+/// like N42W072), or of the phone's [country] when no region is known yet.
+String continentOf(String? region, String? country) => region != null
+    ? (region.startsWith(RegExp('US-|CA-')) ||
+              (region.startsWith(RegExp('[NS]')) && region.contains('W'))
+          ? 'na'
+          : 'eu')
+    : (const {'US', 'CA', 'MX'}.contains(country) ? 'na' : 'eu');
 
 /// Loads what is on the phone: the region's birds if downloaded, else the fallback birds.
 Future<void> initContent(String? region) async {
@@ -82,10 +95,16 @@ Future<void> initContent(String? region) async {
           }),
     ];
   } else {
-    // shortcut: offline before any region download, the fallback birds count as common all year.
+    // shortcut: offline before any region download, the fallback birds of the user's
+    // continent count as common all year.
+    final continent = continentOf(
+      region,
+      PlatformDispatcher.instance.locale.countryCode,
+    );
     birds = [
       for (final j in fallback)
-        Bird.fromJson(j, {for (var m = 1; m <= 12; m++) m: 'common'}),
+        if ((j['continent'] ?? continent) == continent)
+          Bird.fromJson(j, {for (var m = 1; m <= 12; m++) m: 'common'}),
     ];
   }
 }
@@ -123,8 +142,10 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
 Future<bool> syncRegion(
   String region,
   int? month,
-  Difficulty difficulty,
-) async {
+  Difficulty difficulty, {
+  Set<String> heard = const {},
+  Set<String> keep = const {},
+}) async {
   final regionFile = localFile('regions/$region.json');
   final stale =
       !regionFile.existsSync() ||
@@ -144,23 +165,47 @@ Future<bool> syncRegion(
   for (var i = 0; i < photos.length; i += 8) {
     await Future.wait(photos.skip(i).take(8).map(download));
   }
-  await topUpDeck(month, difficulty);
+  await topUpDeck(month, difficulty, heard: heard);
+  await _cleanUp(keep);
   return stale;
 }
 
-/// Keeps [deckSize] songs on the phone for birds that can ring this month at [difficulty],
-/// so alarms ring a downloaded bird even offline. Best effort: stops at the first network error.
-Future<void> topUpDeck(int? month, Difficulty difficulty) async {
+/// Keeps [deckSize] downloaded songs on the phone for birds that can ring this month at
+/// [difficulty] and weren't [heard] recently, so alarms ring a downloaded bird even
+/// offline. The deck rotates: a bird just heard stops counting, so each answer brings a
+/// new species at the next top-up. Best effort: stops at the first network error.
+Future<void> topUpDeck(
+  int? month,
+  Difficulty difficulty, {
+  Set<String> heard = const {},
+}) async {
   final random = Random();
-  final candidates = pool(month, difficulty).keys.toList()..shuffle(random);
-  var have = candidates
-      .where((b) => b.playable(difficulty).any(onPhone))
-      .length;
+  final candidates = [
+    for (final b in pool(month, difficulty).keys)
+      if (!heard.contains(b.id)) b,
+  ]..shuffle(random);
+  bool inDeck(Bird b) => b.playable(difficulty).any(downloaded);
+  var have = candidates.where(inDeck).length;
   for (final b in candidates) {
     if (have >= deckSize) return;
-    if (b.playable(difficulty).any(onPhone)) continue;
+    if (inDeck(b)) continue;
     final recs = b.playable(difficulty);
     if (!await download(recs[random.nextInt(recs.length)].file)) return;
     have++;
+  }
+}
+
+/// Downloaded songs kept on the phone at most; the oldest go first.
+const keepSongs = 60;
+
+/// Deletes the oldest downloaded songs beyond [keepSongs], never one in [keep] (the songs
+/// of scheduled alarms). A card's ▶ streams its song from the site when it's gone.
+Future<void> _cleanUp(Set<String> keep) async {
+  final dir = Directory('${_root.path}/audio');
+  if (!dir.existsSync()) return;
+  final songs = dir.listSync().whereType<File>().toList()
+    ..sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
+  for (final f in songs.skip(keepSongs)) {
+    if (!keep.contains('audio/${f.uri.pathSegments.last}')) await f.delete();
   }
 }
