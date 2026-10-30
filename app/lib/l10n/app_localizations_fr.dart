@@ -125,6 +125,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Pas de connexion. Connectez-vous à Internet pour télécharger les oiseaux de votre région.';
 
   @override
+  String get comingSoon => 'Bientôt disponible';
+
+  @override
   String get retry => 'Réessayer';
 
   @override

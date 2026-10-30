@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'No connection. Connect to the internet to download your region\'s birds.'**
   String get offline;
 
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingSoon;
+
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:

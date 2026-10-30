@@ -125,6 +125,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'No connection. Connect to the internet to download your region\'s birds.';
 
   @override
+  String get comingSoon => 'Coming soon';
+
+  @override
   String get retry => 'Retry';
 
   @override

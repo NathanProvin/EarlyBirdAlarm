@@ -36,6 +36,7 @@
   "useMyLocation": "Utiliser ma position",
   "searchRegion": "Chercher un pays ou une région",
   "offline": "Pas de connexion. Connectez-vous à Internet pour télécharger les oiseaux de votre région.",
+  "comingSoon": "Bientôt disponible",
   "retry": "Réessayer",
   "nearCell": "Autour de {lat} {lon}",
   "locationDenied": "Position indisponible. Choisissez dans la liste.",

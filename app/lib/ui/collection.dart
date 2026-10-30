@@ -64,16 +64,26 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
-    // The current region first, then every other region a card was won in, most cards first.
+    // Region views go by displayed name: GPS cells that share one ("France · South") are a
+    // single view. The current region first, then every other one a card was won in, most
+    // cards first.
+    final names = <String, String>{};
+    String nameOf(String r) => names[r] ??= regionName(l, r);
+    final groups = <String, Set<String>>{
+      if (store.region case final r?) nameOf(r): {r},
+    };
     final wonIn = <String, int>{};
     for (final c in cards) {
-      if (c.region case final r? when r != store.region) {
-        wonIn[r] = (wonIn[r] ?? 0) + 1;
+      if (c.region case final r?) {
+        (groups[nameOf(r)] ??= {}).add(r);
+        wonIn[nameOf(r)] = (wonIn[nameOf(r)] ?? 0) + 1;
       }
     }
+    final current = store.region == null ? null : nameOf(store.region!);
     final regions = [
-      ?store.region,
-      ...(wonIn.keys.toList()..sort((a, b) => wonIn[b]! - wonIn[a]!)),
+      ?current,
+      ...(groups.keys.where((n) => n != current).toList()
+        ..sort((a, b) => wonIn[b]! - wonIn[a]!)),
     ];
     if (_view != _all && _view != _species && !regions.contains(_view)) {
       _view = _all; // that region is gone (e.g. its cards were the only link)
@@ -87,13 +97,15 @@ class _CollectionScreenState extends State<CollectionScreen> {
       return t != 0 ? t : a.$1.number.compareTo(b.$1.number);
     }
 
-    // A region's species: its whole list when known, else the species won there.
-    Set<String> idsOf(String r) =>
-        _birdsOf(r) ??
-        {
-          for (final c in cards)
-            if (c.region == r) c.birdId,
-        };
+    // A region view's species: each region's whole list when known, else the species won there.
+    Set<String> idsOf(String name) => {
+      for (final r in groups[name]!)
+        ..._birdsOf(r) ??
+            {
+              for (final c in cards)
+                if (c.region == r) c.birdId,
+            },
+    };
     // (bird, card) entries; a null card is a "?" or "heard" tile (region views only).
     final entries = switch (_view) {
       _all => [
@@ -120,11 +132,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
     // The region's many "?" stay 3 per row; won cards are shown whole 2 per row.
     final compact = _view != _all && _view != _species;
     // "France (7/353)"; "USA — Northeast (2)" until that region's list has arrived.
-    String regionLabel(String r) {
-      final known = _birdsOf(r);
-      final ids = idsOf(r);
+    String regionLabel(String name) {
+      final known = groups[name]!.every((r) => _birdsOf(r) != null);
+      final ids = idsOf(name);
       final owned = ids.where(best.containsKey).length;
-      return '${regionName(l, r)} ($owned${known == null ? '' : '/${ids.length}'})';
+      return '$name ($owned${known ? '/${ids.length}' : ''})';
     }
 
     return Column(

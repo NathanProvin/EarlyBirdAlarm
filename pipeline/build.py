@@ -226,6 +226,16 @@ BIOREGIONS = {
     "CA-BN": ("Canada — British Columbia & North", "Canada — Colombie-Britannique et Nord", CA(2, 6, 8, 13)),
     "RU-EU": ("European Russia", "Russie d'Europe", {"country": "RU", "decimalLongitude": "19,60"}),
 }
+# Countries without a bird list of their own yet: listed as "coming soon" (their GPS cells work).
+PLANNED = {
+    "MA": ("Morocco", "Maroc"), "DZ": ("Algeria", "Algérie"), "TN": ("Tunisia", "Tunisie"),
+    "LY": ("Libya", "Libye"), "EG": ("Egypt", "Égypte"), "TR": ("Turkey", "Turquie"),
+    "GE": ("Georgia", "Géorgie"), "AM": ("Armenia", "Arménie"), "AZ": ("Azerbaijan", "Azerbaïdjan"),
+    "SY": ("Syria", "Syrie"), "LB": ("Lebanon", "Liban"), "IL": ("Israel", "Israël"),
+    "JO": ("Jordan", "Jordanie"), "IQ": ("Iraq", "Irak"), "FO": ("Faroe Islands", "Îles Féroé"),
+    "SJ": ("Svalbard", "Svalbard"), "GL": ("Greenland", "Groenland"), "MX": ("Mexico", "Mexique"),
+    "CU": ("Cuba", "Cuba"), "BS": ("Bahamas", "Bahamas"),
+}
 # 2°×2° cells for GPS: Europe and the US + Canada.
 CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52))]
 
@@ -249,6 +259,66 @@ def region_list():
             f |= {"decimalLatitude": f"{a},{b}", "decimalLongitude": f"{c},{d}"}
         out.append((code, "country", en, fr, f))
     out += [(rid, "bioregion", en, fr, f) for rid, (en, fr, f) in BIOREGIONS.items()]
+    return out
+
+
+DIRECTIONS = {(1, 0): ("North", "Nord"), (-1, 0): ("South", "Sud"), (0, 1): ("East", "Est"),
+              (0, -1): ("West", "Ouest"), (1, 1): ("North-East", "Nord-Est"),
+              (1, -1): ("North-West", "Nord-Ouest"), (-1, 1): ("South-East", "Sud-Est"),
+              (-1, -1): ("South-West", "Sud-Ouest"), (0, 0): ("Centre", "Centre")}
+
+
+def cell_center(cid):
+    return (int(cid[1:3]) * (1 if cid[0] == "N" else -1) + 1,
+            int(cid[4:7]) * (1 if cid[3] == "E" else -1) + 1)
+
+
+def compass(center, others):
+    """Where center lies among others (all the cells of its country): (1, -1) = north-west."""
+    lats, lons = [c[0] for c in others], [c[1] for c in others]
+    def side(v, vs):
+        mid, half = (min(vs) + max(vs)) / 2, (max(vs) - min(vs)) / 2 or 1
+        return 0 if abs(v - mid) <= half / 3 else (1 if v > mid else -1)
+    return side(center[0], lats), side(center[1], lons)
+
+
+assert compass((49, 3), [(43, -1), (43, 7), (49, 3), (51, 3)]) == (1, 0)
+assert compass((47, 3), [(43, -1), (43, 7), (51, 3)]) == (0, 0)
+
+
+def cell_names(cells):
+    """{cell id: (English, French)} like "France · North-East": the country (or US / Canada
+    bioregion) with most of the cell's bird records, and where the cell lies in it."""
+    names = {c: (en, fr) for c, (en, fr) in {**COUNTRIES, **PLANNED}.items()}
+    names |= {rid: (en, fr) for rid, (en, fr, _) in BIOREGIONS.items()}
+    state_region = {g: rid for rid, (_, _, f) in BIOREGIONS.items() for g in f.get("gadmGid", [])}
+
+    def top(base, facet):
+        fs = get("https://api.gbif.org/v1/occurrence/search", {**base, "facet": facet, "facetLimit": 3})["facets"]
+        return fs[0]["counts"][0]["name"] if fs and fs[0]["counts"] else None
+
+    def region_of(cell_filter):
+        base = {"classKey": 212, "limit": 0, "occurrenceStatus": "PRESENT", **cell_filter}
+        country = top(base, "country")
+        if country in ("US", "CA"):
+            return state_region.get(top(base, "gadmLevel1Gid"))
+        return "RU-EU" if country == "RU" else country if country in names else None
+
+    with ThreadPoolExecutor(WORKERS) as pool:
+        home = dict(zip([c for c, _ in cells], pool.map(lambda c: region_of(c[1]), cells)))
+    known = {c: r for c, r in home.items() if r}
+    for c, r in home.items():  # a cell of an unknown country: its nearest named neighbour's
+        if not r:
+            la, lo = cell_center(c)
+            home[c] = known[min(known, key=lambda k: (cell_center(k)[0] - la) ** 2 + (cell_center(k)[1] - lo) ** 2)]
+    out = {}
+    for c, r in home.items():
+        same = [cell_center(k) for k, v in home.items() if v == r]
+        en, fr = names[r]
+        if len(same) > 2:  # Luxembourg and the like: the country name alone
+            den, dfr = DIRECTIONS[compass(cell_center(c), same)]
+            en, fr = f"{en} · {den}", f"{fr} · {dfr}"
+        out[c] = (en, fr)
     return out
 
 
@@ -747,7 +817,11 @@ def main():
         f.unlink()
     for rid, rb in region_birds.items():
         write_json(OUT / "regions" / f"{rid}.json", rb)
-    write_json(OUT / "regions.json", [{"id": rid, "kind": kind, "en": en, "fr": fr} for rid, kind, en, fr, _ in regions])
+    named = cell_names([(r[0], r[4]) for r in regions if r[1] == "cell"])
+    write_json(OUT / "regions.json", [{"id": rid, "kind": kind, "en": named[rid][0] if kind == "cell" else en,
+                                       "fr": named[rid][1] if kind == "cell" else fr}
+                                      for rid, kind, en, fr, _ in regions]
+               + [{"id": c, "kind": "planned", "en": en, "fr": fr} for c, (en, fr) in PLANNED.items()])
     write_json(OUT / "species.json", [{k: v for k, v in b.items() if not k.startswith("_")} for b in birds])
     write_report(birds, dropped, regions, region_birds)
     build_series()

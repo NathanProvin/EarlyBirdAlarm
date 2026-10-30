@@ -60,6 +60,7 @@
   "useMyLocation": "Use my location",
   "searchRegion": "Search a country or region",
   "offline": "No connection. Connect to the internet to download your region's birds.",
+  "comingSoon": "Coming soon",
   "retry": "Retry",
   "nearCell": "Around {lat} {lon}",
   "locationDenied": "Location not available. Choose from the list.",

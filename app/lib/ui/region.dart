@@ -8,7 +8,7 @@ import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 
-/// Display name of a region id: a country / bioregion name, or "Around 48°N 2°E" for a GPS cell.
+/// Display name of a region id: its name from regions.json (a GPS cell: "France · North"), else "Around 48°N 2°E".
 String regionName(AppLocalizations l, String id) {
   final f = localFile('regions.json');
   final info = f.existsSync()
@@ -157,6 +157,9 @@ class _RegionScreenState extends State<RegionScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(r[lang] as String),
+                // Placeholder regions: listed, not choosable yet.
+                subtitle: r['kind'] == 'planned' ? Text(l.comingSoon) : null,
+                enabled: r['kind'] != 'planned',
                 selected: r['id'] == store.region,
                 onTap: () => _choose(r['id'] as String),
               ),
