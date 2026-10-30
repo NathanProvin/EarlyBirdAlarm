@@ -329,6 +329,24 @@ def commons_photo(file_name):
     return info["thumburl"], f"{artist or 'Wikimedia Commons'} · {lic}"
 
 
+# File names that aren't a photo of the living bird (Audubon plates, range maps, eggs...).
+NOT_A_PHOTO = re.compile(r"audubon|\bmaps?\b|\brange\b|distribution|\beggs?\b|\bnests?\b|skull|skeleton|"
+                         r"specimen|museum|illustrat|drawing|\bplates?\b|painting|stamp|sketch|feather", re.I)
+assert NOT_A_PHOTO.search("Audubon Cooper's Hawk.jpg") and NOT_A_PHOTO.search("Range map.jpg")
+assert not NOT_A_PHOTO.search("Orange-crowned Warbler.jpg") and not NOT_A_PHOTO.search("Honest look.jpg")
+
+
+def commons_search(latin):
+    """When the bird's Wikidata photos aren't freely licensed: the first allowed photo
+    among Commons files named after it, skipping illustrations and the like."""
+    r = get("https://commons.wikimedia.org/w/api.php", {
+        "action": "query", "format": "json", "list": "search", "srnamespace": 6,
+        "srsearch": f'"{latin}"', "srlimit": 20})
+    names = [h["title"].removeprefix("File:") for h in r.get("query", {}).get("search", [])]
+    photos = [n for n in names if n.lower().endswith((".jpg", ".jpeg")) and not NOT_A_PHOTO.search(n)]
+    return next(filter(None, map(commons_photo, photos)), None)
+
+
 KINDS = ["song", "call", "alarm"]
 SKIP_TYPES = re.compile(r"begging|nestling|hatchling|imitation|uncertain|aberrant", re.I)  # last resort only
 # Recordings per species, by its commonest tier in any region: common birds are heard often,
@@ -346,28 +364,34 @@ def kind(xc_type):
     return "call"
 
 
-def xc_recordings(latin, key, n, pinned=None):
+def xc_recordings(latin, key, n, pinned=None, en=None):
     """Up to n allowed xeno-canto recordings, as varied as possible: kinds rotate
     song -> call -> alarm, and each pick prefers a new recordist and country.
-    Falls back to non-commercial licenses only when no free recording is usable."""
-    picked = xc_pick(xc_search(latin, key, ("PD", "BY", "BY-SA"), XC_OK_LICENSE, pinned), n, pinned)
+    Falls back to non-commercial licenses only when no free recording is usable.
+    With en, the species is looked up by its English name (see xc_search)."""
+    picked = xc_pick(xc_search(latin, key, ("PD", "BY", "BY-SA"), XC_OK_LICENSE, pinned, en), n, pinned)
     if not picked:
-        picked = xc_pick(xc_search(latin, key, ("BY-NC", "BY-NC-SA"), XC_NC_LICENSE, pinned), n, pinned)
+        picked = xc_pick(xc_search(latin, key, ("BY-NC", "BY-NC-SA"), XC_NC_LICENSE, pinned, en), n, pinned)
         for r in picked:
             r["nc"] = True
     return picked
 
 
-def xc_search(latin, key, licenses, allowed, pinned=None):
+def xc_search(latin, key, licenses, allowed, pinned=None, en=None):
     # Ask only for the wanted licenses (most recordings are NC, so this saves reading thousands).
-    queries = [f'sp:"{latin}" grp:birds lic:{t}' for t in licenses]
+    # With en, search by English name instead (xeno-canto's own taxonomy may use another Latin
+    # name: Grus vs Antigone canadensis); that search is fuzzy ("Barred" finds "Buff-barred
+    # Warbler"), so only exact name matches are kept.
+    field, name = ("en", en) if en else ("sp", latin)
+    queries = [f'{field}:"{name}" grp:birds lic:{t}' for t in licenses]
     recs = []
     for query in ([f"nr:{pinned}"] if pinned else []) + queries:
         page, pages = 1, 1
         while page <= pages:
             r = get("https://xeno-canto.org/api/3/recordings",
                     {"query": query, "key": key, "per_page": 500, "page": page})
-            recs += [x for x in r.get("recordings", []) if x.get("file") and allowed.search(x.get("lic", ""))]
+            recs += [x for x in r.get("recordings", []) if x.get("file") and allowed.search(x.get("lic", ""))
+                     and (not en or x.get("en", "").lower() == en.lower())]
             pages, page = int(r.get("numPages", 1)), page + 1
     return recs
 
@@ -632,7 +656,7 @@ def main():
             ffmpeg("-i", str(mine), "-vf", "scale=600:-2", "-q:v", "4", str(photo_out))
             photo_credit = f"Photo: {my_credits.get(mine.name, '© ' + MY_NAME)}"
         else:
-            found = next(filter(None, map(commons_photo, images)), None)
+            found = next(filter(None, map(commons_photo, images)), None) or commons_search(latin)
             if not found:
                 drop("no photo with an allowed license")
                 continue
@@ -649,7 +673,8 @@ def main():
         n = RECORDINGS_PER_TIER[best_tier[key]]
         # xeno-canto may use a newer name than GBIF (Curruca vs Sylvia communis).
         recs = xc_recordings(latin, xc_key, n, pinned) or (
-            wd_latin and wd_latin != latin and xc_recordings(wd_latin, xc_key, n)) or []
+            wd_latin and wd_latin != latin and xc_recordings(wd_latin, xc_key, n)) or (
+            xc_recordings(latin, xc_key, n, en=en)) or []
         recordings = []
         for i, rec in enumerate(recs, 1):
             audio_out = OUT / "audio" / f"{bird_id}-{i}.m4a"
