@@ -212,10 +212,11 @@ void main() {
       ringsIn(l, at(7, 0, {DateTime.wednesday}), mon8),
       'Rings in 1 d 23 h',
     );
-    expect(formatStat('weight', 1080, 'en'), '1.1 kg');
-    expect(formatStat('weight', 12400, 'en'), '12 kg');
-    expect(formatStat('weight', 8.5, 'en'), '8.5 g');
-    expect(formatStat('distance', 292, 'en'), '292 km');
+    expect(formatStat('weight', 1080, l), '1.1 kg');
+    expect(formatStat('weight', 12400, l), '12 kg');
+    expect(formatStat('weight', 8.5, l), '8.5 g');
+    expect(formatStat('distance', 292, l), '292 km');
+    expect(formatStat('distance', 0.02, l), 'Resident');
   });
 
   test('Twitch quizzes: 5 max, one more every 10 min', () {

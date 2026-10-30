@@ -40,14 +40,14 @@ const palettes = <String, Palette>{
     onAccent: ink,
     surface: Color(0xFF2F3337),
   ),
-  // Deep soft green, the serin's bright yellow.
+  // Mossy green, the serin's bright yellow.
   'serin': (
     brightness: Brightness.dark,
-    background: Color(0xFF243020),
-    text: Color(0xFFEEF3E3),
-    accent: Color(0xFFF2D43A),
+    background: Color(0xFF33501F),
+    text: Color(0xFFF2F6E6),
+    accent: Color(0xFFF5D83C),
     onAccent: ink,
-    surface: Color(0xFF34432D),
+    surface: Color(0xFF46672F),
   ),
   // Pale sky, cobalt cap.
   'bluetit': (
@@ -109,6 +109,13 @@ ThemeData _themeOf(Palette p) {
           borderRadius: BorderRadius.circular(radius),
         ),
         textStyle: const TextStyle(fontSize: 18),
+      ),
+    ),
+    // The chosen option (Settings) is filled with the theme's accent.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: SegmentedButton.styleFrom(
+        selectedBackgroundColor: p.accent,
+        selectedForegroundColor: p.onAccent,
       ),
     ),
   );

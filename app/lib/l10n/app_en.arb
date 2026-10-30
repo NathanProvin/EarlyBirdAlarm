@@ -94,6 +94,7 @@
     }
   },
   "theme": "Theme",
+  "resident": "Resident",
   "themeBlackbird": "Blackbird",
   "themeSerin": "Serin",
   "themeBlueTit": "Blue Tit",

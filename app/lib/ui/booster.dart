@@ -306,10 +306,13 @@ class _BoosterPileState extends State<BoosterPile>
   /// One tap: the top strip lifts, tears off and flies away, then [onTorn].
   Future<void> _open() async {
     if (widget.count == 0 || _fly.isAnimating) return;
-    HapticFeedback.mediumImpact();
+    // A discreet hint: a tick on the tap, a light tap as the strip tears free.
+    HapticFeedback.selectionClick();
     final flown = _fly.forward(from: 0);
     // The quiz starts fading in while the strip is still flying off.
-    await Future<void>.delayed(const Duration(milliseconds: 150));
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    HapticFeedback.lightImpact();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
     widget.onTorn();
     await flown;
     if (mounted) _fly.reset();
@@ -466,9 +469,9 @@ Path _star(Offset c, double r) => Path()
   ], true);
 
 /// The reveal's effects at [ms] since it began, richer with the rarity [level] (0 common …
-/// 4 legendary). [behind]: the burst of particles from behind the card; otherwise what
-/// shows over it: twinkling stars round the edge (uncommon+), glints orbiting the edge
-/// (epic+), and a sheen across the card (legendary).
+/// 4 legendary). [behind]: a glowing aura round the card; otherwise what shows over it:
+/// firework sparks leaving its border, twinkling stars round the edge (uncommon+), glints
+/// orbiting the edge (epic+), and a sheen across the card (legendary).
 class _Sparkle extends CustomPainter {
   const _Sparkle(
     this.fx,
@@ -495,17 +498,36 @@ class _Sparkle extends CustomPainter {
       1.0,
     ); // everything fades at the end
     if (behind) {
-      final t = ((ms - 450) / (700 + 100 * level)).clamp(0.0, 1.0);
+      // An aura round the card in its rarity color, swelling then fading.
+      final t = ((ms - 450) / (end - 450)).clamp(0.0, 1.0);
       if (t == 0 || t == 1) return;
-      final e = Curves.easeOut.transform(t);
-      for (final (i, (angle, speed, r)) in fx.burst.indexed) {
-        canvas.drawCircle(
-          c + Offset(cos(angle), sin(angle)) * size.width * (0.35 + speed * e),
-          r * (1 - e * 0.7),
-          Paint()..color = _tint(i, 0.9 * (1 - e)),
-        );
-      }
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          (Offset.zero & size).inflate(4 + 10 * t),
+          const Radius.circular(radius + 8),
+        ),
+        Paint()
+          ..color = color.withValues(alpha: (0.45 + 0.1 * level) * sin(pi * t))
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 14.0 + 3 * level),
+      );
       return;
+    }
+    // Fireworks: sparks start on the card's border and fly outward with a short trail.
+    final bt = ((ms - 450) / (700 + 100 * level)).clamp(0.0, 1.0);
+    if (bt > 0 && bt < 1) {
+      final e = Curves.easeOut.transform(bt);
+      for (final (i, (p, speed, r)) in fx.burst.indexed) {
+        final start = _onEdge(size, p, 0);
+        final dir = (start - c) / (start - c).distance;
+        final at = start + dir * size.width * 0.6 * speed * e;
+        final paint = Paint()
+          ..color = _tint(i, 0.95 * (1 - e))
+          ..strokeWidth = r * 0.8
+          ..strokeCap = StrokeCap.round;
+        canvas
+          ..drawLine(at - dir * 14 * (1 - e), at, paint)
+          ..drawCircle(at, r * (1 - e * 0.6), paint);
+      }
     }
     for (final (i, (p, out, phase, period, r)) in fx.twinkles.indexed) {
       final s = sin(2 * pi * (ms - 500) / period + phase);
@@ -569,9 +591,9 @@ class _Effects {
   _Effects(int level) {
     final r = Random();
     burst = List.generate(
-      const [10, 16, 24, 34, 48][level],
+      const [12, 18, 26, 36, 50][level],
       (_) => (
-        r.nextDouble() * 2 * pi,
+        r.nextDouble(), // where on the card's border it starts
         0.3 + r.nextDouble() * (0.3 + 0.1 * level),
         1.5 + r.nextDouble() * 2 + 0.4 * level,
       ),
@@ -615,11 +637,26 @@ class _CardFlipState extends State<CardFlip>
     vsync: this,
     duration: Duration(milliseconds: lengthMs(_level).round()),
   );
-  bool _buzzed = false;
+  // Haptics along the reveal (ms → feedback): a tick as the card starts to turn, a
+  // strong buzz face up, then one light pop per rarity step with the sparkles.
+  late final _haptics = <(double, Future<void> Function())>[
+    (0, HapticFeedback.selectionClick),
+    (275, HapticFeedback.heavyImpact),
+    for (var i = 0; i <= _level; i++)
+      (480.0 + 110 * i, HapticFeedback.lightImpact),
+    if (_level == 4) (900, HapticFeedback.mediumImpact), // the Legendary sheen
+  ];
+  var _felt = 0;
 
   @override
   void initState() {
     super.initState();
+    _c.addListener(() {
+      final ms = _c.value * lengthMs(_level);
+      while (_felt < _haptics.length && _haptics[_felt].$1 <= ms) {
+        _haptics[_felt++].$2();
+      }
+    });
     // Flip once the screen has finished sliding in, so the whole flip is seen.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final arriving = ModalRoute.of(context)?.animation;
@@ -656,10 +693,6 @@ class _CardFlipState extends State<CardFlip>
         final flip =
             pi * Curves.easeInOutCubic.transform((ms / 550).clamp(0.0, 1.0));
         final faceUp = flip > pi / 2;
-        if (faceUp && !_buzzed) {
-          _buzzed = true;
-          HapticFeedback.heavyImpact(); // the card turns face up
-        }
         final running = _c.isAnimating;
         Widget fx({required bool behind}) => Positioned.fill(
           child: IgnorePointer(

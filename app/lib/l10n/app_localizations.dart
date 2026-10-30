@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get theme;
 
+  /// No description provided for @resident.
+  ///
+  /// In en, this message translates to:
+  /// **'Resident'**
+  String get resident;
+
   /// No description provided for @themeBlackbird.
   ///
   /// In en, this message translates to:

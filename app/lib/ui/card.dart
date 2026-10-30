@@ -280,7 +280,10 @@ String statName(AppLocalizations l, String key) => switch (key) {
   _ => l.flightDistance,
 };
 
-String formatStat(String key, double v, String locale) {
+String formatStat(String key, double v, AppLocalizations l) {
+  // Sedentary birds have no flight distance worth a number.
+  if (key == 'distance' && v < 1) return l.resident;
+  final locale = l.localeName;
   final (value, unit) = switch (key) {
     'weight' => v >= 1000 ? (v / 1000, 'kg') : (v, 'g'),
     'distance' => (v, 'km'),
@@ -310,10 +313,10 @@ class _StatRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme.bodyMedium;
     final value = this.value;
-    final locale = AppLocalizations.of(context).localeName;
+    final l = AppLocalizations.of(context);
     // TalkBack reads the row as one item: "Weight, 18 g".
     return Semantics(
-      label: '$label, ${value == null ? '?' : formatStat(stat, value, locale)}',
+      label: '$label, ${value == null ? '?' : formatStat(stat, value, l)}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -323,7 +326,7 @@ class _StatRow extends StatelessWidget {
             Expanded(
               flex: 3,
               child: Text(
-                value == null ? '?' : formatStat(stat, value, locale),
+                value == null ? '?' : formatStat(stat, value, l),
                 style: text?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.end,
               ),
