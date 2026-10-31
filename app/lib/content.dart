@@ -155,6 +155,7 @@ Future<bool> syncRegion(
   int? month,
   Difficulty difficulty, {
   Set<String> heard = const {},
+  Set<String> played = const {},
   Set<String> keep = const {},
 }) async {
   final regionFile = localFile('regions/$region.json');
@@ -183,31 +184,44 @@ Future<bool> syncRegion(
   for (var i = 0; i < photos.length; i += 8) {
     await Future.wait(photos.skip(i).take(8).map(download));
   }
-  await topUpDeck(month, difficulty, heard: heard);
+  await topUpDeck(month, difficulty, heard: heard, played: played);
   await _cleanUp(keep);
   return stale;
 }
 
-/// Keeps [deckSize] downloaded songs on the phone for birds that can ring this month at
-/// [difficulty] and weren't [heard] recently, so alarms ring a downloaded bird even
-/// offline. The deck rotates: a bird just heard stops counting, so each answer brings a
-/// new species at the next top-up. Best effort: stops at the first network error.
+/// A downloaded song that hasn't rung yet: what the deck is made of (see [topUpDeck]).
+bool fresh(Recording r, Set<String> played) =>
+    downloaded(r) && !played.contains(r.file);
+
+/// Keeps [deckSize] fresh songs on the phone (downloaded, never [played]) for birds that
+/// can ring this month at [difficulty] and weren't [heard] recently, so alarms ring a
+/// downloaded bird even offline. Each song rings once, then the deck brings a new one:
+/// before 2026-10-31 a played song kept counting, and the deck froze on ~24 species.
+/// New birds are drawn weighted like the rings themselves (common birds more often),
+/// since every song of the deck ends up ringing. Best effort: stops at the first
+/// network error.
 Future<void> topUpDeck(
   int? month,
   Difficulty difficulty, {
   Set<String> heard = const {},
+  Set<String> played = const {},
 }) async {
   final random = Random();
+  // Weighted shuffle (Efraimidis–Spirakis): key u^(1/w), largest first.
   final candidates = [
-    for (final b in pool(month, difficulty).keys)
-      if (!heard.contains(b.id)) b,
-  ]..shuffle(random);
-  bool inDeck(Bird b) => b.playable(difficulty).any(downloaded);
-  var have = candidates.where(inDeck).length;
-  for (final b in candidates) {
+    for (final MapEntry(key: b, value: w) in pool(month, difficulty).entries)
+      if (!heard.contains(b.id)) (b, pow(random.nextDouble(), 1 / w)),
+  ]..sort((a, b) => b.$2.compareTo(a.$2));
+  bool inDeck(Bird b) => b.playable(difficulty).any((r) => fresh(r, played));
+  var have = candidates.where((c) => inDeck(c.$1)).length;
+  for (final (b, _) in candidates) {
     if (have >= deckSize) return;
     if (inDeck(b)) continue;
-    final recs = b.playable(difficulty);
+    final recs = [
+      for (final r in b.playable(difficulty))
+        if (!played.contains(r.file)) r,
+    ];
+    if (recs.isEmpty) continue; // every song of this bird has rung lately
     if (!await download(recs[random.nextInt(recs.length)].file)) return;
     have++;
   }

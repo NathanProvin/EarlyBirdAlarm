@@ -24,6 +24,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] Region naming: cells kept (local lists), named after their country + compass part; Collection groups views by name; placeholder countries listed greyed
 - [x] Region picker as a world map (tap a cell, search bar, my position), merged 2026-10-31
 - [x] German and Spanish (app, catalog names, privacy pages), 2026-10-31; German screens checked on the S22 (no overflow; theme names shrink to fit)
+- [x] **Deck rotation bug fixed** (2026-10-31): the deck froze on ~24 species; played songs now leave it, refill weighted; simulated 1,000 cards per difficulty: diversity as the ideal draw (see decisions.md)
 - [x] Settings polish (2026-10-31): language drop-down at half width; region and language as accent-filled pills like the chosen difficulty
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 

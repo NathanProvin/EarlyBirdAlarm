@@ -305,6 +305,20 @@ void main() {
     expect(s.heard, {'robin'});
   });
 
+  test(
+    'a song that rang leaves the deck (played), newest first, no repeats',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = await Store.load();
+      final song = _b('robin').recordings.first,
+          other = _b('tit').recordings.first;
+      await s.answered(null, _b('robin'), song, true, '');
+      await s.answered(null, _b('tit'), other, false, '');
+      await s.answered(null, _b('robin'), song, true, '');
+      expect(s.played, [song.file, other.file]);
+    },
+  );
+
   testWidgets('booster: a tap opens it, a drag only tilts the pile', (
     tester,
   ) async {

@@ -145,6 +145,11 @@ class Store extends ChangeNotifier {
   /// Ids of the last birds heard, newest first.
   List<String> get recent => _prefs.getStringList('recent') ?? [];
 
+  /// Song files that already rang, newest first (see [fresh]): the deck moves on to new
+  /// songs. Longer than the songs kept on the phone (keepSongs), so all of those count.
+  List<String> get played => _prefs.getStringList('played') ?? [];
+  static const playedCount = 200;
+
   Difficulty get difficulty =>
       Difficulty.values[_prefs.getInt('difficulty') ?? Difficulty.easy.index];
   set difficulty(Difficulty d) =>
@@ -213,6 +218,7 @@ class Store extends ChangeNotifier {
       monthFor(DateTime.now()),
       difficulty,
       heard: recent.toSet(), // the deck rotates past the birds just heard
+      played: played.toSet(),
       keep: scheduled,
     )) {
       await rescheduleAll();
@@ -273,8 +279,15 @@ class Store extends ChangeNotifier {
   }
 
   /// The bird and recording to play at [at]. Only a recording already on the phone can
-  /// play: the downloaded deck first, then the bundled birds of the region, then any.
+  /// play: a fresh song of the deck first (not rung yet), then any downloaded one, then
+  /// the bundled birds of the region, then any.
   (Bird, Recording) pickNext(DateTime at) =>
+      pickBird(
+        recent,
+        monthFor(at),
+        difficulty,
+        (r) => fresh(r, played.toSet()),
+      ) ??
       pickBird(recent, monthFor(at), difficulty, downloaded) ??
       pickBird(recent, monthFor(at), difficulty, onPhone) ??
       species.values
@@ -317,6 +330,12 @@ class Store extends ChangeNotifier {
       bird.id,
       ...recent.take(recentCount - 1),
     ]);
+    if (recording != null) {
+      await _prefs.setStringList('played', [
+        recording.file,
+        ...played.where((f) => f != recording.file).take(playedCount - 1),
+      ]);
+    }
     // The bird was drafted when the alarm was set; the card's rarity is drawn now,
     // leaning toward how scarce the bird is this month (all year with "All birds").
     final card = correct
