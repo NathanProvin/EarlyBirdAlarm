@@ -189,6 +189,12 @@ class _Badge extends StatelessWidget {
       collector => Icons.collections_bookmark,
       localExpert => Icons.place,
       rareFinds => Icons.diamond,
+      fiveOfAKind => Icons.filter_5,
+      dawnChorus => Icons.wb_twilight,
+      globetrotter => Icons.public,
+      fullHouse => Icons.emoji_events,
+      perfectSpecimen => Icons.workspace_premium,
+      ironStreak => Icons.military_tech,
       _ => Icons.flutter_dash, // a series whose birds have no photo
     };
     final inner = face != null
@@ -259,16 +265,10 @@ class _Badge extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+            // In the colour of the prize: the rarity of the card collected on completion.
             Text(
               '${s.owned}/${s.total}',
               style: text.labelMedium?.copyWith(
-                color: s.complete ? scheme.primary : null,
-              ),
-            ),
-            // The prize: the rarity of the card collected on completion.
-            Text(
-              '◆ $reward',
-              style: text.labelSmall?.copyWith(
                 color: rarityColor[s.reward],
                 fontWeight: FontWeight.bold,
               ),
