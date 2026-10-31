@@ -174,15 +174,28 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           children: [
             Text(l.region, style: text.titleMedium),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                store.region == null ? '—' : regionName(l, store.region!),
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            const SizedBox(height: 8),
+            // Filled in the accent like the chosen difficulty: the current choice.
+            FilledButton(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(40),
+                padding: const EdgeInsets.only(left: 20, right: 12),
+                side: BorderSide(color: Theme.of(context).colorScheme.outline),
               ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
+              onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      store.region == null ? '—' : regionName(l, store.region!),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
               ),
             ),
             const SizedBox(height: 32),
@@ -222,19 +235,30 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
             const SizedBox(height: 8),
-            // Each language written in itself; '' follows the phone. Half width, outlined
-            // like the segmented controls above (pill, outline colour), text in the accent.
+            // Each language written in itself; '' follows the phone. Half width, a pill
+            // like the segmented controls above.
             Align(
               alignment: Alignment.centerLeft,
               child: FractionallySizedBox(
                 widthFactor: 0.5,
                 child: DropdownMenu<String>(
                   expandedInsets: EdgeInsets.zero,
-                  textStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                  // Filled in the accent like the chosen difficulty.
+                  textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  trailingIcon: Icon(
+                    Icons.arrow_drop_down,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  selectedTrailingIcon: Icon(
+                    Icons.arrow_drop_up,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                   inputDecorationTheme: InputDecorationTheme(
                     isDense: true,
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.primary,
                     constraints: const BoxConstraints(maxHeight: 40),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     border: OutlineInputBorder(
