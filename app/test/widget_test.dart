@@ -9,6 +9,7 @@ import 'package:early_bird/series.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
+import 'package:early_bird/ui/region.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -527,5 +528,16 @@ void main() {
       ],
     );
     expect([1, 2, 12].map((n) => ordinal(n, 'fr')), ['1re', '2e', '12e']);
+  });
+
+  test('region map: cell under a tap, projection round trip', () {
+    expect(cellAt(48.85, 2.35), 'N48E002'); // Paris
+    expect(cellAt(42.36, -71.06), 'N42W072'); // Boston
+    expect(cellAt(-33.9, 18.4), 'S34E018'); // Cape Town
+    for (final (lat, lon) in [(48.85, 2.35), (64.1, -21.9), (25.8, -80.2)]) {
+      final (la, lo) = unproject(project(lat, lon));
+      expect(la, closeTo(lat, 1e-6));
+      expect(lo, closeTo(lon, 1e-6));
+    }
   });
 }

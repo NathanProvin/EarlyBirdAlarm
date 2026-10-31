@@ -39,7 +39,7 @@
   "comingSoon": "Bientôt disponible",
   "retry": "Réessayer",
   "nearCell": "Autour de {lat} {lon}",
-  "locationDenied": "Position indisponible. Choisissez dans la liste.",
+  "locationDenied": "Position indisponible. Cherchez votre région ou touchez-la sur la carte.",
   "song": "chant",
   "call": "cri",
   "alarmCall": "cri d'alarme",

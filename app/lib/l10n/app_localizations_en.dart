@@ -136,7 +136,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get locationDenied => 'Location not available. Choose from the list.';
+  String get locationDenied =>
+      'Location not available. Search your region or tap it on the map.';
 
   @override
   String get song => 'song';

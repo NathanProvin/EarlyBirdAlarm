@@ -335,7 +335,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationDenied.
   ///
   /// In en, this message translates to:
-  /// **'Location not available. Choose from the list.'**
+  /// **'Location not available. Search your region or tap it on the map.'**
   String get locationDenied;
 
   /// No description provided for @song.

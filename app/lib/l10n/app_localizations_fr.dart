@@ -137,7 +137,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get locationDenied =>
-      'Position indisponible. Choisissez dans la liste.';
+      'Position indisponible. Cherchez votre région ou touchez-la sur la carte.';
 
   @override
   String get song => 'chant';

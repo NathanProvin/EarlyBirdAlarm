@@ -63,7 +63,7 @@
   "comingSoon": "Coming soon",
   "retry": "Retry",
   "nearCell": "Around {lat} {lon}",
-  "locationDenied": "Location not available. Choose from the list.",
+  "locationDenied": "Location not available. Search your region or tap it on the map.",
   "song": "song",
   "call": "call",
   "alarmCall": "alarm call",
