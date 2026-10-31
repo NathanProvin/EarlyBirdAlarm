@@ -13,6 +13,8 @@ Ready to paste into Play Console (Iteration 4b). Keep in sync with the app.
 ## Short description (≤ 80 chars)
 - **EN:** Wake up to a real bird song, guess the bird, and collect its card.
 - **FR:** Réveillez-vous au chant d'un vrai oiseau, devinez-le et gagnez sa carte.
+- **DE:** Wach auf mit echtem Vogelgesang, errate den Vogel und sammle seine Karte.
+- **ES:** Despierta con el canto de un ave real, adivínala y gana su carta.
 
 ## Full description
 ### EN
@@ -50,6 +52,42 @@ Devinez quel oiseau chante parmi 4 photos pour arrêter l'alarme. Bonne réponse
 • Plusieurs alarmes, jours de répétition, répétition, montée progressive du volume
 • Fonctionne hors ligne une fois votre région téléchargée
 • Pas de compte, pas de publicité, pas de pistage. La position (facultative) ne quitte jamais votre téléphone.
+
+### DE (draft, to proofread by a native speaker)
+Early Bird Alarm weckt dich mit dem echten Gesang eines Vogels aus deiner Region und Jahreszeit.
+
+Errate unter 4 Fotos, welcher Vogel singt, um den Wecker auszuschalten. Richtig? Du gewinnst seine Karte: eine Sammelkarte mit eigener Seltenheit, Foto, Aufnahme und Werten (Gewicht, Spannweite, Länge, Zugstrecke). Falsch? Er ist „gehört“ — beim nächsten Mal klappt's.
+
+• Echte Aufnahmen von xeno-canto und Fotos von Wikimedia Commons
+• Die Vögel deiner Region und Jahreszeit, von Europa bis Nordamerika
+• Leicht, Mittel und Schwer: erst nur Gesang, dann Rufe und Warnrufe
+• 5 Seltenheiten, von Häufig bis Legendär — seltene Vögel klingeln selten
+• Eine Kartensammlung zum Vervollständigen, mit deinen besten Exemplaren und Serien
+• Twitcher-Zone: alle 15 Minuten ein kostenloser Booster, um dein Gehör zu trainieren und mehr Karten zu gewinnen
+• Serien zum Vervollständigen — Möwen, Eulen, Greifvögel, Legenden der Vogelbeobachter… — jede bringt einen Bonus-Booster
+• Vier Vogel-Designs: Amsel, Girlitz, Blaumeise und Möwe
+• Teile deine Karten mit Freunden
+• Mehrere Wecker, Wiederholungstage, Schlummern, sanftes Lauterwerden
+• Funktioniert offline, sobald deine Region geladen ist
+• Kein Konto, keine Werbung, kein Tracking. Der Standort (optional) verlässt nie dein Telefon.
+
+### ES (draft, to proofread by a native speaker)
+Early Bird Alarm te despierta con el canto real de un ave de tu región y de temporada.
+
+Adivina qué ave canta entre 4 fotos para apagar la alarma. ¿Acierto? Ganas su carta: una carta coleccionable con su rareza, foto, grabación y estadísticas (peso, envergadura, longitud, distancia de vuelo). ¿Fallo? Queda «oída»: la próxima vez será.
+
+• Grabaciones reales de xeno-canto y fotos de Wikimedia Commons
+• Las aves de tu región y temporada, de Europa a Norteamérica
+• Fácil, Media y Difícil: primero solo cantos, luego reclamos y alarmas
+• 5 rarezas, de Común a Legendaria: las aves raras suenan poco
+• Una colección de cartas para completar, con tus mejores ejemplares y rachas
+• Zona Pajarera: abre un sobre gratis cada 15 minutos para entrenar el oído y ganar más cartas
+• Series para completar — gaviotas, búhos, rapaces, leyendas de los pajareros… — cada una da un sobre extra
+• Cuatro temas de aves: Mirlo, Verdecillo, Herrerillo y Gaviota
+• Comparte tus cartas con tus amigos
+• Varias alarmas, días de repetición, posponer, volumen progresivo
+• Funciona sin conexión una vez descargada tu región
+• Sin cuenta, sin anuncios, sin rastreo. La ubicación (opcional) nunca sale de tu teléfono.
 
 ## Data safety form
 - **Does the app collect or share user data?** No.

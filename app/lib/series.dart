@@ -7,15 +7,18 @@ import 'cards.dart';
 class Series {
   Series.fromJson(Map<String, dynamic> j)
     : id = j['id'] as String,
-      en = j['en'] as String,
-      fr = j['fr'] as String,
+      names = {
+        for (final g in catalogLangs)
+          if (j[g] case final String n) g: n,
+      },
       signature = j['signature'] as String?,
       birds = [for (final b in j['birds'] as List) b as String];
-  final String id, en, fr;
+  final String id;
+  final Map<String, String> names; // language -> series name (see localName)
   final String? signature; // the bird on the badge, when it lives in the region
   final List<String> birds;
 
-  String nameIn(String locale) => locale.startsWith('fr') ? fr : en;
+  String nameIn(String locale) => localName(names, locale);
 }
 
 /// All series of the catalog; loaded by initContent.

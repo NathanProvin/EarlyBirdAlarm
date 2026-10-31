@@ -533,6 +533,8 @@ void main() {
       ],
     );
     expect([1, 2, 12].map((n) => ordinal(n, 'fr')), ['1re', '2e', '12e']);
+    expect(ordinal(3, 'de'), '3.');
+    expect(ordinal(3, 'es'), '3.ª');
   });
 
   test('region map: cell under a tap, projection round trip', () {
@@ -631,5 +633,14 @@ void main() {
         'heron',
       });
     });
+  });
+
+  test('names: the language of the phone, else English', () {
+    final j = {'en': 'Blackbird', 'fr': 'Merle noir', 'de': 'Amsel'};
+    expect(localName(j, 'de'), 'Amsel');
+    expect(localName(j, 'de_AT'), 'Amsel');
+    expect(localName(j, 'fr'), 'Merle noir');
+    expect(localName(j, 'es'), 'Blackbird'); // no Spanish name yet
+    expect(_b('robin').nameIn('es'), 'robin');
   });
 }

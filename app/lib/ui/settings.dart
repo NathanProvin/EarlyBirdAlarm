@@ -218,16 +218,22 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
             const SizedBox(height: 8),
-            SegmentedButton<String>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: '', label: Text(l.systemLanguage)),
-                const ButtonSegment(value: 'en', label: Text('English')),
-                const ButtonSegment(value: 'fr', label: Text('Français')),
+            // Each language written in itself; '' follows the phone.
+            DropdownMenu<String>(
+              expandedInsets: EdgeInsets.zero,
+              initialSelection: store.language ?? '',
+              dropdownMenuEntries: [
+                DropdownMenuEntry(value: '', label: l.systemLanguage),
+                for (final (code, name) in const [
+                  ('en', 'English'),
+                  ('fr', 'Français'),
+                  ('de', 'Deutsch'),
+                  ('es', 'Español'),
+                ])
+                  DropdownMenuEntry(value: code, label: name),
               ],
-              selected: {store.language ?? ''},
-              onSelectionChanged: (s) =>
-                  store.language = s.single.isEmpty ? null : s.single,
+              onSelected: (v) =>
+                  store.language = v == null || v.isEmpty ? null : v,
             ),
             const SizedBox(height: 32),
             Text(l.theme, style: text.titleMedium),

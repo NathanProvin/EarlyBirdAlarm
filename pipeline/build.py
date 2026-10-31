@@ -190,51 +190,53 @@ def flight_km(key):
     return None if jan is None or jun is None else abs(jun - jan) * 111
 
 
-# Europe: country code -> (English, French); optional (lat, lon) box keeps out far islands.
+# Region and series names come in these languages (EN and FR required for a bird, DE / ES optional).
+LANGS = ("en", "fr", "de", "es")
+# Europe: country code -> names in LANGS order; optional (lat, lon) box keeps out far islands.
 COUNTRIES = {
-    "AL": ("Albania", "Albanie"), "AT": ("Austria", "Autriche"), "BA": ("Bosnia and Herzegovina", "Bosnie-Herzégovine"),
-    "BE": ("Belgium", "Belgique"), "BG": ("Bulgaria", "Bulgarie"), "BY": ("Belarus", "Biélorussie"),
-    "CH": ("Switzerland", "Suisse"), "CY": ("Cyprus", "Chypre"), "CZ": ("Czechia", "Tchéquie"),
-    "DE": ("Germany", "Allemagne"), "DK": ("Denmark", "Danemark"), "EE": ("Estonia", "Estonie"),
-    "ES": ("Spain", "Espagne"), "FI": ("Finland", "Finlande"), "FR": ("France", "France"),
-    "GB": ("United Kingdom", "Royaume-Uni"), "GR": ("Greece", "Grèce"), "HR": ("Croatia", "Croatie"),
-    "HU": ("Hungary", "Hongrie"), "IE": ("Ireland", "Irlande"), "IS": ("Iceland", "Islande"),
-    "IT": ("Italy", "Italie"), "LT": ("Lithuania", "Lituanie"), "LU": ("Luxembourg", "Luxembourg"),
-    "LV": ("Latvia", "Lettonie"), "MD": ("Moldova", "Moldavie"), "ME": ("Montenegro", "Monténégro"),
-    "MK": ("North Macedonia", "Macédoine du Nord"), "MT": ("Malta", "Malte"), "NL": ("Netherlands", "Pays-Bas"),
-    "NO": ("Norway", "Norvège"), "PL": ("Poland", "Pologne"), "PT": ("Portugal", "Portugal"),
-    "RO": ("Romania", "Roumanie"), "RS": ("Serbia", "Serbie"), "SE": ("Sweden", "Suède"),
-    "SI": ("Slovenia", "Slovénie"), "SK": ("Slovakia", "Slovaquie"), "UA": ("Ukraine", "Ukraine"),
-    "XK": ("Kosovo", "Kosovo"),
+    "AL": ("Albania", "Albanie", "Albanien", "Albania"), "AT": ("Austria", "Autriche", "Österreich", "Austria"), "BA": ("Bosnia and Herzegovina", "Bosnie-Herzégovine", "Bosnien und Herzegowina", "Bosnia y Herzegovina"),
+    "BE": ("Belgium", "Belgique", "Belgien", "Bélgica"), "BG": ("Bulgaria", "Bulgarie", "Bulgarien", "Bulgaria"), "BY": ("Belarus", "Biélorussie", "Belarus", "Bielorrusia"),
+    "CH": ("Switzerland", "Suisse", "Schweiz", "Suiza"), "CY": ("Cyprus", "Chypre", "Zypern", "Chipre"), "CZ": ("Czechia", "Tchéquie", "Tschechien", "Chequia"),
+    "DE": ("Germany", "Allemagne", "Deutschland", "Alemania"), "DK": ("Denmark", "Danemark", "Dänemark", "Dinamarca"), "EE": ("Estonia", "Estonie", "Estland", "Estonia"),
+    "ES": ("Spain", "Espagne", "Spanien", "España"), "FI": ("Finland", "Finlande", "Finnland", "Finlandia"), "FR": ("France", "France", "Frankreich", "Francia"),
+    "GB": ("United Kingdom", "Royaume-Uni", "Vereinigtes Königreich", "Reino Unido"), "GR": ("Greece", "Grèce", "Griechenland", "Grecia"), "HR": ("Croatia", "Croatie", "Kroatien", "Croacia"),
+    "HU": ("Hungary", "Hongrie", "Ungarn", "Hungría"), "IE": ("Ireland", "Irlande", "Irland", "Irlanda"), "IS": ("Iceland", "Islande", "Island", "Islandia"),
+    "IT": ("Italy", "Italie", "Italien", "Italia"), "LT": ("Lithuania", "Lituanie", "Litauen", "Lituania"), "LU": ("Luxembourg", "Luxembourg", "Luxemburg", "Luxemburgo"),
+    "LV": ("Latvia", "Lettonie", "Lettland", "Letonia"), "MD": ("Moldova", "Moldavie", "Moldau", "Moldavia"), "ME": ("Montenegro", "Monténégro", "Montenegro", "Montenegro"),
+    "MK": ("North Macedonia", "Macédoine du Nord", "Nordmazedonien", "Macedonia del Norte"), "MT": ("Malta", "Malte", "Malta", "Malta"), "NL": ("Netherlands", "Pays-Bas", "Niederlande", "Países Bajos"),
+    "NO": ("Norway", "Norvège", "Norwegen", "Noruega"), "PL": ("Poland", "Pologne", "Polen", "Polonia"), "PT": ("Portugal", "Portugal", "Portugal", "Portugal"),
+    "RO": ("Romania", "Roumanie", "Rumänien", "Rumanía"), "RS": ("Serbia", "Serbie", "Serbien", "Serbia"), "SE": ("Sweden", "Suède", "Schweden", "Suecia"),
+    "SI": ("Slovenia", "Slovénie", "Slowenien", "Eslovenia"), "SK": ("Slovakia", "Slovaquie", "Slowakei", "Eslovaquia"), "UA": ("Ukraine", "Ukraine", "Ukraine", "Ucrania"),
+    "XK": ("Kosovo", "Kosovo", "Kosovo", "Kosovo"),
 }
 MAINLAND = {"ES": ((35, 44), (-10, 5)), "PT": ((36, 43), (-10, -6))}  # no Canaries / Azores / Madeira
-# Bioregions of large countries: id -> (English, French, GBIF filter). US/Canada by GADM state ids.
+# Bioregions of large countries: id -> (names in LANGS order, GBIF filter). US/Canada by GADM state ids.
 US = lambda *n: {"gadmGid": [f"USA.{i}_1" for i in n]}
 CA = lambda *n: {"gadmGid": [f"CAN.{i}_1" for i in n]}
 BIOREGIONS = {
-    "US-NE": ("USA — Northeast", "États-Unis — Nord-Est", US(7, 8, 9, 20, 21, 22, 30, 31, 33, 39, 40, 46, 47, 49)),
-    "US-SE": ("USA — Southeast", "États-Unis — Sud-Est", US(1, 4, 10, 11, 18, 19, 25, 34, 41, 43)),
-    "US-MW": ("USA — Midwest", "États-Unis — Midwest", US(14, 15, 16, 23, 24, 26, 36, 50)),
-    "US-GP": ("USA — Great Plains", "États-Unis — Grandes Plaines", US(17, 28, 35, 37, 42)),
-    "US-MT": ("USA — Mountain West", "États-Unis — Rocheuses", US(6, 13, 27, 45, 51)),
-    "US-SW": ("USA — Southwest", "États-Unis — Sud-Ouest", US(3, 29, 32, 44)),
-    "US-PC": ("USA — Pacific Coast", "États-Unis — Côte Pacifique", US(5, 38, 48)),
-    "US-AK": ("USA — Alaska", "États-Unis — Alaska", US(2)),
-    "CA-AQ": ("Canada — Atlantic & Quebec", "Canada — Atlantique et Québec", CA(4, 5, 7, 10, 11)),
-    "CA-ON": ("Canada — Ontario", "Canada — Ontario", CA(9)),
-    "CA-PR": ("Canada — Prairies", "Canada — Prairies", CA(1, 3, 12)),
-    "CA-BN": ("Canada — British Columbia & North", "Canada — Colombie-Britannique et Nord", CA(2, 6, 8, 13)),
-    "RU-EU": ("European Russia", "Russie d'Europe", {"country": "RU", "decimalLongitude": "19,60"}),
+    "US-NE": (("USA — Northeast", "États-Unis — Nord-Est", "USA — Nordosten", "EE. UU. — Noreste"), US(7, 8, 9, 20, 21, 22, 30, 31, 33, 39, 40, 46, 47, 49)),
+    "US-SE": (("USA — Southeast", "États-Unis — Sud-Est", "USA — Südosten", "EE. UU. — Sudeste"), US(1, 4, 10, 11, 18, 19, 25, 34, 41, 43)),
+    "US-MW": (("USA — Midwest", "États-Unis — Midwest", "USA — Mittlerer Westen", "EE. UU. — Medio Oeste"), US(14, 15, 16, 23, 24, 26, 36, 50)),
+    "US-GP": (("USA — Great Plains", "États-Unis — Grandes Plaines", "USA — Great Plains", "EE. UU. — Grandes Llanuras"), US(17, 28, 35, 37, 42)),
+    "US-MT": (("USA — Mountain West", "États-Unis — Rocheuses", "USA — Rocky Mountains", "EE. UU. — Montañas Rocosas"), US(6, 13, 27, 45, 51)),
+    "US-SW": (("USA — Southwest", "États-Unis — Sud-Ouest", "USA — Südwesten", "EE. UU. — Suroeste"), US(3, 29, 32, 44)),
+    "US-PC": (("USA — Pacific Coast", "États-Unis — Côte Pacifique", "USA — Pazifikküste", "EE. UU. — Costa del Pacífico"), US(5, 38, 48)),
+    "US-AK": (("USA — Alaska", "États-Unis — Alaska", "USA — Alaska", "EE. UU. — Alaska"), US(2)),
+    "CA-AQ": (("Canada — Atlantic & Quebec", "Canada — Atlantique et Québec", "Kanada — Atlantik & Québec", "Canadá — Atlántico y Quebec"), CA(4, 5, 7, 10, 11)),
+    "CA-ON": (("Canada — Ontario", "Canada — Ontario", "Kanada — Ontario", "Canadá — Ontario"), CA(9)),
+    "CA-PR": (("Canada — Prairies", "Canada — Prairies", "Kanada — Prärien", "Canadá — Praderas"), CA(1, 3, 12)),
+    "CA-BN": (("Canada — British Columbia & North", "Canada — Colombie-Britannique et Nord", "Kanada — British Columbia & Norden", "Canadá — Columbia Británica y Norte"), CA(2, 6, 8, 13)),
+    "RU-EU": (("European Russia", "Russie d'Europe", "Europäisches Russland", "Rusia europea"), {"country": "RU", "decimalLongitude": "19,60"}),
 }
 # Countries without a bird list of their own yet: listed as "coming soon" (their GPS cells work).
 PLANNED = {
-    "MA": ("Morocco", "Maroc"), "DZ": ("Algeria", "Algérie"), "TN": ("Tunisia", "Tunisie"),
-    "LY": ("Libya", "Libye"), "EG": ("Egypt", "Égypte"), "TR": ("Turkey", "Turquie"),
-    "GE": ("Georgia", "Géorgie"), "AM": ("Armenia", "Arménie"), "AZ": ("Azerbaijan", "Azerbaïdjan"),
-    "SY": ("Syria", "Syrie"), "LB": ("Lebanon", "Liban"), "IL": ("Israel", "Israël"),
-    "JO": ("Jordan", "Jordanie"), "IQ": ("Iraq", "Irak"), "FO": ("Faroe Islands", "Îles Féroé"),
-    "SJ": ("Svalbard", "Svalbard"), "GL": ("Greenland", "Groenland"), "MX": ("Mexico", "Mexique"),
-    "CU": ("Cuba", "Cuba"), "BS": ("Bahamas", "Bahamas"),
+    "MA": ("Morocco", "Maroc", "Marokko", "Marruecos"), "DZ": ("Algeria", "Algérie", "Algerien", "Argelia"), "TN": ("Tunisia", "Tunisie", "Tunesien", "Túnez"),
+    "LY": ("Libya", "Libye", "Libyen", "Libia"), "EG": ("Egypt", "Égypte", "Ägypten", "Egipto"), "TR": ("Turkey", "Turquie", "Türkei", "Turquía"),
+    "GE": ("Georgia", "Géorgie", "Georgien", "Georgia"), "AM": ("Armenia", "Arménie", "Armenien", "Armenia"), "AZ": ("Azerbaijan", "Azerbaïdjan", "Aserbaidschan", "Azerbaiyán"),
+    "SY": ("Syria", "Syrie", "Syrien", "Siria"), "LB": ("Lebanon", "Liban", "Libanon", "Líbano"), "IL": ("Israel", "Israël", "Israel", "Israel"),
+    "JO": ("Jordan", "Jordanie", "Jordanien", "Jordania"), "IQ": ("Iraq", "Irak", "Irak", "Irak"), "FO": ("Faroe Islands", "Îles Féroé", "Färöer", "Islas Feroe"),
+    "SJ": ("Svalbard", "Svalbard", "Spitzbergen", "Svalbard"), "GL": ("Greenland", "Groenland", "Grönland", "Groenlandia"), "MX": ("Mexico", "Mexique", "Mexiko", "México"),
+    "CU": ("Cuba", "Cuba", "Kuba", "Cuba"), "BS": ("Bahamas", "Bahamas", "Bahamas", "Bahamas"),
 }
 # 2°×2° cells for GPS: Europe and the US + Canada.
 CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52))]
@@ -245,27 +247,32 @@ def cell_id(lat, lon):
 
 
 def region_list():
-    """[(id, kind, English, French, GBIF filter)] for every region."""
+    """[(id, kind, {lang: name}, GBIF filter)] for every region (cells are named later)."""
     out = []
     for (lat0, lat1), (lon0, lon1) in CELL_AREAS:
         for lat in range(lat0, lat1, 2):
             for lon in range(lon0, lon1, 2):
-                out.append((cell_id(lat, lon), "cell", None, None,
+                out.append((cell_id(lat, lon), "cell", None,
                             {"decimalLatitude": f"{lat},{lat + 2}", "decimalLongitude": f"{lon},{lon + 2}"}))
-    for code, (en, fr) in COUNTRIES.items():
+    for code, names in COUNTRIES.items():
         f = {"country": code}
         if code in MAINLAND:
             (a, b), (c, d) = MAINLAND[code]
             f |= {"decimalLatitude": f"{a},{b}", "decimalLongitude": f"{c},{d}"}
-        out.append((code, "country", en, fr, f))
-    out += [(rid, "bioregion", en, fr, f) for rid, (en, fr, f) in BIOREGIONS.items()]
+        out.append((code, "country", dict(zip(LANGS, names)), f))
+    out += [(rid, "bioregion", dict(zip(LANGS, names)), f) for rid, (names, f) in BIOREGIONS.items()]
     return out
 
 
-DIRECTIONS = {(1, 0): ("North", "Nord"), (-1, 0): ("South", "Sud"), (0, 1): ("East", "Est"),
-              (0, -1): ("West", "Ouest"), (1, 1): ("North-East", "Nord-Est"),
-              (1, -1): ("North-West", "Nord-Ouest"), (-1, 1): ("South-East", "Sud-Est"),
-              (-1, -1): ("South-West", "Sud-Ouest"), (0, 0): ("Centre", "Centre")}
+DIRECTIONS = {(1, 0): ("North", "Nord", "Norden", "Norte"), (-1, 0): ("South", "Sud", "Süden", "Sur"),
+              (0, 1): ("East", "Est", "Osten", "Este"), (0, -1): ("West", "Ouest", "Westen", "Oeste"),
+              (1, 1): ("North-East", "Nord-Est", "Nordosten", "Noreste"),
+              (1, -1): ("North-West", "Nord-Ouest", "Nordwesten", "Noroeste"),
+              (-1, 1): ("South-East", "Sud-Est", "Südosten", "Sudeste"),
+              (-1, -1): ("South-West", "Sud-Ouest", "Südwesten", "Suroeste"),
+              (0, 0): ("Centre", "Centre", "Mitte", "Centro")}
+assert all(len(n) == len(LANGS) for n in [*COUNTRIES.values(), *PLANNED.values(), *DIRECTIONS.values()])
+assert all(len(n) == len(LANGS) for n, _ in BIOREGIONS.values())
 
 
 def cell_center(cid):
@@ -287,11 +294,10 @@ assert compass((47, 3), [(43, -1), (43, 7), (51, 3)]) == (0, 0)
 
 
 def cell_names(cells):
-    """{cell id: (English, French)} like "France · North-East": the country (or US / Canada
+    """{cell id: {lang: name}} like "France · North-East": the country (or US / Canada
     bioregion) with most of the cell's bird records, and where the cell lies in it."""
-    names = {c: (en, fr) for c, (en, fr) in {**COUNTRIES, **PLANNED}.items()}
-    names |= {rid: (en, fr) for rid, (en, fr, _) in BIOREGIONS.items()}
-    state_region = {g: rid for rid, (_, _, f) in BIOREGIONS.items() for g in f.get("gadmGid", [])}
+    names = {**COUNTRIES, **PLANNED} | {rid: n for rid, (n, _) in BIOREGIONS.items()}
+    state_region = {g: rid for rid, (_, f) in BIOREGIONS.items() for g in f.get("gadmGid", [])}
 
     def top(base, facet):
         fs = get("https://api.gbif.org/v1/occurrence/search", {**base, "facet": facet, "facetLimit": 3})["facets"]
@@ -314,11 +320,9 @@ def cell_names(cells):
     out = {}
     for c, r in home.items():
         same = [cell_center(k) for k, v in home.items() if v == r]
-        en, fr = names[r]
-        if len(same) > 2:  # Luxembourg and the like: the country name alone
-            den, dfr = DIRECTIONS[compass(cell_center(c), same)]
-            en, fr = f"{en} · {den}", f"{fr} · {dfr}"
-        out[c] = (en, fr)
+        # Luxembourg and the like (≤ 2 cells): the country name alone.
+        where = DIRECTIONS[compass(cell_center(c), same)] if len(same) > 2 else None
+        out[c] = {g: f"{n} · {where[i]}" if where else n for i, (g, n) in enumerate(zip(LANGS, names[r]))}
     return out
 
 
@@ -341,22 +345,23 @@ def presence(region_filter):
 
 
 def wikidata(keys, by_latin=False):
-    """{gbif key (or Latin name with by_latin): (en, fr, [commons file names], Wikidata Latin name)}."""
+    """{gbif key (or Latin name with by_latin): ({lang: name}, [commons file names], Wikidata Latin name)}."""
     out = {}
     keys = list(keys)
     match = "wdt:P225" if by_latin else "wdt:P846"  # taxon name, or GBIF id
     for i in range(0, len(keys), 100):
         values = " ".join(f'"{k}"' for k in keys[i:i + 100])
         # Labels are sometimes just the Latin name; the taxon common name (P1843) is the fallback.
-        q = f"""SELECT ?gbif ?latin ?en ?fr (SAMPLE(?cen) AS ?commonEn) (SAMPLE(?cfr) AS ?commonFr)
+        labels = " ".join(f"?{g}" for g in LANGS)
+        commons = " ".join(f"(SAMPLE(?c{g}) AS ?common_{g})" for g in LANGS)
+        optional = "\n".join(f"""OPTIONAL {{ ?item rdfs:label ?{g} FILTER(lang(?{g})="{g}") }}
+          OPTIONAL {{ ?item wdt:P1843 ?c{g} FILTER(lang(?c{g})="{g}") }}""" for g in LANGS)
+        q = f"""SELECT ?gbif ?latin {labels} {commons}
           (GROUP_CONCAT(DISTINCT ?img; separator="|") AS ?images) WHERE {{
           VALUES ?gbif {{ {values} }} ?item {match} ?gbif.
           OPTIONAL {{ ?item wdt:P225 ?latin }}
-          OPTIONAL {{ ?item rdfs:label ?en FILTER(lang(?en)="en") }}
-          OPTIONAL {{ ?item rdfs:label ?fr FILTER(lang(?fr)="fr") }}
-          OPTIONAL {{ ?item wdt:P1843 ?cen FILTER(lang(?cen)="en") }}
-          OPTIONAL {{ ?item wdt:P1843 ?cfr FILTER(lang(?cfr)="fr") }}
-          OPTIONAL {{ ?item wdt:P18 ?img }} }} GROUP BY ?gbif ?latin ?en ?fr"""
+          {optional}
+          OPTIONAL {{ ?item wdt:P18 ?img }} }} GROUP BY ?gbif ?latin {labels}"""
         r = get("https://query.wikidata.org/sparql", {"query": q},
                 {"Accept": "application/sparql-results+json"})
         for b in r["results"]["bindings"]:
@@ -367,13 +372,14 @@ def wikidata(keys, by_latin=False):
                 return cap(common if (not label or label.lower() == latin) and common else label)
 
             images = [urllib.parse.unquote(u.rsplit("/", 1)[1]) for u in v.get("images", "").split("|") if u]
-            out[v["gbif"] if by_latin else int(v["gbif"])] = (name(v.get("en"), v.get("commonEn")),
-                                   name(v.get("fr"), v.get("commonFr")), images, v.get("latin"))
+            names = {g: name(v.get(g), v.get(f"common_{g}")) for g in LANGS}
+            out[v["gbif"] if by_latin else int(v["gbif"])] = (
+                {g: n for g, n in names.items() if n}, images, v.get("latin"))
     return out
 
 
 def gbif_name(key, lang):
-    """Most frequent GBIF vernacular name in lang ("eng"/"fra"), for gaps on Wikidata."""
+    """Most frequent GBIF vernacular name in lang ("eng"/"fra"/"deu"/"spa"), for gaps on Wikidata."""
     r = get(f"https://api.gbif.org/v1/species/{key}/vernacularNames", {"limit": 200})
     names = [n["vernacularName"].strip() for n in r["results"] if n.get("language") == lang]
     return cap(max(names, key=lambda n: sum(m.lower() == n.lower() for m in names))) if names else None
@@ -381,6 +387,18 @@ def gbif_name(key, lang):
 
 def cap(s):
     return s[0].upper() + s[1:] if s else s
+
+
+def spanish_case(name):
+    """GBIF's Spanish names are often Title Case ("Halcón Peregrino"); Spanish writes "Halcón
+    peregrino". Words after "de" / "del" are people and places ("Gaviota de Bonaparte")."""
+    words = name.split(" ")
+    return " ".join(w if i == 0 or words[i - 1].lower() in ("de", "del") else w.lower()
+                    for i, w in enumerate(words))
+
+
+assert spanish_case("Halcón Peregrino") == "Halcón peregrino"
+assert spanish_case("Gaviota de Bonaparte") == "Gaviota de Bonaparte"
 
 
 def commons_photo(file_name):
@@ -586,12 +604,14 @@ def build_fallback():
 
 
 def parse_series(text):
-    """series.md -> [{id, en, fr, signature, order, family, genus, birds}] (rule lists of names)."""
+    """series.md -> [{id, en, fr, de, es, signature, order, family, genus, birds}] (rule lists of names).
+    A heading is `## id | names in LANGS order | signature`; missing names fall back to English."""
     series, current, key = [], None, None
     for line in text.splitlines():
         if line.startswith("## ") and "|" in line:
-            sid, en, fr, sig = [p.strip() for p in line[3:].split("|")]
-            current = {"id": sid, "en": en, "fr": fr, "signature": sig}
+            sid, *names, sig = [p.strip() for p in line[3:].split("|")]
+            current = {"id": sid, "signature": sig, **{g: names[i] if i < len(names) else names[0]
+                                                       for i, g in enumerate(LANGS)}}
             series.append(current)
         elif current and re.match(r"^(order|family|genus|birds):", line):
             key, _, rest = line.partition(":")
@@ -605,7 +625,7 @@ def parse_series(text):
 
 def build_series():
     """Resolve pipeline/series.md against the catalog into site/v1/series.json (also bundled in the
-    app): [{id, en, fr, signature, birds}] with bird ids. A few KB: the app filters by region."""
+    app): [{id, en, fr, de, es, signature, birds}] with bird ids. A few KB: the app filters by region."""
     species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
     by_latin = {b["latin"]: b["id"] for b in species}
     out = []
@@ -616,7 +636,7 @@ def build_series():
         missing = [n for n in s.get("birds", []) if n not in by_latin]
         if missing:
             print(f"    {s['id']}: not in the catalog: {', '.join(missing)}")
-        out.append({"id": s["id"], "en": s["en"], "fr": s["fr"],
+        out.append({"id": s["id"], **{g: s[g] for g in LANGS},
                     "signature": by_latin.get(s["signature"]), "birds": ids})
         print(f"    {s['id']}: {len(ids)} birds")
     write_json(OUT / "series.json", out)
@@ -671,7 +691,7 @@ def main():
     only = sys.argv[1].split(",") if len(sys.argv) > 1 else None  # e.g. "N48E002,FR" for a quick test run
     regions = [r for r in region_list() if not only or r[0] in only]
     with ThreadPoolExecutor(WORKERS) as pool:  # more trips GBIF rate limits
-        pres = dict(zip([r[0] for r in regions], pool.map(lambda r: presence(r[4]), regions)))
+        pres = dict(zip([r[0] for r in regions], pool.map(lambda r: presence(r[3]), regions)))
     regions = [r for r in regions if pres[r[0]]]
     keys = sorted({k for r in regions for k in pres[r[0]]})
     reach = {k: sum(k in pres[r[0]] for r in regions) for k in keys}  # regions a species is in
@@ -697,11 +717,15 @@ def main():
         t = taxa[key]
         latin = t.get("canonicalName") or t["scientificName"]
         bird_id = latin.lower().replace(" ", "_")
-        en, fr, images, wd_latin = wd.get(key, (None, None, [], None))
-        if not en or en.lower() == latin.lower():
-            en = gbif_name(key, "eng")
-        if not fr or fr.lower() == latin.lower():
-            fr = gbif_name(key, "fra")
+        names, images, wd_latin = wd.get(key, ({}, [], None))
+        for g, code in zip(LANGS, ("eng", "fra", "deu", "spa")):  # gaps: GBIF's vernacular names
+            if not names.get(g) or names[g].lower() == latin.lower():
+                names[g] = gbif_name(key, code)
+        if names.get("es"):
+            names["es"] = spanish_case(names["es"])
+        if names.get("de") and re.fullmatch(r"[A-Z][a-z]+ [a-z]+", names["de"]):
+            names["de"] = None  # a Latin name ("Accipiter cooperi"): German names never look like that
+        en, fr = names["en"], names["fr"]
         if en and en.lower() in seen:  # two GBIF names for one bird (e.g. Parus/Poecile montanus)
             id_of[key] = seen[en.lower()]["id"]
             continue
@@ -774,7 +798,9 @@ def main():
             drop("no usable xeno-canto recording with an allowed license (A/B/C quality, ≥10 s)")
             continue
         birds.append({
-            "id": bird_id, "latin": latin, "en": en, "fr": fr,
+            "id": bird_id, "latin": latin,
+            # EN and FR always; DE / ES when known (the app falls back to English).
+            **{g: n for g, n in names.items() if n and n.lower() != latin.lower()},
             "order": t["order"], "family": t["family"],
             "recordings": recordings,
             "photo": f"photos/{bird_id}.jpg",
@@ -817,11 +843,10 @@ def main():
         f.unlink()
     for rid, rb in region_birds.items():
         write_json(OUT / "regions" / f"{rid}.json", rb)
-    named = cell_names([(r[0], r[4]) for r in regions if r[1] == "cell"])
-    write_json(OUT / "regions.json", [{"id": rid, "kind": kind, "en": named[rid][0] if kind == "cell" else en,
-                                       "fr": named[rid][1] if kind == "cell" else fr}
-                                      for rid, kind, en, fr, _ in regions]
-               + [{"id": c, "kind": "planned", "en": en, "fr": fr} for c, (en, fr) in PLANNED.items()])
+    named = cell_names([(r[0], r[3]) for r in regions if r[1] == "cell"])
+    write_json(OUT / "regions.json", [{"id": rid, "kind": kind, **(named[rid] if kind == "cell" else names)}
+                                      for rid, kind, names, _ in regions]
+               + [{"id": c, "kind": "planned", **dict(zip(LANGS, n))} for c, n in PLANNED.items()])
     write_json(OUT / "species.json", [{k: v for k, v in b.items() if not k.startswith("_")} for b in birds])
     write_report(birds, dropped, regions, region_birds)
     build_series()
@@ -881,9 +906,9 @@ def write_report(birds, dropped, regions, region_birds):
              + f", legendary ≥{RARE_MIN} records. A card's rarity is the bird's best tier in the region.", "",
              f"## Regions ({len(regions)})", "",
              "| Region | Name | Birds | " + " | ".join(TIERS) + " |", "|---|---|---|" + "---|" * len(TIERS)]
-    for rid, region_kind, en, _, _ in regions:
+    for rid, region_kind, names, _ in regions:
         best = [min(m.values(), key=TIERS.index) for m in region_birds[rid].values()]
-        lines.append(f"| {rid} | {en or region_kind} | {len(best)} | "
+        lines.append(f"| {rid} | {(names or {}).get('en') or region_kind} | {len(best)} | "
                      + " | ".join(str(best.count(t)) for t in TIERS) + " |")
     all_recs = [r["kind"] for b in birds for r in b["recordings"]]
     lines += ["", f"## Species ({len(birds)})", "",

@@ -97,13 +97,24 @@ class Recording {
   final bool nc; // non-commercial license: replace before any monetization
 }
 
+/// Languages of the catalog's names (pipeline LANGS); EN and FR always present.
+const catalogLangs = ['en', 'fr', 'de', 'es'];
+
+/// The name in [locale]'s language from a catalog entry's `en` / `fr` / `de` / `es`
+/// fields, else English (German and Spanish names may be missing).
+String localName(Map<String, dynamic> j, String locale) =>
+    (j[locale.split(RegExp('[_-]')).first] ?? j['en']) as String;
+
 class Bird {
   /// A species from species.json, with its [months] in the current region.
   Bird.fromJson(Map<String, dynamic> j, [this.months = const {}])
     : id = j['id'] as String,
       latin = j['latin'] as String,
       name = j['en'] as String,
-      nameFr = j['fr'] as String,
+      names = {
+        for (final g in catalogLangs)
+          if (j[g] case final String n) g: n,
+      },
       order = j['order'] as String,
       family = j['family'] as String,
       photo = j['photo'] as String,
@@ -122,14 +133,15 @@ class Bird {
             ),
       };
 
-  final String id, latin, name, nameFr, order, family, photo, photoCredit;
+  final String id, latin, name, order, family, photo, photoCredit;
+  final Map<String, String> names; // language -> common name (see localName)
   final int number; // card number, in taxonomic order over all species
   final List<Recording> recordings;
   final Map<String, ({double mean, double sd})> stats; // missing = unknown
   final Map<int, String>
   months; // month 1-12 -> tier in the region; absent = not around
 
-  String nameIn(String locale) => locale.startsWith('fr') ? nameFr : name;
+  String nameIn(String locale) => localName(names, locale);
 
   /// How common the species is: its commonest tier of the year in the region. Cards
   /// have their own rarity (drawn when won); this one is for cards from before 2026-10-30.
