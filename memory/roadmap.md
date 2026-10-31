@@ -22,6 +22,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [ ] Optional: hand-pick the remaining widespread drops in `pipeline/overrides.csv` (`xc=…` / `commons=File:…`), and the 88 "no EN/FR name" species
 - [x] Region naming: cells kept (local lists), named after their country + compass part; Collection groups views by name; placeholder countries listed greyed
 - [x] Region picker as a world map (tap a cell, search bar, my position), merged 2026-10-31
+- [ ] **Barter (face-to-face trades)**, branch `barter` (2026-10-31): code done, installed; needs the user's review and a **two-phone test** (second Android phone with Play Services)
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
@@ -50,6 +51,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] Slimmer app: 20 bundled birds instead of 30 (10 EU + 10 NA, 6.4 → 4.3 MB), 2026-10-31
 - [ ] **German and Spanish** (~1 day; plan from 2026-10-30): one language list `en, fr, de, es` in the pipeline (the app's comes from the ARB files); 1) generalize with EN/FR only — a `name(json, locale)` helper replaces the 6 `startsWith('fr')` checks, Wikidata query / region / series names loop over the list; 2) add `app_de.arb` / `app_es.arb` (83 strings, native proofreading), bird names from Wikidata `de`/`es` labels (**missing ones fall back to English; only EN + FR stay mandatory**, so no new drops), country names from Wikidata by ISO code (only the 13 bioregions, 9 compass words and 18 series names hand-written), German/Spanish ordinals, privacy policy pages DE/ES (legal text), language setting as a dropdown; 3) rerun the pipeline (new Wikidata name queries only); 4) layout check on the phone in German (long words). New names are extra fields next to `en`/`fr` in the catalog, so older app versions keep working (no `v2`). Optional: Play listing DE/ES. First, one query to count the 1,710 birds missing a German / Spanish name
 - [ ] Faster publish: push on top of the online `gh-pages` (only changed files are sent) instead of ~800 MB from scratch
+- [ ] **QR-code trading** (after the Nearby barter): phones scan each other's screen 2–3 times (offer, counter-offer, confirmation); works between Android and iPhone, camera permission only, nothing can drop mid-trade; clunkier than the live Nearby window. `qr_flutter` + `mobile_scanner`, same `TradeSession` messages, ~3–4 days
 - **Working notes:** Gradle heap is capped at 3 GB (`app/android/gradle.properties`) and Gradle is stopped after each build so the pipeline keeps enough memory. Before and after each phone session, read the saved settings (`adb shell run-as com.nathanprovin.earlybird cat shared_prefs/FlutterSharedPreferences.xml`): the user also uses the phone, and automated taps can land on the wrong screen. Screen recordings (`adb shell screenrecord`) + `.tools/ffmpeg` contact sheets are the way to check animations.
 
 ## Iteration 0 — Setup

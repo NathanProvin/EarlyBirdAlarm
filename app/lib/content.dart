@@ -20,6 +20,10 @@ late Directory _root; // downloaded content, same layout as the site
 Set<String> _bundled =
     {}; // files bundled in assets/content (the offline fallback birds)
 
+/// Ids of the birds bundled with the app, sorted: the same list on every phone running
+/// the same version (the trade pairing code is drawn from it).
+List<String> bundledBirds = [];
+
 File localFile(String path) => File('${_root.path}/$path');
 
 /// Where a catalog file can be read on the phone: a downloaded file, a bundled asset, or null.
@@ -54,6 +58,7 @@ Future<void> initContent(String? region) async {
     ) as List)
       j as Map<String, dynamic>,
   ];
+  bundledBirds = [for (final j in fallback) j['id'] as String]..sort();
   _bundled = {
     for (final j in fallback) ...[
       j['photo'] as String,

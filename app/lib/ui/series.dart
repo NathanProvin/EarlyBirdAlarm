@@ -36,7 +36,11 @@ class _SeriesScreenState extends State<SeriesScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final states = seriesStates(birds, store.cards, store.bestStreak);
+    final states = seriesStates(
+      birds,
+      store.achievementCards,
+      store.bestStreak,
+    );
     final pages = [
       for (var i = 0; i < states.length; i += 6)
         states.skip(i).take(6).toList(),

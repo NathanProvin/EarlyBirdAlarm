@@ -278,4 +278,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String ringsInMinutes(int minutes) {
     return 'Rings in $minutes min';
   }
+
+  @override
+  String get trade => 'Trade';
+
+  @override
+  String get viewMenu => 'Choose the view';
+
+  @override
+  String get rarityMenu => 'Filter by rarity';
+
+  @override
+  String get lookingForBirder => 'Looking for a birder nearby…';
+
+  @override
+  String get lookingHint =>
+      'Ask them to open Trade too, phones close together.';
+
+  @override
+  String get checkCode => 'Do you both see these two birds?';
+
+  @override
+  String get itMatches => 'It matches';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get youGive => 'You give';
+
+  @override
+  String get youGet => 'You get';
+
+  @override
+  String get nothingYet => 'Nothing yet';
+
+  @override
+  String get addCards => 'Add cards';
+
+  @override
+  String get validate => 'Validate';
+
+  @override
+  String get youValidated => 'You validated';
+
+  @override
+  String get theyValidated => 'They validated';
+
+  @override
+  String get waitingForThem => 'Waiting for the other birder';
+
+  @override
+  String get tradeDone => 'Trade done!';
+
+  @override
+  String get tradeCancelled => 'Trade cancelled: nothing changed.';
+
+  @override
+  String get updateToTrade => 'Update the app to trade with this birder.';
+
+  @override
+  String get tradeInvalid => 'These cards can\'t be accepted. Trade cancelled.';
+
+  @override
+  String get tradePermissions =>
+      'Trading needs Bluetooth and nearby devices. Allow them in the app\'s settings.';
+
+  @override
+  String get openSettings => 'Settings';
+
+  @override
+  String tradedOn(String date) {
+    return 'Traded on $date';
+  }
 }

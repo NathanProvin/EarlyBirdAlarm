@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../birds.dart';
@@ -13,6 +14,7 @@ import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
 import 'series.dart';
+import 'trade.dart';
 import 'theme.dart';
 
 /// A card's rarity; cards from before 3c have none and take their species' tier.
@@ -139,42 +141,71 @@ class _CollectionScreenState extends State<CollectionScreen> {
       return '$name ($owned${known ? '/${ids.length}' : ''})';
     }
 
+    final views = {
+      _all: '${l.viewAll} (${cards.length})',
+      _species: '${l.viewSpecies} (${best.length})',
+      for (final r in regions) r: regionLabel(r),
+    };
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
           child: Row(
             children: [
-              // The menus shrink with "…" so Series always fits.
+              // The view's label shrinks with "…" so the buttons and Series always fit.
               Expanded(
-                child: Row(
-                  children: [
-                    // Each view shows its count, e.g. "France (7/353)".
-                    Flexible(
-                      flex: 3,
-                      child: _Menu<String>(
-                        value: _view,
-                        items: {
-                          _all: '${l.viewAll} (${cards.length})',
-                          _species: '${l.viewSpecies} (${best.length})',
-                          for (final r in regions) r: regionLabel(r),
-                        },
-                        onSelected: (v) => setState(() => _view = v),
-                      ),
+                child: _Menu<String>(
+                  value: _view,
+                  items: views,
+                  tooltip: l.viewMenu,
+                  onSelected: (v) => setState(() => _view = v),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      views[_view]!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Flexible(
-                      flex: 2,
-                      child: _Menu<String?>(
-                        value: _tier,
-                        items: {
-                          null: l.allRarities,
-                          for (final t in tiers) t: rarityName(l, t),
-                        },
-                        colors: rarityColor,
-                        onSelected: (t) => setState(() => _tier = t),
-                      ),
+                  ),
+                ),
+              ),
+              _Menu<String>(
+                value: _view,
+                items: views,
+                tooltip: l.viewMenu,
+                onSelected: (v) => setState(() => _view = v),
+                child: const _Round(icon: Icons.expand_more),
+              ),
+              const SizedBox(width: 6),
+              _Menu<String?>(
+                value: _tier,
+                items: {
+                  null: l.allRarities,
+                  for (final t in tiers) t: rarityName(l, t),
+                },
+                colors: rarityColor,
+                tooltip: l.rarityMenu,
+                onSelected: (t) => setState(() => _tier = t),
+                // Every rarity colour around it; the chosen one alone while filtering.
+                child: _Round(
+                  icon: Icons.arrow_drop_down,
+                  ring: _tier == null
+                      ? [for (final t in tiers) rarityColor[t]!]
+                      : [rarityColor[_tier]!],
+                ),
+              ),
+              const SizedBox(width: 6),
+              Tooltip(
+                message: l.trade,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const TradeScreen(),
                     ),
-                  ],
+                  ),
+                  child: const _Round(icon: Icons.swap_horiz),
                 ),
               ),
               TextButton.icon(
@@ -231,22 +262,27 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 }
 
-/// A compact "Label ▾" drop-down menu.
+/// A drop-down menu opened by tapping [child].
 class _Menu<T> extends StatelessWidget {
   const _Menu({
     required this.value,
     required this.items,
     required this.onSelected,
+    required this.tooltip,
+    required this.child,
     this.colors = const {},
   });
   final T value;
   final Map<T, String> items;
   final ValueChanged<T> onSelected;
+  final String tooltip;
+  final Widget child;
   final Map<T, Color> colors; // optional text color per item (rarities)
 
   @override
   Widget build(BuildContext context) => PopupMenuButton<T>(
     initialValue: value,
+    tooltip: tooltip,
     onSelected: onSelected,
     itemBuilder: (_) => [
       for (final MapEntry(:key, value: label) in items.entries)
@@ -255,25 +291,41 @@ class _Menu<T> extends StatelessWidget {
           child: Text(label, style: TextStyle(color: colors[key])),
         ),
     ],
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              items[value]!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelLarge
-                  ?.copyWith(color: colors[value]),
-            ),
-          ),
-          const Icon(Icons.arrow_drop_down, size: 20),
-        ],
-      ),
-    ),
+    child: child,
   );
+}
+
+/// A 40 dp round header button: an outline in the theme's colour, or a ring of [ring]
+/// colours (the rarity filter).
+class _Round extends StatelessWidget {
+  const _Round({required this.icon, this.ring});
+  final IconData icon;
+  final List<Color>? ring;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final ring = this.ring;
+    return Container(
+      width: 40,
+      height: 40,
+      padding: const EdgeInsets.all(2.5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: ring == null ? scheme.outline : ring.first,
+        gradient: ring != null && ring.length > 1
+            ? SweepGradient(colors: [...ring, ring.first])
+            : null,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: scheme.surface,
+        ),
+        child: Icon(icon, size: 22, color: scheme.onSurface),
+      ),
+    );
+  }
 }
 
 /// Full cards, swipe left/right between them.
@@ -293,17 +345,23 @@ class CardPager extends StatelessWidget {
         itemBuilder: (_, i) {
           final (bird, card) = entries[i];
           final copies = cards.where((c) => c.birdId == bird.id).length;
+          final l = AppLocalizations.of(context);
+          final header = [
+            if (copies > 1) '×$copies',
+            if (card?.traded case final d?)
+              l.tradedOn(DateFormat.MMMd(l.localeName).format(d)),
+          ].join(' · ');
           return Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: CardDetail(
               bird: bird,
               card: card,
-              header: copies > 1
-                  ? Text(
-                      '×$copies',
+              header: header.isEmpty
+                  ? null
+                  : Text(
+                      header,
                       style: Theme.of(context).textTheme.titleMedium,
-                    )
-                  : null,
+                    ),
             ),
           );
         },

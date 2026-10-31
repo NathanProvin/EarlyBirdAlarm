@@ -278,4 +278,79 @@ class AppLocalizationsFr extends AppLocalizations {
   String ringsInMinutes(int minutes) {
     return 'Sonne dans $minutes min';
   }
+
+  @override
+  String get trade => 'Échanger';
+
+  @override
+  String get viewMenu => 'Choisir la vue';
+
+  @override
+  String get rarityMenu => 'Filtrer par rareté';
+
+  @override
+  String get lookingForBirder => 'Recherche d\'un ornithologue à proximité…';
+
+  @override
+  String get lookingHint =>
+      'Demandez-lui d\'ouvrir Échanger aussi, téléphones proches.';
+
+  @override
+  String get checkCode => 'Voyez-vous tous les deux ces deux oiseaux ?';
+
+  @override
+  String get itMatches => 'C\'est bien ça';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get youGive => 'Vous donnez';
+
+  @override
+  String get youGet => 'Vous recevez';
+
+  @override
+  String get nothingYet => 'Rien pour l\'instant';
+
+  @override
+  String get addCards => 'Ajouter des cartes';
+
+  @override
+  String get validate => 'Valider';
+
+  @override
+  String get youValidated => 'Vous avez validé';
+
+  @override
+  String get theyValidated => 'L\'autre a validé';
+
+  @override
+  String get waitingForThem => 'En attente de l\'autre ornithologue';
+
+  @override
+  String get tradeDone => 'Échange conclu !';
+
+  @override
+  String get tradeCancelled => 'Échange annulé : rien n\'a changé.';
+
+  @override
+  String get updateToTrade =>
+      'Mettez l\'application à jour pour échanger avec cet ornithologue.';
+
+  @override
+  String get tradeInvalid =>
+      'Ces cartes ne peuvent pas être acceptées. Échange annulé.';
+
+  @override
+  String get tradePermissions =>
+      'L\'échange a besoin du Bluetooth et des appareils à proximité. Autorisez-les dans les réglages de l\'application.';
+
+  @override
+  String get openSettings => 'Réglages';
+
+  @override
+  String tradedOn(String date) {
+    return 'Échangée le $date';
+  }
 }

@@ -595,6 +595,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rings in {minutes} min'**
   String ringsInMinutes(int minutes);
+
+  /// No description provided for @trade.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade'**
+  String get trade;
+
+  /// No description provided for @viewMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the view'**
+  String get viewMenu;
+
+  /// No description provided for @rarityMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by rarity'**
+  String get rarityMenu;
+
+  /// No description provided for @lookingForBirder.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for a birder nearby…'**
+  String get lookingForBirder;
+
+  /// No description provided for @lookingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask them to open Trade too, phones close together.'**
+  String get lookingHint;
+
+  /// No description provided for @checkCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you both see these two birds?'**
+  String get checkCode;
+
+  /// No description provided for @itMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'It matches'**
+  String get itMatches;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @youGive.
+  ///
+  /// In en, this message translates to:
+  /// **'You give'**
+  String get youGive;
+
+  /// No description provided for @youGet.
+  ///
+  /// In en, this message translates to:
+  /// **'You get'**
+  String get youGet;
+
+  /// No description provided for @nothingYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing yet'**
+  String get nothingYet;
+
+  /// No description provided for @addCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cards'**
+  String get addCards;
+
+  /// No description provided for @validate.
+  ///
+  /// In en, this message translates to:
+  /// **'Validate'**
+  String get validate;
+
+  /// No description provided for @youValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'You validated'**
+  String get youValidated;
+
+  /// No description provided for @theyValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'They validated'**
+  String get theyValidated;
+
+  /// No description provided for @waitingForThem.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the other birder'**
+  String get waitingForThem;
+
+  /// No description provided for @tradeDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade done!'**
+  String get tradeDone;
+
+  /// No description provided for @tradeCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade cancelled: nothing changed.'**
+  String get tradeCancelled;
+
+  /// No description provided for @updateToTrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the app to trade with this birder.'**
+  String get updateToTrade;
+
+  /// No description provided for @tradeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'These cards can\'t be accepted. Trade cancelled.'**
+  String get tradeInvalid;
+
+  /// No description provided for @tradePermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading needs Bluetooth and nearby devices. Allow them in the app\'s settings.'**
+  String get tradePermissions;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get openSettings;
+
+  /// No description provided for @tradedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Traded on {date}'**
+  String tradedOn(String date);
 }
 
 class _AppLocalizationsDelegate

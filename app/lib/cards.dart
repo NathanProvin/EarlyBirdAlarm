@@ -12,6 +12,7 @@ class CardData {
     this.rarity,
     this.region,
     this.recording,
+    this.traded,
   });
 
   CardData.fromJson(Map<String, dynamic> j)
@@ -26,6 +27,7 @@ class CardData {
         rarity: j['rarity'] as String?,
         region: j['region'] as String?,
         recording: j['recording'] as String?,
+        traded: DateTime.tryParse(j['traded'] as String? ?? ''),
       );
 
   final String birdId;
@@ -37,6 +39,22 @@ class CardData {
   final String? rarity, region;
   final String?
   recording; // file of the recording that rang (null before UI round 1)
+  final DateTime? traded; // when it changed hands in a face-to-face trade
+
+  /// Identifies one card among all copies: its bird and the moment it was won.
+  String get key => '$birdId@${earned.toIso8601String()}';
+
+  /// The same card, marked as traded at [when].
+  CardData tradedAt(DateTime when) => CardData(
+    birdId: birdId,
+    stats: stats,
+    quality: quality,
+    earned: earned,
+    rarity: rarity,
+    region: region,
+    recording: recording,
+    traded: when,
+  );
 
   Map<String, dynamic> toJson() => {
     'bird': birdId,
@@ -46,6 +64,7 @@ class CardData {
     'rarity': ?rarity,
     'region': ?region,
     'recording': ?recording,
+    'traded': ?traded?.toIso8601String(),
   };
 }
 

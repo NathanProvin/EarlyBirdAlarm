@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:early_bird/birds.dart';
@@ -7,6 +8,7 @@ import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
 import 'package:early_bird/series.dart';
 import 'package:early_bird/store.dart';
+import 'package:early_bird/trade.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
 import 'package:early_bird/ui/region.dart';
@@ -542,5 +544,92 @@ void main() {
       expect(la, closeTo(lat, 1e-6));
       expect(lo, closeTo(lon, 1e-6));
     }
+  });
+
+  group('face-to-face trade', () {
+    CardData card(String bird, {int quality = 50, double weight = 20}) =>
+        CardData(
+          birdId: bird,
+          stats: {'weight': weight},
+          quality: quality,
+          earned: DateTime(2026, 10, 1, quality),
+          rarity: 'rare',
+        );
+
+    // Two phones wired to each other; messages go through JSON as on the air.
+    (TradeSession, TradeSession) pair() {
+      late TradeSession a, b;
+      Map<String, Object?> air(Map<String, Object?> m) =>
+          jsonDecode(jsonEncode(m)) as Map<String, Object?>;
+      a = TradeSession(send: (m) => b.receive(air(m)), onChange: () {});
+      b = TradeSession(send: (m) => a.receive(air(m)), onChange: () {});
+      a.start();
+      b.start();
+      return (a, b);
+    }
+
+    test('swaps only once both validated what is shown', () {
+      final (a, b) = pair();
+      a.offer([card('robin')]);
+      b.offer([card('heron'), card('dove')]);
+      expect(b.theirs.single.birdId, 'robin');
+      a.validate();
+      expect(a.done || b.done, isFalse);
+      b.offer([card('heron')]); // a change clears both validations
+      expect(a.iValidated || b.theyValidated, isFalse);
+      b.validate();
+      expect(a.done, isFalse);
+      a.validate();
+      expect(a.done && b.done, isTrue);
+      expect(a.theirs.single.birdId, 'heron');
+      expect(b.theirs.single.birdId, 'robin');
+      a.offer([]); // nothing changes after the swap
+      expect(b.theirs.single.birdId, 'robin');
+    });
+
+    test('a different app version refuses to trade', () {
+      late TradeSession a;
+      a = TradeSession(send: (_) {}, onChange: () {});
+      a.receive({'t': 'hello', 'v': tradeProtocol + 1});
+      expect(a.error, TradeError.version);
+    });
+
+    test('forged cards are refused', () {
+      expect(checkCard(card('robin').toJson()), isNotNull);
+      expect(checkCard(card('nobody').toJson()), isNull); // unknown bird
+      expect(checkCard(card('robin', quality: 150).toJson()), isNull);
+      expect(checkCard(card('robin', weight: 99).toJson()), isNull); // 20 ± 3×2
+      expect(checkCard({'bird': 'robin'}), isNull); // malformed
+      final b = TradeSession(send: (_) {}, onChange: () {});
+      b.receive({
+        't': 'offer',
+        'cards': [card('robin', quality: 150).toJson()],
+      });
+      expect(b.error, TradeError.invalid);
+    });
+
+    test('pairing names: same token, same birds; two different birds', () {
+      const list = ['a', 'b', 'c', 'd', 'e'];
+      expect(pairingBirds('X7Q2', list), pairingBirds('X7Q2', list));
+      for (final t in ['A', 'BB', 'C3PO', '1234']) {
+        final (x, y) = pairingBirds(t, list);
+        expect(x, isNot(y));
+      }
+    });
+
+    test('given cards leave the collection but still count', () async {
+      SharedPreferences.setMockInitialValues({});
+      final s = await Store.load();
+      await s.answered(null, _b('robin'), null, true, '');
+      final mine = s.cards.single;
+      await s.trade([mine], [card('heron')]);
+      expect(s.cards.single.birdId, 'heron');
+      expect(s.cards.single.traded, isNotNull);
+      expect(s.given.single.birdId, 'robin');
+      expect(s.achievementCards.map((c) => c.birdId).toSet(), {
+        'robin',
+        'heron',
+      });
+    });
   });
 }

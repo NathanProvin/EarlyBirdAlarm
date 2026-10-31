@@ -131,7 +131,7 @@ class Store extends ChangeNotifier {
     final done = {...?_prefs.getStringList('seriesDone')};
     String key(SeriesState s) => s.series == null ? s.id : '$region:${s.id}';
     final fresh = [
-      for (final s in seriesStates(birds, cards, bestStreak))
+      for (final s in seriesStates(birds, achievementCards, bestStreak))
         if (s.complete && !done.contains(key(s))) s,
     ];
     if (fresh.isEmpty) return fresh;
@@ -291,6 +291,41 @@ class Store extends ChangeNotifier {
     for (final j in jsonDecode(_prefs.getString('cards') ?? '[]') as List)
       CardData.fromJson(j as Map<String, dynamic>),
   ];
+
+  /// Cards given away in face-to-face trades (see [trade]).
+  List<CardData> get given => [
+    for (final j in jsonDecode(_prefs.getString('given') ?? '[]') as List)
+      CardData.fromJson(j as Map<String, dynamic>),
+  ];
+
+  /// What series and achievements count: the cards owned plus the ones given away, so a
+  /// trade never takes progress back (decided 2026-10-31).
+  List<CardData> get achievementCards => [...cards, ...given];
+
+  /// A face-to-face trade: [give] leaves the collection (kept in [given]), [get] joins it.
+  /// Both are marked as traded now.
+  Future<void> trade(List<CardData> give, List<CardData> get) async {
+    final now = DateTime.now();
+    final gone = {for (final c in give) c.key};
+    await _prefs.setString(
+      'cards',
+      jsonEncode([
+        for (final c in cards)
+          if (!gone.contains(c.key)) c,
+        for (final c in get) c.tradedAt(now),
+      ]),
+    );
+    await _prefs.setString(
+      'given',
+      jsonEncode([...given, for (final c in give) c.tradedAt(now)]),
+    );
+    final won = {for (final c in get) c.birdId};
+    await _prefs.setStringList('heard', [
+      for (final id in heard)
+        if (!won.contains(id)) id,
+    ]);
+    notifyListeners();
+  }
 
   /// Ids of birds guessed wrong and not yet won as a card.
   Set<String> get heard => {...?_prefs.getStringList('heard')};
