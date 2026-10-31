@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../birds.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
@@ -20,8 +21,7 @@ String regionName(AppLocalizations l, String id) {
             .where((r) => r['id'] == id)
             .firstOrNull
       : null;
-  final name = info?[l.localeName.startsWith('fr') ? 'fr' : 'en'] as String?;
-  if (name != null) return name;
+  if (info != null) return localName(info, l.localeName);
   final m = RegExp(r'^([NS])(\d+)([EW])(\d+)$').firstMatch(id);
   return m == null
       ? id
@@ -180,8 +180,7 @@ class _RegionScreenState extends State<RegionScreen>
     );
   }
 
-  String get _lang =>
-      AppLocalizations.of(context).localeName.startsWith('fr') ? 'fr' : 'en';
+  String get _lang => AppLocalizations.of(context).localeName;
   String _name(String id) => regionName(AppLocalizations.of(context), id);
 
   /// The map area of a region: its cell (with some surroundings), or the cells named
@@ -194,8 +193,8 @@ class _RegionScreenState extends State<RegionScreen>
     final rects = [
       for (final r in _regions!)
         if (r['kind'] == 'cell' &&
-            ((r[_lang] as String) == name ||
-                (r[_lang] as String).startsWith('$name ·')))
+            (localName(r, _lang) == name ||
+                localName(r, _lang).startsWith('$name ·')))
           _cellRect(r['id'] as String),
     ];
     return rects.isEmpty
@@ -403,9 +402,10 @@ class _RegionScreenState extends State<RegionScreen>
                           : [
                               for (final r in regions)
                                 if (r['kind'] != 'cell' &&
-                                    (r[_lang] as String).toLowerCase().contains(
-                                      query,
-                                    ))
+                                    localName(
+                                      r,
+                                      _lang,
+                                    ).toLowerCase().contains(query))
                                   r,
                             ].take(6).toList(),
                       lang: _lang,
@@ -462,7 +462,7 @@ class _SearchBar extends StatelessWidget {
             for (final r in results)
               ListTile(
                 dense: true,
-                title: Text(r[lang] as String),
+                title: Text(localName(r, lang)),
                 // Placeholder regions: listed, not choosable yet.
                 subtitle: r['kind'] == 'planned' ? Text(comingSoon) : null,
                 enabled: r['kind'] != 'planned',

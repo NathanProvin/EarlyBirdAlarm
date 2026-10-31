@@ -664,9 +664,12 @@ class BirdPhoto extends StatelessWidget {
   }
 }
 
-/// "1st", "2nd", "12th"... in English; "1re", "2e"... in French (espèce is feminine).
+/// "1st", "2nd", "12th"... in English; "1re", "2e"... in French and "1.ª", "2.ª" in Spanish
+/// (espèce / especie are feminine); "1.", "2." in German.
 String ordinal(int n, String locale) {
   if (locale.startsWith('fr')) return n == 1 ? '1re' : '${n}e';
+  if (locale.startsWith('es')) return '$n.ª';
+  if (locale.startsWith('de')) return '$n.';
   final suffix = n % 100 >= 11 && n % 100 <= 13
       ? 'th'
       : switch (n % 10) {

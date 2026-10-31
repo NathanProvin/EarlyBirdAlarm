@@ -21,9 +21,9 @@ class CreditsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final page = l.localeName.startsWith('fr')
-        ? 'privacy-fr.html'
-        : 'privacy.html';
+    // privacy-fr.html, privacy-de.html… (site-static); English is privacy.html.
+    final lang = l.localeName.split('_').first;
+    final page = lang == 'en' ? 'privacy.html' : 'privacy-$lang.html';
     return Scaffold(
       appBar: AppBar(title: Text(l.credits)),
       body: ListView(
