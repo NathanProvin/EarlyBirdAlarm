@@ -30,6 +30,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
+- [ ] **Merge `barter` into `main`** (face-to-face trades) once the two-phone test passes — until then `main` changes are merged into `barter` after each change, and the S22 runs `barter`
 - [ ] User check on the phone: app icon (home screen, themed icon) and the white-bird notification icon
 - [ ] Accessibility pass: TalkBack on every screen, largest font size
 - [ ] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively)

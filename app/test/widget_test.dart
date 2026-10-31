@@ -100,9 +100,9 @@ void main() {
   test('card rarity: drawn from the odds of the difficulty', () {
     final r = Random(7);
     for (final (d, odds) in [
-      (Difficulty.easy, [60, 32, 7, 1, 0]),
-      (Difficulty.medium, [45.7, 32, 16, 5.4, 0.9]),
-      (Difficulty.hard, [28.2, 34, 27, 10.4, 2.4]),
+      (Difficulty.easy, [75.3, 18.8, 4.7, 1.2, 0]),
+      (Difficulty.medium, [65.3, 22.9, 8.0, 2.8, 1.0]),
+      (Difficulty.hard, [51.6, 25.8, 12.9, 6.5, 3.2]),
     ]) {
       final seen = <String, int>{};
       for (var i = 0; i < 20000; i++) {
@@ -130,12 +130,13 @@ void main() {
       return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
     }
 
-    // Hard, tilt 2: a common bird 53/32/13/2/0.3 %, a legendary one 9/21/33/26/12 %.
+    // Hard (each step ×½), tilt 2: a common bird 75/19/4.7/1.2/0.3 %; a legendary one
+    // evens out to 20 % each.
     final common = shares('common'), legendary = shares('legendary');
-    expect(common['common'], closeTo(0.53, 0.015));
+    expect(common['common'], closeTo(0.751, 0.015));
     expect(common['legendary'], lessThan(0.01));
-    expect(legendary['common'], closeTo(0.087, 0.01));
-    expect(legendary['legendary'], closeTo(0.118, 0.012));
+    expect(legendary['common'], closeTo(0.20, 0.012));
+    expect(legendary['legendary'], closeTo(0.20, 0.012));
     // Easy never gives a Legendary card, even for a legendary bird.
     for (var i = 0; i < 2000; i++) {
       expect(
