@@ -21,32 +21,26 @@ const _allowed = {
   Difficulty.hard: {'common', 'uncommon', 'rare', 'epic', 'legendary'},
 };
 
-/// Step 2, the card won: its rarity (%) by difficulty, drawn independently of the bird
-/// (decided 2026-10-30). A Blackbird can come as a Legendary copy.
-const cardOdds = {
-  Difficulty.easy: {
-    'common': 60,
-    'uncommon': 32,
-    'rare': 7,
-    'epic': 1,
-    'legendary': 0,
-  },
-  // Epic and Legendary lowered on 2026-10-31 (balance): −10 % on Medium, −20 % on Hard,
-  // given to Common.
-  Difficulty.medium: {
-    'common': 45.7,
-    'uncommon': 32,
-    'rare': 16,
-    'epic': 5.4,
-    'legendary': 0.9,
-  },
-  Difficulty.hard: {
-    'common': 28.2,
-    'uncommon': 34,
-    'rare': 27,
-    'epic': 10.4,
-    'legendary': 2.4,
-  },
+/// Step 2, the card won: its rarity, drawn independently of the bird (decided
+/// 2026-10-30; a Blackbird can come as a Legendary copy). The odds decay exponentially
+/// with the tier, like radioactive decay: each step up is [rarityDecay] times as likely
+/// as the one below, so Common is always the most frequent card (2026-10-31; before,
+/// Uncommon beat Common on Hard). Easy never gives a Legendary card.
+const rarityDecay = {
+  Difficulty.easy: 0.25, // 75 / 19 / 4.7 / 1.2 / 0 %
+  Difficulty.medium: 0.35, // 65 / 23 / 8.0 / 2.8 / 1.0 %
+  Difficulty.hard: 0.5, // 52 / 26 / 13 / 6.5 / 3.2 % (each step twice as rare)
+};
+
+/// Relative odds of each rarity by difficulty, from [rarityDecay] (not normalized).
+final cardOdds = {
+  for (final MapEntry(key: d, value: r) in rarityDecay.entries)
+    d: {
+      for (final (k, t) in tiers.indexed)
+        t: d == Difficulty.easy && t == 'legendary'
+            ? 0.0
+            : pow(r, k).toDouble(),
+    },
 };
 
 /// How strongly a card's rarity leans toward its bird's scarcity: each rarity's odds are
