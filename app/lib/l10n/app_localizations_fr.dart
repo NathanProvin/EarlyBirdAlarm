@@ -344,7 +344,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tradePermissions =>
-      'L\'échange a besoin du Bluetooth et des appareils à proximité. Autorisez-les dans les réglages de l\'application.';
+      'L\'échange a besoin du Bluetooth, des appareils à proximité et de la position précise (elle ne quitte jamais votre téléphone). Autorisez-les dans les réglages de l\'application.';
 
   @override
   String get openSettings => 'Réglages';

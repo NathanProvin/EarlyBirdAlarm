@@ -148,7 +148,7 @@
   "tradeCancelled": "Trade cancelled: nothing changed.",
   "updateToTrade": "Update the app to trade with this birder.",
   "tradeInvalid": "These cards can't be accepted. Trade cancelled.",
-  "tradePermissions": "Trading needs Bluetooth and nearby devices. Allow them in the app's settings.",
+  "tradePermissions": "Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app's settings.",
   "openSettings": "Settings",
   "tradedOn": "Traded on {date}",
   "@tradedOn": {"placeholders": {"date": {"type": "String"}}},

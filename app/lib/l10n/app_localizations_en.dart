@@ -342,7 +342,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tradePermissions =>
-      'Trading needs Bluetooth and nearby devices. Allow them in the app\'s settings.';
+      'Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app\'s settings.';
 
   @override
   String get openSettings => 'Settings';

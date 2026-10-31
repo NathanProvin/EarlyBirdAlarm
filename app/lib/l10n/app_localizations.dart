@@ -719,7 +719,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradePermissions.
   ///
   /// In en, this message translates to:
-  /// **'Trading needs Bluetooth and nearby devices. Allow them in the app\'s settings.'**
+  /// **'Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app\'s settings.'**
   String get tradePermissions;
 
   /// No description provided for @openSettings.

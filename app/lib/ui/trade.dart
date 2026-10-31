@@ -43,7 +43,6 @@ class _TradeScreenState extends State<TradeScreen> {
   String? _failure, _detail; // what went wrong, and Nearby's own error if any
   bool _needsSettings =
       false; // a permission was refused: back from Settings, retry
-  bool _askedLocation = false;
   List<CardData> _received = [];
   late final _lifecycle = AppLifecycleListener(
     onResume: () {
@@ -89,12 +88,14 @@ class _TradeScreenState extends State<TradeScreen> {
   Future<void> _start() async {
     // A search left over from an earlier attempt would refuse to start again.
     await _stop();
-    // Granted at once on Android versions that don't have them.
+    // Granted at once on Android versions that don't have them. Nearby also needs
+    // precise location (it never leaves the phone).
     final statuses = await [
       Permission.bluetoothScan,
       Permission.bluetoothAdvertise,
       Permission.bluetoothConnect,
       Permission.nearbyWifiDevices,
+      Permission.locationWhenInUse,
     ].request();
     if (!mounted) return;
     final l = AppLocalizations.of(context);
@@ -132,13 +133,10 @@ class _TradeScreenState extends State<TradeScreen> {
       if (!ok) _fail(l.tradeStartFailed);
     } on PlatformException catch (e) {
       debugPrint('trade: $e');
-      // Android 12L and older also need location for Nearby: ask once, then retry.
-      if ('${e.message}'.contains('LOCATION') && !_askedLocation) {
-        _askedLocation = true;
-        if (await Permission.locationWhenInUse.request().isGranted) {
-          return _start();
-        }
-        return _fail(l.tradePermissions, settings: true);
+      // e.g. "8036: MISSING_PERMISSION_ACCESS_FINE_LOCATION" when only approximate
+      // location was allowed.
+      if ('${e.message}'.contains('PERMISSION')) {
+        return _fail(l.tradePermissions, settings: true, detail: e.message);
       }
       _fail(l.tradeStartFailed, detail: e.message);
     }

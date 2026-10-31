@@ -11,9 +11,9 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32"/>
-    <!-- Face-to-face trades (nearby_connections declares these without limits): fine
-         location is only needed up to Android 12L, the old Bluetooth ones up to Android 11. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="31"/>
+    <!-- Face-to-face trades (nearby_connections declares these without limits): the old
+         Bluetooth ones are only needed up to Android 11. Precise location stays: Nearby
+         still requires it on Android 16 (error 8036 without it). -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
     <application
