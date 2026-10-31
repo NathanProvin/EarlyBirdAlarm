@@ -128,13 +128,13 @@ void main() {
       return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
     }
 
-    // Hard (each step ×½), tilt 2: a common bird 75/19/4.7/1.2/0.3 %; a legendary one
-    // evens out to 20 % each.
+    // Hard (each step ×½, lean ×3): a common bird 83/14/2.3/0.4/0.1 %, a legendary one
+    // 7.6/11/17/26/38 %: the card peaks at the bird's own tier.
     final common = shares('common'), legendary = shares('legendary');
-    expect(common['common'], closeTo(0.751, 0.015));
+    expect(common['common'], closeTo(0.83, 0.015));
     expect(common['legendary'], lessThan(0.01));
-    expect(legendary['common'], closeTo(0.20, 0.012));
-    expect(legendary['legendary'], closeTo(0.20, 0.012));
+    expect(legendary['common'], closeTo(0.076, 0.01));
+    expect(legendary['legendary'], closeTo(0.38, 0.015));
     // Easy never gives a Legendary card, even for a legendary bird.
     for (var i = 0; i < 2000; i++) {
       expect(
