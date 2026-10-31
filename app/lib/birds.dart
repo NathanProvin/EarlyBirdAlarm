@@ -44,8 +44,11 @@ final cardOdds = {
 };
 
 /// How strongly a card's rarity leans toward its bird's scarcity: each rarity's odds are
-/// divided by this for every tier between it and the bird's tier (decided 2026-10-30).
-const rarityTilt = 2.0;
+/// divided by [rarityLean] / [rarityDecay] for every tier between it and the bird's tier
+/// (Hard: 3). Being stronger than the decay, it makes a scarce bird's cards peak at its
+/// own tier (a Legendary bird on Hard: 7.6 / 11 / 17 / 26 / 38 %); with a flat 2 they
+/// came out even at 20 % each (2026-10-31).
+const rarityLean = 1.5;
 
 /// The rarity of a card won at [difficulty]: [cardOdds], tilted toward [birdTier] (how
 /// scarce the bird is this month) so a scarce bird rarely comes as a Common card and a
@@ -56,7 +59,9 @@ String drawRarity(Difficulty difficulty, {String? birdTier, Random? random}) {
     for (final (i, t) in tiers.indexed)
       t:
           cardOdds[difficulty]![t]! /
-          (bird == null ? 1 : pow(rarityTilt, (i - bird).abs())),
+          (bird == null
+              ? 1
+              : pow(rarityLean / rarityDecay[difficulty]!, (i - bird).abs())),
   };
   var r = (random ?? Random()).nextDouble() * w.values.reduce((a, b) => a + b);
   return w.entries
