@@ -743,6 +743,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.'**
   String get tradeStartFailed;
+
+  /// No description provided for @fiveOfAKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Five of a kind'**
+  String get fiveOfAKind;
+
+  /// No description provided for @dawnChorus.
+  ///
+  /// In en, this message translates to:
+  /// **'Dawn chorus'**
+  String get dawnChorus;
+
+  /// No description provided for @globetrotter.
+  ///
+  /// In en, this message translates to:
+  /// **'Globetrotter'**
+  String get globetrotter;
+
+  /// No description provided for @fullHouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Full house'**
+  String get fullHouse;
+
+  /// No description provided for @perfectSpecimen.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfect specimen'**
+  String get perfectSpecimen;
+
+  /// No description provided for @ironStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Iron streak'**
+  String get ironStreak;
+
+  /// No description provided for @goalLegendaryHunter.
+  ///
+  /// In en, this message translates to:
+  /// **'5 Legendary cards'**
+  String get goalLegendaryHunter;
+
+  /// No description provided for @goalPerfectWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'A 7-day wake-up streak'**
+  String get goalPerfectWeek;
+
+  /// No description provided for @goalFullSet.
+  ///
+  /// In en, this message translates to:
+  /// **'A card of each rarity'**
+  String get goalFullSet;
+
+  /// No description provided for @goalCollector.
+  ///
+  /// In en, this message translates to:
+  /// **'100 cards'**
+  String get goalCollector;
+
+  /// No description provided for @goalLocalExpert.
+  ///
+  /// In en, this message translates to:
+  /// **'50 species of your region'**
+  String get goalLocalExpert;
+
+  /// No description provided for @goalRareFinds.
+  ///
+  /// In en, this message translates to:
+  /// **'5 cards Rare or better'**
+  String get goalRareFinds;
+
+  /// No description provided for @goalFiveOfAKind.
+  ///
+  /// In en, this message translates to:
+  /// **'5 copies of one species'**
+  String get goalFiveOfAKind;
+
+  /// No description provided for @goalDawnChorus.
+  ///
+  /// In en, this message translates to:
+  /// **'10 cards won before 7:00'**
+  String get goalDawnChorus;
+
+  /// No description provided for @goalGlobetrotter.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards from 3 regions'**
+  String get goalGlobetrotter;
+
+  /// No description provided for @goalFullHouse.
+  ///
+  /// In en, this message translates to:
+  /// **'3 series completed'**
+  String get goalFullHouse;
+
+  /// No description provided for @goalPerfectSpecimen.
+  ///
+  /// In en, this message translates to:
+  /// **'A card of 95 % quality or more'**
+  String get goalPerfectSpecimen;
+
+  /// No description provided for @goalIronStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'A 30-day wake-up streak'**
+  String get goalIronStreak;
+
+  /// No description provided for @seriesComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Series complete!'**
+  String get seriesComplete;
+
+  /// No description provided for @achievementUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked!'**
+  String get achievementUnlocked;
+
+  /// No description provided for @rewardRarity.
+  ///
+  /// In en, this message translates to:
+  /// **'{rarity} reward'**
+  String rewardRarity(String rarity);
+
+  /// No description provided for @tapToCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to collect'**
+  String get tapToCollect;
 }
 
 class _AppLocalizationsDelegate

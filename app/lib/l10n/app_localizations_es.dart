@@ -357,4 +357,72 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tradeStartFailed =>
       'No se pudo empezar a buscar pajareros cerca. ¿Está activado el Bluetooth?';
+
+  @override
+  String get fiveOfAKind => 'Póker de aves';
+
+  @override
+  String get dawnChorus => 'Coro del alba';
+
+  @override
+  String get globetrotter => 'Trotamundos';
+
+  @override
+  String get fullHouse => 'Pleno';
+
+  @override
+  String get perfectSpecimen => 'Ejemplar perfecto';
+
+  @override
+  String get ironStreak => 'Racha de hierro';
+
+  @override
+  String get goalLegendaryHunter => '5 cartas legendarias';
+
+  @override
+  String get goalPerfectWeek => 'Racha de 7 días despertando';
+
+  @override
+  String get goalFullSet => 'Una carta de cada rareza';
+
+  @override
+  String get goalCollector => '100 cartas';
+
+  @override
+  String get goalLocalExpert => '50 especies de tu región';
+
+  @override
+  String get goalRareFinds => '5 cartas raras o mejores';
+
+  @override
+  String get goalFiveOfAKind => '5 copias de una especie';
+
+  @override
+  String get goalDawnChorus => '10 cartas ganadas antes de las 7:00';
+
+  @override
+  String get goalGlobetrotter => 'Cartas de 3 regiones';
+
+  @override
+  String get goalFullHouse => '3 series completadas';
+
+  @override
+  String get goalPerfectSpecimen => 'Una carta de calidad 95 % o más';
+
+  @override
+  String get goalIronStreak => 'Racha de 30 días despertando';
+
+  @override
+  String get seriesComplete => '¡Serie completada!';
+
+  @override
+  String get achievementUnlocked => '¡Logro desbloqueado!';
+
+  @override
+  String rewardRarity(String rarity) {
+    return 'Recompensa: $rarity';
+  }
+
+  @override
+  String get tapToCollect => 'Toca para recoger';
 }

@@ -357,4 +357,72 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get tradeStartFailed =>
       'Die Suche nach Vogelbeobachtern in der Nähe konnte nicht starten. Ist Bluetooth an?';
+
+  @override
+  String get fiveOfAKind => 'Fünf gleiche';
+
+  @override
+  String get dawnChorus => 'Morgenchor';
+
+  @override
+  String get globetrotter => 'Weltenbummler';
+
+  @override
+  String get fullHouse => 'Volles Haus';
+
+  @override
+  String get perfectSpecimen => 'Perfektes Exemplar';
+
+  @override
+  String get ironStreak => 'Eiserne Serie';
+
+  @override
+  String get goalLegendaryHunter => '5 legendäre Karten';
+
+  @override
+  String get goalPerfectWeek => '7 Tage Weckserie';
+
+  @override
+  String get goalFullSet => 'Eine Karte jeder Seltenheit';
+
+  @override
+  String get goalCollector => '100 Karten';
+
+  @override
+  String get goalLocalExpert => '50 Arten deiner Region';
+
+  @override
+  String get goalRareFinds => '5 Karten Selten oder besser';
+
+  @override
+  String get goalFiveOfAKind => '5 Exemplare einer Art';
+
+  @override
+  String get goalDawnChorus => '10 Karten vor 7 Uhr gewonnen';
+
+  @override
+  String get goalGlobetrotter => 'Karten aus 3 Regionen';
+
+  @override
+  String get goalFullHouse => '3 Serien abgeschlossen';
+
+  @override
+  String get goalPerfectSpecimen => 'Eine Karte mit 95 % Qualität oder mehr';
+
+  @override
+  String get goalIronStreak => '30 Tage Weckserie';
+
+  @override
+  String get seriesComplete => 'Serie abgeschlossen!';
+
+  @override
+  String get achievementUnlocked => 'Erfolg freigeschaltet!';
+
+  @override
+  String rewardRarity(String rarity) {
+    return 'Belohnung: $rarity';
+  }
+
+  @override
+  String get tapToCollect => 'Tippen zum Abholen';
 }

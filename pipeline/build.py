@@ -604,15 +604,21 @@ def build_fallback():
 
 
 def parse_series(text):
-    """series.md -> [{id, en, fr, de, es, signature, order, family, genus, birds}] (rule lists of names).
-    A heading is `## id | names in LANGS order | signature`; missing names fall back to English."""
-    series, current, key = [], None, None
+    """series.md -> [{id, en, fr, de, es, signature, group, reward, order, family, genus, birds}]
+    (rule lists of names). A heading is `## id | names in LANGS order | signature`; missing names
+    fall back to English. A heading without `|` starts a group (a page in the app)."""
+    series, current, key, group = [], None, None, "families"
     for line in text.splitlines():
-        if line.startswith("## ") and "|" in line:
+        if line.startswith("## ") and "|" not in line:
+            group, current, key = line[3:].strip().lower(), None, None
+        elif line.startswith("## "):
             sid, *names, sig = [p.strip() for p in line[3:].split("|")]
-            current = {"id": sid, "signature": sig, **{g: names[i] if i < len(names) else names[0]
-                                                       for i, g in enumerate(LANGS)}}
+            current = {"id": sid, "signature": sig, "group": group, "reward": "rare",
+                       **{g: names[i] if i < len(names) else names[0] for i, g in enumerate(LANGS)}}
             series.append(current)
+        elif current and line.startswith("reward:"):
+            current["reward"] = line.partition(":")[2].strip()
+            assert current["reward"] in TIERS[1:], (current["id"], current["reward"])
         elif current and re.match(r"^(order|family|genus|birds):", line):
             key, _, rest = line.partition(":")
             current[key] = [n.strip() for n in rest.split(",") if n.strip()]
@@ -621,6 +627,10 @@ def parse_series(text):
         else:
             key = None
     return series
+
+
+_t = parse_series("## Themes\n## a | A | B | C | D | X y\nbirds: X y\nreward: epic\n")[0]
+assert (_t["group"], _t["reward"], _t["de"], _t["signature"], _t["birds"]) == ("themes", "epic", "C", "X y", ["X y"])
 
 
 def build_series():
@@ -636,7 +646,7 @@ def build_series():
         missing = [n for n in s.get("birds", []) if n not in by_latin]
         if missing:
             print(f"    {s['id']}: not in the catalog: {', '.join(missing)}")
-        out.append({"id": s["id"], **{g: s[g] for g in LANGS},
+        out.append({"id": s["id"], **{g: s[g] for g in LANGS}, "group": s["group"], "reward": s["reward"],
                     "signature": by_latin.get(s["signature"]), "birds": ids})
         print(f"    {s['id']}: {len(ids)} birds")
     write_json(OUT / "series.json", out)

@@ -357,4 +357,72 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get tradeStartFailed =>
       'Impossible de chercher les ornithologues à proximité. Vérifiez que le Bluetooth est activé.';
+
+  @override
+  String get fiveOfAKind => 'Carré d\'as';
+
+  @override
+  String get dawnChorus => 'Chœur de l\'aube';
+
+  @override
+  String get globetrotter => 'Globe-trotter';
+
+  @override
+  String get fullHouse => 'Collection complète';
+
+  @override
+  String get perfectSpecimen => 'Spécimen parfait';
+
+  @override
+  String get ironStreak => 'Série de fer';
+
+  @override
+  String get goalLegendaryHunter => '5 cartes légendaires';
+
+  @override
+  String get goalPerfectWeek => '7 jours de réveil d\'affilée';
+
+  @override
+  String get goalFullSet => 'Une carte de chaque rareté';
+
+  @override
+  String get goalCollector => '100 cartes';
+
+  @override
+  String get goalLocalExpert => '50 espèces de votre région';
+
+  @override
+  String get goalRareFinds => '5 cartes rares ou mieux';
+
+  @override
+  String get goalFiveOfAKind => '5 exemplaires d\'une même espèce';
+
+  @override
+  String get goalDawnChorus => '10 cartes gagnées avant 7 h';
+
+  @override
+  String get goalGlobetrotter => 'Des cartes de 3 régions';
+
+  @override
+  String get goalFullHouse => '3 séries complétées';
+
+  @override
+  String get goalPerfectSpecimen => 'Une carte de qualité 95 % ou plus';
+
+  @override
+  String get goalIronStreak => '30 jours de réveil d\'affilée';
+
+  @override
+  String get seriesComplete => 'Série complétée !';
+
+  @override
+  String get achievementUnlocked => 'Succès débloqué !';
+
+  @override
+  String rewardRarity(String rarity) {
+    return 'Récompense : $rarity';
+  }
+
+  @override
+  String get tapToCollect => 'Touchez pour récupérer';
 }

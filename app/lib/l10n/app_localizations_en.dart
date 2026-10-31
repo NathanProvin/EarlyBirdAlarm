@@ -355,4 +355,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tradeStartFailed =>
       'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.';
+
+  @override
+  String get fiveOfAKind => 'Five of a kind';
+
+  @override
+  String get dawnChorus => 'Dawn chorus';
+
+  @override
+  String get globetrotter => 'Globetrotter';
+
+  @override
+  String get fullHouse => 'Full house';
+
+  @override
+  String get perfectSpecimen => 'Perfect specimen';
+
+  @override
+  String get ironStreak => 'Iron streak';
+
+  @override
+  String get goalLegendaryHunter => '5 Legendary cards';
+
+  @override
+  String get goalPerfectWeek => 'A 7-day wake-up streak';
+
+  @override
+  String get goalFullSet => 'A card of each rarity';
+
+  @override
+  String get goalCollector => '100 cards';
+
+  @override
+  String get goalLocalExpert => '50 species of your region';
+
+  @override
+  String get goalRareFinds => '5 cards Rare or better';
+
+  @override
+  String get goalFiveOfAKind => '5 copies of one species';
+
+  @override
+  String get goalDawnChorus => '10 cards won before 7:00';
+
+  @override
+  String get goalGlobetrotter => 'Cards from 3 regions';
+
+  @override
+  String get goalFullHouse => '3 series completed';
+
+  @override
+  String get goalPerfectSpecimen => 'A card of 95 % quality or more';
+
+  @override
+  String get goalIronStreak => 'A 30-day wake-up streak';
+
+  @override
+  String get seriesComplete => 'Series complete!';
+
+  @override
+  String get achievementUnlocked => 'Achievement unlocked!';
+
+  @override
+  String rewardRarity(String rarity) {
+    return '$rarity reward';
+  }
+
+  @override
+  String get tapToCollect => 'Tap to collect';
 }
