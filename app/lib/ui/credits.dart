@@ -68,11 +68,51 @@ class CreditsScreen extends StatelessWidget {
                   ),
               ],
             ),
+            const SizedBox(height: 16),
+            const _DevDraw(),
           ],
         ],
       ),
     );
   }
+}
+
+/// Test builds only: wins [count] Twitch cards in a row through the real path (the bird
+/// the deck offers, a correct answer, the deck refilled with real downloads), to measure
+/// species diversity and rarities on the phone. It writes to the real collection: back
+/// the saved data up first (adb) and restore it after. Leaving the screen stops it.
+class _DevDraw extends StatefulWidget {
+  const _DevDraw();
+
+  @override
+  State<_DevDraw> createState() => _DevDrawState();
+}
+
+class _DevDrawState extends State<_DevDraw> {
+  static const count = 1000;
+  int? _done;
+
+  Future<void> _run() async {
+    for (var i = 0; i < count && mounted; i++) {
+      final (bird, rec) = store.pickNext(DateTime.now());
+      await store.answered(null, bird, rec, true, '');
+      await store.sync();
+      if (mounted) setState(() => _done = i + 1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: ActionChip(
+      label: Text(
+        _done == null
+            ? 'Dev: draw $count Twitch cards'
+            : 'Dev: drawn $_done / $count',
+      ),
+      onPressed: _done == null ? _run : null,
+    ),
+  );
 }
 
 /// A card of [rarity] for a random bird of the region, revealed as if just won; not saved.
