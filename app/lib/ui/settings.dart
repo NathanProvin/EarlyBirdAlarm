@@ -175,6 +175,7 @@ class SettingsScreen extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 store.region == null ? '—' : regionName(l, store.region!),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
@@ -218,22 +219,43 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
             const SizedBox(height: 8),
-            // Each language written in itself; '' follows the phone.
-            DropdownMenu<String>(
-              expandedInsets: EdgeInsets.zero,
-              initialSelection: store.language ?? '',
-              dropdownMenuEntries: [
-                DropdownMenuEntry(value: '', label: l.systemLanguage),
-                for (final (code, name) in const [
-                  ('en', 'English'),
-                  ('fr', 'Français'),
-                  ('de', 'Deutsch'),
-                  ('es', 'Español'),
-                ])
-                  DropdownMenuEntry(value: code, label: name),
-              ],
-              onSelected: (v) =>
-                  store.language = v == null || v.isEmpty ? null : v,
+            // Each language written in itself; '' follows the phone. Half width, outlined
+            // like the segmented controls above (pill, outline colour), text in the accent.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                child: DropdownMenu<String>(
+                  expandedInsets: EdgeInsets.zero,
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  inputDecorationTheme: InputDecorationTheme(
+                    isDense: true,
+                    constraints: const BoxConstraints(maxHeight: 40),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                  initialSelection: store.language ?? '',
+                  dropdownMenuEntries: [
+                    DropdownMenuEntry(value: '', label: l.systemLanguage),
+                    for (final (code, name) in const [
+                      ('en', 'English'),
+                      ('fr', 'Français'),
+                      ('de', 'Deutsch'),
+                      ('es', 'Español'),
+                    ])
+                      DropdownMenuEntry(value: code, label: name),
+                  ],
+                  onSelected: (v) =>
+                      store.language = v == null || v.isEmpty ? null : v,
+                ),
+              ),
             ),
             const SizedBox(height: 32),
             Text(l.theme, style: text.titleMedium),

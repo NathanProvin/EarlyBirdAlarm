@@ -271,20 +271,18 @@ void main() {
     expect(formatStat('distance', 0.02, l), 'Resident');
   });
 
-  test('Twitch quizzes: 5 max, one more every 15 min', () {
+  // twitchEvery: 15 min in release builds, 1 min in test builds (tests run as one).
+  test('Twitch quizzes: 5 max, one more every twitchEvery', () {
     final t0 = DateTime(2026, 10, 29, 8);
     final fresh = DateTime.fromMillisecondsSinceEpoch(0);
     expect(twitchCharges(fresh, t0), 5); // a new player starts full
     var start = twitchUse(fresh, t0);
     expect(twitchCharges(start, t0), 4);
-    expect(twitchNextIn(start, t0), const Duration(minutes: 15));
-    final later = t0.add(const Duration(minutes: 3, seconds: 20));
+    expect(twitchNextIn(start, t0), twitchEvery);
+    final later = t0.add(twitchEvery * 0.25);
     expect(twitchCharges(start, later), 4);
-    expect(
-      twitchNextIn(start, later),
-      const Duration(minutes: 11, seconds: 40),
-    );
-    expect(twitchCharges(start, t0.add(const Duration(minutes: 15))), 5);
+    expect(twitchNextIn(start, later), twitchEvery * 0.75);
+    expect(twitchCharges(start, t0.add(twitchEvery)), 5);
     expect(twitchCharges(start, t0.add(const Duration(hours: 5))), 5); // capped
     for (var i = 0; i < 4; i++) {
       start = twitchUse(start, t0);
