@@ -181,7 +181,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => const SeriesScreen()),
                 ),
-                icon: const Icon(Icons.collections_bookmark_outlined),
+                // A dot while a completed series or achievement waits to be collected.
+                icon: Badge(
+                  isLabelVisible: store.anyClaimable,
+                  smallSize: 8,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: const Icon(Icons.collections_bookmark_outlined),
+                ),
                 label: Text(l.series),
               ),
             ],

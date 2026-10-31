@@ -101,8 +101,6 @@ class _RingScreenState extends State<RingScreen> {
       correct,
       AppLocalizations.of(context).guessTheBird,
     );
-    // A won card may complete a series (or a streak an achievement): +1 booster each.
-    await store.claimSeries();
     // The app is open every morning: a good time to fetch songs for the next rings.
     unawaited(store.sync());
     await shown;

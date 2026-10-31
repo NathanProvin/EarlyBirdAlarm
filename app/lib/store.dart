@@ -126,20 +126,49 @@ class Store extends ChangeNotifier {
   /// The longest streak ever (for the "Perfect week" achievement).
   int get bestStreak => max(_prefs.getInt('bestStreak') ?? 0, streak);
 
-  /// Series and achievements completed for the first time since the last call: each gives
-  /// one bonus booster, once ("region:id" for series, the id for achievements).
-  Future<List<SeriesState>> claimSeries() async {
-    final done = {...?_prefs.getStringList('seriesDone')};
-    String key(SeriesState s) => s.series == null ? s.id : '$region:${s.id}';
-    final fresh = [
-      for (final s in seriesStates(birds, cards, bestStreak))
-        if (s.complete && !done.contains(key(s))) s,
-    ];
-    if (fresh.isEmpty) return fresh;
-    await _prefs.setStringList('seriesDone', [...done, ...fresh.map(key)]);
-    await _prefs.setInt('twitchBonus', twitchBonus + fresh.length);
+  /// Series and achievements already collected ("region:id" for series, the id for
+  /// achievements). Before 2026-10-31 completing one gave a Twitch booster at once; those
+  /// stay collected.
+  Set<String> get _collected => {...?_prefs.getStringList('seriesDone')};
+  String _collectKey(SeriesState s) =>
+      s.series == null ? s.id : '$region:${s.id}';
+
+  /// Completed and not collected yet: its badge glows until tapped.
+  bool claimable(SeriesState s) =>
+      s.complete && !_collected.contains(_collectKey(s));
+
+  /// Anything to collect on the Series screen (a dot on its button).
+  bool get anyClaimable =>
+      seriesStates(birds, cards, bestStreak).any(claimable);
+
+  /// Collects a completed series or achievement: a card of its guaranteed [SeriesState.reward]
+  /// rarity, of one of the series' birds (an achievement: a bird drafted as for a ring).
+  Future<CardData> claim(SeriesState s, [Random? random]) async {
+    random ??= Random();
+    final bird = s.birds.isNotEmpty
+        ? s.birds[random.nextInt(s.birds.length)]
+        : pickBird(
+            recent,
+            monthFor(DateTime.now()),
+            difficulty,
+            (_) => true,
+            random,
+          )!.$1;
+    final card = rollCard(
+      bird,
+      region,
+      rarity: s.reward,
+      recording: bird.recordings.firstOrNull?.file,
+      random: random,
+    );
+    await _prefs.setString('cards', jsonEncode([...cards, card]));
+    await _prefs.setStringList('heard', [
+      for (final id in heard)
+        if (id != bird.id) id,
+    ]);
+    await _prefs.setStringList('seriesDone', [..._collected, _collectKey(s)]);
     notifyListeners();
-    return fresh;
+    return card;
   }
 
   /// Ids of the last birds heard, newest first.

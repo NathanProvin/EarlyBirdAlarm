@@ -378,57 +378,69 @@ void main() {
     }
   });
 
-  test(
-    'series: region filter, progress, one-time reward, bonus booster',
-    () async {
-      allSeries = [
-        Series.fromJson({
-          'id': 'small', 'en': 'Small', 'fr': 'Petits', 'signature': 'gone', //
-          'birds': ['tit', 'robin', 'chaffinch', 'redstart', 'gone'],
-        }),
-        Series.fromJson({
-          'id': 'doves',
-          'en': 'Doves',
-          'fr': 'Colombes',
-          'signature': 'dove', //
-          'birds': ['pigeon', 'dove', 'gone'], // only 2 in the region: hidden
-        }),
-      ];
-      SharedPreferences.setMockInitialValues({'streak': 8});
-      final s = await Store.load();
-      final small = seriesStates(birds, s.cards, s.bestStreak);
-      expect(small.map((x) => x.id), [
-        'small',
-        legendaryHunter, // now always: 5 Legendary cards
-        perfectWeek,
-        fullSet,
-        collector,
-        localExpert,
-        rareFinds,
-      ]);
-      expect(small[0].total, 4);
-      expect(
-        small[0].face!.id,
-        'robin',
-      ); // signature not in the region: first by number
-      expect(
-        small.firstWhere((x) => x.id == perfectWeek).complete,
-        isTrue,
-      ); // an 8-day streak is a perfect week
-      for (final id in ['robin', 'redstart', 'tit']) {
-        await s.answered(null, _b(id), null, true, '');
-      }
-      expect((await s.claimSeries()).map((x) => x.id), [perfectWeek]);
-      await s.answered(null, _b('chaffinch'), null, true, '');
-      expect((await s.claimSeries()).map((x) => x.id), ['small']);
-      expect(await s.claimSeries(), isEmpty); // rewarded once
-      expect(s.twitchBonus, 2);
-      final start = s.twitchStart;
-      await s.useTwitch();
-      expect(s.twitchBonus, 1); // the bonus goes first…
-      expect(s.twitchStart, start); // …the timed boosters are untouched
-    },
-  );
+  test('series: region filter, progress, groups, a card collected once per completion', () async {
+    allSeries = [
+      Series.fromJson({
+        'id': 'small', 'en': 'Small', 'fr': 'Petits', 'signature': 'gone', //
+        'group': 'habitats', 'reward': 'epic',
+        'birds': ['tit', 'robin', 'chaffinch', 'redstart', 'gone'],
+      }),
+      Series.fromJson({
+        'id': 'doves',
+        'en': 'Doves',
+        'fr': 'Colombes',
+        'signature': 'dove', // no group / reward: an older series.json
+        'birds': ['pigeon', 'dove', 'gone'], // only 2 in the region: hidden
+      }),
+    ];
+    expect((allSeries[1].group, allSeries[1].reward), ('families', 'rare'));
+    SharedPreferences.setMockInitialValues({'streak': 8, 'twitchBonus': 1});
+    final s = await Store.load();
+    final small = seriesStates(birds, s.cards, s.bestStreak);
+    expect(small.map((x) => x.id), [
+      'small',
+      legendaryHunter, // now always: 5 Legendary cards
+      perfectWeek,
+      fullSet,
+      collector,
+      localExpert,
+      rareFinds,
+      fiveOfAKind,
+      dawnChorus,
+      globetrotter,
+      fullHouse,
+      perfectSpecimen,
+      ironStreak,
+    ]);
+    expect(small[0].total, 4);
+    expect(small[0].group, 'habitats');
+    expect(small.last.group, 'achievements2');
+    expect(
+      small[0].face!.id,
+      'robin',
+    ); // signature not in the region: first by number
+    final week = small.firstWhere((x) => x.id == perfectWeek);
+    expect(week.complete, isTrue); // an 8-day streak is a perfect week
+    expect(s.claimable(week), isTrue);
+    for (final id in ['robin', 'redstart', 'tit', 'chaffinch']) {
+      await s.answered(null, _b(id), null, true, '');
+    }
+    final done = seriesStates(birds, s.cards, s.bestStreak).first;
+    expect(s.claimable(done), isTrue);
+    final card = await s.claim(done);
+    expect(card.rarity, 'epic'); // the series' guaranteed reward
+    expect(done.birds.map((b) => b.id), contains(card.birdId));
+    expect(s.cards.length, 5);
+    expect(s.claimable(done), isFalse); // collected once
+    expect((await s.claim(week)).rarity, 'rare');
+    // Not anyClaimable: a random card may roll 95 % and complete Perfect specimen.
+    expect(s.claimable(week), isFalse);
+    // A booster earned the old way is still used first.
+    final start = s.twitchStart;
+    await s.useTwitch();
+    expect(s.twitchBonus, 0);
+    expect(s.twitchStart, start);
+  });
 
   test('a theme from an older version falls back to Phone', () async {
     SharedPreferences.setMockInitialValues({'theme': 'dusk'});

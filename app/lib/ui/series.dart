@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../birds.dart';
+import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../series.dart';
@@ -18,8 +21,32 @@ String seriesName(AppLocalizations l, SeriesState s) =>
       collector => l.collector,
       localExpert => l.localExpert,
       rareFinds => l.rareFinds,
+      fiveOfAKind => l.fiveOfAKind,
+      dawnChorus => l.dawnChorus,
+      globetrotter => l.globetrotter,
+      fullHouse => l.fullHouse,
+      perfectSpecimen => l.perfectSpecimen,
+      ironStreak => l.ironStreak,
       _ => l.fullSet,
     };
+
+/// What an achievement asks for (shown on a long press); null for a bird series.
+String? seriesGoal(AppLocalizations l, SeriesState s) => s.series != null
+    ? null
+    : switch (s.id) {
+        legendaryHunter => l.goalLegendaryHunter,
+        perfectWeek => l.goalPerfectWeek,
+        collector => l.goalCollector,
+        localExpert => l.goalLocalExpert,
+        rareFinds => l.goalRareFinds,
+        fiveOfAKind => l.goalFiveOfAKind,
+        dawnChorus => l.goalDawnChorus,
+        globetrotter => l.goalGlobetrotter,
+        fullHouse => l.goalFullHouse,
+        perfectSpecimen => l.goalPerfectSpecimen,
+        ironStreak => l.goalIronStreak,
+        _ => l.goalFullSet,
+      };
 
 /// Series and achievements as badges, 2 columns × 3 rows per page; swipe for more.
 class SeriesScreen extends StatefulWidget {
@@ -32,14 +59,34 @@ class SeriesScreen extends StatefulWidget {
 class _SeriesScreenState extends State<SeriesScreen> {
   int _page = 0;
 
+  /// Collects a completed series or achievement: its guaranteed card flips in.
+  Future<void> _collect(SeriesState s) async {
+    unawaited(HapticFeedback.mediumImpact());
+    final card = await store.claim(s);
+    if (!mounted) return;
+    final l = AppLocalizations.of(context);
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _Reward(
+          title: s.series == null ? l.achievementUnlocked : l.seriesComplete,
+          card: card,
+        ),
+      ),
+    );
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final states = seriesStates(birds, store.cards, store.bestStreak);
+    // One page per group (the families take two), 6 badges at most per page.
     final pages = [
-      for (var i = 0; i < states.length; i += 6)
-        states.skip(i).take(6).toList(),
+      for (final g in seriesGroups)
+        if (states.where((s) => s.group == g).toList() case final group)
+          for (var i = 0; i < group.length; i += 6)
+            group.skip(i).take(6).toList(),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
@@ -68,7 +115,10 @@ class _SeriesScreenState extends State<SeriesScreen> {
                           _Badge(
                             s,
                             name: seriesName(l, s),
-                            onTap: s.birds.isEmpty
+                            claimable: store.claimable(s),
+                            onTap: store.claimable(s)
+                                ? () => _collect(s)
+                                : s.birds.isEmpty
                                 ? null
                                 : () => Navigator.of(context).push(
                                     MaterialPageRoute<void>(
@@ -112,9 +162,15 @@ class _SeriesScreenState extends State<SeriesScreen> {
 /// A round badge: the series' bird (greyed until one is won) or the achievement's
 /// icon, an accent arc for the progress, a foil ring once complete.
 class _Badge extends StatelessWidget {
-  const _Badge(this.s, {required this.name, this.onTap});
+  const _Badge(
+    this.s, {
+    required this.name,
+    this.claimable = false,
+    this.onTap,
+  });
   final SeriesState s;
   final String name;
+  final bool claimable; // complete, not collected yet: glows until tapped
   final VoidCallback? onTap;
 
   @override
@@ -151,9 +207,31 @@ class _Badge extends StatelessWidget {
                   : scheme.onSurface.withValues(alpha: 0.4),
             ),
           );
-    return Semantics(
+    final l = AppLocalizations.of(context);
+    final goal = seriesGoal(l, s);
+    final reward = rarityName(l, s.reward);
+    final ring = SizedBox.square(
+      dimension: 112,
+      child: CustomPaint(
+        painter: _Ring(
+          s.owned / s.total,
+          track: scheme.onSurface.withValues(alpha: 0.15),
+          accent: scheme.primary,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(9),
+          child: ClipOval(child: inner),
+        ),
+      ),
+    );
+    final badge = Semantics(
       button: onTap != null,
-      label: '$name, ${s.owned}/${s.total}',
+      label: [
+        '$name, ${s.owned}/${s.total}',
+        ?goal,
+        l.rewardRarity(reward),
+        if (claimable) l.tapToCollect,
+      ].join('. '),
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -161,20 +239,14 @@ class _Badge extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox.square(
-              dimension: 112,
-              child: CustomPaint(
-                painter: _Ring(
-                  s.owned / s.total,
-                  track: scheme.onSurface.withValues(alpha: 0.15),
-                  accent: scheme.primary,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(9),
-                  child: ClipOval(child: inner),
-                ),
-              ),
-            ),
+            if (claimable)
+              _Glow(
+                accent: scheme.primary,
+                sparkle: rarityColor[s.reward]!,
+                child: ring,
+              )
+            else
+              ring,
             const SizedBox(height: 8),
             Text(
               name,
@@ -189,11 +261,116 @@ class _Badge extends StatelessWidget {
                 color: s.complete ? scheme.primary : null,
               ),
             ),
+            // The prize: the rarity of the card collected on completion.
+            Text(
+              '◆ $reward',
+              style: text.labelSmall?.copyWith(
+                color: rarityColor[s.reward],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
     );
+    return goal == null ? badge : Tooltip(message: goal, child: badge);
   }
+}
+
+/// A completed badge waiting to be collected: a soft pulsing glow in the theme's accent
+/// and three sparkles of the reward's rarity orbiting the ring.
+class _Glow extends StatefulWidget {
+  const _Glow({
+    required this.accent,
+    required this.sparkle,
+    required this.child,
+  });
+  final Color accent, sparkle;
+  final Widget child;
+
+  @override
+  State<_Glow> createState() => _GlowState();
+}
+
+class _GlowState extends State<_Glow> with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2400),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CustomPaint(
+    painter: _Orbit(_c, accent: widget.accent, sparkle: widget.sparkle),
+    child: widget.child,
+  );
+}
+
+class _Orbit extends CustomPainter {
+  _Orbit(this.t, {required this.accent, required this.sparkle})
+    : super(repaint: t);
+  final Animation<double> t;
+  final Color accent, sparkle;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final r = size.width / 2;
+    final pulse = 0.5 + 0.5 * sin(4 * pi * t.value);
+    canvas.drawCircle(
+      c,
+      r + 4,
+      Paint()
+        ..color = accent.withValues(alpha: 0.18 + 0.22 * pulse)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    for (var i = 0; i < 3; i++) {
+      final a = 2 * pi * (t.value + i / 3) - pi / 2;
+      final p = c + Offset(cos(a), sin(a)) * (r + 2);
+      canvas.drawCircle(
+        p,
+        6,
+        Paint()
+          ..color = sparkle.withValues(alpha: 0.45)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+      );
+      canvas.drawCircle(p, 3, Paint()..color = Colors.white);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Orbit old) =>
+      old.accent != accent || old.sparkle != sparkle;
+}
+
+/// The card collected for a series or an achievement, flipping in like a won card.
+class _Reward extends StatelessWidget {
+  const _Reward({required this.title, required this.card});
+  final String title;
+  final CardData card;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(),
+    body: Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      child: CardDetail(
+        bird: birdById(card.birdId)!,
+        card: card,
+        flipIn: true,
+        header: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        onClose: () => Navigator.of(context).pop(),
+      ),
+    ),
+  );
 }
 
 /// The progress ring around a badge: an accent arc, or a full foil ring when done.
