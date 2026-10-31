@@ -21,6 +21,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] **Rescue of dropped birds (2026-10-30):** two automatic fallbacks in the pipeline — xeno-canto lookup by exact English name (its taxonomy differs from GBIF's: Antigone vs Grus canadensis) and a Commons search when the Wikidata photos aren't free (skipping paintings, maps, eggs…). **1,710 species kept (+81), 171 dropped** (88 no EN/FR name, 82 no usable free recording — mostly seabirds and Mediterranean specialists, e.g. American White Pelican —, 1 no free photo: Cooper's Hawk). Eagles series fixed (Aquila clanga / pomarina). Fallback birds re-picked (Ruby-crowned Kinglet in). Published again
 - [ ] Optional: hand-pick the remaining widespread drops in `pipeline/overrides.csv` (`xc=…` / `commons=File:…`), and the 88 "no EN/FR name" species
 - [x] Region naming: cells kept (local lists), named after their country + compass part; Collection groups views by name; placeholder countries listed greyed
+- [x] Region picker as a world map (tap a cell, search bar, my position), merged 2026-10-31
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
