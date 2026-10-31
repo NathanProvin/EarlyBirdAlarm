@@ -139,13 +139,16 @@ class _ThemeSwatch extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: on ? scheme.primary : null,
-                  fontWeight: on ? FontWeight.bold : null,
+              // Long names (Blaumeise, Herrerillo, Téléphone) shrink to fit rather than "…".
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: on ? scheme.primary : null,
+                    fontWeight: on ? FontWeight.bold : null,
+                  ),
                 ),
               ),
             ],

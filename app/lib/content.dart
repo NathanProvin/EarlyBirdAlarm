@@ -163,8 +163,12 @@ Future<bool> syncRegion(
   Set<String> keep = const {},
 }) async {
   final regionFile = localFile('regions/$region.json');
+  // A catalog from before German and Spanish (2026-10-31) is refreshed at once, not
+  // within the week, so names show in every language.
+  final beforeLanguages = species.values.every((b) => b.names['de'] == null);
   final stale =
       !regionFile.existsSync() ||
+      beforeLanguages ||
       DateTime.now().difference(regionFile.lastModifiedSync()).inDays >= 7;
   if (stale) {
     if (!await download('species.json') ||
@@ -172,6 +176,9 @@ Future<bool> syncRegion(
       return false;
     }
     await download('series.json'); // optional: the bundled copy is the fallback
+    await download(
+      'regions.json',
+    ); // region names (also fetched by the region screen)
     await initContent(region);
   }
   final photos = [
