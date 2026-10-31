@@ -31,19 +31,21 @@ const cardOdds = {
     'epic': 1,
     'legendary': 0,
   },
+  // Epic and Legendary lowered on 2026-10-31 (balance): −10 % on Medium, −20 % on Hard,
+  // given to Common.
   Difficulty.medium: {
-    'common': 45,
+    'common': 45.7,
     'uncommon': 32,
     'rare': 16,
-    'epic': 6,
-    'legendary': 1,
+    'epic': 5.4,
+    'legendary': 0.9,
   },
   Difficulty.hard: {
-    'common': 25,
+    'common': 28.2,
     'uncommon': 34,
     'rare': 27,
-    'epic': 13,
-    'legendary': 3,
+    'epic': 10.4,
+    'legendary': 2.4,
   },
 };
 

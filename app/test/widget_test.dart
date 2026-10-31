@@ -99,8 +99,8 @@ void main() {
     final r = Random(7);
     for (final (d, odds) in [
       (Difficulty.easy, [60, 32, 7, 1, 0]),
-      (Difficulty.medium, [45, 32, 16, 6, 1]),
-      (Difficulty.hard, [25, 34, 27, 13, 3]),
+      (Difficulty.medium, [45.7, 32, 16, 5.4, 0.9]),
+      (Difficulty.hard, [28.2, 34, 27, 10.4, 2.4]),
     ]) {
       final seen = <String, int>{};
       for (var i = 0; i < 20000; i++) {
@@ -128,12 +128,12 @@ void main() {
       return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
     }
 
-    // Hard, tilt 2: a common bird 49/34/13/3/0.4 %, a legendary one 7/19/31/29/14 %.
+    // Hard, tilt 2: a common bird 53/32/13/2/0.3 %, a legendary one 9/21/33/26/12 %.
     final common = shares('common'), legendary = shares('legendary');
-    expect(common['common'], closeTo(0.49, 0.015));
+    expect(common['common'], closeTo(0.53, 0.015));
     expect(common['legendary'], lessThan(0.01));
-    expect(legendary['common'], closeTo(0.07, 0.01));
-    expect(legendary['legendary'], closeTo(0.14, 0.012));
+    expect(legendary['common'], closeTo(0.087, 0.01));
+    expect(legendary['legendary'], closeTo(0.118, 0.012));
     // Easy never gives a Legendary card, even for a legendary bird.
     for (var i = 0; i < 2000; i++) {
       expect(
@@ -271,17 +271,20 @@ void main() {
     expect(formatStat('distance', 0.02, l), 'Resident');
   });
 
-  test('Twitch quizzes: 5 max, one more every 10 min', () {
+  test('Twitch quizzes: 5 max, one more every 15 min', () {
     final t0 = DateTime(2026, 10, 29, 8);
     final fresh = DateTime.fromMillisecondsSinceEpoch(0);
     expect(twitchCharges(fresh, t0), 5); // a new player starts full
     var start = twitchUse(fresh, t0);
     expect(twitchCharges(start, t0), 4);
-    expect(twitchNextIn(start, t0), const Duration(minutes: 10));
+    expect(twitchNextIn(start, t0), const Duration(minutes: 15));
     final later = t0.add(const Duration(minutes: 3, seconds: 20));
     expect(twitchCharges(start, later), 4);
-    expect(twitchNextIn(start, later), const Duration(minutes: 6, seconds: 40));
-    expect(twitchCharges(start, t0.add(const Duration(minutes: 10))), 5);
+    expect(
+      twitchNextIn(start, later),
+      const Duration(minutes: 11, seconds: 40),
+    );
+    expect(twitchCharges(start, t0.add(const Duration(minutes: 15))), 5);
     expect(twitchCharges(start, t0.add(const Duration(hours: 5))), 5); // capped
     for (var i = 0; i < 4; i++) {
       start = twitchUse(start, t0);

@@ -65,7 +65,7 @@ DateTime nextRing(AlarmData a, DateTime now) {
 /// Twitch mode: up to [twitchMax] quizzes, one more every [twitchEvery]. The count is
 /// derived from one timestamp: whole periods elapsed since [start], capped.
 const twitchMax = 5;
-const twitchEvery = Duration(minutes: 10);
+const twitchEvery = Duration(minutes: 15); // 10 until 2026-10-31 (balance)
 
 int twitchCharges(DateTime start, DateTime now) =>
     min(twitchMax, now.difference(start).inSeconds ~/ twitchEvery.inSeconds);

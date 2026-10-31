@@ -548,7 +548,7 @@ def read_csv(path):
 
 
 FALLBACK = ROOT.parent / "app" / "assets" / "content"
-FALLBACK_PER_CONTINENT = 15
+FALLBACK_PER_CONTINENT = 10
 
 
 def build_fallback():

@@ -24,15 +24,9 @@ String rarityName(AppLocalizations l, String tier) => switch (tier) {
 /// The full trading card. Without [card] the bird is only "heard": a grey, blurred card
 /// showing just its name and "Try next time!".
 class BirdCardView extends StatelessWidget {
-  const BirdCardView({
-    required this.bird,
-    this.card,
-    this.copies = 1,
-    super.key,
-  });
+  const BirdCardView({required this.bird, this.card, super.key});
   final Bird bird;
   final CardData? card;
-  final int copies; // > 1 shows a "×3" badge on the photo
 
   @override
   Widget build(BuildContext context) => Theme(
@@ -79,12 +73,6 @@ class BirdCardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(radius - 8),
                       child: BirdPhoto(bird),
                     ),
-                    if (copies > 1)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: _Badge('×$copies', style: text.titleMedium),
-                      ),
                   ],
                 ),
               ),
@@ -515,14 +503,21 @@ class CardTile extends StatelessWidget {
         child: known && compact
             ? _photoTile(number)
             : known
-            ? IgnorePointer(
-                child: FittedBox(
-                  child: SizedBox(
-                    width: 340,
-                    height: 340 / 0.68,
-                    child: BirdCardView(bird: bird, card: card, copies: copies),
+            ? Stack(
+                children: [
+                  IgnorePointer(
+                    child: FittedBox(
+                      child: SizedBox(
+                        width: 340,
+                        height: 340 / 0.68,
+                        child: BirdCardView(bird: bird, card: card),
+                      ),
+                    ),
                   ),
-                ),
+                  // Outside the shrunk card, so it stays readable.
+                  if (copies > 1)
+                    Positioned(right: 6, top: 6, child: _CopiesBadge(copies)),
+                ],
               )
             : Container(
                 decoration: BoxDecoration(
@@ -589,20 +584,15 @@ extension on CardTile {
           child: Theme(data: cardTheme, child: _Badge(number)),
         ),
         if (copies > 1)
-          Positioned(
-            right: 4,
-            top: 4,
-            child: Theme(data: cardTheme, child: _Badge('×$copies')),
-          ),
+          Positioned(right: 4, top: 4, child: _CopiesBadge(copies)),
       ],
     ),
   );
 }
 
 class _Badge extends StatelessWidget {
-  const _Badge(this.text, {this.style});
+  const _Badge(this.text);
   final String text;
-  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -611,8 +601,32 @@ class _Badge extends StatelessWidget {
       color: paper,
       borderRadius: BorderRadius.circular(radius),
     ),
-    child: Text(text, style: style ?? Theme.of(context).textTheme.labelSmall),
+    child: Text(text, style: Theme.of(context).textTheme.labelSmall),
   );
+}
+
+/// "×3" on a collection tile: how many copies of the card the player owns, in the
+/// theme's accent.
+class _CopiesBadge extends StatelessWidget {
+  const _CopiesBadge(this.copies);
+  final int copies;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: scheme.primary,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      child: Text(
+        '×$copies',
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: scheme.onPrimary, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
 }
 
 /// The bird's photo, never cropped: the whole photo over a blurred, zoomed copy of itself
