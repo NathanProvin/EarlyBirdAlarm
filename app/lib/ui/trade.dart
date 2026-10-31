@@ -40,19 +40,40 @@ class _TradeScreenState extends State<TradeScreen> {
   (String, String)? _code; // the two bird names both phones show
   bool _accepted = false;
   TradeSession? _session;
-  String? _failure;
+  String? _failure, _detail; // what went wrong, and Nearby's own error if any
+  bool _needsSettings =
+      false; // a permission was refused: back from Settings, retry
+  bool _askedLocation = false;
   List<CardData> _received = [];
+  late final _lifecycle = AppLifecycleListener(
+    onResume: () {
+      if (_step == _Step.failed && _needsSettings) _restart();
+    },
+  );
 
   @override
   void initState() {
     super.initState();
+    _lifecycle; // starts listening
     _start();
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     unawaited(_stop());
     super.dispose();
+  }
+
+  void _restart() {
+    setState(() {
+      _step = _Step.searching;
+      _failure = _detail = null;
+      _needsSettings = _accepted = false;
+      _endpoint = null;
+      _session = null;
+    });
+    _start();
   }
 
   Future<void> _stop() async {
@@ -66,15 +87,20 @@ class _TradeScreenState extends State<TradeScreen> {
   }
 
   Future<void> _start() async {
-    await [
+    // A search left over from an earlier attempt would refuse to start again.
+    await _stop();
+    // Granted at once on Android versions that don't have them.
+    final statuses = await [
       Permission.bluetoothScan,
       Permission.bluetoothAdvertise,
       Permission.bluetoothConnect,
       Permission.nearbyWifiDevices,
-      Permission.locationWhenInUse, // Android 11 and older only
     ].request();
     if (!mounted) return;
     final l = AppLocalizations.of(context);
+    if (statuses.values.any((s) => !s.isGranted)) {
+      return _fail(l.tradePermissions, settings: true);
+    }
     try {
       // Both phones advertise and discover; the one with the smaller name asks to connect.
       final ok =
@@ -103,9 +129,18 @@ class _TradeScreenState extends State<TradeScreen> {
             onEndpointLost: (_) {},
             serviceId: _service,
           );
-      if (!ok) _fail(l.tradePermissions);
-    } on PlatformException {
-      _fail(l.tradePermissions);
+      if (!ok) _fail(l.tradeStartFailed);
+    } on PlatformException catch (e) {
+      debugPrint('trade: $e');
+      // Android 12L and older also need location for Nearby: ask once, then retry.
+      if ('${e.message}'.contains('LOCATION') && !_askedLocation) {
+        _askedLocation = true;
+        if (await Permission.locationWhenInUse.request().isGranted) {
+          return _start();
+        }
+        return _fail(l.tradePermissions, settings: true);
+      }
+      _fail(l.tradeStartFailed, detail: e.message);
     }
   }
 
@@ -179,10 +214,12 @@ class _TradeScreenState extends State<TradeScreen> {
     }
   }
 
-  void _fail(String message) {
+  void _fail(String message, {bool settings = false, String? detail}) {
     if (!mounted || _step == _Step.done || _step == _Step.failed) return;
     setState(() {
       _failure = message;
+      _detail = detail;
+      _needsSettings = settings;
       _step = _Step.failed;
     });
     unawaited(_stop());
@@ -264,17 +301,24 @@ class _TradeScreenState extends State<TradeScreen> {
                 style: text.titleMedium,
                 textAlign: TextAlign.center,
               ),
+              if (_detail case final d?) ...[
+                const SizedBox(height: 8),
+                Text(d, style: text.bodySmall, textAlign: TextAlign.center),
+              ],
               const SizedBox(height: 24),
-              if (_failure == l.tradePermissions)
+              if (_needsSettings) ...[
                 FilledButton(
                   onPressed: openAppSettings,
                   child: Text(l.openSettings),
-                )
-              else
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l.done),
                 ),
+                const SizedBox(height: 8),
+              ],
+              FilledButton.tonal(onPressed: _restart, child: Text(l.retry)),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l.done),
+              ),
             ],
           ),
         },

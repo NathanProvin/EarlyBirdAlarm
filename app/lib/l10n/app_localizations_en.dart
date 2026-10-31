@@ -351,4 +351,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String tradedOn(String date) {
     return 'Traded on $date';
   }
+
+  @override
+  String get tradeStartFailed =>
+      'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.';
 }

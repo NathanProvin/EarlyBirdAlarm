@@ -353,4 +353,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String tradedOn(String date) {
     return 'Échangée le $date';
   }
+
+  @override
+  String get tradeStartFailed =>
+      'Impossible de chercher les ornithologues à proximité. Vérifiez que le Bluetooth est activé.';
 }

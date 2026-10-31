@@ -152,24 +152,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
           child: Row(
             children: [
-              // The view's label shrinks with "…" so the buttons and Series always fit.
-              Expanded(
-                child: _Menu<String>(
-                  value: _view,
-                  items: views,
-                  tooltip: l.viewMenu,
-                  onSelected: (v) => setState(() => _view = v),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      views[_view]!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                ),
-              ),
+              // The two filters on the left (their menus show the counts), then Trade and Series.
               _Menu<String>(
                 value: _view,
                 items: views,
@@ -195,18 +178,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       : [rarityColor[_tier]!],
                 ),
               ),
-              const SizedBox(width: 6),
-              Tooltip(
-                message: l.trade,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const TradeScreen(),
-                    ),
-                  ),
-                  child: const _Round(icon: Icons.swap_horiz),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const TradeScreen()),
                 ),
+                icon: const Icon(Icons.swap_horiz),
+                label: Text(l.trade),
               ),
               TextButton.icon(
                 onPressed: () => Navigator.of(context).push(

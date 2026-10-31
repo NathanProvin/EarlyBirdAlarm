@@ -151,5 +151,6 @@
   "tradePermissions": "Trading needs Bluetooth and nearby devices. Allow them in the app's settings.",
   "openSettings": "Settings",
   "tradedOn": "Traded on {date}",
-  "@tradedOn": {"placeholders": {"date": {"type": "String"}}}
+  "@tradedOn": {"placeholders": {"date": {"type": "String"}}},
+  "tradeStartFailed": "Couldn't start looking for birders nearby. Check that Bluetooth is on."
 }

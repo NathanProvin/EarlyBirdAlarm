@@ -105,5 +105,6 @@
   "tradeInvalid": "Ces cartes ne peuvent pas être acceptées. Échange annulé.",
   "tradePermissions": "L'échange a besoin du Bluetooth et des appareils à proximité. Autorisez-les dans les réglages de l'application.",
   "openSettings": "Réglages",
-  "tradedOn": "Échangée le {date}"
+  "tradedOn": "Échangée le {date}",
+  "tradeStartFailed": "Impossible de chercher les ornithologues à proximité. Vérifiez que le Bluetooth est activé."
 }

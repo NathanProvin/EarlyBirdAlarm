@@ -733,6 +733,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Traded on {date}'**
   String tradedOn(String date);
+
+  /// No description provided for @tradeStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.'**
+  String get tradeStartFailed;
 }
 
 class _AppLocalizationsDelegate
