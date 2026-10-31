@@ -1,5 +1,5 @@
 """Builds app/assets/map/world.json, the offline map of the region screen, from Natural Earth
-1:50m (public domain): land polygons and land borders as flat [lon, lat, lon, lat, ...]
+1:50m (public domain): land polygons (with their lakes as holes) and land borders as flat [lon, lat, lon, lat, ...]
 lists in hundredths of a degree, simplified to drop points closer than STEP.
 Usage: py pipeline/world_map.py"""
 import json
@@ -14,14 +14,14 @@ STEP = 4  # hundredths of a degree (~4 km): finer than a 2° cell needs
 OUT = Path(__file__).parent.parent / "app" / "assets" / "map" / "world.json"
 
 
-def lines(geojson, polygons):
-    """Every ring (polygons) or line of the features, as rounded flat lists."""
+def lines(geojson):
+    """Every ring or line of the features, as rounded flat lists."""
     for f in geojson["features"]:
         g = f["geometry"]
         parts = {"Polygon": [g["coordinates"]], "MultiPolygon": g["coordinates"],
                  "LineString": [[g["coordinates"]]], "MultiLineString": [g["coordinates"]]}[g["type"]]
         for part in parts:
-            for ring in part[:1] if polygons else part:  # land: outer rings only (lakes ignored)
+            for ring in part:  # land: outer ring then holes (Caspian, Great Lakes), filled even-odd
                 yield simplify(ring)
 
 
@@ -40,8 +40,9 @@ assert simplify([(0, 0), (0.01, 0), (0.05, 0), (0.06, 0)]) == [0, 0, 5, 0, 6, 0]
 
 
 def main():
-    land = [r for r in lines(get(NE + "ne_50m_land.geojson"), True) if len(r) >= 6]
-    borders = [r for r in lines(get(NE + "ne_50m_admin_0_boundary_lines_land.geojson"), False) if len(r) >= 4]
+    # Lakes (Caspian, Great Lakes...) are a layer of their own; inside land, even-odd makes them water.
+    land = [r for f in ("ne_50m_land", "ne_50m_lakes") for r in lines(get(NE + f + ".geojson")) if len(r) >= 6]
+    borders = [r for r in lines(get(NE + "ne_50m_admin_0_boundary_lines_land.geojson")) if len(r) >= 4]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"land": land, "borders": borders}, separators=(",", ":")))
     points = sum(map(len, land + borders)) // 2

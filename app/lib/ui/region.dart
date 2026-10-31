@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -78,7 +79,8 @@ Future<(Path, Path)> _loadWorld() async {
     await rootBundle.loadString('assets/map/world.json'),
   ) as Map<String, dynamic>;
   Path paths(String key, {required bool close}) {
-    final path = Path();
+    // Land: lakes inside it are holes (even-odd).
+    final path = Path()..fillType = PathFillType.evenOdd;
     for (final line in (j[key] as List).cast<List<dynamic>>()) {
       for (var i = 0; i < line.length; i += 2) {
         final p = project((line[i + 1] as int) / 100, (line[i] as int) / 100);
@@ -93,6 +95,8 @@ Future<(Path, Path)> _loadWorld() async {
 }
 
 const _green = Color(0xFF34A853);
+const _marine = Color(0xFF1B4F8A); // sea tint and coasts
+const _cream = Color(0xFFF2E3B8); // land tint
 const _blue = Color(0xFF1A73E8); // the "my position" blue of map apps
 
 /// Where the user lives: tap a 2° cell on the world map, search a country / bioregion,
@@ -112,6 +116,8 @@ class _RegionScreenState extends State<RegionScreen>
   String? _picked = store.region;
   Offset? _me; // the user's position on the map, once located
   final _view = TransformationController();
+  // The zoom, updated in 10 % steps: line widths follow it without repainting on every pan.
+  final _zoom = ValueNotifier<double>(1);
   late final _fly = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 500),
@@ -129,12 +135,17 @@ class _RegionScreenState extends State<RegionScreen>
   void initState() {
     super.initState();
     _searchFocus.addListener(() => setState(() {}));
+    _view.addListener(() {
+      final s = _view.value.getMaxScaleOnAxis();
+      if ((s / _zoom.value - 1).abs() > 0.1) _zoom.value = s;
+    });
     _load();
   }
 
   @override
   void dispose() {
     _view.dispose();
+    _zoom.dispose();
     _fly.dispose();
     _blink.dispose();
     _search.dispose();
@@ -323,7 +334,10 @@ class _RegionScreenState extends State<RegionScreen>
                 children: [
                   Positioned.fill(
                     child: ColoredBox(
-                      color: scheme.surface,
+                      color: Color.alphaBlend(
+                        _marine.withValues(alpha: 0.10),
+                        scheme.surface,
+                      ),
                       child: InteractiveViewer(
                         transformationController: _view,
                         constrained: false,
@@ -339,7 +353,7 @@ class _RegionScreenState extends State<RegionScreen>
                                   painter: _MapPainter(
                                     map,
                                     [for (final c in _cells) _cellRect(c)],
-                                    land: scheme.surfaceContainerHighest,
+                                    _zoom,
                                     border: scheme.outline.withValues(
                                       alpha: 0.5,
                                     ),
@@ -478,37 +492,39 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-/// Land, land borders and the discrete grid of the cells that have birds. Hairlines
-/// (width 0) stay one pixel thin at any zoom, so this never repaints while zooming.
+/// Cream land, marine coasts (lake shores too), thinner borders and the discrete grid of
+/// the cells that have birds. Widths are in screen pixels at the current [zoom].
 class _MapPainter extends CustomPainter {
-  _MapPainter(this.map, this.cells, {required this.land, required this.border});
+  _MapPainter(this.map, this.cells, this.zoom, {required this.border})
+    : super(repaint: zoom);
 
   final (Path, Path) map;
   final List<Rect> cells;
-  final Color land, border;
+  final ValueListenable<double> zoom;
+  final Color border;
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawPath(map.$1, Paint()..color = land);
-    final hairline = Paint()
+    final px = 1 / zoom.value;
+    canvas.drawPath(map.$1, Paint()..color = _cream.withValues(alpha: 0.35));
+    Paint line(Color color, double width) => Paint()
+      ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0;
-    canvas.drawPath(map.$2, hairline..color = border);
+      ..strokeWidth = width * px;
+    canvas.drawPath(map.$2, line(border, 0.6));
+    canvas.drawPath(map.$1, line(_marine.withValues(alpha: 0.7), 1.2));
     final grid = Path();
     for (final r in cells) {
       grid.addRect(r);
     }
-    canvas.drawPath(
-      grid,
-      hairline..color = Colors.grey.withValues(alpha: 0.35),
-    );
+    canvas.drawPath(grid, line(Colors.grey.withValues(alpha: 0.35), 0.6));
   }
 
   @override
   bool shouldRepaint(_MapPainter old) =>
       old.map != map ||
       old.cells.length != cells.length ||
-      old.land != land ||
+      old.zoom != zoom ||
       old.border != border;
 }
 
