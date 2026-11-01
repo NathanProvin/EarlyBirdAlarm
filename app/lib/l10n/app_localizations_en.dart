@@ -423,4 +423,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Tap to collect';
+
+  @override
+  String get tradeLocationOff =>
+      'Turn on Location to find birders nearby. Your position is never used or sent.';
+
+  @override
+  String get tradeNeedsLocation =>
+      'Trading needs the location permission (Android requires it for Bluetooth searches; your position is never used). Allow it in the app\'s settings.';
+
+  @override
+  String get tradeNeedsPrecise =>
+      'Trading needs precise location: in the app\'s settings, under Location, turn on \"Use precise location\".';
+
+  @override
+  String get tradeNeedsBluetooth =>
+      'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.';
 }

@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -41,12 +42,14 @@ class _TradeScreenState extends State<TradeScreen> {
   bool _accepted = false;
   TradeSession? _session;
   String? _failure, _detail; // what went wrong, and Nearby's own error if any
-  bool _needsSettings =
-      false; // a permission was refused: back from Settings, retry
+  // The settings page that fixes it (app permissions, or the phone's Location switch);
+  // coming back from it retries.
+  Future<bool> Function()? _fix;
+  bool _retried = false; // a location error is retried once after asking again
   List<CardData> _received = [];
   late final _lifecycle = AppLifecycleListener(
     onResume: () {
-      if (_step == _Step.failed && _needsSettings) _restart();
+      if (_step == _Step.failed && _fix != null) _restart();
     },
   );
 
@@ -68,7 +71,8 @@ class _TradeScreenState extends State<TradeScreen> {
     setState(() {
       _step = _Step.searching;
       _failure = _detail = null;
-      _needsSettings = _accepted = false;
+      _fix = null;
+      _accepted = false;
       _endpoint = null;
       _session = null;
     });
@@ -88,6 +92,14 @@ class _TradeScreenState extends State<TradeScreen> {
   Future<void> _start() async {
     // A search left over from an earlier attempt would refuse to start again.
     await _stop();
+    if (!mounted) return;
+    final l = AppLocalizations.of(context);
+    // Nearby's Bluetooth search needs the phone's Location switched on: with it off, older
+    // Android versions refuse with "8034: MISSING_PERMISSION_ACCESS_COARSE_LOCATION" even
+    // though the permission is granted (seen on a friend's phone, 2026-11-01).
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      return _fail(l.tradeLocationOff, fix: Geolocator.openLocationSettings);
+    }
     // Granted at once on Android versions that don't have them. Nearby also needs
     // precise location (it never leaves the phone).
     final statuses = await [
@@ -98,9 +110,16 @@ class _TradeScreenState extends State<TradeScreen> {
       Permission.locationWhenInUse,
     ].request();
     if (!mounted) return;
-    final l = AppLocalizations.of(context);
+    if (statuses[Permission.locationWhenInUse]?.isGranted != true) {
+      return _fail(l.tradeNeedsLocation, fix: openAppSettings);
+    }
     if (statuses.values.any((s) => !s.isGranted)) {
-      return _fail(l.tradePermissions, settings: true);
+      return _fail(l.tradeNeedsBluetooth, fix: openAppSettings);
+    }
+    // Android 12+: "approximate" only is not enough (error 8036).
+    if (await Geolocator.getLocationAccuracy() ==
+        LocationAccuracyStatus.reduced) {
+      return _fail(l.tradeNeedsPrecise, fix: openAppSettings);
     }
     try {
       // Both phones advertise and discover; the one with the smaller name asks to connect.
@@ -136,7 +155,17 @@ class _TradeScreenState extends State<TradeScreen> {
       // e.g. "8036: MISSING_PERMISSION_ACCESS_FINE_LOCATION" when only approximate
       // location was allowed.
       if ('${e.message}'.contains('PERMISSION')) {
-        return _fail(l.tradePermissions, settings: true, detail: e.message);
+        // Ask for location once more and retry before sending the user to Settings.
+        if (!_retried) {
+          _retried = true;
+          await Permission.locationWhenInUse.request();
+          return _start();
+        }
+        return _fail(
+          l.tradePermissions,
+          fix: openAppSettings,
+          detail: e.message,
+        );
       }
       _fail(l.tradeStartFailed, detail: e.message);
     }
@@ -212,12 +241,12 @@ class _TradeScreenState extends State<TradeScreen> {
     }
   }
 
-  void _fail(String message, {bool settings = false, String? detail}) {
+  void _fail(String message, {Future<bool> Function()? fix, String? detail}) {
     if (!mounted || _step == _Step.done || _step == _Step.failed) return;
     setState(() {
       _failure = message;
       _detail = detail;
-      _needsSettings = settings;
+      _fix = fix;
       _step = _Step.failed;
     });
     unawaited(_stop());
@@ -304,11 +333,8 @@ class _TradeScreenState extends State<TradeScreen> {
                 Text(d, style: text.bodySmall, textAlign: TextAlign.center),
               ],
               const SizedBox(height: 24),
-              if (_needsSettings) ...[
-                FilledButton(
-                  onPressed: openAppSettings,
-                  child: Text(l.openSettings),
-                ),
+              if (_fix case final fix?) ...[
+                FilledButton(onPressed: fix, child: Text(l.openSettings)),
                 const SizedBox(height: 8),
               ],
               FilledButton.tonal(onPressed: _restart, child: Text(l.retry)),

@@ -425,4 +425,20 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Touchez pour récupérer';
+
+  @override
+  String get tradeLocationOff =>
+      'Activez la localisation pour trouver les ornithologues à proximité. Votre position n\'est jamais utilisée ni envoyée.';
+
+  @override
+  String get tradeNeedsLocation =>
+      'L\'échange a besoin de l\'autorisation de localisation (Android l\'exige pour chercher en Bluetooth ; votre position n\'est jamais utilisée). Autorisez-la dans les réglages de l\'application.';
+
+  @override
+  String get tradeNeedsPrecise =>
+      'L\'échange a besoin de la position précise : dans les réglages de l\'application, sous Localisation, activez « Utiliser la position exacte ».';
+
+  @override
+  String get tradeNeedsBluetooth =>
+      'L\'échange a besoin des autorisations Bluetooth et appareils à proximité. Autorisez-les dans les réglages de l\'application.';
 }

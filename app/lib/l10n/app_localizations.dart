@@ -875,6 +875,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to collect'**
   String get tapToCollect;
+
+  /// No description provided for @tradeLocationOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Location to find birders nearby. Your position is never used or sent.'**
+  String get tradeLocationOff;
+
+  /// No description provided for @tradeNeedsLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading needs the location permission (Android requires it for Bluetooth searches; your position is never used). Allow it in the app\'s settings.'**
+  String get tradeNeedsLocation;
+
+  /// No description provided for @tradeNeedsPrecise.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading needs precise location: in the app\'s settings, under Location, turn on \"Use precise location\".'**
+  String get tradeNeedsPrecise;
+
+  /// No description provided for @tradeNeedsBluetooth.
+  ///
+  /// In en, this message translates to:
+  /// **'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.'**
+  String get tradeNeedsBluetooth;
 }
 
 class _AppLocalizationsDelegate

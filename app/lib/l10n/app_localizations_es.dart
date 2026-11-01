@@ -425,4 +425,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Toca para recoger';
+
+  @override
+  String get tradeLocationOff =>
+      'Activa la ubicación para encontrar pajareros cerca. Tu posición nunca se usa ni se envía.';
+
+  @override
+  String get tradeNeedsLocation =>
+      'Para intercambiar, la app necesita el permiso de ubicación (Android lo exige para buscar por Bluetooth; tu posición nunca se usa). Permítelo en los ajustes de la app.';
+
+  @override
+  String get tradeNeedsPrecise =>
+      'Para intercambiar, la app necesita la ubicación precisa: en los ajustes de la app, en Ubicación, activa «Usar ubicación precisa».';
+
+  @override
+  String get tradeNeedsBluetooth =>
+      'Para intercambiar, la app necesita los permisos de Bluetooth y dispositivos cercanos. Permítelos en los ajustes de la app.';
 }
