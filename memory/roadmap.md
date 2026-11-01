@@ -4,7 +4,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 ## Status — 2026-10-31
 - **App (`main`):** feature-complete for a first free Android release, now in **4 languages** (EN, FR, DE, ES). Since 2026-10-30: world-map region picker, balance pass (Twitch booster every 15 min — 1 min in test builds —, Epic/Legendary odds lowered on Medium/Hard), 20 bundled birds, readable copies badge, Settings with accent-filled pills for region and language (like the chosen difficulty), release `INTERNET` permission fixed.
-- **Branch `barter`:** face-to-face card trades (Nearby Connections), kept up to date with `main` (merged after every change). **The S22 runs a profile build of `barter`.** Waiting for the two-phone test (second Android phone: APK by cable, file or wireless debugging), then merge into `main`.
+- **Trading merged into `main` (2026-11-01)** after the two-phone test (the user's S22 + a friend's phone, APK shared with Quick Share); `main` is again the only working branch.
 - **Pipeline / catalog:** published 2026-10-31: **1,713 species** (1,706 with a German name, 1,705 with a Spanish one), **1,212 regions** (1,159 GPS cells named "France · North"…, 40 countries, 13 bioregions) + 20 "coming soon" countries. A publish force-pushes ~800 MB in one go: needs a stable connection.
 - **Phone:** the user's collection was wiped 2026-10-30 to start fresh; their settings change often (they test too): read them before and after each session.
 - **Next:** the two-phone barter test; then "Next steps to release" A (series review, phone check) and B.
@@ -26,16 +26,19 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] German and Spanish (app, catalog names, privacy pages), 2026-10-31; German screens checked on the S22 (no overflow; theme names shrink to fit)
 - [x] **Deck rotation bug fixed** (2026-10-31): the deck froze on ~24 species; played songs now leave it, refill weighted; simulated 1,000 cards per difficulty: diversity as the ideal draw (see decisions.md)
 - [x] Settings polish (2026-10-31): language drop-down at half width; region and language as accent-filled pills like the chosen difficulty
-- [ ] **Barter (face-to-face trades)**, branch `barter` (2026-10-31): code done, installed; needs the user's review and a **two-phone test** (second Android phone with Play Services)
+- [x] **Barter (face-to-face trades)**: validated on two phones 2026-11-01 (after the Location-switch fix)
 - [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
 
 ### B — Close the 4a leftovers
-- [ ] **Merge `barter` into `main`** (face-to-face trades) once the two-phone test passes — until then `main` changes are merged into `barter` after each change, and the S22 runs `barter`
+- [x] **Merge `barter` into `main`** — done 2026-11-01
 - [ ] User check on the phone: app icon (home screen, themed icon) and the white-bird notification icon
 - [ ] Accessibility pass: TalkBack on every screen, largest font size
 - [x] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively) — **passed (user, 2026-11-01)**
 - [x] **Native proofreading of German and Spanish**: `app/lib/l10n/app_de.arb` / `app_es.arb`, `site-static/privacy-de.html` / `privacy-es.html` (legal text), the DE/ES store listings in `memory/store-listing.md` — **verified by the user (2026-11-01)**
 - [x] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish` — **nanodev009@gmail.com (2026-11-01)**
+
+- [ ] **Onboarding** (first launch): a short guided start — choosing the region (map / my position), the main settings (difficulty, seasonal / all birds, language, theme), and the main features (alarm → guess the bird → card; Twitch Zone; collection, series and rewards; face-to-face trading) — skippable, shown once
+- [ ] **GitHub README**: what the app is, screenshots, how it works (pipeline, catalog on GitHub Pages, data sources and licences), build instructions; placeholders for the app logo and the Play Store link
 
 ### C — Release build
 - [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
