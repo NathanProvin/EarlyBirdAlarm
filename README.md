@@ -1,4 +1,3 @@
-<!-- TODO: replace with the app logo (e.g. docs/logo.png, 512 × 512) -->
 <p align="center">
   <img src="docs/logo.png" alt="Early Bird Alarm logo" width="128" height="128">
 </p>
