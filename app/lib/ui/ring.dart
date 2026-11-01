@@ -310,24 +310,49 @@ class _GlassLabel extends StatelessWidget {
   final String name;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(radius - 4),
-    child: BackdropFilter(
-      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-        child: Text(
-          name,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.titleMedium
+        ?.copyWith(fontWeight: FontWeight.bold);
+    return LayoutBuilder(
+      builder: (context, box) {
+        // Names wrap between words, never inside one: when a single word is wider than
+        // the label ("Mediterranean"), the font shrinks until it fits.
+        final room = box.maxWidth - 24;
+        var widest = 0.0;
+        for (final word in name.split(' ')) {
+          final p = TextPainter(
+            text: TextSpan(text: word, style: style),
+            textDirection: TextDirection.ltr,
+            textScaler: MediaQuery.textScalerOf(context),
+          )..layout();
+          widest = max(widest, p.width);
+          p.dispose();
+        }
+        final size = style?.fontSize;
+        final fitted = widest > room && size != null
+            ? style!.copyWith(fontSize: size * room / widest)
+            : style;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius - 4),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              color: Theme.of(context).colorScheme.surface
+                  .withValues(alpha: 0.7),
+              child: Text(
+                name,
+                style: fitted,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 /// After the guess: a won card flips face up in place (with sparks of its rarity), a

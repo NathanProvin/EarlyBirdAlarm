@@ -190,39 +190,52 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   child: const _Round(icon: Icons.search),
                 ),
               ),
-              const Spacer(),
-              Flexible(
-                flex: 4,
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const TradeScreen(),
+              // Trade midway between the search and Series (equal gaps); both keep their
+              // natural size, and their labels shrink only if space runs out.
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox.shrink(),
+                    Flexible(
+                      child: TextButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const TradeScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.swap_horiz),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(l.trade),
+                        ),
+                      ),
                     ),
-                  ),
-                  icon: const Icon(Icons.swap_horiz),
-                  label: FittedBox(fit: BoxFit.scaleDown, child: Text(l.trade)),
-                ),
-              ),
-              const Spacer(),
-              Flexible(
-                flex: 4,
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const SeriesScreen(),
+                    Flexible(
+                      child: TextButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const SeriesScreen(),
+                          ),
+                        ),
+                        // A dot while a completed series or achievement waits to be collected.
+                        icon: Badge(
+                          isLabelVisible: store.anyClaimable,
+                          smallSize: 8,
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .primary,
+                          child: const Icon(
+                            Icons.collections_bookmark_outlined,
+                          ),
+                        ),
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(l.series),
+                        ),
+                      ),
                     ),
-                  ),
-                  // A dot while a completed series or achievement waits to be collected.
-                  icon: Badge(
-                    isLabelVisible: store.anyClaimable,
-                    smallSize: 8,
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: const Icon(Icons.collections_bookmark_outlined),
-                  ),
-                  label: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(l.series),
-                  ),
+                  ],
                 ),
               ),
             ],

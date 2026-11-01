@@ -169,22 +169,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ],
                   ),
                 ),
-                // Skip · page dots · Next / Let's go
+                // Page dots, then Skip and Next / Start (the dots on their own line: a
+                // large Next button covered the last one).
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: last
-                              ? null
-                              : TextButton(
-                                  onPressed: _finish,
-                                  child: Text(l.skip),
-                                ),
-                        ),
-                      ),
                       for (var i = 0; i < _pages; i++)
                         Container(
                           width: 8,
@@ -197,19 +188,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 : scheme.onSurface.withValues(alpha: 0.25),
                           ),
                         ),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: FilledButton(
-                            onPressed: last
-                                ? _finish
-                                : () => _pager.nextPage(
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeOut,
-                                  ),
-                            child: Text(last ? l.start : l.next),
-                          ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Row(
+                    children: [
+                      if (!last)
+                        TextButton(onPressed: _finish, child: Text(l.skip)),
+                      const Spacer(),
+                      FilledButton(
+                        // The theme's buttons are full width (Size.fromHeight): not here.
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(132, 56),
                         ),
+                        onPressed: last
+                            ? _finish
+                            : () => _pager.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                              ),
+                        child: Text(last ? l.start : l.next),
                       ),
                     ],
                   ),
