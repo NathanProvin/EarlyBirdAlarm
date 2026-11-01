@@ -286,8 +286,14 @@ class SettingsScreen extends StatelessWidget {
 class RegionPill extends StatelessWidget {
   const RegionPill({super.key});
 
+  // Listens itself: as a const child, a rebuild of the screen around it skips it.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: store,
+    builder: (context, _) => _pill(context),
+  );
+
+  Widget _pill(BuildContext context) {
     final l = AppLocalizations.of(context);
     return FilledButton(
       style: FilledButton.styleFrom(
@@ -317,8 +323,14 @@ class RegionPill extends StatelessWidget {
 class GameOptions extends StatelessWidget {
   const GameOptions({super.key});
 
+  // Listens itself: as a const child, a rebuild of the screen around it skips it.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: store,
+    builder: (context, _) => _options(context),
+  );
+
+  Widget _options(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     return Column(

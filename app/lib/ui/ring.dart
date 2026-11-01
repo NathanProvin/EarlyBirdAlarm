@@ -32,7 +32,7 @@ class RingScreen extends StatefulWidget {
   State<RingScreen> createState() => _RingScreenState();
 }
 
-enum _Mark { none, correct, wrong, faded }
+enum _Mark { none, picked, correct, wrong, faded }
 
 class _RingScreenState extends State<RingScreen> {
   late final Map<String, dynamic> _payload = _parsePayload(
@@ -218,9 +218,11 @@ class _RingScreenState extends State<RingScreen> {
   }
 }
 
-/// Expert: a field to type the bird's name, and the birds of the region whose name
-/// matches (in the app's language, English or Latin), to tap. After the guess only the
-/// guess and the answer stay, marked ✓ / ✕.
+/// Expert: a large field to type the bird's name, a third of the way down, and below it
+/// the birds of the region whose name matches (in the app's language, English or Latin).
+/// Made for a groggy morning: big text and targets. A tap closes the keyboard and marks
+/// the pick; the guess is made 0.7 s later, then marked like the photos (✓ pulse / ✕
+/// shake); only the pick and the answer stay.
 class _TypedGuess extends StatefulWidget {
   const _TypedGuess({
     required this.answer,
@@ -237,10 +239,29 @@ class _TypedGuess extends StatefulWidget {
 
 class _TypedGuessState extends State<_TypedGuess> {
   String _query = '';
+  Bird? _picked;
+
+  Future<void> _pick(Bird bird) async {
+    if (_picked != null) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    HapticFeedback.selectionClick();
+    setState(() => _picked = bird);
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    if (mounted) widget.onGuess(bird);
+  }
+
+  _Mark _markOf(Bird b) => switch (widget.tapped) {
+    null when _picked == null => _Mark.none,
+    null => b == _picked ? _Mark.picked : _Mark.faded,
+    _ when b == widget.answer => _Mark.correct,
+    _ => _Mark.wrong, // only the pick and the answer are shown
+  };
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final big = Theme.of(context).textTheme.headlineSmall;
     final tapped = widget.tapped;
     final q = plainText(_query.trim());
     final shown = tapped != null
@@ -253,42 +274,160 @@ class _TypedGuessState extends State<_TypedGuess> {
           ]..sort(
             (a, b) => a.nameIn(l.localeName).compareTo(b.nameIn(l.localeName)),
           ));
+    const none = OutlineInputBorder(borderSide: BorderSide.none);
     return Column(
       children: [
-        TextField(
-          autofocus: true,
-          enabled: tapped == null,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: l.typeTheBird,
-            prefixIcon: const Icon(Icons.search),
+        const Spacer(),
+        // The field: outlined in the accent, on paper grain.
+        Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: scheme.primary, width: 3),
           ),
-          onChanged: (v) => setState(() => _query = v),
+          child: CustomPaint(
+            painter: GrainPainter(scheme.onSurface, alpha: 0.1),
+            child: TextField(
+              autofocus: true,
+              enabled: tapped == null && _picked == null,
+              style: big,
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: l.typeTheBird,
+                filled: false,
+                border: none,
+                enabledBorder: none,
+                focusedBorder: none,
+                disabledBorder: none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 22,
+                ),
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Icon(Icons.search, size: 32),
+                ),
+              ),
+              onChanged: (v) => setState(() => _query = v),
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Expanded(
+          flex: 2,
           child: ListView(
+            padding: EdgeInsets.zero,
             children: [
               for (final b in shown)
-                ListTile(
-                  title: Text(
-                    b.nameIn(l.localeName),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  trailing: tapped == null
-                      ? null
-                      : Icon(
-                          b == widget.answer
-                              ? Icons.check_circle
-                              : Icons.cancel,
-                          color: b == widget.answer ? moss : brick,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: _Marked(
+                    mark: _markOf(b),
+                    child: Material(
+                      color: scheme.surfaceContainer,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(radius),
+                        side: BorderSide(color: scheme.outline),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(radius),
+                        onTap: tapped == null && _picked == null
+                            ? () => _pick(b)
+                            : null,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 14, 12, 14),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(b.nameIn(l.localeName), style: big),
+                              ),
+                              _MarkBadge(_markOf(b)),
+                            ],
+                          ),
                         ),
-                  onTap: tapped == null ? () => widget.onGuess(b) : null,
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// After a guess: a green (✓, a pulse) or red (✕, a shake) frame, the others fading;
+/// [_Mark.picked] frames the Expert pick in the accent while it's being checked.
+class _Marked extends StatelessWidget {
+  const _Marked({required this.mark, required this.child});
+  final _Mark mark;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (mark) {
+      _Mark.correct => moss,
+      _Mark.wrong => brick,
+      _Mark.picked => Theme.of(context).colorScheme.primary,
+      _ => Colors.transparent,
+    };
+    return AnimatedOpacity(
+      opacity: mark == _Mark.faded ? 0.15 : 1,
+      duration: const Duration(milliseconds: 300),
+      child: TweenAnimationBuilder<double>(
+        key: ValueKey(mark),
+        tween: Tween(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 600),
+        builder: (_, t, child) => switch (mark) {
+          _Mark.correct => Transform.scale(
+            scale: 1 + 0.06 * sin(pi * t),
+            child: child,
+          ),
+          _Mark.wrong => Transform.translate(
+            offset: Offset(12 * sin(t * pi * 6) * (1 - t), 0),
+            child: child,
+          ),
+          _ => child!,
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          foregroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(color: color, width: 6),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// The ✓ / ✕ badge of a guess, popping in; nothing before.
+class _MarkBadge extends StatelessWidget {
+  const _MarkBadge(this.mark);
+  final _Mark mark;
+
+  @override
+  Widget build(BuildContext context) {
+    if (mark != _Mark.correct && mark != _Mark.wrong) {
+      return const SizedBox.shrink();
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutBack,
+      builder: (_, s, child) => Transform.scale(scale: s, child: child),
+      child: CircleAvatar(
+        radius: 24,
+        backgroundColor: mark == _Mark.correct ? moss : brick,
+        child: Icon(
+          mark == _Mark.correct ? Icons.check : Icons.close,
+          color: paper,
+          size: 32,
+        ),
+      ),
     );
   }
 }
@@ -308,85 +447,34 @@ class _Choice extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final color = switch (mark) {
-      _Mark.correct => moss,
-      _Mark.wrong => brick,
-      _ => Colors.transparent,
-    };
-    final tile = Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(radius),
-          child: BirdPhoto(bird),
-        ),
-        Positioned(
-          left: 8,
-          right: 8,
-          bottom: 8,
-          child: Center(child: _GlassLabel(name)),
-        ),
-        if (mark == _Mark.correct || mark == _Mark.wrong)
-          Positioned(
-            top: 8,
-            right: 8,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOutBack,
-              builder: (_, s, child) => Transform.scale(scale: s, child: child),
-              child: CircleAvatar(
-                radius: 24,
-                backgroundColor: color,
-                child: Icon(
-                  mark == _Mark.correct ? Icons.check : Icons.close,
-                  color: paper,
-                  size: 32,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-    return Semantics(
-      button: true,
-      label: name,
-      excludeSemantics: true,
-      child: AnimatedOpacity(
-        opacity: mark == _Mark.faded ? 0.15 : 1,
-        duration: const Duration(milliseconds: 300),
-        child: TweenAnimationBuilder<double>(
-          key: ValueKey(mark),
-          tween: Tween(begin: 0, end: 1),
-          duration: const Duration(milliseconds: 600),
-          builder: (_, t, child) => switch (mark) {
-            _Mark.correct => Transform.scale(
-              scale: 1 + 0.06 * sin(pi * t),
-              child: child,
-            ),
-            _Mark.wrong => Transform.translate(
-              offset: Offset(12 * sin(t * pi * 6) * (1 - t), 0),
-              child: child,
-            ),
-            _ => child!,
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            foregroundDecoration: BoxDecoration(
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: name,
+    excludeSemantics: true,
+    child: _Marked(
+      mark: mark,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(radius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
               borderRadius: BorderRadius.circular(radius),
-              border: Border.all(color: color, width: 6),
+              child: BirdPhoto(bird),
             ),
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(radius),
-              child: tile,
+            Positioned(
+              left: 8,
+              right: 8,
+              bottom: 8,
+              child: Center(child: _GlassLabel(name)),
             ),
-          ),
+            Positioned(top: 8, right: 8, child: _MarkBadge(mark)),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// The bird's name in a frosted-glass box over its photo.

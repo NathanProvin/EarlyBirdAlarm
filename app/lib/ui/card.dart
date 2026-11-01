@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -212,7 +213,7 @@ class BirdCardView extends StatelessWidget {
 /// The background of a won card: card stock tinted with its rarity [color] and printed
 /// with the pattern of its rarity [level] (0 Common … 4 Legendary), all equally faint so
 /// the text reads as on plain paper: a guilloche (interlaced waves, as on a banknote) for
-/// Common and Uncommon, a wide diamond lattice for Rare, the soft shadow of foliage for
+/// Common and Uncommon, a coarse paper grain for Rare, the soft shadow of foliage for
 /// Epic, and a golden camouflage for Legendary.
 class _CardStock extends CustomPainter {
   const _CardStock(this.color, this.level);
@@ -231,7 +232,7 @@ class _CardStock extends CustomPainter {
       ..color = color.withValues(alpha: 0.12);
     switch (level) {
       case 2:
-        _lattice(canvas, size, line);
+        paintGrain(canvas, size, Color.lerp(color, ink, 0.5)!, alpha: 0.16);
       case 3:
         _foliage(canvas, size);
       case 4:
@@ -252,14 +253,6 @@ class _CardStock extends CustomPainter {
         }
         canvas.drawPath(path, line);
       }
-    }
-  }
-
-  void _lattice(Canvas canvas, Size size, Paint line) {
-    for (var d = -size.height; d < size.width; d += 18) {
-      canvas
-        ..drawLine(Offset(d, 0), Offset(d + size.height, size.height), line)
-        ..drawLine(Offset(d, size.height), Offset(d + size.height, 0), line);
     }
   }
 
@@ -321,6 +314,46 @@ class _CardStock extends CustomPainter {
   @override
   bool shouldRepaint(_CardStock oldDelegate) =>
       oldDelegate.color != color || oldDelegate.level != level;
+}
+
+/// Coarse paper grain: specks of three sizes, dark ([color]) and light, at a faint
+/// [alpha]; seeded, so every card (and field) has the same grain.
+void paintGrain(Canvas canvas, Size size, Color color, {double alpha = 0.12}) {
+  final r = Random(5);
+  final n = (size.width * size.height / 45).round();
+  for (final (width, tone, a) in [
+    (1.0, color, alpha),
+    (1.9, color, alpha * 0.7),
+    (1.4, Colors.white, alpha * 1.5),
+  ]) {
+    final points = Float32List(n ~/ 3 * 2);
+    for (var i = 0; i < points.length; i++) {
+      points[i] = r.nextDouble() * (i.isEven ? size.width : size.height);
+    }
+    canvas.drawRawPoints(
+      ui.PointMode.points,
+      points,
+      Paint()
+        ..color = tone.withValues(alpha: a)
+        ..strokeWidth = width
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+}
+
+/// A box filled with [paintGrain] (the Expert quiz's search field).
+class GrainPainter extends CustomPainter {
+  const GrainPainter(this.color, {this.alpha = 0.12});
+  final Color color;
+  final double alpha;
+
+  @override
+  void paint(Canvas canvas, Size size) =>
+      paintGrain(canvas, size, color, alpha: alpha);
+
+  @override
+  bool shouldRepaint(GrainPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.alpha != alpha;
 }
 
 TextStyle? _latin(TextTheme text) =>
@@ -491,21 +524,145 @@ class _RarityRow extends StatelessWidget {
         child: Row(
           children: [
             Expanded(child: Text(label, style: text)),
-            for (var i = 1; i <= 5; i++)
-              Icon(
-                stars >= i
-                    ? Icons.star
-                    : stars >= i - 0.5
-                    ? Icons.star_half
-                    : Icons.star_border,
-                size: 18,
-                color: color,
-              ),
+            _Stars(stars: stars, color: color),
           ],
         ),
       ),
     );
   }
+}
+
+/// The five stars; from 4 stars a glint: a light sweeping across them now and then and
+/// two faint twinkles; at 5 stars brighter, with three sparkles orbiting the row.
+class _Stars extends StatefulWidget {
+  const _Stars({required this.stars, required this.color});
+  final double stars;
+  final Color color;
+
+  @override
+  State<_Stars> createState() => _StarsState();
+}
+
+class _StarsState extends State<_Stars> with SingleTickerProviderStateMixin {
+  late final _glint = AnimationController(
+    vsync: this,
+    duration: Duration(milliseconds: widget.stars >= 5 ? 2600 : 3600),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.stars >= 4) _glint.repeat();
+  }
+
+  @override
+  void dispose() {
+    _glint.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 1; i <= 5; i++)
+          Icon(
+            widget.stars >= i
+                ? Icons.star
+                : widget.stars >= i - 0.5
+                ? Icons.star_half
+                : Icons.star_border,
+            size: 22,
+            color: widget.color,
+          ),
+      ],
+    );
+    if (widget.stars < 4) return row;
+    final strong = widget.stars >= 5;
+    return AnimatedBuilder(
+      animation: _glint,
+      builder: (context, child) {
+        // The sweep crosses the stars in the first 40 % of each cycle, then rests.
+        final x = (_glint.value / 0.4).clamp(0.0, 1.0) * 5 - 2.5;
+        return CustomPaint(
+          foregroundPainter: _Sparkles(_glint.value, strong, widget.color),
+          child: ShaderMask(
+            blendMode: BlendMode.srcATop,
+            shaderCallback: (rect) => LinearGradient(
+              begin: Alignment(x - 1, -1),
+              end: Alignment(x + 1, 1),
+              colors: [
+                Colors.transparent,
+                Colors.white.withValues(alpha: strong ? 0.75 : 0.45),
+                Colors.transparent,
+              ],
+              stops: const [0.4, 0.5, 0.6],
+            ).createShader(rect),
+            child: child,
+          ),
+        );
+      },
+      child: row,
+    );
+  }
+}
+
+/// Twinkles over the stars and, when [strong], sparkles orbiting the row; [t] 0-1.
+class _Sparkles extends CustomPainter {
+  const _Sparkles(this.t, this.strong, this.color);
+  final double t;
+  final bool strong;
+  final Color color;
+
+  // A four-pointed glint of half-size [r] at [c], faded by [a].
+  void _glint(Canvas canvas, Offset c, double r, double a) {
+    if (a <= 0) return;
+    final p = Paint()
+      ..color = Color.lerp(color, Colors.white, 0.7)!.withValues(alpha: a);
+    canvas.drawPath(
+      Path()
+        ..moveTo(c.dx, c.dy - r)
+        ..quadraticBezierTo(c.dx, c.dy, c.dx + r, c.dy)
+        ..quadraticBezierTo(c.dx, c.dy, c.dx, c.dy + r)
+        ..quadraticBezierTo(c.dx, c.dy, c.dx - r, c.dy)
+        ..quadraticBezierTo(c.dx, c.dy, c.dx, c.dy - r),
+      p,
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final star = size.width / 5;
+    // Twinkles above two stars, each a quick fade in and out at its own moment.
+    for (final (i, at) in [(1, 0.5), (3, 0.75)]) {
+      final f = 1 - ((t - at).abs() / 0.12);
+      _glint(
+        canvas,
+        Offset(star * (i + 0.8), size.height * 0.2),
+        strong ? 4.5 : 3.5,
+        (strong ? 0.95 : 0.6) * sin(pi * f.clamp(0, 1) / 2),
+      );
+    }
+    if (!strong) return;
+    final c = size.center(Offset.zero);
+    for (var k = 0; k < 3; k++) {
+      final a = 2 * pi * (t + k / 3);
+      _glint(
+        canvas,
+        c +
+            Offset(
+              cos(a) * (size.width / 2 + 3),
+              sin(a) * (size.height / 2 + 2),
+            ),
+        3,
+        0.55 + 0.35 * sin(a * 2),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Sparkles oldDelegate) => oldDelegate.t != t;
 }
 
 /// Grid cell: won and heard birds show the full card scaled down; undiscovered ones

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:early_bird/birds.dart';
@@ -14,6 +15,7 @@ import 'package:early_bird/ui/card.dart';
 import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
+import 'package:early_bird/ui/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -698,6 +700,44 @@ void main() {
     expect(nameMatches(sandpiper, 'hypo', 'en'), isTrue); // Latin
   });
 
+  testWidgets('rarity stars: 4 and 5 stars glint, without errors', (
+    tester,
+  ) async {
+    debugContentDir(Directory.systemTemp.createTempSync('eb_stars'));
+    for (final level in [8, 10]) {
+      final bird = Bird.fromJson(
+        {
+          'id': 'wallcreeper', 'latin': 'Tichodroma muraria', //
+          'en': 'Wallcreeper', 'fr': 'Tichodrome',
+          'order': 'o', 'family': 'f', 'photo': 'p', 'photoCredit': 'c',
+          'number': 1, 'recordings': [], 'stats': <String, dynamic>{},
+        },
+        {6: 'legendary'},
+        level,
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Center(
+            child: SizedBox(
+              width: 340,
+              child: BirdCardView(
+                bird: bird,
+                card: rollCard(bird, null, rarity: 'rare'),
+              ),
+            ),
+          ),
+        ),
+      );
+      for (var i = 0; i < 30; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(tester.takeException(), isNull);
+      expect(find.byIcon(Icons.star), findsNWidgets(level ~/ 2));
+    }
+  });
+
   testWidgets('onboarding: pages, Next, Skip marks it seen', (tester) async {
     SharedPreferences.setMockInitialValues({});
     store = await Store.load();
@@ -726,5 +766,32 @@ void main() {
     await tester.pumpAndSettle();
     expect(store.onboarded, isTrue);
     expect(find.text('open'), findsOneWidget); // back where it started
+  });
+
+  testWidgets('settings: a difficulty tap shows at once', (tester) async {
+    // The store set by the onboarding test above (it can be set only once).
+    store.difficulty = Difficulty.easy;
+    await tester.pump();
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const SettingsScreen(),
+      ),
+    );
+    Set<Difficulty> shown() => tester
+        .widget<SegmentedButton<Difficulty>>(
+          find.byType(SegmentedButton<Difficulty>),
+        )
+        .selected;
+    expect(shown(), {Difficulty.easy});
+    for (final (label, d) in [
+      ('Expert', Difficulty.expert),
+      ('Medium', Difficulty.medium),
+    ]) {
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+      expect(shown(), {d});
+    }
   });
 }
