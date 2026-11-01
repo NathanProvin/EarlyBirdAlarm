@@ -37,7 +37,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] **Native proofreading of German and Spanish**: `app/lib/l10n/app_de.arb` / `app_es.arb`, `site-static/privacy-de.html` / `privacy-es.html` (legal text), the DE/ES store listings in `memory/store-listing.md` — **verified by the user (2026-11-01)**
 - [x] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish` — **nanodev009@gmail.com (2026-11-01)**
 
-- [ ] **Onboarding** (first launch): a short guided start — choosing the region (map / my position), the main settings (difficulty, seasonal / all birds, language, theme), and the main features (alarm → guess the bird → card; Twitch Zone; collection, series and rewards; face-to-face trading) — skippable, shown once
+- [x] **Onboarding** (2026-11-01): 5 swipeable pages shown once on first launch (and from Settings → See the introduction again): welcome, region (the Settings pill → map), game options (the Settings difficulty / season controls), collection features (Twitch Zone, series rewards, trading), and a live Epic demo card to hold and tilt; Skip / Next / Let's go; the notification permission is asked after it
 - [ ] **GitHub README**: what the app is, screenshots, how it works (pipeline, catalog on GitHub Pages, data sources and licences), build instructions; placeholders for the app logo and the Play Store link
 
 ### C — Release build
