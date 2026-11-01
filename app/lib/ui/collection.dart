@@ -162,7 +162,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 onSelected: (v) => setState(() => _view = v),
                 child: const _Round(icon: Icons.expand_more),
               ),
-              const SizedBox(width: 6),
               _Menu<String?>(
                 value: _tier,
                 items: {
@@ -180,7 +179,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       : [rarityColor[_tier]!],
                 ),
               ),
-              const SizedBox(width: 6),
               Tooltip(
                 message: l.searchCollection,
                 child: InkWell(
@@ -193,26 +191,39 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 ),
               ),
               const Spacer(),
-              TextButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const TradeScreen()),
+              Flexible(
+                flex: 4,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const TradeScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.swap_horiz),
+                  label: FittedBox(fit: BoxFit.scaleDown, child: Text(l.trade)),
                 ),
-                icon: const Icon(Icons.swap_horiz),
-                label: Text(l.trade),
               ),
               const Spacer(),
-              TextButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const SeriesScreen()),
+              Flexible(
+                flex: 4,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SeriesScreen(),
+                    ),
+                  ),
+                  // A dot while a completed series or achievement waits to be collected.
+                  icon: Badge(
+                    isLabelVisible: store.anyClaimable,
+                    smallSize: 8,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    child: const Icon(Icons.collections_bookmark_outlined),
+                  ),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(l.series),
+                  ),
                 ),
-                // A dot while a completed series or achievement waits to be collected.
-                icon: Badge(
-                  isLabelVisible: store.anyClaimable,
-                  smallSize: 8,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.collections_bookmark_outlined),
-                ),
-                label: Text(l.series),
               ),
             ],
           ),
@@ -415,7 +426,7 @@ class _Round extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final ring = this.ring;
-    return Container(
+    final circle = Container(
       width: 40,
       height: 40,
       padding: const EdgeInsets.all(2.5),
@@ -434,6 +445,8 @@ class _Round extends StatelessWidget {
         child: Icon(icon, size: 22, color: scheme.onSurface),
       ),
     );
+    // A 40 dp circle in a 48 dp touch target (Android's minimum).
+    return SizedBox.square(dimension: 48, child: Center(child: circle));
   }
 }
 

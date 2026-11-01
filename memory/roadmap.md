@@ -32,7 +32,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 ### B — Close the 4a leftovers
 - [x] **Merge `barter` into `main`** — done 2026-11-01
 - [ ] User check on the phone: app icon (home screen, themed icon) and the white-bird notification icon
-- [ ] Accessibility pass: TalkBack on every screen, largest font size
+- [x] Accessibility pass (2026-11-01): `app/test/a11y_test.dart` checks 8 screens (Settings, Collection, Series, Credits, Twitch Zone, onboarding, alarm editor, card reveal) against Flutter's guidelines (48 dp touch targets, labelled tap targets, text contrast) and at 200 % font size. Fixed: the Collection's round buttons and the alarm editor's weekday buttons now have 48 dp touch targets (same 40 dp look), and the Trade / Series labels shrink to fit instead of overflowing. Not automated: the alarm quiz screen (needs the alarm plugin) and a real TalkBack run — worth one manual try on the phone
 - [x] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively) — **passed (user, 2026-11-01)**
 - [x] **Native proofreading of German and Spanish**: `app/lib/l10n/app_de.arb` / `app_es.arb`, `site-static/privacy-de.html` / `privacy-es.html` (legal text), the DE/ES store listings in `memory/store-listing.md` — **verified by the user (2026-11-01)**
 - [x] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish` — **nanodev009@gmail.com (2026-11-01)**

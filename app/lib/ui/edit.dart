@@ -79,7 +79,8 @@ class _EditScreenState extends State<EditScreen> {
       style: IconButton.styleFrom(
         fixedSize: const Size(40, 40),
         padding: EdgeInsets.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // 7 × 48 dp don't fit
+        // A 40 dp circle with Android's 48 dp touch target: 7 × 48 dp fit a phone's width.
+        tapTargetSize: MaterialTapTargetSize.padded,
         backgroundColor: on ? scheme.primary : null,
         foregroundColor: on ? scheme.onPrimary : scheme.onSurface,
         side: on ? null : BorderSide(color: scheme.onSurface),

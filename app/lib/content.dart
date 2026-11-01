@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui' show PlatformDispatcher;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +17,10 @@ const baseUrl = 'https://nathanprovin.github.io/EarlyBirdAlarm/v1/';
 const deckSize = 14;
 
 late Directory _root; // downloaded content, same layout as the site
+
+/// Tests only: where downloaded content would live (initContent sets it in the app).
+@visibleForTesting
+void debugContentDir(Directory dir) => _root = dir;
 Set<String> _bundled =
     {}; // files bundled in assets/content (the offline fallback birds)
 
