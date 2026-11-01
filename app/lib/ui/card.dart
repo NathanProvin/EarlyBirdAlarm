@@ -104,6 +104,8 @@ class BirdCardView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
+              if (bird.level case final level?)
+                _RarityRow(label: l.birdRarity, level: level, color: frame),
               for (final key in statKeys)
                 if (bird.stats.containsKey(
                   key,
@@ -459,6 +461,46 @@ class _StatRow extends StatelessWidget {
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Bird rarity": how rare the species is in the region, level 1-10 as 0.5-5 stars.
+class _RarityRow extends StatelessWidget {
+  const _RarityRow({
+    required this.label,
+    required this.level,
+    required this.color,
+  });
+  final String label;
+  final int level;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme.bodyMedium;
+    final stars = level.clamp(1, 10) / 2;
+    return Semantics(
+      label: '$label, $stars / 5',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Expanded(child: Text(label, style: text)),
+            for (var i = 1; i <= 5; i++)
+              Icon(
+                stars >= i
+                    ? Icons.star
+                    : stars >= i - 0.5
+                    ? Icons.star_half
+                    : Icons.star_border,
+                size: 18,
+                color: color,
+              ),
           ],
         ),
       ),

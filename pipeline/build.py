@@ -84,6 +84,26 @@ def tier(count, total):
     return "legendary" if count >= RARE_MIN else None
 
 
+# The "Bird rarity" stars on cards (2026-11-01): 10 levels, each tier split in two at about
+# the geometric middle of its share band (common at 3 %, legendary at 0.003 %), 1 = commonest.
+LEVEL_SHARES = [0.03, 0.01, 0.005, 0.0025, 0.0011, 0.0005, 0.00022, 0.0001, 0.00003]
+
+
+def level(count, total):
+    """1-10, finer than tier() and consistent with it: tier = TIERS[(level - 1) // 2]."""
+    for i, share in enumerate(LEVEL_SHARES[:8]):
+        if count >= share * total:
+            return i + 1
+    if count < RARE_MIN:
+        return None
+    return 9 if count >= LEVEL_SHARES[8] * total else 10
+
+
+for _n in range(0, 200001, 7):  # self-check: the levels refine the tiers
+    _l = level(_n, 10**6)
+    assert (_l and TIERS[(_l - 1) // 2]) == (tier(_n, 10**6) or None), _n
+
+
 # --- Card stats: weight, wingspan, length, flight distance, each as [mean, standard deviation] ---
 
 NUM = r"(\d+(?:\.\d+)?)(?:\s*(?:–|-|—|to)\s*(\d+(?:\.\d+)?))?\s*(cm|mm|m)\b"
@@ -341,6 +361,22 @@ def presence(region_filter):
         for key, n in counts.items():
             if t := tier(n, total):
                 out.setdefault(key, {})[month] = t
+    return out
+
+
+def levels(region_filter):
+    """{gbif species key: rarity level 1-10 of its commonest month} for a region (see level)."""
+    base = {"classKey": 212, "limit": 0, "occurrenceStatus": "PRESENT", "hasGeospatialIssue": "false",
+            **region_filter}
+    out = {}
+    for month in range(1, 13):  # the same requests as presence(): from the cache
+        r = get("https://api.gbif.org/v1/occurrence/search",
+                {**base, "month": month, "facet": "speciesKey", "facetLimit": 1500})
+        counts = {int(c["name"]): c["count"] for c in r["facets"][0]["counts"]}
+        total = sum(counts.values())
+        for key, n in counts.items():
+            if lv := level(n, total):
+                out[key] = min(out.get(key, 10), lv)
     return out
 
 
@@ -841,13 +877,15 @@ def main():
 
     print("6/6 site and report")
     region_birds = {}  # region id -> {bird id: {month: tier}}, duplicates merged to the commoner tier
-    for rid, *_ in regions:
+    for rid, _, _, flt in regions:
         rb = region_birds[rid] = {}
+        lv = levels(flt)
         for key, months in pres[rid].items():
             if id_of.get(key) in keep:
                 m = rb.setdefault(id_of[key], {})
                 for month, t in months.items():
                     m[str(month)] = min(m.get(str(month), "legendary"), t, key=TIERS.index)
+                m["r"] = min(m.get("r", 10), lv[key])  # rarity level, see level()
     (OUT / "regions").mkdir(exist_ok=True)
     for f in (OUT / "regions").iterdir():
         f.unlink()
@@ -917,7 +955,7 @@ def write_report(birds, dropped, regions, region_birds):
              f"## Regions ({len(regions)})", "",
              "| Region | Name | Birds | " + " | ".join(TIERS) + " |", "|---|---|---|" + "---|" * len(TIERS)]
     for rid, region_kind, names, _ in regions:
-        best = [min(m.values(), key=TIERS.index) for m in region_birds[rid].values()]
+        best = [min((t for k, t in m.items() if k != "r"), key=TIERS.index) for m in region_birds[rid].values()]
         lines.append(f"| {rid} | {(names or {}).get('en') or region_kind} | {len(best)} | "
                      + " | ".join(str(best.count(t)) for t in TIERS) + " |")
     all_recs = [r["kind"] for b in birds for r in b["recordings"]]

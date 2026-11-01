@@ -270,6 +270,48 @@ abstract class AppLocalizations {
   /// **'Weight'**
   String get weight;
 
+  /// No description provided for @birdRarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Bird rarity'**
+  String get birdRarity;
+
+  /// No description provided for @wikipedia.
+  ///
+  /// In en, this message translates to:
+  /// **'Wikipedia'**
+  String get wikipedia;
+
+  /// No description provided for @merlin.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Merlin'**
+  String get merlin;
+
+  /// No description provided for @expert.
+  ///
+  /// In en, this message translates to:
+  /// **'Expert'**
+  String get expert;
+
+  /// No description provided for @expertInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'All birds, all vocalizations: type the name, no choices'**
+  String get expertInfo;
+
+  /// No description provided for @typeTheBird.
+  ///
+  /// In en, this message translates to:
+  /// **'Type the bird\'s name'**
+  String get typeTheBird;
+
+  /// No description provided for @sounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Sounds'**
+  String get sounds;
+
   /// No description provided for @wingspan.
   ///
   /// In en, this message translates to:

@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'content.dart';
 import 'l10n/app_localizations.dart';
+import 'sfx.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
@@ -288,7 +289,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
           bottomNavigationBar: _BottomBar(
             tab: _tab,
-            onSelect: (i) => setState(() => _tab = i),
+            onSelect: (i) {
+              if (i != _tab) Sfx.tap();
+              setState(() => _tab = i);
+            },
             ready: store.twitchReady(DateTime.now()),
           ),
           // The pages run under the glass bar; their lists pad their ends by

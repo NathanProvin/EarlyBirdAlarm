@@ -9,6 +9,7 @@ import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../series.dart';
+import '../sfx.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
@@ -110,7 +111,10 @@ class _SeriesScreenState extends State<SeriesScreen> {
           children: [
             Expanded(
               child: PageView(
-                onPageChanged: (p) => setState(() => _page = p),
+                onPageChanged: (p) {
+                  Sfx.swipe();
+                  setState(() => _page = p);
+                },
                 children: [
                   for (final page in pages)
                     LayoutBuilder(

@@ -98,6 +98,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get weight => 'Poids';
 
   @override
+  String get birdRarity => 'Rareté';
+
+  @override
+  String get wikipedia => 'Wikipédia';
+
+  @override
+  String get merlin => 'Ouvrir Merlin';
+
+  @override
+  String get expert => 'Expert';
+
+  @override
+  String get expertInfo =>
+      'Tous les oiseaux, tous les sons : tapez le nom, sans choix';
+
+  @override
+  String get typeTheBird => 'Tapez le nom de l\'oiseau';
+
+  @override
+  String get sounds => 'Sons';
+
+  @override
   String get wingspan => 'Envergure';
 
   @override

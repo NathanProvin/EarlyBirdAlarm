@@ -149,26 +149,36 @@ class _RingScreenState extends State<RingScreen> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
             child: Column(
               children: [
-                // 2×2 photos: easier to read than text when half asleep.
-                for (final row in [_choices.take(2), _choices.skip(2)])
+                // Expert: no choices, the name is typed.
+                if (store.difficulty == Difficulty.expert)
                   Expanded(
-                    child: Row(
-                      children: [
-                        for (final bird in row)
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: _Choice(
-                                bird: bird,
-                                name: bird.nameIn(l.localeName),
-                                mark: _markOf(bird),
-                                onTap: () => _guess(bird),
+                    child: _TypedGuess(
+                      answer: _bird,
+                      tapped: _tapped,
+                      onGuess: _guess,
+                    ),
+                  )
+                else
+                  // 2×2 photos: easier to read than text when half asleep.
+                  for (final row in [_choices.take(2), _choices.skip(2)])
+                    Expanded(
+                      child: Row(
+                        children: [
+                          for (final bird in row)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: _Choice(
+                                  bird: bird,
+                                  name: bird.nameIn(l.localeName),
+                                  mark: _markOf(bird),
+                                  onTap: () => _guess(bird),
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -204,6 +214,81 @@ class _RingScreenState extends State<RingScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Expert: a field to type the bird's name, and the birds of the region whose name
+/// matches (in the app's language, English or Latin), to tap. After the guess only the
+/// guess and the answer stay, marked ✓ / ✕.
+class _TypedGuess extends StatefulWidget {
+  const _TypedGuess({
+    required this.answer,
+    required this.tapped,
+    required this.onGuess,
+  });
+  final Bird answer;
+  final Bird? tapped;
+  final ValueChanged<Bird> onGuess;
+
+  @override
+  State<_TypedGuess> createState() => _TypedGuessState();
+}
+
+class _TypedGuessState extends State<_TypedGuess> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final tapped = widget.tapped;
+    final q = plainText(_query.trim());
+    final shown = tapped != null
+        ? {tapped, widget.answer}.toList()
+        : q.isEmpty
+        ? <Bird>[]
+        : ([
+            for (final b in birds)
+              if (nameMatches(b, q, l.localeName)) b,
+          ]..sort(
+            (a, b) => a.nameIn(l.localeName).compareTo(b.nameIn(l.localeName)),
+          ));
+    return Column(
+      children: [
+        TextField(
+          autofocus: true,
+          enabled: tapped == null,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            hintText: l.typeTheBird,
+            prefixIcon: const Icon(Icons.search),
+          ),
+          onChanged: (v) => setState(() => _query = v),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: ListView(
+            children: [
+              for (final b in shown)
+                ListTile(
+                  title: Text(
+                    b.nameIn(l.localeName),
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  trailing: tapped == null
+                      ? null
+                      : Icon(
+                          b == widget.answer
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color: b == widget.answer ? moss : brick,
+                        ),
+                  onTap: tapped == null ? () => widget.onGuess(b) : null,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

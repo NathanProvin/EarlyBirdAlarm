@@ -2,14 +2,17 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../birds.dart';
 import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../sfx.dart';
 import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
@@ -300,6 +303,14 @@ String plainText(String s) {
   return out.toString();
 }
 
+/// Whether [bird] matches the typed [query] (already [plainText]): by its name in
+/// [locale], in English or in Latin. Shared by the collection search and the Expert quiz.
+bool nameMatches(Bird bird, String query, String locale) => [
+  bird.nameIn(locale),
+  bird.name,
+  bird.latin,
+].any((n) => plainText(n).contains(query));
+
 /// Search the species of the collection by name, in the app's language, English or Latin;
 /// the matches update as the user types. A match opens its best card.
 class _CollectionSearch extends SearchDelegate<void> {
@@ -342,12 +353,7 @@ class _CollectionSearch extends SearchDelegate<void> {
         [
           for (final MapEntry(key: id, value: card) in bestCards(cards).entries)
             if (birdById(id) case final b?)
-              if (q.isEmpty ||
-                  [
-                    b.nameIn(l.localeName),
-                    b.name,
-                    b.latin,
-                  ].any((n) => plainText(n).contains(q)))
+              if (q.isEmpty || nameMatches(b, q, l.localeName))
                 (b, card as CardData?),
         ]..sort(
           (a, b) =>
@@ -478,6 +484,7 @@ class CardPager extends StatelessWidget {
       appBar: AppBar(),
       body: PageView.builder(
         controller: PageController(initialPage: initial),
+        onPageChanged: (_) => Sfx.swipe(),
         itemCount: entries.length,
         itemBuilder: (_, i) {
           final (bird, card) = entries[i];
@@ -545,8 +552,31 @@ class CardDetail extends StatefulWidget {
   State<CardDetail> createState() => _CardDetailState();
 }
 
+const _apps = MethodChannel('early_bird/apps');
+const _merlin = 'com.labs.merlinbirdid.app';
+
 class _CardDetailState extends State<CardDetail> {
   final _boundary = GlobalKey();
+  // Merlin has no public link to a species: its button just opens the app, if installed.
+  bool _hasMerlin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _apps.invokeMethod<bool>('installed', _merlin).then((v) {
+      if (mounted && v == true) setState(() => _hasMerlin = true);
+    }, onError: (_) {});
+  }
+
+  /// The species' Wikipedia article in the app's language, found by its Latin name ("go"
+  /// opens the article directly when the name is a title or redirect).
+  void _wikipedia(String lang) => launchUrl(
+    Uri.https('$lang.wikipedia.org', '/w/index.php', {
+      'search': widget.bird.latin,
+      'go': 'Go',
+    }),
+    mode: LaunchMode.externalApplication,
+  );
 
   Future<void> _share(String name) async {
     final boundary =
@@ -644,6 +674,20 @@ class _CardDetailState extends State<CardDetail> {
               tooltip: l.credits,
               onPressed: () => _credits(recording),
             ),
+            // In the collection (not on the reveal, which has Close instead).
+            if (onClose == null) ...[
+              RoundButton(
+                icon: Icons.menu_book_outlined,
+                tooltip: l.wikipedia,
+                onPressed: () => _wikipedia(l.localeName.split('_').first),
+              ),
+              if (_hasMerlin)
+                RoundButton(
+                  icon: Icons.open_in_new,
+                  tooltip: l.merlin,
+                  onPressed: () => _apps.invokeMethod<bool>('open', _merlin),
+                ),
+            ],
             if (onClose != null)
               RoundButton(
                 icon: Icons.close,

@@ -1,6 +1,7 @@
 import 'dart:math';
 
-enum Difficulty { easy, medium, hard }
+// Expert (2026-11-01) is last: the saved difficulty is the index.
+enum Difficulty { easy, medium, hard, expert }
 
 /// Rarity tiers, most common first.
 const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
@@ -19,6 +20,7 @@ const _allowed = {
   Difficulty.easy: {'common', 'uncommon'},
   Difficulty.medium: {'common', 'uncommon', 'rare'},
   Difficulty.hard: {'common', 'uncommon', 'rare', 'epic', 'legendary'},
+  Difficulty.expert: {'common', 'uncommon', 'rare', 'epic', 'legendary'},
 };
 
 /// Step 2, the card won: its rarity, drawn independently of the bird (decided
@@ -30,7 +32,12 @@ const rarityDecay = {
   Difficulty.easy: 0.25, // 75 / 19 / 4.7 / 1.2 / 0 %
   Difficulty.medium: 0.35, // 65 / 23 / 8.0 / 2.8 / 1.0 %
   Difficulty.hard: 0.5, // 52 / 26 / 13 / 6.5 / 3.2 % (each step twice as rare)
+  Difficulty.expert:
+      0.5, // as Hard, with the Epic and Legendary odds × [expertBoost]
 };
+
+/// Expert types the name without choices: 20 % more Epic and Legendary cards than Hard.
+const expertBoost = 1.2;
 
 /// Relative odds of each rarity by difficulty, from [rarityDecay] (not normalized).
 final cardOdds = {
@@ -39,7 +46,10 @@ final cardOdds = {
       for (final (k, t) in tiers.indexed)
         t: d == Difficulty.easy && t == 'legendary'
             ? 0.0
-            : pow(r, k).toDouble(),
+            : pow(r, k) *
+                  (d == Difficulty.expert && k >= tiers.indexOf('epic')
+                      ? expertBoost
+                      : 1.0),
     },
 };
 
@@ -77,6 +87,7 @@ const _kinds = {
   Difficulty.easy: {'song'},
   Difficulty.medium: {'song', 'call'},
   Difficulty.hard: {'song', 'call', 'alarm'},
+  Difficulty.expert: {'song', 'call', 'alarm'},
 };
 
 /// Card stats, in card order.
@@ -106,7 +117,7 @@ String localName(Map<String, dynamic> j, String locale) =>
 
 class Bird {
   /// A species from species.json, with its [months] in the current region.
-  Bird.fromJson(Map<String, dynamic> j, [this.months = const {}])
+  Bird.fromJson(Map<String, dynamic> j, [this.months = const {}, this.level])
     : id = j['id'] as String,
       latin = j['latin'] as String,
       name = j['en'] as String,
@@ -139,6 +150,9 @@ class Bird {
   final Map<String, ({double mean, double sd})> stats; // missing = unknown
   final Map<int, String>
   months; // month 1-12 -> tier in the region; absent = not around
+  /// How rare the species is in the region, 1 (commonest) to 10, from the share of its
+  /// records in its commonest month (pipeline level()); null when unknown.
+  final int? level;
 
   String nameIn(String locale) => localName(names, locale);
 
@@ -220,7 +234,7 @@ List<Bird> choicesFor(
   final groups = switch (difficulty) {
     Difficulty.easy => [(Bird b) => !sameOrder(b)],
     Difficulty.medium => [sameOrder],
-    Difficulty.hard => [sameFamily, sameOrder],
+    Difficulty.hard || Difficulty.expert => [sameFamily, sameOrder],
   };
   final wrong = <Bird>[];
   for (final g in [...groups, (Bird _) => true]) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../birds.dart';
+import '../sfx.dart';
 import 'theme.dart';
 
 /// The app icon (half-sun on the horizon, perched bird), drawn from the shapes of
@@ -312,6 +313,7 @@ class _BoosterPileState extends State<BoosterPile>
     // The quiz starts fading in while the strip is still flying off.
     await Future<void>.delayed(const Duration(milliseconds: 120));
     HapticFeedback.lightImpact();
+    Sfx.swipe(); // the strip tearing
     await Future<void>.delayed(const Duration(milliseconds: 30));
     widget.onTorn();
     await flown;
@@ -642,6 +644,7 @@ class _CardFlipState extends State<CardFlip>
   late final _haptics = <(double, Future<void> Function())>[
     (0, HapticFeedback.selectionClick),
     (275, HapticFeedback.heavyImpact),
+    (275, Sfx.reveal), // face up
     for (var i = 0; i <= _level; i++)
       (480.0 + 110 * i, HapticFeedback.lightImpact),
     if (_level == 4) (900, HapticFeedback.mediumImpact), // the Legendary sheen

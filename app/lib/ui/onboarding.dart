@@ -4,6 +4,7 @@ import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../sfx.dart';
 import 'bird_icon.dart';
 import 'booster.dart';
 import 'card.dart';
@@ -67,7 +68,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Expanded(
                   child: PageView(
                     controller: _pager,
-                    onPageChanged: (p) => setState(() => _page = p),
+                    onPageChanged: (p) {
+                      Sfx.swipe();
+                      setState(() => _page = p);
+                    },
                     children: [
                       _Page(
                         top: SizedBox.square(

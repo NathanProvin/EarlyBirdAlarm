@@ -98,10 +98,14 @@ Future<void> initContent(String? region) async {
     birds = [
       for (final MapEntry(:key, :value) in months.entries)
         if (byId[key] case final j?)
-          Bird.fromJson(j, {
-            for (final m in (value as Map<String, dynamic>).entries)
-              int.parse(m.key): m.value as String,
-          }),
+          Bird.fromJson(
+            j,
+            {
+              for (final m in (value as Map<String, dynamic>).entries)
+                if (m.key != 'r') int.parse(m.key): m.value as String,
+            },
+            value['r'] as int?, // rarity level, since 2026-11-01
+          ),
     ];
   } else {
     // shortcut: offline before any region download, the fallback birds of the user's
