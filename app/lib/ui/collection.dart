@@ -303,13 +303,13 @@ String plainText(String s) {
   return out.toString();
 }
 
-/// Whether [bird] matches the typed [query] (already [plainText]): by its name in
-/// [locale], in English or in Latin. Shared by the collection search and the Expert quiz.
-bool nameMatches(Bird bird, String query, String locale) => [
-  bird.nameIn(locale),
-  bird.name,
-  bird.latin,
-].any((n) => plainText(n).contains(query));
+/// Whether [bird] matches the typed [query] (already [plainText]): a word of its name in
+/// [locale], in English or in Latin starts with it ("tit" finds Coal Tit, not Actitis).
+/// Shared by the collection search and the Expert quiz.
+bool nameMatches(Bird bird, String query, String locale) =>
+    [bird.nameIn(locale), bird.name, bird.latin].any(
+      (n) => RegExp('(^|[ \'-])${RegExp.escape(query)}').hasMatch(plainText(n)),
+    );
 
 /// Search the species of the collection by name, in the app's language, English or Latin;
 /// the matches update as the user types. A match opens its best card.

@@ -686,6 +686,20 @@ void main() {
     expect(plainText('Bécasseau'), 'becasseau');
   });
 
+  test('name search matches the start of a word', () {
+    final sandpiper = Bird.fromJson({
+      'id': 'actitis_hypoleucos', 'latin': 'Actitis hypoleucos', //
+      'en': 'Common Sandpiper', 'fr': 'Chevalier guignette',
+      'order': 'o', 'family': 'f', 'photo': 'p', 'photoCredit': 'c',
+      'number': 1, 'recordings': [], 'stats': <String, dynamic>{},
+    });
+    expect(nameMatches(sandpiper, 'tit', 'en'), isFalse); // inside "Actitis"
+    expect(nameMatches(sandpiper, 'sand', 'en'), isTrue);
+    expect(nameMatches(sandpiper, 'guig', 'fr'), isTrue);
+    expect(nameMatches(sandpiper, 'common s', 'en'), isTrue);
+    expect(nameMatches(sandpiper, 'hypo', 'en'), isTrue); // Latin
+  });
+
   testWidgets('onboarding: pages, Next, Skip marks it seen', (tester) async {
     SharedPreferences.setMockInitialValues({});
     store = await Store.load();
