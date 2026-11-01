@@ -38,7 +38,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish` — **nanodev009@gmail.com (2026-11-01)**
 
 - [x] **Onboarding** (2026-11-01): 5 swipeable pages shown once on first launch (and from Settings → See the introduction again): welcome, region (the Settings pill → map), game options (the Settings difficulty / season controls), collection features (Twitch Zone, series rewards, trading), and a live Epic demo card to hold and tilt; Skip / Next / Let's go; the notification permission is asked after it
-- [ ] **GitHub README**: what the app is, screenshots, how it works (pipeline, catalog on GitHub Pages, data sources and licences), build instructions; placeholders for the app logo and the Play Store link
+- [x] **GitHub README** (2026-11-01): features, how the catalog is built, repository layout, app and pipeline build commands, data licences, privacy, contact; placeholders to fill: logo (`docs/logo.png`), Play Store link (`PLAY_STORE_URL`), screenshots (`docs/screenshots/`), and the code licence (no LICENSE file yet — the user's choice)
 
 ### C — Release build
 - [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
