@@ -110,8 +110,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get expert => 'Expert';
 
   @override
-  String get expertInfo =>
-      'Tous les oiseaux, tous les sons : tapez le nom, sans choix';
+  String get expertInfo => 'Tous les oiseaux, tous les sons, sans choix';
 
   @override
   String get typeTheBird => 'Tapez le nom de l\'oiseau';

@@ -144,74 +144,99 @@ class _RingScreenState extends State<RingScreen> {
     return PopScope(
       canPop: widget.training != null,
       child: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-            child: Column(
-              children: [
-                // Expert: no choices, the name is typed.
-                if (store.difficulty == Difficulty.expert)
-                  Expanded(
-                    child: _TypedGuess(
-                      answer: _bird,
-                      tapped: _tapped,
-                      onGuess: _guess,
-                    ),
-                  )
-                else
-                  // 2×2 photos: easier to read than text when half asleep.
-                  for (final row in [_choices.take(2), _choices.skip(2)])
-                    Expanded(
-                      child: Row(
-                        children: [
-                          for (final bird in row)
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: _Choice(
-                                  bird: bird,
-                                  name: bird.nameIn(l.localeName),
-                                  mark: _markOf(bird),
-                                  onTap: () => _guess(bird),
+        body: Stack(
+          children: [
+            // Expert: the bird's photo, blurred past recognition under a veil of the
+            // theme: texture only, no hint.
+            if (store.difficulty == Difficulty.expert) ...[
+              Positioned.fill(
+                child: ImageFiltered(
+                  imageFilter: ui.ImageFilter.blur(
+                    sigmaX: 60,
+                    sigmaY: 60,
+                    tileMode: TileMode.mirror,
+                  ),
+                  child: BirdPhoto(_bird),
+                ),
+              ),
+              Positioned.fill(
+                child: ColoredBox(
+                  color: Theme.of(context).colorScheme.surface
+                      .withValues(alpha: 0.55),
+                ),
+              ),
+            ],
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                child: Column(
+                  children: [
+                    // Expert: no choices, the name is typed.
+                    if (store.difficulty == Difficulty.expert)
+                      Expanded(
+                        child: _TypedGuess(
+                          answer: _bird,
+                          tapped: _tapped,
+                          onGuess: _guess,
+                        ),
+                      )
+                    else
+                      // 2×2 photos: easier to read than text when half asleep.
+                      for (final row in [_choices.take(2), _choices.skip(2)])
+                        Expanded(
+                          child: Row(
+                            children: [
+                              for (final bird in row)
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: _Choice(
+                                      bird: bird,
+                                      name: bird.nameIn(l.localeName),
+                                      mark: _markOf(bird),
+                                      onTap: () => _guess(bird),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 64,
-                  child: widget.training == null
-                      ? FilledButton.tonalIcon(
-                          onPressed: _snooze,
-                          icon: const Icon(Icons.snooze, size: 28),
-                          label: Text(l.snooze),
-                          style: button,
-                        )
-                      : StreamBuilder<bool>(
-                          stream: _player.playingStream,
-                          builder: (context, playing) => FilledButton.tonalIcon(
-                            onPressed: _tapped != null
-                                ? null
-                                : () => playing.data == true
-                                      ? _player.pause()
-                                      : _player.play(),
-                            icon: Icon(
-                              playing.data == true
-                                  ? Icons.pause
-                                  : Icons.play_arrow,
-                              size: 28,
-                            ),
-                            label: Text(l.listenAgain),
-                            style: button,
+                            ],
                           ),
                         ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 64,
+                      child: widget.training == null
+                          ? FilledButton.tonalIcon(
+                              onPressed: _snooze,
+                              icon: const Icon(Icons.snooze, size: 28),
+                              label: Text(l.snooze),
+                              style: button,
+                            )
+                          : StreamBuilder<bool>(
+                              stream: _player.playingStream,
+                              builder: (context, playing) =>
+                                  FilledButton.tonalIcon(
+                                    onPressed: _tapped != null
+                                        ? null
+                                        : () => playing.data == true
+                                              ? _player.pause()
+                                              : _player.play(),
+                                    icon: Icon(
+                                      playing.data == true
+                                          ? Icons.pause
+                                          : Icons.play_arrow,
+                                      size: 28,
+                                    ),
+                                    label: Text(l.listenAgain),
+                                    style: button,
+                                  ),
+                            ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -278,38 +303,40 @@ class _TypedGuessState extends State<_TypedGuess> {
     return Column(
       children: [
         const Spacer(),
-        // The field: outlined in the accent, on paper grain.
-        Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: scheme.primary, width: 3),
-          ),
-          child: CustomPaint(
-            painter: GrainPainter(scheme.onSurface, alpha: 0.1),
-            child: TextField(
-              autofocus: true,
-              enabled: tapped == null && _picked == null,
-              style: big,
-              textInputAction: TextInputAction.search,
-              decoration: InputDecoration(
-                hintText: l.typeTheBird,
-                filled: false,
-                border: none,
-                enabledBorder: none,
-                focusedBorder: none,
-                disabledBorder: none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 22,
-                ),
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.search, size: 32),
-                ),
+        // The field: frosted glass over the blurred background, outlined in the accent.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            child: Container(
+              decoration: BoxDecoration(
+                color: scheme.surface.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: scheme.primary, width: 3),
               ),
-              onChanged: (v) => setState(() => _query = v),
+              child: TextField(
+                autofocus: true,
+                enabled: tapped == null && _picked == null,
+                style: big,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: l.typeTheBird,
+                  filled: false,
+                  border: none,
+                  enabledBorder: none,
+                  focusedBorder: none,
+                  disabledBorder: none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 22,
+                  ),
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Icon(Icons.search, size: 32),
+                  ),
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
             ),
           ),
         ),
@@ -324,8 +351,9 @@ class _TypedGuessState extends State<_TypedGuess> {
                   padding: const EdgeInsets.symmetric(vertical: 5),
                   child: _Marked(
                     mark: _markOf(b),
+                    width: 3,
                     child: Material(
-                      color: scheme.surfaceContainer,
+                      color: scheme.surfaceContainer.withValues(alpha: 0.8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(radius),
                         side: BorderSide(color: scheme.outline),
@@ -361,9 +389,10 @@ class _TypedGuessState extends State<_TypedGuess> {
 /// After a guess: a green (✓, a pulse) or red (✕, a shake) frame, the others fading;
 /// [_Mark.picked] frames the Expert pick in the accent while it's being checked.
 class _Marked extends StatelessWidget {
-  const _Marked({required this.mark, required this.child});
+  const _Marked({required this.mark, required this.child, this.width = 6});
   final _Mark mark;
   final Widget child;
+  final double width; // of the frame
 
   @override
   Widget build(BuildContext context) {
@@ -395,7 +424,7 @@ class _Marked extends StatelessWidget {
           duration: const Duration(milliseconds: 250),
           foregroundDecoration: BoxDecoration(
             borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: color, width: 6),
+            border: Border.all(color: color, width: width),
           ),
           child: child,
         ),

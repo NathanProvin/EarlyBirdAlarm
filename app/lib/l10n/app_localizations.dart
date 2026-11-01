@@ -297,7 +297,7 @@ abstract class AppLocalizations {
   /// No description provided for @expertInfo.
   ///
   /// In en, this message translates to:
-  /// **'All birds, all vocalizations: type the name, no choices'**
+  /// **'All birds, all vocalizations, no choices'**
   String get expertInfo;
 
   /// No description provided for @typeTheBird.

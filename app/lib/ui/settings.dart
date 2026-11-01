@@ -338,11 +338,21 @@ class GameOptions extends StatelessWidget {
       children: [
         SegmentedButton<Difficulty>(
           showSelectedIcon: false,
+          // Four labels in a row: less padding, and each shrinks rather than being cut.
+          style: SegmentedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+          ),
           segments: [
-            ButtonSegment(value: Difficulty.easy, label: Text(l.easy)),
-            ButtonSegment(value: Difficulty.medium, label: Text(l.medium)),
-            ButtonSegment(value: Difficulty.hard, label: Text(l.hard)),
-            ButtonSegment(value: Difficulty.expert, label: Text(l.expert)),
+            for (final (d, label) in [
+              (Difficulty.easy, l.easy),
+              (Difficulty.medium, l.medium),
+              (Difficulty.hard, l.hard),
+              (Difficulty.expert, l.expert),
+            ])
+              ButtonSegment(
+                value: d,
+                label: FittedBox(fit: BoxFit.scaleDown, child: Text(label)),
+              ),
           ],
           selected: {store.difficulty},
           onSelectionChanged: (s) => store.difficulty = s.single,

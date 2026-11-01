@@ -317,7 +317,7 @@ class _CardStock extends CustomPainter {
 }
 
 /// Coarse paper grain: specks of three sizes, dark ([color]) and light, at a faint
-/// [alpha]; seeded, so every card (and field) has the same grain.
+/// [alpha]; seeded, so every card has the same grain.
 void paintGrain(Canvas canvas, Size size, Color color, {double alpha = 0.12}) {
   final r = Random(5);
   final n = (size.width * size.height / 45).round();
@@ -339,21 +339,6 @@ void paintGrain(Canvas canvas, Size size, Color color, {double alpha = 0.12}) {
         ..strokeCap = StrokeCap.round,
     );
   }
-}
-
-/// A box filled with [paintGrain] (the Expert quiz's search field).
-class GrainPainter extends CustomPainter {
-  const GrainPainter(this.color, {this.alpha = 0.12});
-  final Color color;
-  final double alpha;
-
-  @override
-  void paint(Canvas canvas, Size size) =>
-      paintGrain(canvas, size, color, alpha: alpha);
-
-  @override
-  bool shouldRepaint(GrainPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.alpha != alpha;
 }
 
 TextStyle? _latin(TextTheme text) =>
