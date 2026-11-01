@@ -899,6 +899,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.'**
   String get tradeNeedsBluetooth;
+
+  /// No description provided for @searchCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your collection'**
+  String get searchCollection;
+
+  /// No description provided for @noSpeciesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No species found'**
+  String get noSpeciesFound;
 }
 
 class _AppLocalizationsDelegate

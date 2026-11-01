@@ -441,4 +441,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get tradeNeedsBluetooth =>
       'Zum Tauschen braucht die App die Berechtigungen für Bluetooth und Geräte in der Nähe. Erlaube sie in den App-Einstellungen.';
+
+  @override
+  String get searchCollection => 'Sammlung durchsuchen';
+
+  @override
+  String get noSpeciesFound => 'Keine Art gefunden';
 }

@@ -439,4 +439,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tradeNeedsBluetooth =>
       'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.';
+
+  @override
+  String get searchCollection => 'Search your collection';
+
+  @override
+  String get noSpeciesFound => 'No species found';
 }

@@ -132,5 +132,7 @@
   "tradeLocationOff": "Activa la ubicación para encontrar pajareros cerca. Tu posición nunca se usa ni se envía.",
   "tradeNeedsLocation": "Para intercambiar, la app necesita el permiso de ubicación (Android lo exige para buscar por Bluetooth; tu posición nunca se usa). Permítelo en los ajustes de la app.",
   "tradeNeedsPrecise": "Para intercambiar, la app necesita la ubicación precisa: en los ajustes de la app, en Ubicación, activa «Usar ubicación precisa».",
-  "tradeNeedsBluetooth": "Para intercambiar, la app necesita los permisos de Bluetooth y dispositivos cercanos. Permítelos en los ajustes de la app."
+  "tradeNeedsBluetooth": "Para intercambiar, la app necesita los permisos de Bluetooth y dispositivos cercanos. Permítelos en los ajustes de la app.",
+  "searchCollection": "Buscar en tu colección",
+  "noSpeciesFound": "Ninguna especie encontrada"
 }

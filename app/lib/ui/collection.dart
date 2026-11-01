@@ -150,11 +150,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          // The two filters on the left (their menus show the counts), Trade in the middle,
-          // Series on the right: the two sides share the width equally so Trade is centred.
+          // The two filters and the search on the left (the menus show the counts), Trade
+          // a little right of the middle (the left side is 6/11 of the free width), Series
+          // on the right.
           child: Row(
             children: [
               Expanded(
+                flex: 6,
                 child: Row(
                   children: [
                     _Menu<String>(
@@ -182,6 +184,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
                             : [rarityColor[_tier]!],
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    Tooltip(
+                      message: l.searchCollection,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => showSearch(
+                          context: context,
+                          delegate: _CollectionSearch(l.searchCollection),
+                        ),
+                        child: const _Round(icon: Icons.search),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -193,6 +207,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 label: Text(l.trade),
               ),
               Expanded(
+                flex: 5,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
@@ -255,6 +270,116 @@ class _CollectionScreenState extends State<CollectionScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Lower case without accents, to match what the user types: "eider a duvet" finds
+/// "Eider à duvet", "kohlmeise" finds "Kohlmeise".
+String plainText(String s) {
+  const from = 'àáâäãåçèéêëìíîïñòóôöõùúûüýÿœæß';
+  const to = 'aaaaaaceeeeiiiinooooouuuuyyoas';
+  final out = StringBuffer();
+  for (final c in s.toLowerCase().split('')) {
+    final i = from.indexOf(c);
+    out.write(i < 0 ? c : to[i]);
+  }
+  return out.toString();
+}
+
+/// Search the species of the collection by name, in the app's language, English or Latin;
+/// the matches update as the user types. A match opens its best card.
+class _CollectionSearch extends SearchDelegate<void> {
+  _CollectionSearch(String hint) : super(searchFieldLabel: hint);
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.copyWith(
+      inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+      ),
+    );
+  }
+
+  @override
+  List<Widget> buildActions(BuildContext context) => [
+    if (query.isNotEmpty)
+      IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+  ];
+
+  @override
+  Widget buildLeading(BuildContext context) => IconButton(
+    icon: const Icon(Icons.arrow_back),
+    tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+    onPressed: () => close(context, null),
+  );
+
+  @override
+  Widget buildResults(BuildContext context) => buildSuggestions(context);
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final cards = store.cards;
+    final q = plainText(query.trim());
+    final matches =
+        [
+          for (final MapEntry(key: id, value: card) in bestCards(cards).entries)
+            if (birdById(id) case final b?)
+              if (q.isEmpty ||
+                  [
+                    b.nameIn(l.localeName),
+                    b.name,
+                    b.latin,
+                  ].any((n) => plainText(n).contains(q)))
+                (b, card as CardData?),
+        ]..sort(
+          (a, b) =>
+              a.$1.nameIn(l.localeName).compareTo(b.$1.nameIn(l.localeName)),
+        );
+    if (matches.isEmpty) {
+      return Center(
+        child: Text(
+          l.noSpeciesFound,
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      );
+    }
+    return ListView.builder(
+      itemCount: matches.length,
+      itemBuilder: (context, i) {
+        final (bird, card) = matches[i];
+        final rarity = card?.rarity ?? bird.rarity;
+        final copies = cards.where((c) => c.birdId == bird.id).length;
+        return ListTile(
+          leading: SizedBox.square(
+            dimension: 48,
+            child: ClipOval(child: BirdPhoto(bird)),
+          ),
+          title: Text(bird.nameIn(l.localeName)),
+          subtitle: Text(
+            bird.latin,
+            style: const TextStyle(fontStyle: FontStyle.italic),
+          ),
+          trailing: Text(
+            copies > 1
+                ? '${rarityName(l, rarity)} ×$copies'
+                : rarityName(l, rarity),
+            style: TextStyle(
+              color: rarityColor[rarity],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => CardPager(entries: matches, initial: i),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -11,6 +11,7 @@ import 'package:early_bird/store.dart';
 import 'package:early_bird/trade.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
+import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/region.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -671,5 +672,12 @@ void main() {
     expect(localName(j, 'fr'), 'Merle noir');
     expect(localName(j, 'es'), 'Blackbird'); // no Spanish name yet
     expect(_b('robin').nameIn('es'), 'robin');
+  });
+
+  test('collection search ignores case and accents', () {
+    expect(plainText('Eider à duvet'), 'eider a duvet');
+    expect(plainText('Ánsar común'), 'ansar comun');
+    expect(plainText('Großtrappe'), 'grostrappe');
+    expect(plainText('Bécasseau'), 'becasseau');
   });
 }
