@@ -149,36 +149,42 @@ class _CollectionScreenState extends State<CollectionScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          // The two filters on the left (their menus show the counts), Trade in the middle,
+          // Series on the right: the two sides share the width equally so Trade is centred.
           child: Row(
             children: [
-              // The two filters on the left (their menus show the counts), then Trade and Series.
-              _Menu<String>(
-                value: _view,
-                items: views,
-                tooltip: l.viewMenu,
-                onSelected: (v) => setState(() => _view = v),
-                child: const _Round(icon: Icons.expand_more),
-              ),
-              const SizedBox(width: 6),
-              _Menu<String?>(
-                value: _tier,
-                items: {
-                  null: l.allRarities,
-                  for (final t in tiers) t: rarityName(l, t),
-                },
-                colors: rarityColor,
-                tooltip: l.rarityMenu,
-                onSelected: (t) => setState(() => _tier = t),
-                // Every rarity colour around it; the chosen one alone while filtering.
-                child: _Round(
-                  icon: Icons.arrow_drop_down,
-                  ring: _tier == null
-                      ? [for (final t in tiers) rarityColor[t]!]
-                      : [rarityColor[_tier]!],
+              Expanded(
+                child: Row(
+                  children: [
+                    _Menu<String>(
+                      value: _view,
+                      items: views,
+                      tooltip: l.viewMenu,
+                      onSelected: (v) => setState(() => _view = v),
+                      child: const _Round(icon: Icons.expand_more),
+                    ),
+                    const SizedBox(width: 6),
+                    _Menu<String?>(
+                      value: _tier,
+                      items: {
+                        null: l.allRarities,
+                        for (final t in tiers) t: rarityName(l, t),
+                      },
+                      colors: rarityColor,
+                      tooltip: l.rarityMenu,
+                      onSelected: (t) => setState(() => _tier = t),
+                      // Every rarity colour around it; the chosen one alone while filtering.
+                      child: _Round(
+                        icon: Icons.arrow_drop_down,
+                        ring: _tier == null
+                            ? [for (final t in tiers) rarityColor[t]!]
+                            : [rarityColor[_tier]!],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
               TextButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => const TradeScreen()),
@@ -186,18 +192,25 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 icon: const Icon(Icons.swap_horiz),
                 label: Text(l.trade),
               ),
-              TextButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const SeriesScreen()),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const SeriesScreen(),
+                      ),
+                    ),
+                    // A dot while a completed series or achievement waits to be collected.
+                    icon: Badge(
+                      isLabelVisible: store.anyClaimable,
+                      smallSize: 8,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      child: const Icon(Icons.collections_bookmark_outlined),
+                    ),
+                    label: Text(l.series),
+                  ),
                 ),
-                // A dot while a completed series or achievement waits to be collected.
-                icon: Badge(
-                  isLabelVisible: store.anyClaimable,
-                  smallSize: 8,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.collections_bookmark_outlined),
-                ),
-                label: Text(l.series),
               ),
             ],
           ),
