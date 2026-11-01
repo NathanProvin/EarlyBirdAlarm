@@ -653,7 +653,7 @@ def build_series():
     write_json(FALLBACK / "series.json", out)
 
 
-CONTACT_EMAIL = None  # public contact for the privacy policy; until set, the GitHub issues page
+CONTACT_EMAIL = "nanodev009@gmail.com"  # public contact for the privacy policy (else the GitHub issues page)
 PAGES = CACHE / "pages"
 PAGES_REPO = "https://github.com/NathanProvin/EarlyBirdAlarm.git"
 
