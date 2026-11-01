@@ -76,6 +76,10 @@ void main() {
     'twitch': () => const Scaffold(body: TwitchScreen()),
     'onboarding': () => const OnboardingScreen(),
     'alarm editor': () => const EditScreen(),
+    'card pager': () => CardPager(
+      entries: [for (final c in store.cards) (birdById(c.birdId)!, c)],
+      initial: 0,
+    ),
     'card reveal': () => RevealScreen(
       bird: birds.first,
       card: store.cards.first,
@@ -105,7 +109,9 @@ void main() {
     );
     // Some screens animate forever (badges, timers): pump a few frames, not settle.
     for (var i = 0; i < 20; i++) {
-      await tester.pump(const Duration(milliseconds: 100)); // timers up to 2 s run out
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // timers up to 2 s run out
     }
   }
 
@@ -122,6 +128,32 @@ void main() {
     testWidgets('$name: no overflow at 200 % font size', (tester) async {
       await show(tester, build(), text: 2);
       expect(tester.takeException(), isNull);
+    });
+
+    // The 3-button navigation bar (48 dp, opaque) is drawn over the app edge to edge:
+    // scrolled to the end, no button may sit under it.
+    testWidgets('$name: buttons clear of the navigation bar', (tester) async {
+      tester.view.padding = const FakeViewPadding(bottom: 48 * 2.625);
+      await show(tester, build());
+      for (final s in find.byType(Scrollable).evaluate().toList()) {
+        if ((s.widget as Scrollable).axisDirection != AxisDirection.down)
+          continue;
+        await tester.drag(find.byWidget(s.widget), const Offset(0, -5000));
+        await tester.pump(const Duration(seconds: 1));
+      }
+      final bar = tester.view.physicalSize.height / 2.625 - 48;
+      final buttons = find.byWidgetPredicate(
+        (w) => w is ButtonStyleButton || w is IconButton || w is InkWell,
+      );
+      for (final e in buttons.evaluate()) {
+        final r = tester.getRect(find.byWidget(e.widget).first);
+        if (r.top >= bar + 48 || r.height == 0) continue; // off screen
+        expect(
+          r.bottom,
+          lessThanOrEqualTo(bar + 0.5),
+          reason: '${e.widget} $r',
+        );
+      }
     });
   }
 }

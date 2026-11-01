@@ -27,7 +27,12 @@ class CreditsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l.credits)),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           Text(l.creditsBody, style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 24),

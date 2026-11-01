@@ -95,11 +95,15 @@ class _SeriesScreenState extends State<SeriesScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
       // Back within the thumb's reach, bottom right.
-      floatingActionButton: FloatingActionButton.small(
-        elevation: 0,
-        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Icon(Icons.arrow_back),
+      // Lifted clear of the navigation bar, which the Scaffold doesn't do for it.
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        child: FloatingActionButton.small(
+          elevation: 0,
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Icon(Icons.arrow_back),
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -109,28 +113,34 @@ class _SeriesScreenState extends State<SeriesScreen> {
                 onPageChanged: (p) => setState(() => _page = p),
                 children: [
                   for (final page in pages)
-                    GridView.count(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.85,
-                      padding: const EdgeInsets.all(16),
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        for (final s in page)
-                          _Badge(
-                            s,
-                            name: seriesName(l, s),
-                            claimable: store.claimable(s),
-                            onTap: store.claimable(s)
-                                ? () => _collect(s)
-                                : s.birds.isEmpty
-                                ? null
-                                : () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => _SeriesCards(s),
+                    LayoutBuilder(
+                      // Three rows always fit, even above a 3-button navigation bar.
+                      builder: (context, box) => GridView.count(
+                        crossAxisCount: 2,
+                        childAspectRatio: max(
+                          0.85,
+                          (box.maxWidth - 32) / 2 / ((box.maxHeight - 32) / 3),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          for (final s in page)
+                            _Badge(
+                              s,
+                              name: seriesName(l, s),
+                              claimable: store.claimable(s),
+                              onTap: store.claimable(s)
+                                  ? () => _collect(s)
+                                  : s.birds.isEmpty
+                                  ? null
+                                  : () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) => _SeriesCards(s),
+                                      ),
                                     ),
-                                  ),
-                          ),
-                      ],
+                            ),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -362,7 +372,12 @@ class _Reward extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(),
     body: Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      padding: EdgeInsets.fromLTRB(
+        12,
+        0,
+        12,
+        12 + MediaQuery.paddingOf(context).bottom,
+      ),
       child: CardDetail(
         bird: birdById(card.birdId)!,
         card: card,
@@ -438,7 +453,12 @@ class _SeriesCards extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('${seriesName(l, s)}  ${s.owned}/${s.total}')),
       body: GridView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.fromLTRB(
+          12,
+          12,
+          12,
+          12 + MediaQuery.paddingOf(context).bottom,
+        ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 0.68,

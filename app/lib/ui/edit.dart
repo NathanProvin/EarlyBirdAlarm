@@ -104,7 +104,12 @@ class _EditScreenState extends State<EditScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + MediaQuery.paddingOf(context).bottom,
+        ),
         children: [
           TextButton(
             onPressed: _pickTime,

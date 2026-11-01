@@ -378,7 +378,7 @@ class _RegionScreenState extends State<RegionScreen>
                   ),
                   Positioned(
                     right: 16,
-                    bottom: 96,
+                    bottom: 96 + MediaQuery.paddingOf(context).bottom,
                     child: FloatingActionButton.small(
                       heroTag: null,
                       tooltip: l.useMyLocation,
@@ -392,7 +392,7 @@ class _RegionScreenState extends State<RegionScreen>
                   Positioned(
                     left: 16,
                     right: 16,
-                    bottom: 16,
+                    bottom: 16 + MediaQuery.paddingOf(context).bottom,
                     child: _SearchBar(
                       controller: _search,
                       focus: _searchFocus,

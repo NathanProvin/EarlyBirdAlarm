@@ -487,7 +487,13 @@ class CardPager extends StatelessWidget {
               l.tradedOn(DateFormat.MMMd(l.localeName).format(d)),
           ].join(' · ');
           return Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            // Clear of the navigation bar (3-button mode is 48 dp, opaque).
+            padding: EdgeInsets.fromLTRB(
+              12,
+              0,
+              12,
+              12 + MediaQuery.paddingOf(context).bottom,
+            ),
             child: CardDetail(
               bird: bird,
               card: card,
