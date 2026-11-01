@@ -447,4 +447,56 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noSpeciesFound => 'Keine Art gefunden';
+
+  @override
+  String get introWelcome =>
+      'Wach auf mit echtem Vogelgesang. Errate den Vogel unter 4 Fotos, um den Wecker auszuschalten, und gewinne seine Karte.';
+
+  @override
+  String get introRegionTitle => 'Deine Region';
+
+  @override
+  String get introRegion =>
+      'Deine Wecker spielen die Vögel, die je nach Jahreszeit um dich herum leben. Wähle deine Region auf der Karte oder nutze deinen Standort.';
+
+  @override
+  String get introGameTitle => 'Dein Spiel';
+
+  @override
+  String get introLater =>
+      'Sprache, Design und all das kannst du später in den Einstellungen ändern.';
+
+  @override
+  String get introCollectionTitle => 'Deine Sammlung';
+
+  @override
+  String get introTwitch =>
+      'Twitcher-Zone: alle 15 Minuten ein kostenloser Booster, um dein Gehör zu trainieren.';
+
+  @override
+  String get introSeries =>
+      'Serien und Erfolge: Schließe sie ab, um garantiert seltene Karten zu erhalten.';
+
+  @override
+  String get introTrade =>
+      'Tauschen: Triff andere Vogelbeobachter und tausche Karten von Person zu Person.';
+
+  @override
+  String get introExamineTitle => 'Betrachte deine Karten';
+
+  @override
+  String get introExamine =>
+      'Halte eine Karte und bewege den Finger: Sie neigt sich und fängt das Licht ein. Probier es aus!';
+
+  @override
+  String get next => 'Weiter';
+
+  @override
+  String get skip => 'Überspringen';
+
+  @override
+  String get letsGo => 'Los geht\'s!';
+
+  @override
+  String get introAgain => 'Einführung erneut ansehen';
 }

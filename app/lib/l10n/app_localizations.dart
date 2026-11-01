@@ -911,6 +911,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No species found'**
   String get noSpeciesFound;
+
+  /// No description provided for @introWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Wake up to a real bird song. Guess the bird among 4 photos to stop the alarm, and win its card.'**
+  String get introWelcome;
+
+  /// No description provided for @introRegionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your region'**
+  String get introRegionTitle;
+
+  /// No description provided for @introRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Your alarms play the birds that live around you, in season. Choose your region on the map, or use your position.'**
+  String get introRegion;
+
+  /// No description provided for @introGameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your game'**
+  String get introGameTitle;
+
+  /// No description provided for @introLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, theme and all of this can be changed later in Settings.'**
+  String get introLater;
+
+  /// No description provided for @introCollectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your collection'**
+  String get introCollectionTitle;
+
+  /// No description provided for @introTwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitch Zone: a free booster every 15 minutes to train your ear.'**
+  String get introTwitch;
+
+  /// No description provided for @introSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series and achievements: complete them to collect guaranteed rare cards.'**
+  String get introSeries;
+
+  /// No description provided for @introTrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade: meet another birder and swap cards face to face.'**
+  String get introTrade;
+
+  /// No description provided for @introExamineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Examine your cards'**
+  String get introExamineTitle;
+
+  /// No description provided for @introExamine.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold a card and move your finger: it tilts and catches the light. Try it!'**
+  String get introExamine;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @letsGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go!'**
+  String get letsGo;
+
+  /// No description provided for @introAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'See the introduction again'**
+  String get introAgain;
 }
 
 class _AppLocalizationsDelegate

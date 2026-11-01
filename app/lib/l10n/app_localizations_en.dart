@@ -445,4 +445,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSpeciesFound => 'No species found';
+
+  @override
+  String get introWelcome =>
+      'Wake up to a real bird song. Guess the bird among 4 photos to stop the alarm, and win its card.';
+
+  @override
+  String get introRegionTitle => 'Your region';
+
+  @override
+  String get introRegion =>
+      'Your alarms play the birds that live around you, in season. Choose your region on the map, or use your position.';
+
+  @override
+  String get introGameTitle => 'Your game';
+
+  @override
+  String get introLater =>
+      'Language, theme and all of this can be changed later in Settings.';
+
+  @override
+  String get introCollectionTitle => 'Your collection';
+
+  @override
+  String get introTwitch =>
+      'Twitch Zone: a free booster every 15 minutes to train your ear.';
+
+  @override
+  String get introSeries =>
+      'Series and achievements: complete them to collect guaranteed rare cards.';
+
+  @override
+  String get introTrade =>
+      'Trade: meet another birder and swap cards face to face.';
+
+  @override
+  String get introExamineTitle => 'Examine your cards';
+
+  @override
+  String get introExamine =>
+      'Hold a card and move your finger: it tilts and catches the light. Try it!';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get letsGo => 'Let\'s go!';
+
+  @override
+  String get introAgain => 'See the introduction again';
 }

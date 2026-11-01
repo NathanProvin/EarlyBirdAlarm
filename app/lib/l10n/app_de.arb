@@ -134,5 +134,20 @@
   "tradeNeedsPrecise": "Zum Tauschen braucht die App den genauen Standort: Aktiviere in den App-Einstellungen unter Standort „Genauen Standort verwenden“.",
   "tradeNeedsBluetooth": "Zum Tauschen braucht die App die Berechtigungen für Bluetooth und Geräte in der Nähe. Erlaube sie in den App-Einstellungen.",
   "searchCollection": "Sammlung durchsuchen",
-  "noSpeciesFound": "Keine Art gefunden"
+  "noSpeciesFound": "Keine Art gefunden",
+  "introWelcome": "Wach auf mit echtem Vogelgesang. Errate den Vogel unter 4 Fotos, um den Wecker auszuschalten, und gewinne seine Karte.",
+  "introRegionTitle": "Deine Region",
+  "introRegion": "Deine Wecker spielen die Vögel, die je nach Jahreszeit um dich herum leben. Wähle deine Region auf der Karte oder nutze deinen Standort.",
+  "introGameTitle": "Dein Spiel",
+  "introLater": "Sprache, Design und all das kannst du später in den Einstellungen ändern.",
+  "introCollectionTitle": "Deine Sammlung",
+  "introTwitch": "Twitcher-Zone: alle 15 Minuten ein kostenloser Booster, um dein Gehör zu trainieren.",
+  "introSeries": "Serien und Erfolge: Schließe sie ab, um garantiert seltene Karten zu erhalten.",
+  "introTrade": "Tauschen: Triff andere Vogelbeobachter und tausche Karten von Person zu Person.",
+  "introExamineTitle": "Betrachte deine Karten",
+  "introExamine": "Halte eine Karte und bewege den Finger: Sie neigt sich und fängt das Licht ein. Probier es aus!",
+  "next": "Weiter",
+  "skip": "Überspringen",
+  "letsGo": "Los geht's!",
+  "introAgain": "Einführung erneut ansehen"
 }

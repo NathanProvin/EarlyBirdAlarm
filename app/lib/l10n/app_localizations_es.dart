@@ -447,4 +447,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noSpeciesFound => 'Ninguna especie encontrada';
+
+  @override
+  String get introWelcome =>
+      'Despierta con el canto de un ave real. Adivínala entre 4 fotos para apagar la alarma y gana su carta.';
+
+  @override
+  String get introRegionTitle => 'Tu región';
+
+  @override
+  String get introRegion =>
+      'Tus alarmas hacen cantar a las aves que viven a tu alrededor, según la temporada. Elige tu región en el mapa o usa tu ubicación.';
+
+  @override
+  String get introGameTitle => 'Tu juego';
+
+  @override
+  String get introLater =>
+      'El idioma, el tema y todo esto se pueden cambiar luego en Ajustes.';
+
+  @override
+  String get introCollectionTitle => 'Tu colección';
+
+  @override
+  String get introTwitch =>
+      'Zona Pajarera: un sobre gratis cada 15 minutos para entrenar el oído.';
+
+  @override
+  String get introSeries =>
+      'Series y logros: complétalos para conseguir cartas raras garantizadas.';
+
+  @override
+  String get introTrade =>
+      'Intercambiar: queda con otro pajarero e intercambiad cartas en persona.';
+
+  @override
+  String get introExamineTitle => 'Examina tus cartas';
+
+  @override
+  String get introExamine =>
+      'Mantén pulsada una carta y mueve el dedo: se inclina y atrapa la luz. ¡Pruébalo!';
+
+  @override
+  String get next => 'Siguiente';
+
+  @override
+  String get skip => 'Saltar';
+
+  @override
+  String get letsGo => '¡Vamos!';
+
+  @override
+  String get introAgain => 'Ver otra vez la introducción';
 }

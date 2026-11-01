@@ -150,55 +150,49 @@ class _CollectionScreenState extends State<CollectionScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          // The two filters and the search on the left (the menus show the counts), Trade
-          // a little right of the middle (the left side is 6/11 of the free width), Series
-          // on the right.
+          // The two filters and the search on the left (the menus show the counts), Series on
+          // the right, Trade midway between them: it never touches the search button, even
+          // with a long label ("Échanger"), and sits a little right of the middle.
           child: Row(
             children: [
-              Expanded(
-                flex: 6,
-                child: Row(
-                  children: [
-                    _Menu<String>(
-                      value: _view,
-                      items: views,
-                      tooltip: l.viewMenu,
-                      onSelected: (v) => setState(() => _view = v),
-                      child: const _Round(icon: Icons.expand_more),
-                    ),
-                    const SizedBox(width: 6),
-                    _Menu<String?>(
-                      value: _tier,
-                      items: {
-                        null: l.allRarities,
-                        for (final t in tiers) t: rarityName(l, t),
-                      },
-                      colors: rarityColor,
-                      tooltip: l.rarityMenu,
-                      onSelected: (t) => setState(() => _tier = t),
-                      // Every rarity colour around it; the chosen one alone while filtering.
-                      child: _Round(
-                        icon: Icons.arrow_drop_down,
-                        ring: _tier == null
-                            ? [for (final t in tiers) rarityColor[t]!]
-                            : [rarityColor[_tier]!],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Tooltip(
-                      message: l.searchCollection,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => showSearch(
-                          context: context,
-                          delegate: _CollectionSearch(l.searchCollection),
-                        ),
-                        child: const _Round(icon: Icons.search),
-                      ),
-                    ),
-                  ],
+              _Menu<String>(
+                value: _view,
+                items: views,
+                tooltip: l.viewMenu,
+                onSelected: (v) => setState(() => _view = v),
+                child: const _Round(icon: Icons.expand_more),
+              ),
+              const SizedBox(width: 6),
+              _Menu<String?>(
+                value: _tier,
+                items: {
+                  null: l.allRarities,
+                  for (final t in tiers) t: rarityName(l, t),
+                },
+                colors: rarityColor,
+                tooltip: l.rarityMenu,
+                onSelected: (t) => setState(() => _tier = t),
+                // Every rarity colour around it; the chosen one alone while filtering.
+                child: _Round(
+                  icon: Icons.arrow_drop_down,
+                  ring: _tier == null
+                      ? [for (final t in tiers) rarityColor[t]!]
+                      : [rarityColor[_tier]!],
                 ),
               ),
+              const SizedBox(width: 6),
+              Tooltip(
+                message: l.searchCollection,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => showSearch(
+                    context: context,
+                    delegate: _CollectionSearch(l.searchCollection),
+                  ),
+                  child: const _Round(icon: Icons.search),
+                ),
+              ),
+              const Spacer(),
               TextButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => const TradeScreen()),
@@ -206,26 +200,19 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 icon: const Icon(Icons.swap_horiz),
                 label: Text(l.trade),
               ),
-              Expanded(
-                flex: 5,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const SeriesScreen(),
-                      ),
-                    ),
-                    // A dot while a completed series or achievement waits to be collected.
-                    icon: Badge(
-                      isLabelVisible: store.anyClaimable,
-                      smallSize: 8,
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      child: const Icon(Icons.collections_bookmark_outlined),
-                    ),
-                    label: Text(l.series),
-                  ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const SeriesScreen()),
                 ),
+                // A dot while a completed series or achievement waits to be collected.
+                icon: Badge(
+                  isLabelVisible: store.anyClaimable,
+                  smallSize: 8,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: const Icon(Icons.collections_bookmark_outlined),
+                ),
+                label: Text(l.series),
               ),
             ],
           ),

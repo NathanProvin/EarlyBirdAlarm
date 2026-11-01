@@ -134,5 +134,20 @@
   "tradeNeedsPrecise": "Para intercambiar, la app necesita la ubicación precisa: en los ajustes de la app, en Ubicación, activa «Usar ubicación precisa».",
   "tradeNeedsBluetooth": "Para intercambiar, la app necesita los permisos de Bluetooth y dispositivos cercanos. Permítelos en los ajustes de la app.",
   "searchCollection": "Buscar en tu colección",
-  "noSpeciesFound": "Ninguna especie encontrada"
+  "noSpeciesFound": "Ninguna especie encontrada",
+  "introWelcome": "Despierta con el canto de un ave real. Adivínala entre 4 fotos para apagar la alarma y gana su carta.",
+  "introRegionTitle": "Tu región",
+  "introRegion": "Tus alarmas hacen cantar a las aves que viven a tu alrededor, según la temporada. Elige tu región en el mapa o usa tu ubicación.",
+  "introGameTitle": "Tu juego",
+  "introLater": "El idioma, el tema y todo esto se pueden cambiar luego en Ajustes.",
+  "introCollectionTitle": "Tu colección",
+  "introTwitch": "Zona Pajarera: un sobre gratis cada 15 minutos para entrenar el oído.",
+  "introSeries": "Series y logros: complétalos para conseguir cartas raras garantizadas.",
+  "introTrade": "Intercambiar: queda con otro pajarero e intercambiad cartas en persona.",
+  "introExamineTitle": "Examina tus cartas",
+  "introExamine": "Mantén pulsada una carta y mueve el dedo: se inclina y atrapa la luz. ¡Pruébalo!",
+  "next": "Siguiente",
+  "skip": "Saltar",
+  "letsGo": "¡Vamos!",
+  "introAgain": "Ver otra vez la introducción"
 }

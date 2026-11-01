@@ -181,5 +181,20 @@
   "tradeNeedsPrecise": "Trading needs precise location: in the app's settings, under Location, turn on \"Use precise location\".",
   "tradeNeedsBluetooth": "Trading needs the Bluetooth and nearby devices permissions. Allow them in the app's settings.",
   "searchCollection": "Search your collection",
-  "noSpeciesFound": "No species found"
+  "noSpeciesFound": "No species found",
+  "introWelcome": "Wake up to a real bird song. Guess the bird among 4 photos to stop the alarm, and win its card.",
+  "introRegionTitle": "Your region",
+  "introRegion": "Your alarms play the birds that live around you, in season. Choose your region on the map, or use your position.",
+  "introGameTitle": "Your game",
+  "introLater": "Language, theme and all of this can be changed later in Settings.",
+  "introCollectionTitle": "Your collection",
+  "introTwitch": "Twitch Zone: a free booster every 15 minutes to train your ear.",
+  "introSeries": "Series and achievements: complete them to collect guaranteed rare cards.",
+  "introTrade": "Trade: meet another birder and swap cards face to face.",
+  "introExamineTitle": "Examine your cards",
+  "introExamine": "Hold a card and move your finger: it tilts and catches the light. Try it!",
+  "next": "Next",
+  "skip": "Skip",
+  "letsGo": "Let's go!",
+  "introAgain": "See the introduction again"
 }

@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'bird_icon.dart';
 import 'credits.dart';
+import 'onboarding.dart';
 import 'region.dart';
 import 'theme.dart';
 
@@ -175,63 +176,11 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Text(l.region, style: text.titleMedium),
             const SizedBox(height: 8),
-            // Filled in the accent like the chosen difficulty: the current choice.
-            FilledButton(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(40),
-                padding: const EdgeInsets.only(left: 20, right: 12),
-                side: BorderSide(color: Theme.of(context).colorScheme.outline),
-              ),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const RegionScreen()),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      store.region == null ? '—' : regionName(l, store.region!),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ],
-              ),
-            ),
+            const RegionPill(),
             const SizedBox(height: 32),
             Text(l.difficulty, style: text.titleMedium),
             const SizedBox(height: 8),
-            SegmentedButton<Difficulty>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: Difficulty.easy, label: Text(l.easy)),
-                ButtonSegment(value: Difficulty.medium, label: Text(l.medium)),
-                ButtonSegment(value: Difficulty.hard, label: Text(l.hard)),
-              ],
-              selected: {store.difficulty},
-              onSelectionChanged: (s) => store.difficulty = s.single,
-            ),
-            const SizedBox(height: 6),
-            Text(switch (store.difficulty) {
-              Difficulty.easy => l.easyInfo,
-              Difficulty.medium => l.mediumInfo,
-              Difficulty.hard => l.hardInfo,
-            }, style: text.bodySmall),
-            const SizedBox(height: 14),
-            SegmentedButton<bool>(
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: false, label: Text(l.seasonalBirds)),
-                ButtonSegment(value: true, label: Text(l.allBirds)),
-              ],
-              selected: {store.allBirds},
-              onSelectionChanged: (s) => store.allBirds = s.single,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              store.allBirds ? l.allBirdsInfo : l.seasonalInfo,
-              style: text.bodySmall,
-            ),
+            const GameOptions(),
             const SizedBox(height: 32),
             Text(l.language, style: text.titleMedium),
             const SizedBox(height: 8),
@@ -309,9 +258,98 @@ class SettingsScreen extends StatelessWidget {
                 MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
               ),
             ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l.introAgain),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const OnboardingScreen(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The current region as a pill filled in the accent, like the chosen difficulty; opens
+/// the map. Shared by Settings and the onboarding.
+class RegionPill extends StatelessWidget {
+  const RegionPill({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(40),
+        padding: const EdgeInsets.only(left: 20, right: 12),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
+      ),
+      onPressed: () => Navigator.of(context)
+          .push(MaterialPageRoute<void>(builder: (_) => const RegionScreen())),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              store.region == null ? '—' : regionName(l, store.region!),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
+    );
+  }
+}
+
+/// Difficulty and season, each with its explanation. Shared by Settings and the onboarding.
+class GameOptions extends StatelessWidget {
+  const GameOptions({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SegmentedButton<Difficulty>(
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(value: Difficulty.easy, label: Text(l.easy)),
+            ButtonSegment(value: Difficulty.medium, label: Text(l.medium)),
+            ButtonSegment(value: Difficulty.hard, label: Text(l.hard)),
+          ],
+          selected: {store.difficulty},
+          onSelectionChanged: (s) => store.difficulty = s.single,
+        ),
+        const SizedBox(height: 6),
+        Text(switch (store.difficulty) {
+          Difficulty.easy => l.easyInfo,
+          Difficulty.medium => l.mediumInfo,
+          Difficulty.hard => l.hardInfo,
+        }, style: text.bodySmall),
+        const SizedBox(height: 14),
+        SegmentedButton<bool>(
+          showSelectedIcon: false,
+          segments: [
+            ButtonSegment(value: false, label: Text(l.seasonalBirds)),
+            ButtonSegment(value: true, label: Text(l.allBirds)),
+          ],
+          selected: {store.allBirds},
+          onSelectionChanged: (s) => store.allBirds = s.single,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          store.allBirds ? l.allBirdsInfo : l.seasonalInfo,
+          style: text.bodySmall,
+        ),
+      ],
     );
   }
 }

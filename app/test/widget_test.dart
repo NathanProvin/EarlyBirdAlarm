@@ -12,6 +12,7 @@ import 'package:early_bird/trade.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
 import 'package:early_bird/ui/collection.dart';
+import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -679,5 +680,35 @@ void main() {
     expect(plainText('Ánsar común'), 'ansar comun');
     expect(plainText('Großtrappe'), 'grostrappe');
     expect(plainText('Bécasseau'), 'becasseau');
+  });
+
+  testWidgets('onboarding: pages, Next, Skip marks it seen', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    store = await Store.load();
+    expect(store.onboarded, isFalse);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const OnboardingScreen()),
+            ),
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.text('Early Bird'), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your region'), findsOneWidget);
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+    expect(store.onboarded, isTrue);
+    expect(find.text('open'), findsOneWidget); // back where it started
   });
 }

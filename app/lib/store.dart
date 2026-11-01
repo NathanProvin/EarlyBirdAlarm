@@ -189,6 +189,11 @@ class Store extends ChangeNotifier {
   set difficulty(Difficulty d) =>
       _prefs.setInt('difficulty', d.index).then((_) => notifyListeners());
 
+  /// The introduction was seen (or skipped): it shows once, on first launch.
+  bool get onboarded => _prefs.getBool('onboarded') ?? false;
+  set onboarded(bool on) =>
+      _prefs.setBool('onboarded', on).then((_) => notifyListeners());
+
   /// Ignore the season: any bird of the region can ring.
   bool get allBirds => _prefs.getBool('allBirds') ?? false;
   set allBirds(bool on) =>

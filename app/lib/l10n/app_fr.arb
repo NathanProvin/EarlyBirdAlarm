@@ -134,5 +134,20 @@
   "tradeNeedsPrecise": "L'échange a besoin de la position précise : dans les réglages de l'application, sous Localisation, activez « Utiliser la position exacte ».",
   "tradeNeedsBluetooth": "L'échange a besoin des autorisations Bluetooth et appareils à proximité. Autorisez-les dans les réglages de l'application.",
   "searchCollection": "Chercher dans la collection",
-  "noSpeciesFound": "Aucune espèce trouvée"
+  "noSpeciesFound": "Aucune espèce trouvée",
+  "introWelcome": "Réveillez-vous au chant d'un vrai oiseau. Devinez-le parmi 4 photos pour arrêter l'alarme, et gagnez sa carte.",
+  "introRegionTitle": "Votre région",
+  "introRegion": "Vos alarmes font chanter les oiseaux qui vivent autour de vous, selon la saison. Choisissez votre région sur la carte, ou utilisez votre position.",
+  "introGameTitle": "Votre jeu",
+  "introLater": "La langue, le thème et tout ceci se changent plus tard dans les Réglages.",
+  "introCollectionTitle": "Votre collection",
+  "introTwitch": "Zone Cocheur : un booster gratuit toutes les 15 minutes pour entraîner votre oreille.",
+  "introSeries": "Séries et succès : complétez-les pour récupérer des cartes rares garanties.",
+  "introTrade": "Échanger : retrouvez un autre ornithologue et échangez des cartes en personne.",
+  "introExamineTitle": "Examinez vos cartes",
+  "introExamine": "Maintenez une carte et bougez le doigt : elle s'incline et capte la lumière. Essayez !",
+  "next": "Suivant",
+  "skip": "Passer",
+  "letsGo": "C'est parti !",
+  "introAgain": "Revoir l'introduction"
 }

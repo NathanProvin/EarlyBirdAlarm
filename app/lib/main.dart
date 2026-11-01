@@ -10,6 +10,7 @@ import 'l10n/app_localizations.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
+import 'ui/onboarding.dart';
 import 'ui/region.dart';
 import 'ui/ring.dart';
 import 'ui/settings.dart';
@@ -239,15 +240,21 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _tick = Timer.periodic(const Duration(seconds: 20), (_) => setState(() {}));
-    Permission.notification.request();
-    if (store.region == null) {
-      // First launch: where do you live?
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => Navigator.of(
+    // First launch: the introduction (it includes choosing the region), then the
+    // notification permission, then the region if it was skipped.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!store.onboarded) {
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const OnboardingScreen()),
+        );
+      }
+      await Permission.notification.request();
+      if (store.region == null && mounted) {
+        await Navigator.of(
           context,
-        ).push(MaterialPageRoute<void>(builder: (_) => const RegionScreen())),
-      );
-    }
+        ).push(MaterialPageRoute<void>(builder: (_) => const RegionScreen()));
+      }
+    });
     Alarm.ringing.listen((set) {
       final alarm = set.alarms.firstOrNull;
       if (alarm == null || alarm.id == _ringingId || !mounted) return;

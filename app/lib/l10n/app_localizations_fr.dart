@@ -447,4 +447,56 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noSpeciesFound => 'Aucune espèce trouvée';
+
+  @override
+  String get introWelcome =>
+      'Réveillez-vous au chant d\'un vrai oiseau. Devinez-le parmi 4 photos pour arrêter l\'alarme, et gagnez sa carte.';
+
+  @override
+  String get introRegionTitle => 'Votre région';
+
+  @override
+  String get introRegion =>
+      'Vos alarmes font chanter les oiseaux qui vivent autour de vous, selon la saison. Choisissez votre région sur la carte, ou utilisez votre position.';
+
+  @override
+  String get introGameTitle => 'Votre jeu';
+
+  @override
+  String get introLater =>
+      'La langue, le thème et tout ceci se changent plus tard dans les Réglages.';
+
+  @override
+  String get introCollectionTitle => 'Votre collection';
+
+  @override
+  String get introTwitch =>
+      'Zone Cocheur : un booster gratuit toutes les 15 minutes pour entraîner votre oreille.';
+
+  @override
+  String get introSeries =>
+      'Séries et succès : complétez-les pour récupérer des cartes rares garanties.';
+
+  @override
+  String get introTrade =>
+      'Échanger : retrouvez un autre ornithologue et échangez des cartes en personne.';
+
+  @override
+  String get introExamineTitle => 'Examinez vos cartes';
+
+  @override
+  String get introExamine =>
+      'Maintenez une carte et bougez le doigt : elle s\'incline et capte la lumière. Essayez !';
+
+  @override
+  String get next => 'Suivant';
+
+  @override
+  String get skip => 'Passer';
+
+  @override
+  String get letsGo => 'C\'est parti !';
+
+  @override
+  String get introAgain => 'Revoir l\'introduction';
 }
