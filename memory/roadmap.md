@@ -40,6 +40,8 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] **Onboarding** (2026-11-01): 5 swipeable pages shown once on first launch (and from Settings → See the introduction again): welcome, region (the Settings pill → map), game options (the Settings difficulty / season controls), collection features (Twitch Zone, series rewards, trading), and a live Epic demo card to hold and tilt; Skip / Next / Let's go; the notification permission is asked after it
 - [x] **GitHub README** (2026-11-01): features, how the catalog is built, repository layout, app and pipeline build commands, data licences, privacy, contact; placeholders to fill: logo (`docs/logo.png`), Play Store link (`PLAY_STORE_URL`), screenshots (`docs/screenshots/`), and the code licence (no LICENSE file yet — the user's choice)
 
+- [x] **Late reviewer's 7 comments** (2026-11-01, see decisions.md "Reviewer polish"): navigation-bar overlap, Trade / Series text buttons, pager alignment and copy pill, Bird rarity stars, Wikipedia / Merlin buttons, Expert difficulty, sound effects. Still to do: catalog republish (the `"r"` levels), check on the S22 (incl. once in 3-button navigation), then **retake the store screenshots**
+
 ### C — Release build
 - [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
 - [ ] Move the user's collection before switching from the test build: the Play build is signed differently, so Android sees another install. Export the prefs file with adb (as for the package rename, scratchpad copies) or rely on Android Auto Backup (verified in 4a); otherwise cards and streak stay on the test build
