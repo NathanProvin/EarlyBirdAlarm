@@ -6,7 +6,7 @@ Ready to paste into Play Console (Iteration 4b). Keep in sync with the app.
 - **App name:** Early Bird Alarm (≤ 30 chars)
 - **Package:** `com.nathanprovin.earlybird`
 - **Category:** Lifestyle (alternative: Education)
-- **Contact email:** CONTACT_EMAIL (to set)
+- **Contact email:** nanodev009@gmail.com
 - **Privacy policy URL:** https://nathanprovin.github.io/EarlyBirdAlarm/privacy.html
 - **Price:** free; no ads, no in-app purchases (v1)
 

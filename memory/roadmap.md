@@ -33,16 +33,16 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [ ] **Merge `barter` into `main`** (face-to-face trades) once the two-phone test passes — until then `main` changes are merged into `barter` after each change, and the S22 runs `barter`
 - [ ] User check on the phone: app icon (home screen, themed icon) and the white-bird notification icon
 - [ ] Accessibility pass: TalkBack on every screen, largest font size
-- [ ] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively)
-- [ ] **Native proofreading of German and Spanish**: `app/lib/l10n/app_de.arb` / `app_es.arb`, `site-static/privacy-de.html` / `privacy-es.html` (legal text), the DE/ES store listings in `memory/store-listing.md`
-- [ ] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish`
+- [x] **7-night reliability test** (Iteration 1 exit, never formally done): locked, killed, after a reboot, Do Not Disturb, battery saver; ideally also on a second phone of another brand (Xiaomi, Huawei, OnePlus… kill background apps aggressively) — **passed (user, 2026-11-01)**
+- [x] **Native proofreading of German and Spanish**: `app/lib/l10n/app_de.arb` / `app_es.arb`, `site-static/privacy-de.html` / `privacy-es.html` (legal text), the DE/ES store listings in `memory/store-listing.md` — **verified by the user (2026-11-01)**
+- [x] Public contact email: set `CONTACT_EMAIL` in `pipeline/build.py` (privacy policy) and in `memory/store-listing.md`, then `publish` — **nanodev009@gmail.com (2026-11-01)**
 
 ### C — Release build
 - [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
 - [ ] Move the user's collection before switching from the test build: the Play build is signed differently, so Android sees another install. Export the prefs file with adb (as for the package rename, scratchpad copies) or rely on Android Auto Backup (verified in 4a); otherwise cards and streak stay on the test build
 
 ### D — Google Play (= 4b; needs the user)
-- [ ] Create the Play developer account ($25, identity verification: can take days)
+- [ ] Create the Play developer account ($25, identity verification: can take days) — **created, identity verification pending (2026-11-01)**
 - [ ] **Closed test: at least 12 testers for 14 consecutive days** (required for new personal accounts before production) — recruit early: friends, family, birding groups
 - [ ] Store listing: texts ready in `memory/store-listing.md`; still to make: 512 × 512 icon (export from the vector), 1024 × 500 feature graphic, phone screenshots (list in the file)
 - [ ] Declarations (answers drafted in `memory/store-listing.md`): Data safety (no data collected), full-screen intent and exact alarms (core alarm-clock features), media-playback foreground service (Play may ask for a short video), content rating (Everyone), target audience, no ads
