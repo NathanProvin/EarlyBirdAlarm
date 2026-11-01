@@ -272,9 +272,13 @@ void main() {
     expect(formatStat('distance', 0.02, l), 'Resident');
   });
 
-  // twitchEvery: 15 min in release builds, 1 min in test builds (tests run as one).
+  // twitchEvery: 15 min; 1 min only in a --dart-define=DEV_TOOLS=true build.
   test('Twitch quizzes: 5 max, one more every twitchEvery', () {
     final t0 = DateTime(2026, 10, 29, 8);
+    expect(
+      twitchEvery,
+      const Duration(minutes: 15),
+    ); // no dev tools in normal builds
     final fresh = DateTime.fromMillisecondsSinceEpoch(0);
     expect(twitchCharges(fresh, t0), 5); // a new player starts full
     var start = twitchUse(fresh, t0);

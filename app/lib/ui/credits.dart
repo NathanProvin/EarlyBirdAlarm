@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +9,7 @@ import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../store.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
@@ -49,7 +49,7 @@ class CreditsScreen extends StatelessWidget {
             ),
           ),
           // Test builds only: see the reveal of each rarity (nothing is saved).
-          if (!kReleaseMode) ...[
+          if (devTools) ...[
             const SizedBox(height: 32),
             Text(
               'Dev: preview a card reveal',

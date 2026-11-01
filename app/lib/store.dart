@@ -65,8 +65,13 @@ DateTime nextRing(AlarmData a, DateTime now) {
 /// Twitch mode: up to [twitchMax] quizzes, one more every [twitchEvery]. The count is
 /// derived from one timestamp: whole periods elapsed since [start], capped.
 const twitchMax = 5;
-// 15 min (10 until the 2026-10-31 balance pass); 1 min in test builds to try it quickly.
-const twitchEvery = Duration(minutes: kReleaseMode ? 15 : 1);
+
+/// Developer tools, off in every normal build (test or release): the dev rows in Credits
+/// and a 1-minute Twitch Zone. On only with `flutter build … --dart-define=DEV_TOOLS=true`.
+const devTools = bool.fromEnvironment('DEV_TOOLS');
+
+// 15 min (10 until the 2026-10-31 balance pass); 1 min with devTools to try it quickly.
+const twitchEvery = Duration(minutes: devTools ? 1 : 15);
 
 int twitchCharges(DateTime start, DateTime now) =>
     min(twitchMax, now.difference(start).inSeconds ~/ twitchEvery.inSeconds);
