@@ -25,16 +25,9 @@ Free, no account, no ads, no tracking. English, French, German and Spanish.
 ## Screenshots
 
 <p align="center">
-  <img src="store/screenshots/01-quiz.png" alt="The alarm quiz: four photos, guess the bird" width="200">
-  <img src="store/screenshots/02-reveal.png" alt="A card won, flipping face up" width="200">
-  <img src="store/screenshots/03-collection.png" alt="The collection" width="200">
-  <img src="store/screenshots/04-legendary.png" alt="A Legendary card, full screen" width="200">
-</p>
-<p align="center">
-  <img src="store/screenshots/05-series.png" alt="Series and achievements" width="200">
-  <img src="store/screenshots/06-twitch.png" alt="The Twitch Zone and its boosters" width="200">
-  <img src="store/screenshots/07-map.png" alt="Picking a region on the world map" width="200">
-  <img src="store/screenshots/08-onboarding.png" alt="The introduction" width="200">
+  <img src="store/screenshots/1-quiz.png" alt="The alarm quiz: four photos, guess the bird" width="250">
+  <img src="store/screenshots/2-collection.png" alt="The collection" width="250">
+  <img src="store/screenshots/3-legendary.png" alt="A Legendary card, full screen" width="250">
 </p>
 
 ## Features

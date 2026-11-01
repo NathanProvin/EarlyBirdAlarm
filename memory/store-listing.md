@@ -140,12 +140,8 @@ No violence, sexual content, profanity or gambling (no purchases; boosters are f
 ## Licenses to mention (also in the app's Credits)
 GBIF.org (occurrences, only monthly counts used), Wikidata (CC0), Wikimedia Commons photos (per-photo licenses, credited on each card), xeno-canto recordings (CC0 / BY / BY-SA; a few BY-NC / BY-NC-SA, **to replace before any monetization**), AVONET (Tobias et al. 2022, CC BY 4.0), Wikipedia, Natural Earth (public domain).
 
-## Screenshots (phone, 1080 × 2340, `store/screenshots/`)
-1. The alarm quiz: 4 bird photos with names.
-2. A card reveal (Rare or better).
-3. The collection grid.
-4. A Legendary card full screen.
-5. Series: a page of badges, one glowing, ready to collect.
-6. Twitch Zone: the booster pile with its countdown.
-7. The region map.
-8. The onboarding's first page, or the Blackbird (dark) theme.
+## Screenshots (phone, 1080 × 2340, `store/screenshots/`, English, Gull theme; 2026-11-01)
+Three only (the user's choice), also shown in the README:
+1. `1-quiz.png`: the alarm quiz, 4 bird photos with names (finches).
+2. `2-collection.png`: the collection grid (Legendary, Epic and Rare cards with the Bird rarity stars).
+3. `3-legendary.png`: a Legendary card full screen (Bar-tailed Godwit, ×2 pill, Share / Info / Wikipedia).
