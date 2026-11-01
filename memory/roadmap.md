@@ -43,7 +43,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [x] **Late reviewer's 7 comments** (2026-11-01, see decisions.md "Reviewer polish"): navigation-bar overlap, Trade / Series text buttons, pager alignment and copy pill, Bird rarity stars, Wikipedia / Merlin buttons, Expert difficulty (name search by word start), bold Settings headers; sound effects tried and removed at the user's request. Catalog republished with the `"r"` levels; checked on the S22, 3-button navigation checked by the user. Screenshots retaken (quiz, collection, Legendary, Twitch); still to retake: **card reveal** (with the stars row) and **Settings** (without the Sounds switch)
 
 ### C — Release build
-- [ ] `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
+- [x] **Signed release bundle built 2026-11-01** (1.0.0+1, 62.5 MB, `app/build/app/outputs/bundle/release/app-release.aab`, signed CN=Nathan Provin): `flutter build appbundle --release`, signed with the upload key (`keys/upload.jks` + `app/android/key.properties`, git-ignored — **back them up**: password manager + USB stick)
 - [ ] Move the user's collection before switching from the test build: the Play build is signed differently, so Android sees another install. Export the prefs file with adb (as for the package rename, scratchpad copies) or rely on Android Auto Backup (verified in 4a); otherwise cards and streak stay on the test build
 
 ### D — Google Play (= 4b; needs the user)
