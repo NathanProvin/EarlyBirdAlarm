@@ -516,7 +516,7 @@ class CardTile extends StatelessWidget {
                   ),
                   // Outside the shrunk card, so it stays readable.
                   if (copies > 1)
-                    Positioned(right: 6, top: 6, child: _CopiesBadge(copies)),
+                    Positioned(right: 6, top: 6, child: CopiesBadge(copies)),
                 ],
               )
             : Container(
@@ -584,7 +584,7 @@ extension on CardTile {
           child: Theme(data: cardTheme, child: _Badge(number)),
         ),
         if (copies > 1)
-          Positioned(right: 4, top: 4, child: _CopiesBadge(copies)),
+          Positioned(right: 4, top: 4, child: CopiesBadge(copies)),
       ],
     ),
   );
@@ -605,25 +605,32 @@ class _Badge extends StatelessWidget {
   );
 }
 
-/// "×3" on a collection tile: how many copies of the card the player owns, in the
-/// theme's accent.
-class _CopiesBadge extends StatelessWidget {
-  const _CopiesBadge(this.copies);
+/// "×3": how many copies of the card the player owns, in the theme's accent; [large]
+/// above a full-screen card.
+class CopiesBadge extends StatelessWidget {
+  const CopiesBadge(this.copies, {this.large = false, super.key});
   final int copies;
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: EdgeInsets.symmetric(
+        horizontal: large ? 14 : 8,
+        vertical: large ? 4 : 2,
+      ),
       decoration: BoxDecoration(
         color: scheme.primary,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Text(
         '×$copies',
-        style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(color: scheme.onPrimary, fontWeight: FontWeight.bold),
+        style: (large ? text.headlineSmall : text.titleMedium)?.copyWith(
+          color: scheme.onPrimary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

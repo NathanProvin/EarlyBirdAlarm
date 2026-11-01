@@ -407,7 +407,7 @@ class RevealScreen extends StatelessWidget {
                         style: text.titleMedium,
                       )
                     else if (card != null && copies > 1)
-                      Text('×$copies', style: text.titleMedium),
+                      CopiesBadge(copies, large: true),
                     if (!training)
                       Text(
                         streakLost ? l.streakLost : l.streak(store.streak),

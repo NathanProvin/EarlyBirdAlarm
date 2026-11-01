@@ -136,9 +136,9 @@ void main() {
       tester.view.padding = const FakeViewPadding(bottom: 48 * 2.625);
       await show(tester, build());
       for (final s in find.byType(Scrollable).evaluate().toList()) {
-        if ((s.widget as Scrollable).axisDirection != AxisDirection.down)
-          continue;
-        await tester.drag(find.byWidget(s.widget), const Offset(0, -5000));
+        if ((s.widget as Scrollable).axisDirection == AxisDirection.down) {
+          await tester.drag(find.byWidget(s.widget), const Offset(0, -5000));
+        }
         await tester.pump(const Duration(seconds: 1));
       }
       final bar = tester.view.physicalSize.height / 2.625 - 48;

@@ -146,6 +146,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
       _species: '${l.viewSpecies} (${best.length})',
       for (final r in regions) r: regionLabel(r),
     };
+    final label = Theme.of(context).textTheme.titleLarge
+        ?.copyWith(fontWeight: FontWeight.bold);
     return Column(
       children: [
         Padding(
@@ -197,41 +199,41 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox.shrink(),
+                    // Text only, large and bold: easier to read than icon + label.
                     Flexible(
-                      child: TextButton.icon(
+                      child: TextButton(
+                        style: TextButton.styleFrom(textStyle: label),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => const TradeScreen(),
                           ),
                         ),
-                        icon: const Icon(Icons.swap_horiz),
-                        label: FittedBox(
+                        child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(l.trade),
                         ),
                       ),
                     ),
                     Flexible(
-                      child: TextButton.icon(
+                      child: TextButton(
+                        style: TextButton.styleFrom(textStyle: label),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => const SeriesScreen(),
                           ),
                         ),
-                        // A dot while a completed series or achievement waits to be collected.
-                        icon: Badge(
-                          isLabelVisible: store.anyClaimable,
-                          smallSize: 8,
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .primary,
-                          child: const Icon(
-                            Icons.collections_bookmark_outlined,
-                          ),
-                        ),
-                        label: FittedBox(
+                        child: FittedBox(
                           fit: BoxFit.scaleDown,
-                          child: Text(l.series),
+                          // A dot while a completed series or achievement waits to be
+                          // collected.
+                          child: Badge(
+                            isLabelVisible: store.anyClaimable,
+                            smallSize: 8,
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .primary,
+                            child: Text(l.series),
+                          ),
                         ),
                       ),
                     ),
@@ -481,11 +483,7 @@ class CardPager extends StatelessWidget {
           final (bird, card) = entries[i];
           final copies = cards.where((c) => c.birdId == bird.id).length;
           final l = AppLocalizations.of(context);
-          final header = [
-            if (copies > 1) '×$copies',
-            if (card?.traded case final d?)
-              l.tradedOn(DateFormat.MMMd(l.localeName).format(d)),
-          ].join(' · ');
+          final traded = card?.traded;
           return Padding(
             // Clear of the navigation bar (3-button mode is 48 dp, opaque).
             padding: EdgeInsets.fromLTRB(
@@ -497,12 +495,24 @@ class CardPager extends StatelessWidget {
             child: CardDetail(
               bird: bird,
               card: card,
-              header: header.isEmpty
-                  ? null
-                  : Text(
-                      header,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+              // Always the same height, so every card lines up when swiping.
+              header: SizedBox(
+                height: 48,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 12,
+                  children: [
+                    if (copies > 1) CopiesBadge(copies, large: true),
+                    if (traded != null)
+                      Text(
+                        l.tradedOn(
+                          DateFormat.MMMd(l.localeName).format(traded),
+                        ),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                  ],
+                ),
+              ),
             ),
           );
         },
@@ -588,24 +598,33 @@ class _CardDetailState extends State<CardDetail> {
         bird.recordings.where((r) => r.file == card?.recording).firstOrNull;
     return Column(
       children: [
-        ?header,
         Expanded(
-          // In 3D like the boosters; the shared picture is taken inside, flat.
+          // The header and the card centered together: the header sits just above it.
           child: Center(
-            child: CardTilt(
-              // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
-              shine:
-                  card != null &&
-                  tiers.indexOf(cardRarity(card)) >= tiers.indexOf('epic'),
-              shineAfter: widget.flipIn
-                  ? const Duration(milliseconds: 1100)
-                  : Duration.zero,
-              child: _flip(
-                RepaintBoundary(
-                  key: _boundary,
-                  child: BirdCardView(bird: bird, card: card),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ?header,
+                Flexible(
+                  // In 3D like the boosters; the shared picture is taken inside, flat.
+                  child: CardTilt(
+                    // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
+                    shine:
+                        card != null &&
+                        tiers.indexOf(cardRarity(card)) >=
+                            tiers.indexOf('epic'),
+                    shineAfter: widget.flipIn
+                        ? const Duration(milliseconds: 1100)
+                        : Duration.zero,
+                    child: _flip(
+                      RepaintBoundary(
+                        key: _boundary,
+                        child: BirdCardView(bird: bird, card: card),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
