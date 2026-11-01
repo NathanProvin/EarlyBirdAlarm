@@ -448,24 +448,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Wake up to a real bird song. Guess the bird among 4 photos to stop the alarm, and win its card.';
+      'Tired of not progressing at learning bird songs? Every morning, wake up to a new bird: guess it right, win its card, and learn its song.';
 
   @override
-  String get introRegionTitle => 'Your region';
+  String get introRegionTitle => 'Choose a region';
 
   @override
   String get introRegion =>
-      'Your alarms play the birds that live around you, in season. Choose your region on the map, or use your position.';
+      'You\'ll hear local birds: select a region on the map, or use your current position.';
 
   @override
-  String get introGameTitle => 'Your game';
+  String get introGameTitle => 'Gameplay';
 
   @override
   String get introLater =>
-      'Language, theme and all of this can be changed later in Settings.';
+      'Harder settings give better rewards; you can change them later in Settings.';
 
   @override
-  String get introCollectionTitle => 'Your collection';
+  String get introCollectionTitle => 'Collect cards';
 
   @override
   String get introTwitch =>
@@ -480,11 +480,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Trade: meet another birder and swap cards face to face.';
 
   @override
-  String get introExamineTitle => 'Examine your cards';
+  String get introExamineTitle => 'Examine cards';
 
   @override
-  String get introExamine =>
-      'Hold a card and move your finger: it tilts and catches the light. Try it!';
+  String get introExamine => 'Tap and hold the card to examine it!';
 
   @override
   String get next => 'Next';
@@ -493,8 +492,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skip => 'Skip';
 
   @override
-  String get letsGo => 'Let\'s go!';
+  String get introAgain => 'See the introduction again';
 
   @override
-  String get introAgain => 'See the introduction again';
+  String get introRarityTitle => 'Rarity and stats';
+
+  @override
+  String get introRarity =>
+      'Card rarity goes from Common to Legendary: rare species are more likely to give rare cards. Each card also carries real statistics of its species: aim for a 100% bird!';
+
+  @override
+  String get start => 'Start';
 }

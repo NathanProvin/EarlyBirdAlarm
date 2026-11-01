@@ -705,7 +705,7 @@ void main() {
     expect(find.text('Early Bird'), findsOneWidget);
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(find.text('Your region'), findsOneWidget);
+    expect(find.text('Choose a region'), findsOneWidget);
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     expect(store.onboarded, isTrue);

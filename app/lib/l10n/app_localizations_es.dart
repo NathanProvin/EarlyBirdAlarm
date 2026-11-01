@@ -450,24 +450,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Despierta con el canto de un ave real. Adivínala entre 4 fotos para apagar la alarma y gana su carta.';
+      '¿Te cuesta avanzar aprendiendo cantos de aves? Cada mañana, despierta con un ave nueva: adivínala, gana su carta y aprende su canto.';
 
   @override
-  String get introRegionTitle => 'Tu región';
+  String get introRegionTitle => 'Elegir región';
 
   @override
   String get introRegion =>
-      'Tus alarmas hacen cantar a las aves que viven a tu alrededor, según la temporada. Elige tu región en el mapa o usa tu ubicación.';
+      'Escucharás aves locales: elige una región en el mapa o usa tu ubicación actual.';
 
   @override
-  String get introGameTitle => 'Tu juego';
+  String get introGameTitle => 'Modo de juego';
 
   @override
   String get introLater =>
-      'El idioma, el tema y todo esto se pueden cambiar luego en Ajustes.';
+      'Los ajustes más difíciles dan mejores recompensas; puedes cambiarlos luego en Ajustes.';
 
   @override
-  String get introCollectionTitle => 'Tu colección';
+  String get introCollectionTitle => 'Colecciona cartas';
 
   @override
   String get introTwitch =>
@@ -482,11 +482,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'Intercambiar: queda con otro pajarero e intercambiad cartas en persona.';
 
   @override
-  String get introExamineTitle => 'Examina tus cartas';
+  String get introExamineTitle => 'Examinar cartas';
 
   @override
-  String get introExamine =>
-      'Mantén pulsada una carta y mueve el dedo: se inclina y atrapa la luz. ¡Pruébalo!';
+  String get introExamine => '¡Mantén pulsada la carta para examinarla!';
 
   @override
   String get next => 'Siguiente';
@@ -495,8 +494,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get skip => 'Saltar';
 
   @override
-  String get letsGo => '¡Vamos!';
+  String get introAgain => 'Ver otra vez la introducción';
 
   @override
-  String get introAgain => 'Ver otra vez la introducción';
+  String get introRarityTitle => 'Rareza y estadísticas';
+
+  @override
+  String get introRarity =>
+      'La rareza de las cartas va de Común a Legendaria: las especies raras tienen más probabilidad de dar cartas raras. Cada carta lleva además estadísticas reales de su especie: ¡busca un ave al 100 %!';
+
+  @override
+  String get start => 'Empezar';
 }

@@ -450,24 +450,24 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Wach auf mit echtem Vogelgesang. Errate den Vogel unter 4 Fotos, um den Wecker auszuschalten, und gewinne seine Karte.';
+      'Kommst du beim Lernen von Vogelstimmen nicht voran? Wach jeden Morgen mit einem neuen Vogel auf: Errate ihn, gewinne seine Karte und lerne seinen Gesang.';
 
   @override
-  String get introRegionTitle => 'Deine Region';
+  String get introRegionTitle => 'Region wählen';
 
   @override
   String get introRegion =>
-      'Deine Wecker spielen die Vögel, die je nach Jahreszeit um dich herum leben. Wähle deine Region auf der Karte oder nutze deinen Standort.';
+      'Du hörst Vögel aus deiner Umgebung: Wähle eine Region auf der Karte oder nutze deinen aktuellen Standort.';
 
   @override
-  String get introGameTitle => 'Dein Spiel';
+  String get introGameTitle => 'Spielweise';
 
   @override
   String get introLater =>
-      'Sprache, Design und all das kannst du später in den Einstellungen ändern.';
+      'Schwierigere Einstellungen bringen bessere Belohnungen; du kannst sie später in den Einstellungen ändern.';
 
   @override
-  String get introCollectionTitle => 'Deine Sammlung';
+  String get introCollectionTitle => 'Karten sammeln';
 
   @override
   String get introTwitch =>
@@ -482,11 +482,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tauschen: Triff andere Vogelbeobachter und tausche Karten von Person zu Person.';
 
   @override
-  String get introExamineTitle => 'Betrachte deine Karten';
+  String get introExamineTitle => 'Karten betrachten';
 
   @override
-  String get introExamine =>
-      'Halte eine Karte und bewege den Finger: Sie neigt sich und fängt das Licht ein. Probier es aus!';
+  String get introExamine => 'Halte die Karte gedrückt, um sie zu betrachten!';
 
   @override
   String get next => 'Weiter';
@@ -495,8 +494,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get skip => 'Überspringen';
 
   @override
-  String get letsGo => 'Los geht\'s!';
+  String get introAgain => 'Einführung erneut ansehen';
 
   @override
-  String get introAgain => 'Einführung erneut ansehen';
+  String get introRarityTitle => 'Seltenheit und Werte';
+
+  @override
+  String get introRarity =>
+      'Die Seltenheit reicht von Häufig bis Legendär: Seltene Arten geben öfter seltene Karten. Jede Karte trägt außerdem echte Werte ihrer Art: Ziel ist ein 100-%-Vogel!';
+
+  @override
+  String get start => 'Starten';
 }

@@ -450,24 +450,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Réveillez-vous au chant d\'un vrai oiseau. Devinez-le parmi 4 photos pour arrêter l\'alarme, et gagnez sa carte.';
+      'Vous n\'arrivez pas à progresser dans l\'apprentissage des chants d\'oiseaux ? Chaque matin, réveillez-vous avec un nouvel oiseau : devinez-le, gagnez sa carte, et apprenez son chant.';
 
   @override
-  String get introRegionTitle => 'Votre région';
+  String get introRegionTitle => 'Choisir une région';
 
   @override
   String get introRegion =>
-      'Vos alarmes font chanter les oiseaux qui vivent autour de vous, selon la saison. Choisissez votre région sur la carte, ou utilisez votre position.';
+      'Vous entendrez des oiseaux locaux : choisissez une région sur la carte, ou utilisez votre position actuelle.';
 
   @override
-  String get introGameTitle => 'Votre jeu';
+  String get introGameTitle => 'Gameplay';
 
   @override
   String get introLater =>
-      'La langue, le thème et tout ceci se changent plus tard dans les Réglages.';
+      'Les réglages plus difficiles donnent de meilleures récompenses ; vous pourrez les changer plus tard dans les Réglages.';
 
   @override
-  String get introCollectionTitle => 'Votre collection';
+  String get introCollectionTitle => 'Collectionner des cartes';
 
   @override
   String get introTwitch =>
@@ -482,11 +482,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Échanger : retrouvez un autre ornithologue et échangez des cartes en personne.';
 
   @override
-  String get introExamineTitle => 'Examinez vos cartes';
+  String get introExamineTitle => 'Examiner les cartes';
 
   @override
-  String get introExamine =>
-      'Maintenez une carte et bougez le doigt : elle s\'incline et capte la lumière. Essayez !';
+  String get introExamine => 'Touchez et maintenez la carte pour l\'examiner !';
 
   @override
   String get next => 'Suivant';
@@ -495,8 +494,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get skip => 'Passer';
 
   @override
-  String get letsGo => 'C\'est parti !';
+  String get introAgain => 'Revoir l\'introduction';
 
   @override
-  String get introAgain => 'Revoir l\'introduction';
+  String get introRarityTitle => 'Rareté et statistiques';
+
+  @override
+  String get introRarity =>
+      'La rareté des cartes va de Commune à Légendaire : les espèces rares ont plus de chances de donner des cartes rares. Chaque carte porte aussi de vraies statistiques de l\'espèce : visez un oiseau à 100 % !';
+
+  @override
+  String get start => 'Commencer';
 }

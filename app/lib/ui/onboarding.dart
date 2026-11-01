@@ -8,6 +8,7 @@ import 'bird_icon.dart';
 import 'booster.dart';
 import 'card.dart';
 import 'settings.dart';
+import 'theme.dart';
 
 /// The introduction, shown once on first launch (and from Settings): what the app is,
 /// the region, the game options, the collection features, and a card to hold and tilt.
@@ -20,7 +21,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pages = 5;
+  static const _pages = 6;
   final _pager = PageController();
   int _page = 0;
 
@@ -97,9 +98,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         top: Icon(Icons.tune, size: 96, color: scheme.primary),
                         title: l.introGameTitle,
                         body: [
-                          const GameOptions(),
-                          const SizedBox(height: 24),
                           Text(l.introLater),
+                          const SizedBox(height: 24),
+                          const GameOptions(),
                         ],
                       ),
                       _Page(
@@ -124,6 +125,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               title: Text(text),
                             ),
                         ],
+                      ),
+                      _Page(
+                        // The five rarities, in their colours.
+                        top: Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 14,
+                          runSpacing: 6,
+                          children: [
+                            for (final t in tiers)
+                              Text(
+                                rarityName(l, t),
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: rarityColor[t],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                          ],
+                        ),
+                        title: l.introRarityTitle,
+                        body: [Text(l.introRarity)],
                       ),
                       _Page(
                         top: _demo == null
@@ -185,7 +207,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     duration: const Duration(milliseconds: 300),
                                     curve: Curves.easeOut,
                                   ),
-                            child: Text(last ? l.letsGo : l.next),
+                            child: Text(last ? l.start : l.next),
                           ),
                         ),
                       ),
