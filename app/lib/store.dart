@@ -190,11 +190,6 @@ class Store extends ChangeNotifier {
       _prefs.setInt('difficulty', d.index).then((_) => notifyListeners());
 
   /// The introduction was seen (or skipped): it shows once, on first launch.
-  /// The soft sound effects (see Sfx), on unless switched off in Settings.
-  bool get sounds => _prefs.getBool('sounds') ?? true;
-  set sounds(bool on) =>
-      _prefs.setBool('sounds', on).then((_) => notifyListeners());
-
   bool get onboarded => _prefs.getBool('onboarded') ?? false;
   set onboarded(bool on) =>
       _prefs.setBool('onboarded', on).then((_) => notifyListeners());

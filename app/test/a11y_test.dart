@@ -8,7 +8,6 @@ import 'package:early_bird/content.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
 import 'package:early_bird/series.dart';
-import 'package:early_bird/sfx.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/credits.dart';
@@ -43,7 +42,6 @@ Bird _bird(String id, int number, String tier) => Bird.fromJson(
 );
 
 void main() {
-  Sfx.enabled = false;
   setUpAll(() async {
     debugContentDir(Directory.systemTemp.createTempSync('eb_a11y'));
     birds = [

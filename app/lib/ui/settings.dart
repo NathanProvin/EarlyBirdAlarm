@@ -191,72 +191,53 @@ class SettingsScreen extends StatelessWidget {
             Text(l.language, style: header),
             const SizedBox(height: 8),
             // Each language written in itself; '' follows the phone. Half width, a pill
-            // like the segmented controls above; the sound effects switch beside it.
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownMenu<String>(
-                    expandedInsets: EdgeInsets.zero,
-                    // Filled in the accent like the chosen difficulty.
-                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    trailingIcon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    selectedTrailingIcon: Icon(
-                      Icons.arrow_drop_up,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    inputDecorationTheme: InputDecorationTheme(
-                      isDense: true,
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.primary,
-                      constraints: const BoxConstraints(maxHeight: 40),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
+            // like the segmented controls above.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.5,
+                child: DropdownMenu<String>(
+                  expandedInsets: EdgeInsets.zero,
+                  // Filled in the accent like the chosen difficulty.
+                  textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  trailingIcon: Icon(
+                    Icons.arrow_drop_down,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  selectedTrailingIcon: Icon(
+                    Icons.arrow_drop_up,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  inputDecorationTheme: InputDecorationTheme(
+                    isDense: true,
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.primary,
+                    constraints: const BoxConstraints(maxHeight: 40),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
-                    initialSelection: store.language ?? '',
-                    dropdownMenuEntries: [
-                      DropdownMenuEntry(value: '', label: l.systemLanguage),
-                      for (final (code, name) in const [
-                        ('en', 'English'),
-                        ('fr', 'Français'),
-                        ('de', 'Deutsch'),
-                        ('es', 'Español'),
-                      ])
-                        DropdownMenuEntry(value: code, label: name),
-                    ],
-                    onSelected: (v) =>
-                        store.language = v == null || v.isEmpty ? null : v,
                   ),
+                  initialSelection: store.language ?? '',
+                  dropdownMenuEntries: [
+                    DropdownMenuEntry(value: '', label: l.systemLanguage),
+                    for (final (code, name) in const [
+                      ('en', 'English'),
+                      ('fr', 'Français'),
+                      ('de', 'Deutsch'),
+                      ('es', 'Español'),
+                    ])
+                      DropdownMenuEntry(value: code, label: name),
+                  ],
+                  onSelected: (v) =>
+                      store.language = v == null || v.isEmpty ? null : v,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  // One item for TalkBack: "Sounds, switch, on".
-                  child: MergeSemantics(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Flexible(child: Text(l.sounds, style: text.bodyLarge)),
-                        const SizedBox(width: 8),
-                        Switch(
-                          value: store.sounds,
-                          onChanged: (on) => store.sounds = on,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 32),
             Text(l.theme, style: header),

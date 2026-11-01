@@ -12,7 +12,6 @@ import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
-import '../sfx.dart';
 import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
@@ -484,7 +483,6 @@ class CardPager extends StatelessWidget {
       appBar: AppBar(),
       body: PageView.builder(
         controller: PageController(initialPage: initial),
-        onPageChanged: (_) => Sfx.swipe(),
         itemCount: entries.length,
         itemBuilder: (_, i) {
           final (bird, card) = entries[i];

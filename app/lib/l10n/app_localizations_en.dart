@@ -117,9 +117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get typeTheBird => 'Type the bird\'s name';
 
   @override
-  String get sounds => 'Sounds';
-
-  @override
   String get wingspan => 'Wingspan';
 
   @override

@@ -7,7 +7,6 @@ import 'package:early_bird/content.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
 import 'package:early_bird/series.dart';
-import 'package:early_bird/sfx.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/trade.dart';
 import 'package:early_bird/ui/booster.dart';
@@ -43,7 +42,6 @@ Bird _b(String id) => birdById(id)!;
 bool _all(Recording r) => true;
 
 void main() {
-  Sfx.enabled = false;
   setUp(() {
     birds = [
       for (final (i, (id, order, family, months, kinds)) in _fake.indexed)

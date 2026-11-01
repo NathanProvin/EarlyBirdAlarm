@@ -306,12 +306,6 @@ abstract class AppLocalizations {
   /// **'Type the bird\'s name'**
   String get typeTheBird;
 
-  /// No description provided for @sounds.
-  ///
-  /// In en, this message translates to:
-  /// **'Sounds'**
-  String get sounds;
-
   /// No description provided for @wingspan.
   ///
   /// In en, this message translates to:
