@@ -789,12 +789,13 @@ class _Badge extends StatelessWidget {
   );
 }
 
-/// "×3": how many copies of the card the player owns, in the theme's accent; [large]
-/// above a full-screen card.
+/// "×3": how many copies of the card the player owns, in the theme's accent or [color]
+/// (the card's rarity, above a full-screen card); [large] above a full-screen card.
 class CopiesBadge extends StatelessWidget {
-  const CopiesBadge(this.copies, {this.large = false, super.key});
+  const CopiesBadge(this.copies, {this.large = false, this.color, super.key});
   final int copies;
   final bool large;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -806,13 +807,13 @@ class CopiesBadge extends StatelessWidget {
         vertical: large ? 4 : 2,
       ),
       decoration: BoxDecoration(
-        color: scheme.primary,
+        color: color ?? scheme.primary,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Text(
         '×$copies',
         style: (large ? text.headlineSmall : text.titleMedium)?.copyWith(
-          color: scheme.onPrimary,
+          color: color == null ? scheme.onPrimary : paper,
           fontWeight: FontWeight.bold,
         ),
       ),

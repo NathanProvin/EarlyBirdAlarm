@@ -282,12 +282,6 @@ abstract class AppLocalizations {
   /// **'Wikipedia'**
   String get wikipedia;
 
-  /// No description provided for @merlin.
-  ///
-  /// In en, this message translates to:
-  /// **'Open Merlin'**
-  String get merlin;
-
   /// No description provided for @expert.
   ///
   /// In en, this message translates to:

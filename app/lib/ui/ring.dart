@@ -152,8 +152,8 @@ class _RingScreenState extends State<RingScreen> {
               Positioned.fill(
                 child: ImageFiltered(
                   imageFilter: ui.ImageFilter.blur(
-                    sigmaX: 60,
-                    sigmaY: 60,
+                    sigmaX: 30,
+                    sigmaY: 30,
                     tileMode: TileMode.mirror,
                   ),
                   child: BirdPhoto(_bird),

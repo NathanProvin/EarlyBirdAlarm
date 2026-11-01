@@ -1,8 +1,8 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -500,23 +500,24 @@ class CardPager extends StatelessWidget {
             child: CardDetail(
               bird: bird,
               card: card,
-              // Always the same height, so every card lines up when swiping.
-              header: SizedBox(
-                height: 48,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 12,
-                  children: [
-                    if (copies > 1) CopiesBadge(copies, large: true),
-                    if (traded != null)
-                      Text(
-                        l.tradedOn(
-                          DateFormat.MMMd(l.localeName).format(traded),
-                        ),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                  ],
-                ),
+              header: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 12,
+                children: [
+                  if (copies > 1)
+                    CopiesBadge(
+                      copies,
+                      large: true,
+                      color: card == null
+                          ? null
+                          : rarityColor[cardRarity(card)],
+                    ),
+                  if (traded != null)
+                    Text(
+                      l.tradedOn(DateFormat.MMMd(l.localeName).format(traded)),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                ],
               ),
             ),
           );
@@ -550,21 +551,8 @@ class CardDetail extends StatefulWidget {
   State<CardDetail> createState() => _CardDetailState();
 }
 
-const _apps = MethodChannel('early_bird/apps');
-const _merlin = 'com.labs.merlinbirdid.app';
-
 class _CardDetailState extends State<CardDetail> {
   final _boundary = GlobalKey();
-  // Merlin has no public link to a species: its button just opens the app, if installed.
-  bool _hasMerlin = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _apps.invokeMethod<bool>('installed', _merlin).then((v) {
-      if (mounted && v == true) setState(() => _hasMerlin = true);
-    }, onError: (_) {});
-  }
 
   /// The species' Wikipedia article in the app's language, found by its Latin name ("go"
   /// opens the article directly when the name is a title or redirect).
@@ -627,33 +615,48 @@ class _CardDetailState extends State<CardDetail> {
     return Column(
       children: [
         Expanded(
-          // The header and the card centered together: the header sits just above it.
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ?header,
-                Flexible(
-                  // In 3D like the boosters; the shared picture is taken inside, flat.
-                  child: CardTilt(
-                    // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
-                    shine:
-                        card != null &&
-                        tiers.indexOf(cardRarity(card)) >=
-                            tiers.indexOf('epic'),
-                    shineAfter: widget.flipIn
-                        ? const Duration(milliseconds: 1100)
-                        : Duration.zero,
-                    child: _flip(
-                      RepaintBoundary(
-                        key: _boundary,
-                        child: BirdCardView(bird: bird, card: card),
+          // The card centered, leaving at least 48 dp above and below; the header midway
+          // in the space above it. The header never moves the card, so cards line up.
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final height = min(box.maxHeight - 96, box.maxWidth / 0.68);
+              final above = (box.maxHeight - height) / 2;
+              return Stack(
+                children: [
+                  if (header != null)
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: above,
+                      // Shrinks to fit there (two lines at a large font size).
+                      child: FittedBox(fit: BoxFit.scaleDown, child: header),
+                    ),
+                  Center(
+                    child: SizedBox(
+                      height: height,
+                      // In 3D like the boosters; the shared picture is taken inside, flat.
+                      child: CardTilt(
+                        // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
+                        shine:
+                            card != null &&
+                            tiers.indexOf(cardRarity(card)) >=
+                                tiers.indexOf('epic'),
+                        shineAfter: widget.flipIn
+                            ? const Duration(milliseconds: 1100)
+                            : Duration.zero,
+                        child: _flip(
+                          RepaintBoundary(
+                            key: _boundary,
+                            child: BirdCardView(bird: bird, card: card),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 12),
@@ -675,16 +678,18 @@ class _CardDetailState extends State<CardDetail> {
             // In the collection (not on the reveal, which has Close instead).
             if (onClose == null) ...[
               RoundButton(
-                icon: Icons.menu_book_outlined,
                 tooltip: l.wikipedia,
                 onPressed: () => _wikipedia(l.localeName.split('_').first),
-              ),
-              if (_hasMerlin)
-                RoundButton(
-                  icon: Icons.open_in_new,
-                  tooltip: l.merlin,
-                  onPressed: () => _apps.invokeMethod<bool>('open', _merlin),
+                // Wikipedia's serif "W".
+                child: Text(
+                  'W',
+                  style: TextStyle(
+                    fontFamily: 'serif',
+                    fontSize: 28,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
+              ),
             ],
             if (onClose != null)
               RoundButton(
@@ -699,15 +704,17 @@ class _CardDetailState extends State<CardDetail> {
   }
 }
 
-/// A big round button (Share, Close).
+/// A big round button (Share, Close) showing [icon], or [child] instead.
 class RoundButton extends StatelessWidget {
   const RoundButton({
-    required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.icon,
+    this.child,
     super.key,
   });
-  final IconData icon;
+  final IconData? icon;
+  final Widget? child;
   final String tooltip;
   final VoidCallback onPressed;
 
@@ -721,6 +728,6 @@ class RoundButton extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
       foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
     ),
-    icon: Icon(icon),
+    icon: child ?? Icon(icon),
   );
 }

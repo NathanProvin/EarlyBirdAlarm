@@ -104,9 +104,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wikipedia => 'Wikipedia';
 
   @override
-  String get merlin => 'Open Merlin';
-
-  @override
   String get expert => 'Expert';
 
   @override

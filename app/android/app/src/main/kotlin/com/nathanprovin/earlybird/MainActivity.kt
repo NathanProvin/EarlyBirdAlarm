@@ -26,12 +26,5 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { _, result ->
                 result.success(packageManager.getPackageInfo(packageName, 0).versionName)
             }
-        // Another app (Merlin): "installed" tells whether it can be opened, "open" opens it.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/apps")
-            .setMethodCallHandler { call, result ->
-                val launch = packageManager.getLaunchIntentForPackage(call.arguments as String)
-                if (call.method == "open" && launch != null) startActivity(launch)
-                result.success(launch != null)
-            }
     }
 }
