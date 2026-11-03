@@ -113,10 +113,9 @@ class _TwitchScreenState extends State<TwitchScreen> {
                         alignment: Alignment.centerRight,
                         child: Padding(
                           padding: const EdgeInsets.only(right: 16),
-                          child: IconButton.filledTonal(
-                            tooltip: l.twitchPlus,
-                            // The bolt in the theme accent, to catch the eye.
-                            icon: Icon(Icons.bolt, color: scheme.primary),
+                          // Pulses when the pile is empty: the moment Plus is worth it.
+                          child: _PlusButton(
+                            attract: store.twitchReady(now) == 0,
                             onPressed: () => showModalBottomSheet<void>(
                               context: context,
                               showDragHandle: true,
@@ -132,6 +131,75 @@ class _TwitchScreenState extends State<TwitchScreen> {
         // Clear of the glass bottom bar.
         SizedBox(height: MediaQuery.paddingOf(context).bottom),
       ],
+    );
+  }
+}
+
+/// The Twitch Plus button: the bolt in the theme accent. With [attract] (no booster
+/// left) it pulses every 2 s: it swells with a glow and the bolt gives a little jolt.
+class _PlusButton extends StatefulWidget {
+  const _PlusButton({required this.attract, required this.onPressed});
+  final bool attract;
+  final VoidCallback onPressed;
+
+  @override
+  State<_PlusButton> createState() => _PlusButtonState();
+}
+
+class _PlusButtonState extends State<_PlusButton>
+    with SingleTickerProviderStateMixin {
+  late final _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  );
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final on = widget.attract && !MediaQuery.disableAnimationsOf(context);
+    if (on && !_pulse.isAnimating) _pulse.repeat();
+    if (!on && _pulse.isAnimating) _pulse.reset();
+    // Its own layer: the pulse repaints only the button.
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _pulse,
+        builder: (context, child) {
+          // A beat in the first 30 % of each cycle, then rest.
+          final t = (_pulse.value / 0.3).clamp(0.0, 1.0);
+          final beat = sin(t * pi);
+          return Transform.scale(
+            scale: 1 + 0.15 * beat,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  if (beat > 0)
+                    BoxShadow(
+                      color: scheme.primary.withValues(alpha: 0.45 * beat),
+                      blurRadius: 14,
+                      spreadRadius: 2,
+                    ),
+                ],
+              ),
+              child: IconButton.filledTonal(
+                tooltip: l.twitchPlus,
+                onPressed: widget.onPressed,
+                icon: Transform.rotate(
+                  angle: 0.25 * sin(t * 3 * pi) * (1 - t),
+                  child: Icon(Icons.bolt, color: scheme.primary),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

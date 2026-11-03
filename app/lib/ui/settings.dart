@@ -250,8 +250,9 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 24),
                 Expanded(
+                  // Centred between Language and the screen's edge.
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(l.gyro, style: header),
                       const SizedBox(height: 2),

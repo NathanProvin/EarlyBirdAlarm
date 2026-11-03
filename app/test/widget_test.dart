@@ -568,20 +568,19 @@ void main() {
           ),
         )
         .transform;
-    Alignment shine() =>
-        ((tester
-                                .widget<DecoratedBox>(
-                                  find.descendant(
-                                    of: find.byType(CardTilt),
-                                    matching: find.byType(DecoratedBox),
-                                  ),
-                                )
-                                .decoration
-                            as BoxDecoration)
-                        .gradient!
-                    as LinearGradient)
-                .begin
-            as Alignment;
+    double shine() =>
+        (tester
+                    .widget<CustomPaint>(
+                      find.descendant(
+                        of: find.byType(CardTilt),
+                        matching: find.byWidgetPredicate(
+                          (w) => w is CustomPaint && w.painter is CardShine,
+                        ),
+                      ),
+                    )
+                    .painter!
+                as CardShine)
+            .s;
     await tester.pump(const Duration(milliseconds: 900));
     expect(now().entry(0, 2), 0); // no sway: flat until touched
     final resting = shine();
@@ -594,7 +593,7 @@ void main() {
     await tester.pump(); // the tween starts…
     await tester.pump(const Duration(milliseconds: 300)); // …and settles
     expect(now().entry(0, 2), greaterThan(0.2)); // rotateY toward the finger
-    expect(shine().x, greaterThan(resting.x + 1));
+    expect(shine(), greaterThan(resting + 1));
     await g.up();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
@@ -798,6 +797,41 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byIcon(Icons.star), findsNWidgets(level ~/ 2));
     }
+  });
+
+  testWidgets('card frames: each rarity\'s material paints, without errors', (
+    tester,
+  ) async {
+    debugContentDir(Directory.systemTemp.createTempSync('eb_frames'));
+    final bird = Bird.fromJson(
+      {
+        'id': 'wallcreeper', 'latin': 'Tichodroma muraria', //
+        'en': 'Wallcreeper', 'fr': 'Tichodrome',
+        'order': 'o', 'family': 'f', 'photo': 'p', 'photoCredit': 'c',
+        'number': 1, 'recordings': [], 'stats': <String, dynamic>{},
+      },
+      {6: 'legendary'},
+      8,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: GridView.count(
+          crossAxisCount: 2,
+          childAspectRatio: 0.68,
+          children: [
+            for (final tier in tiers)
+              BirdCardView(
+                bird: bird,
+                card: rollCard(bird, null, rarity: tier),
+              ),
+          ],
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('onboarding: pages, Next, Skip marks it seen', (tester) async {

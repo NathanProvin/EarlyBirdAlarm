@@ -38,7 +38,10 @@ mixin GyroTilt<T extends StatefulWidget> on State<T> {
     final on = gyroOn() && !MediaQuery.disableAnimationsOf(context);
     if (on && _sub == null) {
       _sub = phoneTilt().listen(
-        (t) => setState(() => gyro = t),
+        // Moves too small to see don't rebuild the card (sensor noise, 60 a second).
+        (t) {
+          if ((t - gyro).distance > 0.01) setState(() => gyro = t);
+        },
         onError: (Object _) {}, // no sensor: the card just stays flat
       );
     } else if (!on && _sub != null) {

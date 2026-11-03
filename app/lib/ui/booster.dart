@@ -785,31 +785,13 @@ class _CardTiltState extends State<CardTilt> with GyroTilt {
                 if (widget.shine)
                   Positioned.fill(
                     child: IgnorePointer(
-                      child: AnimatedOpacity(
-                        opacity: _shining ? 1 : 0,
+                      // One painter (clip and gradient inside): no fade or clip layers
+                      // to rebuild at each tilt step.
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(end: _shining ? 1 : 0),
                         duration: const Duration(milliseconds: 400),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(radius),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment(s - 1, -1),
-                                end: Alignment(s + 1, 1),
-                                colors: [
-                                  for (final a in const [
-                                    0.0,
-                                    0.1,
-                                    0.32,
-                                    0.1,
-                                    0.0,
-                                  ])
-                                    Colors.white.withValues(alpha: a),
-                                ],
-                                stops: const [0.3, 0.45, 0.5, 0.55, 0.7],
-                              ),
-                            ),
-                          ),
-                        ),
+                        builder: (context, fade, _) =>
+                            CustomPaint(painter: CardShine(s, fade)),
                       ),
                     ),
                   ),
@@ -821,4 +803,36 @@ class _CardTiltState extends State<CardTilt> with GyroTilt {
       ),
     ),
   );
+}
+
+/// The glossy reflection over an Epic or Legendary card: a white band whose position
+/// [s] slides with the tilt, faded in by [fade].
+class CardShine extends CustomPainter {
+  const CardShine(this.s, this.fade);
+  final double s;
+  final double fade;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (fade == 0) return;
+    final rect = Offset.zero & size;
+    canvas
+      ..clipRRect(RRect.fromRectAndRadius(rect, const Radius.circular(radius)))
+      ..drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment(s - 1, -1),
+            end: Alignment(s + 1, 1),
+            colors: [
+              for (final a in const [0.0, 0.1, 0.32, 0.1, 0.0])
+                Colors.white.withValues(alpha: a * fade),
+            ],
+            stops: const [0.3, 0.45, 0.5, 0.55, 0.7],
+          ).createShader(rect),
+      );
+  }
+
+  @override
+  bool shouldRepaint(CardShine old) => old.s != s || old.fade != fade;
 }
