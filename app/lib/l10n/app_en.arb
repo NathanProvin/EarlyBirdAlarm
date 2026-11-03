@@ -223,5 +223,7 @@
   "shareTagline": "The birders’ alarm · Free on Google Play",
   "shareText": "I knew that song: {bird}! {rarity} card won. {link}",
   "@shareText": {"placeholders": {"bird": {"type": "String"}, "rarity": {"type": "String"}, "link": {"type": "String"}}},
-  "shareCopied": "Link copied: paste it in your message if the app leaves it out"
+  "shareCopied": "Link copied: paste it in your message if the app leaves it out",
+  "gyro": "Gyro",
+  "gyroHint": "Cards tilt as you move the phone"
 }

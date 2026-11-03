@@ -174,5 +174,7 @@
   "shareTitle": "¡Carta {rarity}!",
   "shareTagline": "El despertador de los pajareros · Gratis en Google Play",
   "shareText": "¡Reconocí el canto: {bird}! Carta {rarity} ganada. {link}",
-  "shareCopied": "Enlace copiado: pégalo en tu mensaje si la app no lo incluye"
+  "shareCopied": "Enlace copiado: pégalo en tu mensaje si la app no lo incluye",
+  "gyro": "Giro",
+  "gyroHint": "Las cartas se inclinan al mover el teléfono"
 }

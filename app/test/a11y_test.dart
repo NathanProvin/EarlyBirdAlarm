@@ -13,6 +13,7 @@ import 'package:early_bird/store.dart';
 import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/credits.dart';
 import 'package:early_bird/ui/edit.dart';
+import 'package:early_bird/ui/gyro.dart';
 import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/ring.dart';
 import 'package:early_bird/ui/series.dart';
@@ -64,6 +65,7 @@ void main() {
         'birds': ['blue tit', 'great tit', 'robin'],
       }),
     ];
+    gyroOn = () => false; // no sensor plugin in tests
     SharedPreferences.setMockInitialValues({'onboarded': true});
     store = await Store.load();
     for (final b in birds.take(3)) {

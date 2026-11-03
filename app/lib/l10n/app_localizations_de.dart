@@ -585,4 +585,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get shareCopied =>
       'Link kopiert: füge ihn in deine Nachricht ein, falls die App ihn weglässt';
+
+  @override
+  String get gyro => 'Gyro';
+
+  @override
+  String get gyroHint => 'Karten neigen sich, wenn du das Handy bewegst';
 }

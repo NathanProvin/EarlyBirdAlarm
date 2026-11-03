@@ -581,4 +581,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shareCopied =>
       'Link copied: paste it in your message if the app leaves it out';
+
+  @override
+  String get gyro => 'Gyro';
+
+  @override
+  String get gyroHint => 'Cards tilt as you move the phone';
 }

@@ -174,5 +174,7 @@
   "shareTitle": "Karte „{rarity}“!",
   "shareTagline": "Der Wecker für Vogelfreunde · Gratis bei Google Play",
   "shareText": "Ich hab den Gesang erkannt: {bird}! Karte „{rarity}“ gewonnen. {link}",
-  "shareCopied": "Link kopiert: füge ihn in deine Nachricht ein, falls die App ihn weglässt"
+  "shareCopied": "Link kopiert: füge ihn in deine Nachricht ein, falls die App ihn weglässt",
+  "gyro": "Gyro",
+  "gyroHint": "Karten neigen sich, wenn du das Handy bewegst"
 }

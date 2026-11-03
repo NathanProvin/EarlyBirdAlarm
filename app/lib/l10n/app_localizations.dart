@@ -1151,6 +1151,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Link copied: paste it in your message if the app leaves it out'**
   String get shareCopied;
+
+  /// No description provided for @gyro.
+  ///
+  /// In en, this message translates to:
+  /// **'Gyro'**
+  String get gyro;
+
+  /// No description provided for @gyroHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards tilt as you move the phone'**
+  String get gyroHint;
 }
 
 class _AppLocalizationsDelegate

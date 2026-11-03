@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../birds.dart';
+import 'gyro.dart';
 import 'theme.dart';
 
 /// The app icon (half-sun on the horizon, perched bird), drawn from the shapes of
@@ -262,7 +263,7 @@ class BoosterPile extends StatefulWidget {
 }
 
 class _BoosterPileState extends State<BoosterPile>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, GyroTilt {
   static const _w = boosterWidth, _h = boosterHeight, _margin = 40.0;
   // Each booster under the top one sits a little askew (top first).
   static const _angles = [0.0, -0.07, 0.09, -0.11, 0.05];
@@ -283,6 +284,7 @@ class _BoosterPileState extends State<BoosterPile>
     duration: const Duration(milliseconds: 300),
   );
   Offset _tilt = Offset.zero; // -1..1 from the centre, follows the finger
+  Offset get _lean => _tilt == Offset.zero ? gyro : _tilt; // the finger wins
 
   @override
   void dispose() {
@@ -341,7 +343,7 @@ class _BoosterPileState extends State<BoosterPile>
       },
       child: ClipPath(
         clipper: const _TearClipper(strip: true),
-        child: BoosterFace(shine: 0.5 + _tilt.dx / 2),
+        child: BoosterFace(shine: 0.5 + _lean.dx / 2),
       ),
     );
     return Stack(
@@ -349,7 +351,7 @@ class _BoosterPileState extends State<BoosterPile>
       children: [
         ClipPath(
           clipper: const _TearClipper(strip: false),
-          child: BoosterFace(shine: 0.5 + _tilt.dx / 2),
+          child: BoosterFace(shine: 0.5 + _lean.dx / 2),
         ),
         strip,
       ],
@@ -374,7 +376,7 @@ class _BoosterPileState extends State<BoosterPile>
         child: SizedBox.fromSize(
           size: _box,
           child: TweenAnimationBuilder<Offset>(
-            tween: Tween(end: _tilt),
+            tween: Tween(end: _lean),
             duration: const Duration(milliseconds: 200),
             builder: (context, tilt, _) => AnimatedBuilder(
               animation: _float,
@@ -740,7 +742,7 @@ class CardTilt extends StatefulWidget {
   State<CardTilt> createState() => _CardTiltState();
 }
 
-class _CardTiltState extends State<CardTilt> {
+class _CardTiltState extends State<CardTilt> with GyroTilt {
   Offset? _finger; // -1..1 from the centre while held
   bool _shining = false;
 
@@ -766,7 +768,7 @@ class _CardTiltState extends State<CardTilt> {
       onLongPressMoveUpdate: (d) => _follow(d.localPosition, box.biggest),
       onLongPressEnd: (_) => setState(() => _finger = null),
       child: TweenAnimationBuilder<Offset>(
-        tween: Tween(end: _finger ?? Offset.zero),
+        tween: Tween(end: _finger ?? gyro),
         duration: const Duration(milliseconds: 160),
         builder: (context, v, child) {
           // Where the highlight band sits: upper left at rest, sliding with the tilt.

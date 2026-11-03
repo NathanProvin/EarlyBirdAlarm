@@ -174,5 +174,7 @@
   "shareTitle": "Carte {rarity} !",
   "shareTagline": "Le réveil des ornithos · Gratuit sur Google Play",
   "shareText": "J’ai reconnu le chant : {bird} ! Carte {rarity} gagnée. {link}",
-  "shareCopied": "Lien copié : colle-le dans ton message si l’app ne l’ajoute pas"
+  "shareCopied": "Lien copié : colle-le dans ton message si l’app ne l’ajoute pas",
+  "gyro": "Gyro",
+  "gyroHint": "Les cartes s’inclinent quand tu bouges le téléphone"
 }

@@ -216,6 +216,11 @@ class Store extends ChangeNotifier {
   set onboarded(bool on) =>
       _prefs.setBool('onboarded', on).then((_) => notifyListeners());
 
+  /// Cards and boosters lean as the phone moves (ui/gyro.dart).
+  bool get gyro => _prefs.getBool('gyro') ?? true;
+  set gyro(bool on) =>
+      _prefs.setBool('gyro', on).then((_) => notifyListeners());
+
   /// Ignore the season: any bird of the region can ring.
   bool get allBirds => _prefs.getBool('allBirds') ?? false;
   set allBirds(bool on) =>

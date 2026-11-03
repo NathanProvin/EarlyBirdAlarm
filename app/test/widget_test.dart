@@ -13,6 +13,7 @@ import 'package:early_bird/trade.dart';
 import 'package:early_bird/ui/booster.dart';
 import 'package:early_bird/ui/card.dart';
 import 'package:early_bird/ui/collection.dart';
+import 'package:early_bird/ui/gyro.dart';
 import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
 import 'package:early_bird/ui/settings.dart';
@@ -46,6 +47,7 @@ bool _all(Recording r) => true;
 
 void main() {
   setUp(() {
+    gyroOn = () => false; // no sensor plugin in tests
     birds = [
       for (final (i, (id, order, family, months, kinds)) in _fake.indexed)
         Bird.fromJson({
