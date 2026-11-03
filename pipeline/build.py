@@ -50,6 +50,9 @@ XC_OK_LICENSE = re.compile(r"creativecommons\.org/(publicdomain/zero|licenses/(b
 # Non-commercial fallback (decided 2026-10-28): only for species with no free recording, flagged "nc"
 # in species.json so they can be replaced before any monetization. ND is never used (we trim clips).
 XC_NC_LICENSE = re.compile(r"creativecommons\.org/licenses/(by-nc|by-nc-sa)/", re.I)
+# Branch adding-tips (2026-11-03): the paid version can't use NC recordings, so the NC fallback is off
+# and species with no free xeno-canto or iNaturalist recording are dropped.
+ALLOW_NC = False
 
 
 def get(url, params=None, headers=None, binary=False):
@@ -488,16 +491,63 @@ def kind(xc_type):
     return "call"
 
 
-def xc_recordings(latin, key, n, pinned=None, en=None):
+def xc_recordings(latin, key, n, pinned=None, en=None, nc=False):
     """Up to n allowed xeno-canto recordings, as varied as possible: kinds rotate
     song -> call -> alarm, and each pick prefers a new recordist and country.
-    Falls back to non-commercial licenses only when no free recording is usable.
+    nc: non-commercial licenses instead of free ones (the last resort, see main).
     With en, the species is looked up by its English name (see xc_search)."""
-    picked = xc_pick(xc_search(latin, key, ("PD", "BY", "BY-SA"), XC_OK_LICENSE, pinned, en), n, pinned)
-    if not picked:
-        picked = xc_pick(xc_search(latin, key, ("BY-NC", "BY-NC-SA"), XC_NC_LICENSE, pinned, en), n, pinned)
-        for r in picked:
-            r["nc"] = True
+    licenses = (("BY-NC", "BY-NC-SA"), XC_NC_LICENSE) if nc else (("PD", "BY", "BY-SA"), XC_OK_LICENSE)
+    picked = xc_pick(xc_search(latin, key, *licenses, pinned, en), n, pinned)
+    for r in picked:
+        r["nc"] = nc
+    return picked
+
+
+INAT_LICENSES = {"cc0": "", "cc-by": "creativecommons.org/licenses/by/4.0/",
+                 "cc-by-sa": "creativecommons.org/licenses/by-sa/4.0/"}  # iNat licenses are 4.0
+
+
+def seconds_of(path):
+    out = subprocess.run([str(FFMPEG.with_name("ffprobe.exe")), "-v", "error", "-show_entries",
+                          "format=duration", "-of", "csv=p=0", str(path)], capture_output=True, text=True)
+    try:
+        return float(out.stdout.strip())
+    except ValueError:  # unreadable file
+        return 0
+
+
+def inat_recordings(latin, n):
+    """Up to n free iNaturalist sounds (research grade: the species ID is community-checked), the
+    fallback between free and NC xeno-canto. They have no quality grade or song/call label: all
+    count as "call" (Easy mode keeps xeno-canto songs), and each must last >= 10 s once downloaded.
+    Local first, then the most faved; one per recordist."""
+    r = get("https://api.inaturalist.org/v1/observations",
+            {"taxon_name": latin, "sounds": "true", "quality_grade": "research",
+             "sound_license": ",".join(INAT_LICENSES), "order_by": "votes", "per_page": 50})
+    time.sleep(1)  # iNaturalist asks for ~1 request a second (cached responses skip the API anyway)
+    obs = [o for o in r.get("results", []) if o.get("taxon", {}).get("name") == latin]
+
+    def in_area(o):
+        lon, lat = (o.get("geojson") or {}).get("coordinates") or (None, None)
+        return lat is not None and any(a <= lat <= b and c <= lon <= d for (a, b), (c, d) in CELL_AREAS)
+
+    picked, users, tmp = [], set(), CACHE / "files"
+    for o in sorted(obs, key=lambda o: not in_area(o)):  # stable: keeps the votes order
+        user = o.get("user") or {}
+        name = user.get("name") or user.get("login")
+        for s in o.get("sounds", []):
+            if len(picked) >= n or name in users or not s.get("file_url") \
+                    or s.get("license_code") not in INAT_LICENSES:  # no file_url: hosted on SoundCloud
+                continue
+            src = tmp / f"inat-{s['id']}.audio"
+            if not src.exists():
+                src.write_bytes(get(s["file_url"], binary=True))
+            if (secs := seconds_of(src)) < 10:
+                continue
+            users.add(name)
+            picked.append({"id": s["id"], "ref": f"iNat {o['id']}", "file": s["file_url"], "src": src,
+                           "seconds": int(secs), "kind": "call", "rec": name,
+                           "lic": INAT_LICENSES[s["license_code"]]})
     return picked
 
 
@@ -812,15 +862,23 @@ def main():
         pinned = override.removeprefix("xc=") if override.startswith("xc=") else None
         n = RECORDINGS_PER_TIER[best_tier[key]]
         # xeno-canto may use a newer name than GBIF (Curruca vs Sylvia communis).
-        recs = xc_recordings(latin, xc_key, n, pinned) or (
-            wd_latin and wd_latin != latin and xc_recordings(wd_latin, xc_key, n)) or (
-            xc_recordings(latin, xc_key, n, en=en)) or []
+        other = wd_latin if wd_latin and wd_latin != latin else None
+        xc = lambda nc: (xc_recordings(latin, xc_key, n, pinned, nc=nc)
+                         or (other and xc_recordings(other, xc_key, n, nc=nc))
+                         or xc_recordings(latin, xc_key, n, en=en, nc=nc))
+        # Free xeno-canto, then free iNaturalist, then (main branch only) NC xeno-canto.
+        recs = (xc(False) or inat_recordings(latin, n) or (other and inat_recordings(other, n))
+                or (ALLOW_NC and xc(True)) or [])
         recordings = []
         for i, rec in enumerate(recs, 1):
-            audio_out = OUT / "audio" / f"{bird_id}-{i}.m4a"
+            # iNaturalist clips get their own names: an old NC clip of the same bird is never reused.
+            name = f"{bird_id}-{'n' if 'src' in rec else ''}{i}.m4a"
+            audio_out = OUT / "audio" / name
             if not audio_out.exists():  # shortcut: delete site/v1/audio to re-encode after changing picks
-                src = tmp / f"{bird_id}-{rec['id']}.audio"
-                src.write_bytes(get(rec["file"], binary=True))
+                src = rec.get("src")  # iNaturalist: already downloaded to measure its length
+                if not src:
+                    src = tmp / f"{bird_id}-{rec['id']}.audio"
+                    src.write_bytes(get(rec["file"], binary=True))
                 length = min(30, max(rec["seconds"] - 1, 5))
                 try:  # -vn: some files carry a cover image
                     # Leading silence is trimmed so the bird is heard the moment the alarm starts;
@@ -832,16 +890,17 @@ def main():
                            "-ac", "1", "-ar", "44100", "-c:a", "aac", "-b:a", "48k", str(audio_out))
                 except subprocess.CalledProcessError:
                     audio_out.unlink(missing_ok=True)
-                    print(f"    ! XC{rec['id']} ({latin}) could not be converted")
+                    print(f"    ! {rec.get('ref', 'XC' + str(rec['id']))} ({latin}) could not be converted")
                     continue
             lic = re.search(r"licenses/([a-z-]+)/([\d.]+)", rec["lic"])
             recordings.append({
-                "file": f"audio/{bird_id}-{i}.m4a", "kind": rec["kind"],
-                "credit": f"{rec['rec']} · XC{rec['id']} · {f'CC {lic[1].upper()} {lic[2]}' if lic else 'CC0'}",
+                "file": f"audio/{name}", "kind": rec["kind"],
+                "credit": f"{rec['rec']} · {rec.get('ref', 'XC' + str(rec['id']))} · "
+                          f"{f'CC {lic[1].upper()} {lic[2]}' if lic else 'CC0'}",
                 **({"nc": True} if rec.get("nc") else {}),
             })
         if not recordings:
-            drop("no usable xeno-canto recording with an allowed license (A/B/C quality, ≥10 s)")
+            drop("no usable free recording (xeno-canto A/B/C quality or iNaturalist research grade, ≥10 s)")
             continue
         birds.append({
             "id": bird_id, "latin": latin,
