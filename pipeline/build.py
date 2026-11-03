@@ -40,6 +40,7 @@ ROOT = Path(__file__).resolve().parent
 CACHE = ROOT / "cache"
 OUT = ROOT / "site" / "v1"
 MY_PHOTOS = ROOT / "my_photos"
+NUMBERS = ROOT / "numbers.json"  # permanent card numbers, see add_card_data
 FFMPEG = ROOT.parent / ".tools" / "ffmpeg" / "bin" / "ffmpeg.exe"
 UA = "EarlyBirdAlarm-pipeline/0.1 (https://github.com/NathanProvin/EarlyBirdAlarm)"
 
@@ -518,9 +519,10 @@ def xc_recordings(latin, key, n, pinned=None, en=None, nc=False):
     return picked
 
 
-# 5 s, not xeno-canto's 10 (2026-11-03, user's choice): brings back ~36 species whose only free
-# iNaturalist clips are short (Mandarin Duck, Montagu's Harrier, Black Scoter…); they loop while ringing.
-INAT_MIN_SECONDS = 5
+# Shortest usable recording, xeno-canto and iNaturalist (2026-11-03, user's choice; 10 s before):
+# brings back species whose only free clips are short (Mandarin Duck, Montagu's Harrier, Ruff,
+# Hawk Owl…); they loop while ringing. Longer recordings still come first.
+MIN_SECONDS = 5
 INAT_LICENSES = {"cc0": "", "cc-by": "creativecommons.org/licenses/by/4.0/",
                  "cc-by-sa": "creativecommons.org/licenses/by-sa/4.0/"}  # iNat licenses are 4.0
 
@@ -537,7 +539,7 @@ def seconds_of(path):
 def inat_recordings(latin, n):
     """Up to n free iNaturalist sounds (research grade: the species ID is community-checked), the
     fallback between free and NC xeno-canto. They have no quality grade or song/call label: all
-    count as "call" (Easy mode keeps xeno-canto songs), and each must last >= INAT_MIN_SECONDS once downloaded.
+    count as "call" (Easy mode keeps xeno-canto songs), and each must last >= MIN_SECONDS once downloaded.
     Local first, then the most faved; one per recordist."""
     # The iNaturalist taxon this exact name means: a renamed species resolves to its new name
     # (Puffinus griseus -> Ardenna grisea), while a name search alone would also bring back
@@ -569,7 +571,7 @@ def inat_recordings(latin, n):
             src = tmp / f"inat-{s['id']}.audio"
             if not src.exists():
                 src.write_bytes(get(s["file_url"], binary=True))
-            if (secs := seconds_of(src)) < INAT_MIN_SECONDS:
+            if (secs := seconds_of(src)) < MIN_SECONDS:
                 continue
             users.add(name)
             picked.append({"id": s["id"], "ref": f"iNat {o['id']}", "file": s["file_url"], "src": src,
@@ -606,7 +608,10 @@ def xc_pick(recs, n, pinned=None):
     for r in recs:
         r["seconds"], r["kind"] = seconds(r), kind(r.get("type", ""))
     pinned_rec = [r for r in recs if pinned and r["id"] == pinned][:1]  # overrides.csv pick goes first
-    usable = [r for r in recs if r.get("q") in ("A", "B", "C") and r["seconds"] >= 10 and r not in pinned_rec]
+    good = [r for r in recs if r.get("q") in ("A", "B", "C") and r not in pinned_rec]
+    # 10 s as before; shorter (down to MIN_SECONDS) only for a species with nothing longer, so the
+    # recordings of species already in the catalog don't change.
+    usable = [r for r in good if r["seconds"] >= 10] or [r for r in good if r["seconds"] >= MIN_SECONDS]
     recs = [r for r in usable if not SKIP_TYPES.search(r.get("type", ""))]
     def in_area(r):  # recorded in Europe or North America: the dialect our users hear
         try:
@@ -930,7 +935,7 @@ def main():
                 **({"nc": True} if rec.get("nc") else {}),
             })
         if not recordings:
-            drop("no usable free recording (xeno-canto A/B/C quality ≥ 10 s, or iNaturalist research grade ≥ 5 s)")
+            drop("no usable free recording (xeno-canto A/B/C quality or iNaturalist research grade, ≥ 5 s)")
             continue
         birds.append({
             "id": bird_id, "latin": latin,
@@ -994,6 +999,20 @@ def write_json(path, data):
     path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
 
+def assign_numbers(birds, path):
+    """Card numbers are permanent (2026-11-03): a species keeps the number players already see
+    (path: numbers.json, started from the live 1,713-species catalog), a dropped one leaves a
+    gap, and new species get the next numbers, in taxonomic order. Renumbering every build
+    would change everyone's cards each time species come or go."""
+    numbers = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    for b in sorted(birds, key=lambda b: (b["order"], b["family"], b["latin"])):
+        if b["id"] not in numbers:
+            numbers[b["id"]] = max(numbers.values(), default=0) + 1
+        b["number"] = numbers[b["id"]]
+    path.write_text(json.dumps(numbers, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
+    assert len({b["number"] for b in birds}) == len(birds)  # one number per species
+
+
 def add_card_data(birds):
     """Card number (taxonomic order over all species) and stats [mean, sd]."""
     mass = avonet()
@@ -1024,8 +1043,7 @@ def add_card_data(birds):
         if not st["length"] and st["wingspan"]:
             mean = st["wingspan"][0] * ratio
             st["length"], st["source_length"] = [mean, mean * 0.04], "estimated"
-    for i, b in enumerate(sorted(birds, key=lambda b: (b["order"], b["family"], b["latin"])), 1):
-        b["number"] = i
+    assign_numbers(birds, NUMBERS)
     for b in birds:
         st = b["stats"]
         source = st.pop("source_length")
