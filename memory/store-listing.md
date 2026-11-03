@@ -1,10 +1,10 @@
 # Early Bird Alarm — Google Play listing & declarations
 
-Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-01
+Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-03 (store title, descriptions rewritten for conversion); before: 2026-11-01
 (trading, series rewards, 4 languages, world map, search, onboarding).
 
 ## Basics
-- **App name:** Early Bird Alarm (≤ 30 chars)
+- **App name:** see Store title below
 - **Package:** `com.nathanprovin.earlybird`
 - **Category:** Lifestyle (alternative: Education)
 - **Tags:** alarm clock, birds, birdwatching, nature, card collecting
@@ -18,92 +18,166 @@ Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Upda
 - **Feature graphic 1024 × 500:** `store/feature-graphic.png` ("Early Bird — Wake up to real bird songs. Guess the bird, win its card." + the five rarity colours)
 - **Phone screenshots (1080 × 2340):** `store/screenshots/` — see the list at the end
 
+## Store title (≤ 30 chars)
+- **Recommended:** Early Bird: Bird Song Alarm (puts the searched words "bird song" and "alarm" in the title, which counts most for search ranking; the launcher label is unchanged)
+- **FR:** Early Bird : réveil oiseaux
+- **DE:** Early Bird: Vogelstimmen-Wecker
+- **ES:** Early Bird: alarma de cantos
+- Fallback: Early Bird Alarm
+
 ## Short description (≤ 80 chars)
-- **EN:** Wake up to a real bird song, guess the bird, and collect its card.
-- **FR:** Réveillez-vous au chant d'un vrai oiseau, devinez-le et gagnez sa carte.
-- **DE:** Wach auf mit echtem Vogelgesang, errate den Vogel und sammle seine Karte.
-- **ES:** Despierta con el canto de un ave real, adivínala y gana su carta.
+- **EN:** Wake up to real bird songs. Guess the bird, win its card, trade with friends.
+- **FR:** Réveil au chant d'un vrai oiseau : devinez-le, gagnez sa carte, échangez-la.
+- **DE:** Wach auf mit echtem Vogelgesang: Vogel erraten, Karte gewinnen, tauschen.
+- **ES:** Despierta con cantos de aves reales: adivina el ave, gana su carta, cámbiala.
 
 ## Full description (≤ 4000 chars)
+EN reworked by the user to sound more human (2026-11-03); FR reworked by the user (familiar tu, unlike the app which says vous); DE/ES translated from the EN (native review pending). Written for conversion (2026-11-03): the first ~170 characters show before "About this app" is opened, so they carry the hook; then how it works, collecting, sharing and trading (virality), the ear training, the alarm basics, and the trust line.
+
 ### EN
-Tired of not progressing at learning bird songs? Early Bird Alarm wakes you up every morning with a real bird song from your region and season.
+Your alarm sings. Guess the bird. Collect its card. Every morning a bird from your area wakes you up: guess it right to get its card. How many species can you collect?
 
-Guess which bird is singing among 4 photos to stop the alarm. Right answer? You win its card: a trading card with its own rarity, photo, recording and real statistics of the species (weight, wingspan, length, migration distance). Wrong? It's "heard" — catch it next time. Day after day, you learn the songs around you.
+HOW IT WORKS
+1. Set your alarm. It rings with a real bird song, seen this month in your area, based on real-life data.
+2. Guess the bird to stop it.
+3. Right? You win its card. Wrong? Remember it and try later!
+In a few weeks you'll recognise the birds singing around you.
 
-• Real recordings from xeno-canto and photos from Wikimedia Commons
-• 1,700+ species of Europe and North America: choose your region on a world map, or use your position
-• Seasonal birds, or all the birds of your region
-• Easy, Medium and Hard: common birds' songs first, then calls and alarm calls of rarer birds
-• 5 rarities, from Common to Legendary — rare species give rarer cards. Aim for a 100% bird!
-• Twitch Zone: a free booster every 15 minutes to train your ear and win more cards
-• Series to complete — gulls, owls, deep woods, city birds, birders' legends… — and achievements, each rewarded with a card of guaranteed rarity
-• Trade cards face to face: two phones side by side, over Bluetooth — no account, no server
-• Search your collection, share your cards with friends
-• Four bird themes: Blackbird, Serin, Blue Tit and Gull
-• Multiple alarms, repeat days, snooze, gentle fade-in
-• English, French, German and Spanish
+COLLECT
+• 1,700+ species of Europe and North America with real vocalizations and real stats: weight, wingspan, length, migration distance
+• 5 card rarities, from Common to Legendary
+• Series to complete and achievements, each rewarded with a card of guaranteed rarity
+• Twitch Zone: a free booster every 15 min to train your ear
+
+SHOW OFF AND TRADE
+• Pulled a Legendary? Share the card with your friends
+• Trade cards face to face: two phones side by side, over Bluetooth. No account, no server
+• Missing an owl? Your friend might have one, trade it for a crow!
+
+TRAIN YOUR EAR
+• Easy, Medium, Hard: from the songs of common birds to the calls of rare ones
+• Expert: no photos, type the bird's name
+• Direct link from your collected species to their Wikipedia page
+
+A REAL ALARM CLOCK
+• Multiple alarms, repeat days, snooze
+• Rings on the lock screen
 • Works offline once your region is downloaded
-• No account, no ads, no tracking. Your position (optional) never leaves your phone.
+
+FREE. NO ADS. NO ACCOUNT. NO TRACKING.
+
+In English, French, German and Spanish.
+
+For birdwatchers, nature lovers, collectors and anyone who hates their vanilla alarm.
 
 ### FR
-Vous n'arrivez pas à progresser dans l'apprentissage des chants d'oiseaux ? Early Bird Alarm vous réveille chaque matin avec le chant d'un vrai oiseau de votre région, de saison.
+Ton alarme chante. Devine l'oiseau. Gagne sa carte.
+Chaque matin, un oiseau te réveille : devine-le et remporte sa carte. Combien d'espèces collecteras-tu ?
 
-Devinez quel oiseau chante parmi 4 photos pour arrêter l'alarme. Bonne réponse ? Vous gagnez sa carte : une carte à collectionner avec sa rareté, sa photo, son enregistrement et de vraies statistiques de l'espèce (poids, envergure, longueur, distance de migration). Raté ? Il est « entendu » — ce sera pour la prochaine fois. Jour après jour, vous apprenez les chants qui vous entourent.
+FONCTIONNEMENT
+1. Règle l'alarme. Elle sonne avec le chant d'un vrai oiseau, observé ce mois-ci dans ta région, d'après des données de terrain.
+2. Devine l'oiseau pour arrêter l'alarme.
+3. Bonne réponse ? Tu gagnes sa carte. Raté ? Retiens son chant pour la prochaine fois !
+En quelques semaines, les chants des oiseaux de ta région n'auront plus de secrets pour toi.
 
-• De vrais enregistrements de xeno-canto et des photos de Wikimedia Commons
-• Plus de 1 700 espèces d'Europe et d'Amérique du Nord : choisissez votre région sur une carte du monde, ou utilisez votre position
-• Les oiseaux de saison, ou tous les oiseaux de votre région
-• Facile, Moyen, Difficile : d'abord les chants des oiseaux communs, puis les cris et cris d'alarme d'oiseaux plus rares
-• 5 raretés, de Commune à Légendaire — les espèces rares donnent des cartes plus rares. Visez un oiseau à 100 % !
-• Zone Cocheur : un booster gratuit toutes les 15 minutes pour entraîner votre oreille et gagner d'autres cartes
-• Des séries à compléter — goélands, chouettes, forêt profonde, citadins, légendes des cocheurs… — et des succès, chacun récompensé par une carte de rareté garantie
-• Échangez des cartes en personne : deux téléphones côte à côte, par Bluetooth — sans compte, sans serveur
-• Cherchez dans votre collection, partagez vos cartes avec vos amis
-• Quatre thèmes d'oiseaux : Merle, Serin, Mésange et Mouette
-• Plusieurs alarmes, jours de répétition, répétition, montée progressive du volume
-• Français, anglais, allemand et espagnol
-• Fonctionne hors ligne une fois votre région téléchargée
-• Pas de compte, pas de publicité, pas de pistage. Votre position (facultative) ne quitte jamais votre téléphone.
+COLLECTER
+• Plus de 1 700 espèces d'Europe et d'Amérique du Nord, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• 5 raretés de cartes, de Commune à Légendaire
+• Des séries à compléter et des succès, chacun récompensé par une carte de rareté garantie
+• Zone Cocheur : un booster gratuit toutes les 15 min pour t'entraîner
+
+ÉCHANGER
+• Une Légendaire ? Partage-la avec tes amis
+• Échange des cartes en personne, téléphone contre téléphone, par Bluetooth. Pas de compte, pas de serveur
+• Il te manque une chouette ? Échange-la contre une corneille !
+
+S'ENTRAÎNER
+• Facile, Moyen, Difficile : des chants d'oiseaux communs aux cris d'espèces rares
+• Expert : sans photos, juste le nom de l'oiseau
+• Un lien direct de chaque espèce collectionnée vers sa page Wikipédia
+
+UN VRAI RÉVEIL
+• Plusieurs alarmes, jours de répétition, rappel
+• Sonne sur l'écran verrouillé
+• Fonctionne hors ligne une fois ta région téléchargée
+
+GRATUIT. SANS PUB. SANS COMPTE. SANS PISTAGE.
+
+En français, anglais, allemand et espagnol.
+
+Pour les ornithos, les amoureux de la nature, les collectionneurs et tous ceux qui en ont assez de leur réveil habituel.
 
 ### DE
-Kommst du beim Lernen von Vogelstimmen nicht voran? Early Bird Alarm weckt dich jeden Morgen mit dem echten Gesang eines Vogels aus deiner Region und Jahreszeit.
+Dein Wecker singt. Errate den Vogel. Sammle seine Karte. Jeden Morgen weckt dich ein Vogel aus deiner Gegend: Errätst du ihn, gehört seine Karte dir. Wie viele Arten schaffst du?
 
-Errate unter 4 Fotos, welcher Vogel singt, um den Wecker auszuschalten. Richtig? Du gewinnst seine Karte: eine Sammelkarte mit eigener Seltenheit, Foto, Aufnahme und echten Werten der Art (Gewicht, Spannweite, Länge, Zugstrecke). Falsch? Er ist „gehört“ — beim nächsten Mal klappt's. Tag für Tag lernst du die Stimmen um dich herum.
+SO FUNKTIONIERT'S
+1. Stell deinen Wecker. Er klingelt mit echtem Vogelgesang, diesen Monat in deiner Gegend beobachtet, nach echten Daten.
+2. Errate den Vogel, um ihn auszuschalten.
+3. Richtig? Du gewinnst seine Karte. Falsch? Merk ihn dir und versuch es später noch mal!
+In ein paar Wochen erkennst du die Vögel, die um dich herum singen.
 
-• Echte Aufnahmen von xeno-canto und Fotos von Wikimedia Commons
-• Über 1.700 Arten aus Europa und Nordamerika: Wähle deine Region auf einer Weltkarte oder nutze deinen Standort
-• Vögel der Saison oder alle Vögel deiner Region
-• Leicht, Mittel und Schwer: erst der Gesang häufiger Vögel, dann Rufe und Warnrufe seltenerer Vögel
-• 5 Seltenheiten, von Häufig bis Legendär — seltene Arten geben seltenere Karten. Ziel ist ein 100-%-Vogel!
-• Twitcher-Zone: alle 15 Minuten ein kostenloser Booster, um dein Gehör zu trainieren und mehr Karten zu gewinnen
-• Serien zum Vervollständigen — Möwen, Eulen, tiefer Wald, Stadtbewohner, Legenden der Vogelbeobachter… — und Erfolge, jeweils belohnt mit einer Karte garantierter Seltenheit
-• Tausche Karten von Person zu Person: zwei Telefone nebeneinander, per Bluetooth — ohne Konto, ohne Server
-• Durchsuche deine Sammlung, teile deine Karten mit Freunden
-• Vier Vogel-Designs: Amsel, Girlitz, Blaumeise und Möwe
-• Mehrere Wecker, Wiederholungstage, Schlummern, sanftes Lauterwerden
-• Deutsch, Englisch, Französisch und Spanisch
+SAMMELN
+• Über 1.700 Arten aus Europa und Nordamerika mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• 5 Kartenseltenheiten, von Häufig bis Legendär
+• Serien zum Vervollständigen und Erfolge, jeweils belohnt mit einer Karte garantierter Seltenheit
+• Twitcher-Zone: alle 15 Min. ein kostenloser Booster, um dein Gehör zu trainieren
+
+ZEIGEN UND TAUSCHEN
+• Eine Legendäre gezogen? Teile die Karte mit deinen Freunden
+• Tausche Karten von Angesicht zu Angesicht: zwei Telefone nebeneinander, per Bluetooth. Kein Konto, kein Server
+• Dir fehlt eine Eule? Vielleicht hat dein Freund eine: Tausch sie gegen eine Krähe!
+
+TRAINIERE DEIN GEHÖR
+• Leicht, Mittel, Schwer: vom Gesang häufiger Vögel bis zu den Rufen seltener Arten
+• Experte: keine Fotos, tippe den Namen des Vogels
+• Direkter Link von deinen gesammelten Arten zu ihrem Wikipedia-Artikel
+
+EIN ECHTER WECKER
+• Mehrere Wecker, Wiederholungstage, Schlummern
+• Klingelt auf dem Sperrbildschirm
 • Funktioniert offline, sobald deine Region geladen ist
-• Kein Konto, keine Werbung, kein Tracking. Dein Standort (optional) verlässt nie dein Telefon.
+
+KOSTENLOS. KEINE WERBUNG. KEIN KONTO. KEIN TRACKING.
+
+Auf Deutsch, Englisch, Französisch und Spanisch.
+
+Für Vogelbeobachter, Naturfreunde, Sammler und alle, die genug von ihrem langweiligen Wecker haben.
 
 ### ES
-¿Te cuesta avanzar aprendiendo cantos de aves? Early Bird Alarm te despierta cada mañana con el canto real de un ave de tu región y de temporada.
+Tu alarma canta. Adivina el ave. Colecciona su carta. Cada mañana te despierta un ave de tu zona: adivínala para ganar su carta. ¿Cuántas especies conseguirás?
 
-Adivina qué ave canta entre 4 fotos para apagar la alarma. ¿Acierto? Ganas su carta: una carta coleccionable con su rareza, foto, grabación y estadísticas reales de la especie (peso, envergadura, longitud, distancia de migración). ¿Fallo? Queda «oída»: la próxima vez será. Día a día, aprendes los cantos que te rodean.
+CÓMO FUNCIONA
+1. Pon tu alarma. Suena con el canto de un ave real, vista este mes en tu zona, según datos reales.
+2. Adivina el ave para apagarla.
+3. ¿Acierto? Ganas su carta. ¿Fallo? ¡Recuérdala y vuelve a intentarlo más tarde!
+En pocas semanas reconocerás las aves que cantan a tu alrededor.
 
-• Grabaciones reales de xeno-canto y fotos de Wikimedia Commons
-• Más de 1.700 especies de Europa y Norteamérica: elige tu región en un mapa del mundo o usa tu ubicación
-• Aves de temporada, o todas las aves de tu región
-• Fácil, Media y Difícil: primero los cantos de aves comunes, luego reclamos y alarmas de aves más raras
-• 5 rarezas, de Común a Legendaria: las especies raras dan cartas más raras. ¡Busca un ave al 100 %!
-• Zona Pajarera: un sobre gratis cada 15 minutos para entrenar el oído y ganar más cartas
-• Series para completar — gaviotas, búhos, bosque profundo, vecinos de la ciudad, leyendas de los pajareros… — y logros, cada uno con una carta de rareza garantizada
-• Intercambia cartas en persona: dos teléfonos juntos, por Bluetooth — sin cuenta, sin servidor
-• Busca en tu colección, comparte tus cartas con tus amigos
-• Cuatro temas de aves: Mirlo, Verdecillo, Herrerillo y Gaviota
-• Varias alarmas, días de repetición, posponer, volumen progresivo
-• Español, inglés, francés y alemán
+COLECCIONA
+• Más de 1.700 especies de Europa y Norteamérica con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• 5 rarezas de cartas, de Común a Legendaria
+• Series para completar y logros, cada uno con una carta de rareza garantizada
+• Zona Pajarera: un sobre gratis cada 15 min para entrenar el oído
+
+PRESUME E INTERCAMBIA
+• ¿Te ha salido una Legendaria? Comparte la carta con tus amigos
+• Intercambia cartas en persona: dos teléfonos juntos, por Bluetooth. Sin cuenta, sin servidor
+• ¿Te falta un búho? Quizá tu amigo tenga uno: ¡cámbiaselo por un cuervo!
+
+ENTRENA EL OÍDO
+• Fácil, Media, Difícil: de los cantos de aves comunes a los reclamos de especies raras
+• Experto: sin fotos, escribe el nombre del ave
+• Enlace directo de tus especies coleccionadas a su página de Wikipedia
+
+UN DESPERTADOR DE VERDAD
+• Varias alarmas, días de repetición, posponer
+• Suena en la pantalla de bloqueo
 • Funciona sin conexión una vez descargada tu región
-• Sin cuenta, sin anuncios, sin rastreo. Tu ubicación (opcional) nunca sale de tu teléfono.
+
+GRATIS. SIN ANUNCIOS. SIN CUENTA. SIN RASTREO.
+
+En español, inglés, francés y alemán.
+
+Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
 
 ## Data safety form
 - **Does the app collect or share user data?** No.
