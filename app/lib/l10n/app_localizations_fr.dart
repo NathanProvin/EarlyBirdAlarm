@@ -566,4 +566,21 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get paymentsGoogle => 'Paiement par Google Play.';
+
+  @override
+  String shareTitle(String rarity) {
+    return 'Carte $rarity !';
+  }
+
+  @override
+  String get shareTagline => 'Le réveil des ornithos · Gratuit sur Google Play';
+
+  @override
+  String shareText(String bird, String rarity, String link) {
+    return 'J’ai reconnu le chant : $bird ! Carte $rarity gagnée. $link';
+  }
+
+  @override
+  String get shareCopied =>
+      'Lien copié : colle-le dans ton message si l’app ne l’ajoute pas';
 }

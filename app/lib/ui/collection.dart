@@ -1,10 +1,8 @@
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../birds.dart';
@@ -16,6 +14,7 @@ import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
 import 'series.dart';
+import 'share.dart';
 import 'trade.dart';
 import 'theme.dart';
 
@@ -575,20 +574,12 @@ class _CardDetailState extends State<CardDetail> {
     mode: LaunchMode.externalApplication,
   );
 
-  Future<void> _share(String name) async {
-    final boundary =
-        _boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: 3);
-    final png = await image.toByteData(format: ui.ImageByteFormat.png);
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [
-          XFile.fromData(png!.buffer.asUint8List(), mimeType: 'image/png'),
-        ],
-        fileNameOverrides: ['$name.png'],
-      ),
-    );
-  }
+  Future<void> _share() => shareCard(
+    context,
+    _boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary,
+    widget.bird,
+    widget.card!,
+  );
 
   void _credits(Recording? recording) => showModalBottomSheet<void>(
     context: context,
@@ -679,7 +670,7 @@ class _CardDetailState extends State<CardDetail> {
               RoundButton(
                 icon: Icons.share_outlined,
                 tooltip: l.share,
-                onPressed: () => _share(bird.id),
+                onPressed: _share,
               ),
             RoundButton(
               icon: Icons.info_outline,

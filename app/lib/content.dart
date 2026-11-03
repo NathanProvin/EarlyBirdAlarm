@@ -33,7 +33,8 @@ File localFile(String path) => File('${_root.path}/$path');
 /// Where a catalog file can be read on the phone: a downloaded file, a bundled asset, or null.
 String? phonePath(String path) {
   final f = localFile(path);
-  if (f.existsSync()) return f.path;
+  // Under 2 kB is an empty clip from an older catalog: never ring an alarm with it.
+  if (f.existsSync() && f.lengthSync() > 2000) return f.path;
   return _bundled.contains(path) ? 'assets/content/$path' : null;
 }
 

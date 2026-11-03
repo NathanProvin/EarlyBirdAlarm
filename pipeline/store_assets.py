@@ -2,6 +2,7 @@
   store/icon-512.png        512 × 512 app icon (Play applies its own rounded mask)
   store/feature-graphic.png 1024 × 500 feature graphic
   docs/logo.png             the README logo (same as the icon)
+  app/assets/icon.png       the logo on shared cards (same as the icon)
 The icon is the vector of app/android/app/src/main/res/drawable/ic_launcher_foreground.xml
 (108-unit canvas), drawn at 4× and scaled down for smooth edges. Lettering: Roboto (Apache 2.0,
 shipped with Flutter). Usage: py pipeline/store_assets.py"""
@@ -64,8 +65,9 @@ def main():
     (ROOT / "docs").mkdir(exist_ok=True)
     icon(512).save(out / "icon-512.png")
     icon(512).save(ROOT / "docs" / "logo.png")
+    icon(192).save(ROOT / "app" / "assets" / "icon.png")  # the logo on shared cards
     feature_graphic().save(out / "feature-graphic.png")
-    print("store/icon-512.png, store/feature-graphic.png, docs/logo.png")
+    print("store/icon-512.png, store/feature-graphic.png, docs/logo.png, app/assets/icon.png")
 
 
 if __name__ == "__main__":

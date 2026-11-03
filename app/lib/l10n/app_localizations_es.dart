@@ -565,4 +565,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get paymentsGoogle => 'Pago con Google Play.';
+
+  @override
+  String shareTitle(String rarity) {
+    return '¡Carta $rarity!';
+  }
+
+  @override
+  String get shareTagline =>
+      'El despertador de los pajareros · Gratis en Google Play';
+
+  @override
+  String shareText(String bird, String rarity, String link) {
+    return '¡Reconocí el canto: $bird! Carta $rarity ganada. $link';
+  }
+
+  @override
+  String get shareCopied =>
+      'Enlace copiado: pégalo en tu mensaje si la app no lo incluye';
 }

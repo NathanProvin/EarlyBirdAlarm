@@ -567,4 +567,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get paymentsGoogle => 'Bezahlung über Google Play.';
+
+  @override
+  String shareTitle(String rarity) {
+    return 'Karte „$rarity“!';
+  }
+
+  @override
+  String get shareTagline =>
+      'Der Wecker für Vogelfreunde · Gratis bei Google Play';
+
+  @override
+  String shareText(String bird, String rarity, String link) {
+    return 'Ich hab den Gesang erkannt: $bird! Karte „$rarity“ gewonnen. $link';
+  }
+
+  @override
+  String get shareCopied =>
+      'Link kopiert: füge ihn in deine Nachricht ein, falls die App ihn weglässt';
 }

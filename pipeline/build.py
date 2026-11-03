@@ -909,7 +909,8 @@ def main():
             # iNaturalist clips get their own names: an old NC clip of the same bird is never reused.
             name = f"{bird_id}-{'n' if 'src' in rec else ''}{i}.m4a"
             audio_out = OUT / "audio" / name
-            if not audio_out.exists():  # shortcut: delete site/v1/audio to re-encode after changing picks
+            # shortcut: delete site/v1/audio to re-encode after changing picks
+            if not audio_out.exists() or audio_out.stat().st_size < 2000:  # < 2 kB: an empty clip
                 src = rec.get("src")  # iNaturalist: already downloaded to measure its length
                 if not src:
                     src = tmp / f"{bird_id}-{rec['id']}.audio"
@@ -926,6 +927,12 @@ def main():
                 except subprocess.CalledProcessError:
                     audio_out.unlink(missing_ok=True)
                     print(f"    ! {rec.get('ref', 'XC' + str(rec['id']))} ({latin}) could not be converted")
+                    continue
+                # A recording fainter than the silence threshold is trimmed away entirely: ffmpeg
+                # then writes an empty file without an error, and the alarm would ring silent.
+                if seconds_of(audio_out) < 3:
+                    audio_out.unlink()
+                    print(f"    ! {rec.get('ref', 'XC' + str(rec['id']))} ({latin}) too faint, skipped")
                     continue
             lic = re.search(r"licenses/([a-z-]+)/([\d.]+)", rec["lic"])
             recordings.append({

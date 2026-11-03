@@ -564,4 +564,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentsGoogle => 'Payments by Google Play.';
+
+  @override
+  String shareTitle(String rarity) {
+    return '$rarity card!';
+  }
+
+  @override
+  String get shareTagline => 'The birders’ alarm · Free on Google Play';
+
+  @override
+  String shareText(String bird, String rarity, String link) {
+    return 'I knew that song: $bird! $rarity card won. $link';
+  }
+
+  @override
+  String get shareCopied =>
+      'Link copied: paste it in your message if the app leaves it out';
 }

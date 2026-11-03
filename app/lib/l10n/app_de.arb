@@ -170,5 +170,9 @@
   "purchasesUnavailable": "Käufe sind auf diesem Telefon nicht verfügbar.",
   "twitchPlus": "Twitcher Plus",
   "twitchPlusPitch": "Unbegrenzter Modus: ein Booster pro Minute! Einmal kaufen, für immer.",
-  "paymentsGoogle": "Bezahlung über Google Play."
+  "paymentsGoogle": "Bezahlung über Google Play.",
+  "shareTitle": "Karte „{rarity}“!",
+  "shareTagline": "Der Wecker für Vogelfreunde · Gratis bei Google Play",
+  "shareText": "Ich hab den Gesang erkannt: {bird}! Karte „{rarity}“ gewonnen. {link}",
+  "shareCopied": "Link kopiert: füge ihn in deine Nachricht ein, falls die App ihn weglässt"
 }

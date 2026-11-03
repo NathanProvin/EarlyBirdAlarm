@@ -1127,6 +1127,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payments by Google Play.'**
   String get paymentsGoogle;
+
+  /// No description provided for @shareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{rarity} card!'**
+  String shareTitle(String rarity);
+
+  /// No description provided for @shareTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'The birders’ alarm · Free on Google Play'**
+  String get shareTagline;
+
+  /// No description provided for @shareText.
+  ///
+  /// In en, this message translates to:
+  /// **'I knew that song: {bird}! {rarity} card won. {link}'**
+  String shareText(String bird, String rarity, String link);
+
+  /// No description provided for @shareCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied: paste it in your message if the app leaves it out'**
+  String get shareCopied;
 }
 
 class _AppLocalizationsDelegate

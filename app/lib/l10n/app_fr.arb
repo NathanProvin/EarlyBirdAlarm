@@ -170,5 +170,9 @@
   "purchasesUnavailable": "Les achats ne sont pas disponibles sur ce téléphone.",
   "twitchPlus": "Cocheur Plus",
   "twitchPlusPitch": "Mode illimité : un booster par minute ! Un achat, à vie.",
-  "paymentsGoogle": "Paiement par Google Play."
+  "paymentsGoogle": "Paiement par Google Play.",
+  "shareTitle": "Carte {rarity} !",
+  "shareTagline": "Le réveil des ornithos · Gratuit sur Google Play",
+  "shareText": "J’ai reconnu le chant : {bird} ! Carte {rarity} gagnée. {link}",
+  "shareCopied": "Lien copié : colle-le dans ton message si l’app ne l’ajoute pas"
 }

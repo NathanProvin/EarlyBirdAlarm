@@ -170,5 +170,9 @@
   "purchasesUnavailable": "Las compras no están disponibles en este teléfono.",
   "twitchPlus": "Pajarero Plus",
   "twitchPlusPitch": "Modo ilimitado: ¡un sobre por minuto! Una compra, para siempre.",
-  "paymentsGoogle": "Pago con Google Play."
+  "paymentsGoogle": "Pago con Google Play.",
+  "shareTitle": "¡Carta {rarity}!",
+  "shareTagline": "El despertador de los pajareros · Gratis en Google Play",
+  "shareText": "¡Reconocí el canto: {bird}! Carta {rarity} ganada. {link}",
+  "shareCopied": "Enlace copiado: pégalo en tu mensaje si la app no lo incluye"
 }
