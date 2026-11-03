@@ -156,5 +156,19 @@
   "introAgain": "Revoir l'introduction",
   "introRarityTitle": "Rareté et statistiques",
   "introRarity": "La rareté des cartes va de Commune à Légendaire : les espèces rares ont plus de chances de donner des cartes rares. Chaque carte porte aussi de vraies statistiques de l'espèce : visez un oiseau à 100 % !",
-  "start": "Commencer"
+  "start": "Commencer",
+  "support": "Soutenir Early Bird",
+  "tipsTile": "M'offrir un café",
+  "tipsNote": "Early Bird est sans pub, sans traqueurs, et maintenue par un dev solo. Si l'app vous est utile, remerciez-moi avec un café !",
+  "tipEspresso": "Expresso",
+  "tipCappuccino": "Cappuccino",
+  "tipBreakfast": "Petit-déjeuner",
+  "tipBinoculars": "Jumelles stabilisées",
+  "tipsPayments": "Paiement par Google Play. Rien ne change dans le jeu.",
+  "thankYou": "Merci !",
+  "thankYouBody": "Votre soutien fait chanter Early Bird.",
+  "purchasesUnavailable": "Les achats ne sont pas disponibles sur ce téléphone.",
+  "twitchPlus": "Cocheur Plus",
+  "twitchPlusPitch": "Mode illimité : un booster par minute ! Un achat, à vie.",
+  "paymentsGoogle": "Paiement par Google Play."
 }

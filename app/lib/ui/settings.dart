@@ -8,6 +8,7 @@ import 'credits.dart';
 import 'onboarding.dart';
 import 'region.dart';
 import 'theme.dart';
+import 'tips.dart';
 
 /// "Phone": a little phone, its left half the light theme with a sun, its right half
 /// the dark theme with a crescent moon.
@@ -175,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
         body: ListView(
           padding: EdgeInsets.fromLTRB(
             24,
-            24,
+            12,
             24,
             24 + MediaQuery.paddingOf(context).bottom,
           ),
@@ -183,11 +184,11 @@ class SettingsScreen extends StatelessWidget {
             Text(l.region, style: header),
             const SizedBox(height: 8),
             const RegionPill(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             Text(l.difficulty, style: header),
             const SizedBox(height: 8),
             const GameOptions(),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             Text(l.language, style: header),
             const SizedBox(height: 8),
             // Each language written in itself; '' follows the phone. Half width, a pill
@@ -239,7 +240,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
             Text(l.theme, style: header),
             const SizedBox(height: 8),
             Row(
@@ -254,10 +255,22 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(child: _ThemeSwatch(value, label)),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 18),
+            Text(l.support, style: header),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l.tipsTile),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const TipsScreen()),
+              ),
+            ),
+            const SizedBox(height: 18),
             Text(l.credits, style: header),
             ListTile(
               contentPadding: EdgeInsets.zero,
+              dense: true,
               title: Text(l.creditsSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
@@ -266,6 +279,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
+              dense: true,
               title: Text(l.introAgain),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(

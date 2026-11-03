@@ -28,10 +28,13 @@ const _allowed = {
 /// with the tier, like radioactive decay: each step up is [rarityDecay] times as likely
 /// as the one below, so Common is always the most frequent card (2026-10-31; before,
 /// Uncommon beat Common on Hard). Easy never gives a Legendary card.
+/// Final odds, after [rarityScale] (Common / Uncommon / Rare / Epic / Legendary):
+/// Easy 76.7 / 17.9 / 4.5 / 0.9 / 0 %, Medium 72.3 / 18.3 / 6.4 / 2.2 / 0.8 %,
+/// Hard 61.3 / 20.6 / 10.3 / 5.2 / 2.6 %, Expert 50.6 / 25.3 / 12.7 / 7.6 / 3.8 %.
 const rarityDecay = {
-  Difficulty.easy: 0.25, // 75 / 19 / 4.7 / 1.2 / 0 %
-  Difficulty.medium: 0.35, // 65 / 23 / 8.0 / 2.8 / 1.0 %
-  Difficulty.hard: 0.5, // 52 / 26 / 13 / 6.5 / 3.2 % (each step twice as rare)
+  Difficulty.easy: 0.25,
+  Difficulty.medium: 0.35,
+  Difficulty.hard: 0.5, // each step twice as rare
   Difficulty.expert:
       0.5, // as Hard, with the Epic and Legendary odds × [expertBoost]
 };
@@ -39,24 +42,44 @@ const rarityDecay = {
 /// Expert types the name without choices: 20 % more Epic and Legendary cards than Hard.
 const expertBoost = 1.2;
 
-/// Relative odds of each rarity by difficulty, from [rarityDecay] (not normalized).
-final cardOdds = {
-  for (final MapEntry(key: d, value: r) in rarityDecay.entries)
-    d: {
-      for (final (k, t) in tiers.indexed)
-        t: d == Difficulty.easy && t == 'legendary'
-            ? 0.0
-            : pow(r, k) *
-                  (d == Difficulty.expert && k >= tiers.indexOf('epic')
-                      ? expertBoost
-                      : 1.0),
-    },
+/// Share kept from the decay curve for each tier above Common (Uncommon → Legendary);
+/// Common takes the rest. 2026-11-03, rare cards dropped too often: 20 % fewer, except
+/// Uncommon and Rare on Easy (5 % fewer, to hook new players) and Expert (unchanged, to
+/// reward experts).
+const rarityScale = {
+  Difficulty.easy: [0.95, 0.95, 0.8, 0.8],
+  Difficulty.medium: [0.8, 0.8, 0.8, 0.8],
+  Difficulty.hard: [0.8, 0.8, 0.8, 0.8],
+  Difficulty.expert: [1.0, 1.0, 1.0, 1.0],
 };
+
+/// The odds of each rarity by difficulty (they sum to 1).
+final cardOdds = {for (final d in Difficulty.values) d: _odds(d)};
+
+Map<String, double> _odds(Difficulty d) {
+  final w = [
+    for (final (k, t) in tiers.indexed)
+      d == Difficulty.easy && t == 'legendary'
+          ? 0.0
+          : pow(rarityDecay[d]!, k) *
+                (d == Difficulty.expert && k >= tiers.indexOf('epic')
+                    ? expertBoost
+                    : 1.0),
+  ];
+  final sum = w.reduce((a, b) => a + b);
+  final up = [
+    for (var k = 1; k < tiers.length; k++) w[k] / sum * rarityScale[d]![k - 1],
+  ];
+  return {
+    tiers.first: 1 - up.reduce((a, b) => a + b),
+    for (var k = 1; k < tiers.length; k++) tiers[k]: up[k - 1],
+  };
+}
 
 /// How strongly a card's rarity leans toward its bird's scarcity: each rarity's odds are
 /// divided by [rarityLean] / [rarityDecay] for every tier between it and the bird's tier
 /// (Hard: 3). Being stronger than the decay, it makes a scarce bird's cards peak at its
-/// own tier (a Legendary bird on Hard: 7.6 / 11 / 17 / 26 / 38 %); with a flat 2 they
+/// own tier (a Legendary bird on Hard: 11 / 11 / 16 / 25 / 37 %); with a flat 2 they
 /// came out even at 20 % each (2026-10-31).
 const rarityLean = 1.5;
 

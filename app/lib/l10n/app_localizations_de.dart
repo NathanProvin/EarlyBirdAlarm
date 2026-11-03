@@ -520,4 +520,51 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get start => 'Starten';
+
+  @override
+  String get support => 'Early Bird unterstützen';
+
+  @override
+  String get tipsTile => 'Spendier mir einen Kaffee';
+
+  @override
+  String get tipsNote =>
+      'Early Bird ist ohne Werbung, ohne Tracker und wird von einem Solo-Entwickler gepflegt. Wenn dir die App nützt, bedank dich mit einem Kaffee!';
+
+  @override
+  String get tipEspresso => 'Espresso';
+
+  @override
+  String get tipCappuccino => 'Cappuccino';
+
+  @override
+  String get tipBreakfast => 'Frühstück';
+
+  @override
+  String get tipBinoculars => 'Stabilisiertes Fernglas';
+
+  @override
+  String get tipsPayments =>
+      'Bezahlung über Google Play. Im Spiel ändert sich nichts.';
+
+  @override
+  String get thankYou => 'Danke!';
+
+  @override
+  String get thankYouBody =>
+      'Deine Unterstützung lässt Early Bird weitersingen.';
+
+  @override
+  String get purchasesUnavailable =>
+      'Käufe sind auf diesem Telefon nicht verfügbar.';
+
+  @override
+  String get twitchPlus => 'Twitcher Plus';
+
+  @override
+  String get twitchPlusPitch =>
+      'Unbegrenzter Modus: ein Booster pro Minute! Einmal kaufen, für immer.';
+
+  @override
+  String get paymentsGoogle => 'Bezahlung über Google Play.';
 }

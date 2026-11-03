@@ -156,5 +156,19 @@
   "introAgain": "Ver otra vez la introducción",
   "introRarityTitle": "Rareza y estadísticas",
   "introRarity": "La rareza de las cartas va de Común a Legendaria: las especies raras tienen más probabilidad de dar cartas raras. Cada carta lleva además estadísticas reales de su especie: ¡busca un ave al 100 %!",
-  "start": "Empezar"
+  "start": "Empezar",
+  "support": "Apoya Early Bird",
+  "tipsTile": "Invítame a un café",
+  "tipsNote": "Early Bird no tiene anuncios ni rastreadores y lo mantiene un desarrollador en solitario. Si la app te resulta útil, ¡agradécemelo con un café!",
+  "tipEspresso": "Expreso",
+  "tipCappuccino": "Capuchino",
+  "tipBreakfast": "Desayuno",
+  "tipBinoculars": "Prismáticos estabilizados",
+  "tipsPayments": "Pago con Google Play. Nada cambia en el juego.",
+  "thankYou": "¡Gracias!",
+  "thankYouBody": "Tu apoyo hace que Early Bird siga cantando.",
+  "purchasesUnavailable": "Las compras no están disponibles en este teléfono.",
+  "twitchPlus": "Pajarero Plus",
+  "twitchPlusPitch": "Modo ilimitado: ¡un sobre por minuto! Una compra, para siempre.",
+  "paymentsGoogle": "Pago con Google Play."
 }

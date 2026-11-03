@@ -518,4 +518,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get start => 'Start';
+
+  @override
+  String get support => 'Support Early Bird';
+
+  @override
+  String get tipsTile => 'Buy me a coffee';
+
+  @override
+  String get tipsNote =>
+      'Early Bird has no ads, no trackers, and is kept going by a solo dev. If the app is useful to you, thank me with a coffee!';
+
+  @override
+  String get tipEspresso => 'Espresso';
+
+  @override
+  String get tipCappuccino => 'Cappuccino';
+
+  @override
+  String get tipBreakfast => 'Breakfast';
+
+  @override
+  String get tipBinoculars => 'Stabilized binoculars';
+
+  @override
+  String get tipsPayments =>
+      'Payments by Google Play. Nothing changes in the game.';
+
+  @override
+  String get thankYou => 'Thank you!';
+
+  @override
+  String get thankYouBody => 'Your support keeps Early Bird singing.';
+
+  @override
+  String get purchasesUnavailable =>
+      'Purchases are not available on this phone.';
+
+  @override
+  String get twitchPlus => 'Twitch Plus';
+
+  @override
+  String get twitchPlusPitch =>
+      'Unlimited mode: a booster every minute! One purchase, for life.';
+
+  @override
+  String get paymentsGoogle => 'Payments by Google Play.';
 }

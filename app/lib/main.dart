@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'content.dart';
 import 'l10n/app_localizations.dart';
+import 'purchases.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
@@ -28,6 +29,7 @@ Future<void> main() async {
   // Catch up with the region in the background; also runs after each guess (see ring.dart).
   unawaited(store.sync());
   unawaited(store.healAlarms());
+  unawaited(initPurchases());
   runApp(
     ListenableBuilder(
       listenable: store,

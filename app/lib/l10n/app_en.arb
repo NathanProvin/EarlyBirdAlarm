@@ -203,5 +203,19 @@
   "introAgain": "See the introduction again",
   "introRarityTitle": "Rarity and stats",
   "introRarity": "Card rarity goes from Common to Legendary: rare species are more likely to give rare cards. Each card also carries real statistics of its species: aim for a 100% bird!",
-  "start": "Start"
+  "start": "Start",
+  "support": "Support Early Bird",
+  "tipsTile": "Buy me a coffee",
+  "tipsNote": "Early Bird has no ads, no trackers, and is kept going by a solo dev. If the app is useful to you, thank me with a coffee!",
+  "tipEspresso": "Espresso",
+  "tipCappuccino": "Cappuccino",
+  "tipBreakfast": "Breakfast",
+  "tipBinoculars": "Stabilized binoculars",
+  "tipsPayments": "Payments by Google Play. Nothing changes in the game.",
+  "thankYou": "Thank you!",
+  "thankYouBody": "Your support keeps Early Bird singing.",
+  "purchasesUnavailable": "Purchases are not available on this phone.",
+  "twitchPlus": "Twitch Plus",
+  "twitchPlusPitch": "Unlimited mode: a booster every minute! One purchase, for life.",
+  "paymentsGoogle": "Payments by Google Play."
 }

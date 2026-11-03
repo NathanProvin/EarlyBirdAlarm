@@ -62,7 +62,7 @@ The fastest path: finish **A** today; create the Play developer account **now, i
   1. **Tips** ("Buy me a coffee": e.g. 1 €, 3 €, 5 €) in Settings / Credits, a thank-you message, no gameplay effect. Google Play Billing consumable products (`in_app_purchase` package; Play requires its billing for in-app tips, no external payment link), a payments profile in the Console. Smallest and policy-safe.
   2. **Paid booster** (small microtransaction, e.g. 0.99 € for one booster now instead of waiting for the Twitch timer). Heavier: random cards bought with money = **loot box** rules — Play requires the card odds shown before purchase, the content rating changes to "In-game purchases (includes random items)", paid loot boxes are restricted in Belgium (and contested in the Netherlands: exclude those countries or skip), and it weakens "Free" in the listing. A non-random paid item (e.g. a chosen rarity) avoids the loot-box part.
   - Both first need: the **NC-licensed recordings replaced or removed** (line below: any monetization breaks the NC licence). Measured 2026-11-03: **961 species have only NC recordings** (3,134 of 4,936 recordings, 783 recordists; photos: none NC). These species are local (84 regions on average vs 299). Plan: (a) ask the top recordists for commercial permission on xeno-canto: 5 recordists cover 438 species, 20 cover 637, 50 cover 773; record each grant in `pipeline/overrides.csv`; (b) add iNaturalist sounds as a pipeline fallback — swept 2026-11-03 (research-grade observations with a CC0 / CC BY / CC BY-SA sound): **552 of the 961 NC species have ≥ 1 free sound** (369 have ≥ 3; 71 % of NC species-regions), and 19 of the 79 recording-dropped species come back (Subalpine and Orphean Warbler, Siberian Chiffchaff, Spotted Owl…); 141 have no iNat sound at all (sea ducks, skuas: rarely recorded, not a naming problem). iNat first, then asking only the recordists of what is left: top 5 → 707 of 961, top 20 → 795, top 50 → 871. iNat caveats: phone-quality, often short, no song/call label (default to "call", so Easy stays on xeno-canto songs); same ≥ 10 s and loudness checks as xeno-canto; (c) the user's own recordings; (d) drop whatever is left, the "Contains in-app purchases" label, Data safety review (Google processes the payment; nothing collected by the app), store listing and privacy policy updated.
-- [ ] **Branch `adding-tips` (started 2026-11-03):** pipeline done: recordings = free xeno-canto → free iNaturalist (`inat_recordings`: research grade, CC0 / BY / BY-SA, ≥ 10 s measured with ffprobe, one per recordist, local first, all tagged "call"; clips named `{id}-n{i}.m4a` so no old NC clip is reused) → NC xeno-canto only if `ALLOW_NC` (False on this branch). Listening sample: 17 of 20 species got a ≥ 10 s clip (Common Goldeneye, Great Egret, Greater Scaup… NC species are not all local). Next: the user listens to the sample; full catalog run (iNat downloads ~1 req/s); review report.md; tips in the app (Play Billing); publish the NC-free catalog only with the tips release (the catalog is shared with the live app; cards of dropped species are kept but hidden)
+- [ ] **Branch `adding-tips` (started 2026-11-03):** pipeline done: recordings = free xeno-canto → free iNaturalist (`inat_recordings`: research grade, CC0 / BY / BY-SA, ≥ 10 s measured with ffprobe, one per recordist, local first, all tagged "call"; clips named `{id}-n{i}.m4a` so no old NC clip is reused) → NC xeno-canto only if `ALLOW_NC` (False on this branch). Listening sample: 17 of 20 species got a ≥ 10 s clip (Common Goldeneye, Great Egret, Greater Scaup… NC species are not all local). Sample **listened to and quality validated by the user (2026-11-03)**. Full catalog run started 2026-11-03 (`pipeline/cache/run-2026-11-03-inat.log`). **Tips and Twitch Plus coded 2026-11-03** (decisions.md "Tips and Twitch Plus"; privacy pages updated, not yet published; tests and a11y pass; not yet tried on the phone). **Full NC-free catalog built 2026-11-03: 1,210 species (was 1,713), 0 NC; iNaturalist rescued 458 species (1,185 recordings); 676 dropped (587 no free recording, 88 no EN/FR name, 1 no photo); region median 246 birds (was 267), 54 regions < 50. Lost from series: Wallcreeper, Snowy Owl, Gyrfalcon, Ivory Gull, Mandarin Duck, Great Bustard, Ruff, Montagu's Harrier, Brown Pelican… Offline birds re-picked (0 NC). Rarity odds lowered (decisions.md).** Not published yet (publish with the tips release). **Rarity from eBird + stars saved on cards coded 2026-11-03** (decisions.md): needs one more full build (new GBIF eBird counts, several hours once). Next: Play Console: payments profile, the 5 products, license testers, internal-test build to try real purchases; publish the NC-free catalog only with the tips release (the catalog is shared with the live app; cards of dropped species are kept but hidden)
 - [ ] Replace or remove the NC-licensed recordings (mandatory only before any monetization, ads included)
 - [ ] Play Store polish: localized screenshots (FR), a promo video
 - [ ] Phone-tilt parallax (gyroscope) for boosters and cards, if the finger version isn't enough
@@ -175,3 +175,44 @@ See "Next steps to release", D.
 
 ## Iteration 5 — iOS
 - [ ] Evaluate AlarmKit (iOS 26+) vs the `alarm` package's background audio; check custom-sound support
+
+
+
+## DEPLOY
+#: 1
+Step: Upload a bundle that includes billing to internal testing. The Console won't let you create products before
+it has received one. Your current 1.0.0+1 bundle (built from main) doesn't include billing, so it has to be
+built from adding-tips.
+Who: Me (build), you (upload)
+How long: About 10 min to build
+────────────────────────────────────────
+#: 2
+Step: Payments profile (bank account, tax details): Monetize → Payments profile
+Who: You
+How long: Minutes to fill in; Google's verification can take 1–3 days
+────────────────────────────────────────
+#: 3
+Step: Create the 5 products and set them to Active (Monetize → Products → In-app products): tip_espresso 0.99,
+tip_cappuccino 1.99, tip_breakfast 4.99, tip_binoculars 19.99, twitch_plus 1.99
+Who: You
+How long: 10 min; they show up in apps after a few minutes to a few hours
+────────────────────────────────────────
+#: 4
+Step: Add your Gmail as a license tester (Settings → License testing) and as an internal tester, then accept the
+opt-in link on the S22
+Who: You
+How long: 5 min
+────────────────────────────────────────
+#: 5
+Step: Install from the Play internal-test link and try buying. As a license tester you pay nothing ("Test card,
+always approves")
+Who: You + me
+How long: Same day
+
+Realistically, you can test once step 2 is approved: from tomorrow to a few days from now. You can do steps 1, 3 and 4 today.
+
+The internal-test link is the reliable way to test. The profile build I install by cable might also show prices once the products exist, but Google doesn't guarantee that.
+
+I can build the step-1 bundle now, while the catalog build runs. It only has to contain billing to unlock product creation; the final bundle with the new offline birds will be a later upload. Two things first:
+1. Have you already uploaded 1.0.0+1 to the Console? If yes, this one must be 1.0.0+2. Every upload needs a higher number.
+2. Can I commit the work on adding-tips? A bundle should come from committed code, so we know exactly what's in it.

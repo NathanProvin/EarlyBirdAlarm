@@ -69,6 +69,9 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
   - Trade / Series: text only, bold and larger. Settings headers bold.
   - Every screen keeps its buttons clear of the **3-button navigation bar** (tested in `a11y_test.dart`).
 - **Not in v1:** trading between players (needs accounts + a server), any paid item. (Free boosters exist since 2026-10-29: they are the Twitch quizzes, never sold.)
+- **Rarity from eBird when a region has enough of it (2026-11-03):** stars and tiers came from the share of all GBIF records, so one dedicated survey made a rare bird look common (the Hohe Tauern park database is 16,655 of Austria's 18,395 Bearded Vulture records: level 1, ½ star, in Austria South-West, and a "common" tier that rang it often). `month_counts()` now takes each region-month's rarity from eBird (checklist data, comparable across species) when it has ≥ 5,000 eBird records (`EBIRD_MIN`), else all data as before; presence still uses every dataset. Austria South-West: Bearded Vulture level 1 → 4, Golden Eagle 2 → 3, Robin and Great Tit stay 1. eBird is 3–24 % of records in Europe, 99 % in the US.
+- **Cards keep their rarity stars (2026-11-03):** `CardData.level` is saved when the card is won (the bird's level in that region), like its rarity and region; older cards show the current region's stars, as before.
+- **Rarity odds lowered (2026-11-03, after extensive play: rare cards dropped too often):** `rarityScale` in `birds.dart` keeps a share of the decay curve for each tier above Common, Common takes the rest: ×0.8 on Medium and Hard; Easy ×0.95 for Uncommon and Rare (hook new players), ×0.8 above; Expert unchanged (reward experts). Odds C/U/R/E/L — Easy 76.7/17.9/4.5/0.9/0 %, Medium 72.3/18.3/6.4/2.2/0.8 %, Hard 61.3/20.6/10.3/5.2/2.6 %, Expert 50.6/25.3/12.7/7.6/3.8 %. The bird lean still applies on top (Hard: a common bird 88/9.9/1.6/0.3/0 %, a legendary one 11/11/16.5/25/37 %).
 
 ## Design — "Dawn"
 - Flat solid colors only: no gradients, no shadows. One corner radius. Lots of whitespace. One typeface.
@@ -78,6 +81,16 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 - App ID `com.nathanprovin.earlybird` (decided 2026-10-28, permanent once on Google Play). Icon: coral half-sun on the horizon with an ink bird perched in front, on paper.
 - Coral on paper is about 3:1 contrast, so use it only for large or graphic elements. Body text is always ink.
 - Pop-up: a solid circle scales in (moss ✓ / brick ✕), with haptics and the streak count ticking up or resetting.
+
+## Tips and Twitch Plus — decided 2026-11-03 (branch `adding-tips`)
+- **Everything through Google Play Billing, inside the app** (`in_app_purchase`, `lib/purchases.dart`): Play requires its own billing even for tips, so no external "buy me a coffee" page or link.
+- **No loot boxes:** nothing random is ever sold (no roulette, no paid boosters): no odds disclosure, no "random items" rating, no Belgian / Dutch restrictions.
+- **Tips** (Settings → Support Early Bird → Buy me a coffee, `ui/tips.dart`): 4 consumable products `tip_espresso` 0.99 €, `tip_cappuccino` 1.99 €, `tip_breakfast` 4.99 €, `tip_binoculars` 19.99 € ("Stabilized binoculars", no brand: the 1,715 € joke is above Play's price cap). Pure thanks: nothing in the game changes; a thank-you dialog with the theme's bird. Prices always come from Play (localized), never hard-coded.
+- **Twitch Plus** (`twitch_plus`, one-time 1.99 €, non-consumable; FR Cocheur Plus, DE Twitcher Plus, ES Pajarero Plus): a booster every **1 min** instead of 15 (`twitchPlusEvery`, `store.twitchPeriod`); buying it fills the pile at once (the pile derives from one timestamp). Offered by a bolt button bottom right of the Twitch Zone, only while the countdown runs; a "Plus" chip by the title once owned. Restored at each launch (`restorePurchases`) after a reinstall. A monthly 0.99 € plan was rejected: needs status checks, expiry and Play subscription disclosures for a small perk.
+- **Trusted on the device** (no server check: `shortcut:` comment in purchases.dart). Without Google Play (emulator, tests) the pages say purchases are unavailable and every button is disabled.
+- **Supporter theme postponed** (it would change the Settings layout).
+- **Offline birds never NC:** `build_fallback()` ranks only species with a free recording and asserts the bundled one isn't NC (2026-11-03; 20 birds re-picked from the NC-free catalog, 0 NC).
+- **Ships with the NC-free catalog** (pipeline `ALLOW_NC = False`, iNaturalist fallback): money in the app breaks the NC recording licences.
 
 ## Tech choices
 - Flutter packages: `alarm`, `geolocator` (coarse), `http`, `path_provider`, `shared_preferences`, `flutter_localizations` (ARB en/fr), `just_audio` (card ▶ and the Twitch quiz song), `share_plus`, `url_launcher`, `permission_handler`. State: built-in `ChangeNotifier`. No package for animations, sensors or app info: boosters, flip and sparkles are plain Flutter (Transform, CustomPainter); the app version comes from a tiny Android channel (`early_bird/version` in MainActivity.kt).

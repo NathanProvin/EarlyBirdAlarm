@@ -1,6 +1,7 @@
 // Accessibility pass (2026-11-01): the main screens against Flutter's accessibility
 // guidelines (48 dp touch targets, labelled tap targets, text contrast), and rendered at
 // 200 % font size, where any overflow fails the test.
+import 'dart:async';
 import 'dart:io';
 
 import 'package:early_bird/birds.dart';
@@ -17,6 +18,7 @@ import 'package:early_bird/ui/ring.dart';
 import 'package:early_bird/ui/series.dart';
 import 'package:early_bird/ui/settings.dart';
 import 'package:early_bird/ui/theme.dart';
+import 'package:early_bird/ui/tips.dart';
 import 'package:early_bird/ui/twitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,6 +77,12 @@ void main() {
     'series': () => const SeriesScreen(),
     'credits': () => const CreditsScreen(),
     'twitch': () => const Scaffold(body: TwitchScreen()),
+    // One booster used: the countdown runs and the Twitch Plus button shows.
+    'twitch countdown': () {
+      unawaited(store.useTwitch());
+      return const Scaffold(body: TwitchScreen());
+    },
+    'tips': () => const TipsScreen(),
     'onboarding': () => const OnboardingScreen(),
     'alarm editor': () => const EditScreen(),
     'card pager': () => CardPager(

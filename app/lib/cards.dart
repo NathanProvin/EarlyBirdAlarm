@@ -11,6 +11,7 @@ class CardData {
     required this.earned,
     this.rarity,
     this.region,
+    this.level,
     this.recording,
     this.traded,
   });
@@ -26,6 +27,7 @@ class CardData {
         earned: DateTime.parse(j['earned'] as String),
         rarity: j['rarity'] as String?,
         region: j['region'] as String?,
+        level: j['level'] as int?,
         recording: j['recording'] as String?,
         traded: DateTime.tryParse(j['traded'] as String? ?? ''),
       );
@@ -37,6 +39,9 @@ class CardData {
   // Rarity and region where it was won: a card stays Legendary even if you move.
   // Null on cards from before Iteration 3c.
   final String? rarity, region;
+  // The bird's rarity stars (1-10) in the region where it was won (null before 2026-11-03:
+  // the current region's are shown).
+  final int? level;
   final String?
   recording; // file of the recording that rang (null before UI round 1)
   final DateTime? traded; // when it changed hands in a face-to-face trade
@@ -52,6 +57,7 @@ class CardData {
     earned: earned,
     rarity: rarity,
     region: region,
+    level: level,
     recording: recording,
     traded: when,
   );
@@ -63,6 +69,7 @@ class CardData {
     'earned': earned.toIso8601String(),
     'rarity': ?rarity,
     'region': ?region,
+    'level': ?level,
     'recording': ?recording,
     'traded': ?traded?.toIso8601String(),
   };
@@ -103,6 +110,7 @@ CardData rollCard(
     earned: DateTime.now(),
     rarity: rarity,
     region: region,
+    level: bird.level,
     recording: recording,
   );
 }

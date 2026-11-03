@@ -357,14 +357,32 @@ def presence(region_filter):
         return {}
     out = {}
     for month in range(1, 13):
-        r = get("https://api.gbif.org/v1/occurrence/search",
-                {**base, "month": month, "facet": "speciesKey", "facetLimit": 1500})
-        counts = {int(c["name"]): c["count"] for c in r["facets"][0]["counts"]}
-        total = sum(counts.values())
+        counts, total, rarity, rarity_total = month_counts(base, month)
         for key, n in counts.items():
-            if t := tier(n, total):
-                out.setdefault(key, {})[month] = t
+            if tier(n, total):  # present (all data); how rare: see month_counts
+                out.setdefault(key, {})[month] = tier(rarity.get(key, 0), rarity_total) or "legendary"
     return out
+
+
+# eBird (checklists, comparable across species) decides how rare a bird is when a region has
+# enough of it: one dedicated survey otherwise makes a rare bird look common (2026-11-03: the
+# Hohe Tauern park database is 16,655 of Austria's 18,395 Bearded Vulture records, which gave it
+# level 1 in Austria South-West). Presence still uses every dataset.
+EBIRD = "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"
+EBIRD_MIN = 5000  # eBird records in the region that month; fewer: all data, as before
+
+
+def month_counts(base, month):
+    """Species counts of one region-month: all data (presence) and the counts its rarity comes
+    from (eBird when it has EBIRD_MIN records, else all data), each with its total."""
+    def facet(extra):
+        r = get("https://api.gbif.org/v1/occurrence/search",
+                {**base, "month": month, "facet": "speciesKey", "facetLimit": 1500, **extra})
+        counts = {int(c["name"]): c["count"] for c in r["facets"][0]["counts"]}
+        return counts, sum(counts.values())
+    counts, total = facet({})
+    ebird, ebird_total = facet({"datasetKey": EBIRD})
+    return (counts, total) + ((ebird, ebird_total) if ebird_total >= EBIRD_MIN else (counts, total))
 
 
 def levels(region_filter):
@@ -373,13 +391,10 @@ def levels(region_filter):
             **region_filter}
     out = {}
     for month in range(1, 13):  # the same requests as presence(): from the cache
-        r = get("https://api.gbif.org/v1/occurrence/search",
-                {**base, "month": month, "facet": "speciesKey", "facetLimit": 1500})
-        counts = {int(c["name"]): c["count"] for c in r["facets"][0]["counts"]}
-        total = sum(counts.values())
+        counts, total, rarity, rarity_total = month_counts(base, month)
         for key, n in counts.items():
-            if lv := level(n, total):
-                out[key] = min(out.get(key, 10), lv)
+            if level(n, total):  # present (all data)
+                out[key] = min(out.get(key, 10), level(rarity.get(key, 0), rarity_total) or 10)
     return out
 
 
@@ -503,6 +518,9 @@ def xc_recordings(latin, key, n, pinned=None, en=None, nc=False):
     return picked
 
 
+# 5 s, not xeno-canto's 10 (2026-11-03, user's choice): brings back ~36 species whose only free
+# iNaturalist clips are short (Mandarin Duck, Montagu's Harrier, Black Scoter…); they loop while ringing.
+INAT_MIN_SECONDS = 5
 INAT_LICENSES = {"cc0": "", "cc-by": "creativecommons.org/licenses/by/4.0/",
                  "cc-by-sa": "creativecommons.org/licenses/by-sa/4.0/"}  # iNat licenses are 4.0
 
@@ -519,13 +537,22 @@ def seconds_of(path):
 def inat_recordings(latin, n):
     """Up to n free iNaturalist sounds (research grade: the species ID is community-checked), the
     fallback between free and NC xeno-canto. They have no quality grade or song/call label: all
-    count as "call" (Easy mode keeps xeno-canto songs), and each must last >= 10 s once downloaded.
+    count as "call" (Easy mode keeps xeno-canto songs), and each must last >= INAT_MIN_SECONDS once downloaded.
     Local first, then the most faved; one per recordist."""
-    r = get("https://api.inaturalist.org/v1/observations",
-            {"taxon_name": latin, "sounds": "true", "quality_grade": "research",
-             "sound_license": ",".join(INAT_LICENSES), "order_by": "votes", "per_page": 50})
+    # The iNaturalist taxon this exact name means: a renamed species resolves to its new name
+    # (Puffinus griseus -> Ardenna grisea), while a name search alone would also bring back
+    # neighbours (Larus cachinnans -> L. michahellis). Its subspecies come with it.
+    t = get("https://api.inaturalist.org/v1/taxa", {"q": latin, "rank": "species", "per_page": 10})
     time.sleep(1)  # iNaturalist asks for ~1 request a second (cached responses skip the API anyway)
-    obs = [o for o in r.get("results", []) if o.get("taxon", {}).get("name") == latin]
+    taxon = next((x["id"] for x in t.get("results", [])
+                  if (x.get("matched_term") or "").lower() == latin.lower()), None)
+    if not taxon:
+        return []
+    r = get("https://api.inaturalist.org/v1/observations",
+            {"taxon_id": taxon, "sounds": "true", "quality_grade": "research",
+             "sound_license": ",".join(INAT_LICENSES), "order_by": "votes", "per_page": 50})
+    time.sleep(1)
+    obs = r.get("results", [])
 
     def in_area(o):
         lon, lat = (o.get("geojson") or {}).get("coordinates") or (None, None)
@@ -542,7 +569,7 @@ def inat_recordings(latin, n):
             src = tmp / f"inat-{s['id']}.audio"
             if not src.exists():
                 src.write_bytes(get(s["file_url"], binary=True))
-            if (secs := seconds_of(src)) < 10:
+            if (secs := seconds_of(src)) < INAT_MIN_SECONDS:
                 continue
             users.add(name)
             picked.append({"id": s["id"], "ref": f"iNat {o['id']}", "file": s["file_url"], "src": src,
@@ -667,8 +694,10 @@ def build_fallback():
             if "common" in months.values():
                 score[continent][bird] = score[continent].get(bird, 0) + 1
     chosen, continent_of = [], {}  # the app keeps only the user's continent offline
+    # Only birds with a free recording: the offline list ships inside the paid app.
+    free = {bid for bid, b in species.items() if any(not r.get("nc") for r in b["recordings"])}
     for continent in ("eu", "na"):
-        ranked = sorted(score[continent], key=lambda b: -score[continent][b])
+        ranked = sorted(set(score[continent]) & free, key=lambda b: -score[continent][b])
         picks = [b for b in ranked if b not in chosen][:FALLBACK_PER_CONTINENT]
         chosen += picks
         continent_of |= dict.fromkeys(picks, continent)
@@ -679,8 +708,9 @@ def build_fallback():
     bundled = []
     for bid in chosen:
         b = dict(species[bid], continent=continent_of[bid])
-        recs = sorted(b["recordings"], key=lambda r: (r.get("nc", False), r["kind"] != "song"))
+        recs = sorted((r for r in b["recordings"] if not r.get("nc")), key=lambda r: r["kind"] != "song")
         b["recordings"] = recs[:1]  # one song keeps the APK small
+        assert not b["recordings"][0].get("nc"), bid  # never an NC recording in the app itself
         for f in (b["photo"], b["recordings"][0]["file"]):
             (FALLBACK / f).write_bytes((OUT / f).read_bytes())
         bundled.append(b)
@@ -900,7 +930,7 @@ def main():
                 **({"nc": True} if rec.get("nc") else {}),
             })
         if not recordings:
-            drop("no usable free recording (xeno-canto A/B/C quality or iNaturalist research grade, ≥10 s)")
+            drop("no usable free recording (xeno-canto A/B/C quality ≥ 10 s, or iNaturalist research grade ≥ 5 s)")
             continue
         birds.append({
             "id": bird_id, "latin": latin,

@@ -16,6 +16,7 @@ import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
 import 'package:early_bird/ui/settings.dart';
+import 'package:early_bird/ui/tips.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,6 +71,29 @@ void main() {
     ];
   });
 
+  test('a card keeps the rarity stars of the region where it was won', () {
+    Bird inRegion(int? level) => Bird.fromJson(
+      {
+        'id': 'vulture', 'latin': 'v', 'en': 'v', 'fr': 'v', //
+        'order': 'o', 'family': 'f', 'photo': 'p', 'photoCredit': 'p',
+        'number': 1, 'recordings': <Object>[], 'stats': <String, Object>{},
+      },
+      const {},
+      level,
+    );
+    final card = rollCard(inRegion(8), 'NO', rarity: 'epic');
+    expect(card.level, 8);
+    // Saved and read back; the bird's level elsewhere doesn't change it.
+    final back = CardData.fromJson(jsonDecode(jsonEncode(card.toJson())));
+    expect(back.level, 8);
+    expect(back.level ?? inRegion(4).level, 8);
+    // Cards from before 2026-11-03 have none: the current region's stars show.
+    expect(
+      CardData.fromJson({...card.toJson()}..remove('level')).level,
+      isNull,
+    );
+  });
+
   test('catalog parsing', () {
     expect(birds.length, _fake.length);
     expect(_b('robin').recordings.map((r) => r.kind), [
@@ -104,10 +128,11 @@ void main() {
   test('card rarity: drawn from the odds of the difficulty', () {
     final r = Random(7);
     for (final (d, odds) in [
-      (Difficulty.easy, [75.3, 18.8, 4.7, 1.2, 0]),
-      (Difficulty.medium, [65.3, 22.9, 8.0, 2.8, 1.0]),
-      (Difficulty.hard, [51.6, 25.8, 12.9, 6.5, 3.2]),
-      // Hard with Epic and Legendary × 1.2.
+      // 2026-11-03: tiers above Common × 0.8 (Easy Uncommon / Rare × 0.95, Expert × 1).
+      (Difficulty.easy, [76.7, 17.9, 4.5, 0.9, 0]),
+      (Difficulty.medium, [72.3, 18.3, 6.4, 2.2, 0.8]),
+      (Difficulty.hard, [61.3, 20.6, 10.3, 5.2, 2.6]),
+      // Hard's curve with Epic and Legendary × 1.2, unscaled.
       (Difficulty.expert, [50.6, 25.3, 12.7, 7.6, 3.8]),
     ]) {
       final seen = <String, int>{};
@@ -136,13 +161,13 @@ void main() {
       return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
     }
 
-    // Hard (each step ×½, lean ×3): a common bird 83/14/2.3/0.4/0.1 %, a legendary one
-    // 7.6/11/17/26/38 %: the card peaks at the bird's own tier.
+    // Hard (each step ×½, × 0.8 above Common, lean ×3): a common bird 88/9.9/1.6/0.3/0 %,
+    // a legendary one 11/11/16.5/25/37 %: the card peaks at the bird's own tier.
     final common = shares('common'), legendary = shares('legendary');
-    expect(common['common'], closeTo(0.83, 0.015));
+    expect(common['common'], closeTo(0.881, 0.015));
     expect(common['legendary'], lessThan(0.01));
-    expect(legendary['common'], closeTo(0.076, 0.01));
-    expect(legendary['legendary'], closeTo(0.38, 0.015));
+    expect(legendary['common'], closeTo(0.109, 0.01));
+    expect(legendary['legendary'], closeTo(0.37, 0.015));
     // Easy never gives a Legendary card, even for a legendary bird.
     for (var i = 0; i < 2000; i++) {
       expect(
@@ -304,6 +329,41 @@ void main() {
     // Using one when full long after: the excess is dropped, 4 left.
     final much = t0.add(const Duration(days: 1));
     expect(twitchCharges(twitchUse(start, much), much), 4);
+  });
+
+  test('Twitch Plus: one more every minute, and buying it fills the pile', () async {
+    final t0 = DateTime(2026, 11, 3, 8);
+    var start = twitchUse(
+      DateTime.fromMillisecondsSinceEpoch(0),
+      t0,
+      twitchPlusEvery,
+    );
+    expect(twitchCharges(start, t0, twitchPlusEvery), 4);
+    expect(
+      twitchNextIn(start, t0, twitchPlusEvery),
+      const Duration(minutes: 1),
+    );
+    expect(twitchCharges(start, t0.add(twitchPlusEvery), twitchPlusEvery), 5);
+    for (var i = 0; i < 4; i++) {
+      start = twitchUse(start, t0, twitchPlusEvery);
+    }
+    expect(
+      twitchCharges(start, t0.add(const Duration(minutes: 3)), twitchPlusEvery),
+      3,
+    );
+
+    // Empty pile, 5 minutes into a 15-minute wait: Plus makes it full at once.
+    SharedPreferences.setMockInitialValues({
+      'twitchStart': DateTime.now()
+          .subtract(const Duration(minutes: 5))
+          .millisecondsSinceEpoch,
+    });
+    final s = await Store.load();
+    expect(s.twitchReady(DateTime.now()), 0);
+    s.twitchPlus = true;
+    await Future<void>.delayed(Duration.zero);
+    expect(s.twitchPeriod, twitchPlusEvery);
+    expect(s.twitchReady(DateTime.now()), 5);
   });
 
   test('a Twitch answer wins a card but leaves the streak alone', () async {
@@ -792,6 +852,42 @@ void main() {
       await tester.tap(find.text(label));
       await tester.pumpAndSettle();
       expect(shown(), {d});
+    }
+  });
+
+  testWidgets('tips: four tiles, unavailable without Google Play', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const TipsScreen(),
+      ),
+    );
+    // The Play lookup is a platform call: it needs real time to fail.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 200)),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    for (final name in [
+      'Espresso',
+      'Cappuccino',
+      'Breakfast',
+      'Stabilized binoculars',
+    ]) {
+      expect(find.text(name), findsOneWidget);
+    }
+    expect(
+      find.text('Purchases are not available on this phone.'),
+      findsOneWidget,
+    );
+    // No price, no purchase: every tile is disabled.
+    for (final b in tester.widgetList<OutlinedButton>(
+      find.byType(OutlinedButton),
+    )) {
+      expect(b.onPressed, isNull);
     }
   });
 }

@@ -73,18 +73,32 @@ const devTools = bool.fromEnvironment('DEV_TOOLS');
 // 15 min (10 until the 2026-10-31 balance pass); 1 min with devTools to try it quickly.
 const twitchEvery = Duration(minutes: devTools ? 1 : 15);
 
-int twitchCharges(DateTime start, DateTime now) =>
-    min(twitchMax, now.difference(start).inSeconds ~/ twitchEvery.inSeconds);
+/// Twitch Plus (one-time purchase, see purchases.dart): a booster every minute.
+const twitchPlusEvery = Duration(minutes: 1);
+
+int twitchCharges(
+  DateTime start,
+  DateTime now, [
+  Duration every = twitchEvery,
+]) => min(twitchMax, now.difference(start).inSeconds ~/ every.inSeconds);
 
 /// Time until the next quiz comes back (meaningless when full).
-Duration twitchNextIn(DateTime start, DateTime now) =>
-    twitchEvery -
-    Duration(seconds: now.difference(start).inSeconds % twitchEvery.inSeconds);
+Duration twitchNextIn(
+  DateTime start,
+  DateTime now, [
+  Duration every = twitchEvery,
+]) =>
+    every -
+    Duration(seconds: now.difference(start).inSeconds % every.inSeconds);
 
 /// The new start after using one quiz: charges above the cap are dropped first.
-DateTime twitchUse(DateTime start, DateTime now) {
-  final full = now.subtract(twitchEvery * twitchMax);
-  return (start.isBefore(full) ? full : start).add(twitchEvery);
+DateTime twitchUse(
+  DateTime start,
+  DateTime now, [
+  Duration every = twitchEvery,
+]) {
+  final full = now.subtract(every * twitchMax);
+  return (start.isBefore(full) ? full : start).add(every);
 }
 
 /// How many recently heard birds a new ring avoids.
@@ -112,9 +126,17 @@ class Store extends ChangeNotifier {
   /// Boosters won by completing series: on top of the timed ones, used first.
   int get twitchBonus => _prefs.getInt('twitchBonus') ?? 0;
 
+  /// Twitch Plus bought (restored from Google Play after a reinstall).
+  bool get twitchPlus => _prefs.getBool('twitchPlus') ?? false;
+  set twitchPlus(bool on) =>
+      _prefs.setBool('twitchPlus', on).then((_) => notifyListeners());
+
+  /// Time between two Twitch boosters.
+  Duration get twitchPeriod => twitchPlus ? twitchPlusEvery : twitchEvery;
+
   /// Twitch quizzes available now: the timed ones plus the bonus.
   int twitchReady(DateTime now) =>
-      twitchCharges(twitchStart, now) + twitchBonus;
+      twitchCharges(twitchStart, now, twitchPeriod) + twitchBonus;
 
   /// Uses one Twitch quiz (the caller checks there is one): a bonus one first, so the
   /// timed ones keep coming back.
@@ -122,7 +144,7 @@ class Store extends ChangeNotifier {
     if (twitchBonus > 0) {
       await _prefs.setInt('twitchBonus', twitchBonus - 1);
     } else {
-      final start = twitchUse(twitchStart, DateTime.now());
+      final start = twitchUse(twitchStart, DateTime.now(), twitchPeriod);
       await _prefs.setInt('twitchStart', start.millisecondsSinceEpoch);
     }
     notifyListeners();

@@ -116,10 +116,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
         for (final c in cards)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ]..sort(rarest),
+      // One card per species, in card-number order (2026-11-03).
       _species => [
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
-      ]..sort(rarest),
+      ]..sort((a, b) => a.$1.number.compareTo(b.$1.number)),
       final region => [
         for (final id in idsOf(region))
           if (birdById(id) case final b?) (b, best[id]),
@@ -276,8 +277,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     ? null
                     : () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) =>
-                              CardPager(entries: openable, initial: open),
+                          builder: (_) => CardPager(
+                            entries: openable,
+                            initial: open,
+                            // "All" shows every copy as its own card: no ×N.
+                            showCopies: _view != _all,
+                          ),
                         ),
                       ),
               );
@@ -472,9 +477,15 @@ class _Round extends StatelessWidget {
 
 /// Full cards, swipe left/right between them.
 class CardPager extends StatelessWidget {
-  const CardPager({required this.entries, required this.initial, super.key});
+  const CardPager({
+    required this.entries,
+    required this.initial,
+    this.showCopies = true,
+    super.key,
+  });
   final List<(Bird, CardData?)> entries;
   final int initial;
+  final bool showCopies; // the ×N badge above the card
 
   @override
   Widget build(BuildContext context) {
@@ -504,7 +515,7 @@ class CardPager extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 spacing: 12,
                 children: [
-                  if (copies > 1)
+                  if (showCopies && copies > 1)
                     CopiesBadge(
                       copies,
                       large: true,

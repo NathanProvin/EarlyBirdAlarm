@@ -105,7 +105,8 @@ class BirdCardView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              if (bird.level case final level?)
+              // The stars of the region where the card was won (older cards: this region's).
+              if (card?.level ?? bird.level case final level?)
                 _RarityRow(label: l.birdRarity, level: level, color: frame),
               for (final key in statKeys)
                 if (bird.stats.containsKey(

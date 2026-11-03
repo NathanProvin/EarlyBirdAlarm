@@ -156,5 +156,19 @@
   "introAgain": "Einführung erneut ansehen",
   "introRarityTitle": "Seltenheit und Werte",
   "introRarity": "Die Seltenheit reicht von Häufig bis Legendär: Seltene Arten geben öfter seltene Karten. Jede Karte trägt außerdem echte Werte ihrer Art: Ziel ist ein 100-%-Vogel!",
-  "start": "Starten"
+  "start": "Starten",
+  "support": "Early Bird unterstützen",
+  "tipsTile": "Spendier mir einen Kaffee",
+  "tipsNote": "Early Bird ist ohne Werbung, ohne Tracker und wird von einem Solo-Entwickler gepflegt. Wenn dir die App nützt, bedank dich mit einem Kaffee!",
+  "tipEspresso": "Espresso",
+  "tipCappuccino": "Cappuccino",
+  "tipBreakfast": "Frühstück",
+  "tipBinoculars": "Stabilisiertes Fernglas",
+  "tipsPayments": "Bezahlung über Google Play. Im Spiel ändert sich nichts.",
+  "thankYou": "Danke!",
+  "thankYouBody": "Deine Unterstützung lässt Early Bird weitersingen.",
+  "purchasesUnavailable": "Käufe sind auf diesem Telefon nicht verfügbar.",
+  "twitchPlus": "Twitcher Plus",
+  "twitchPlusPitch": "Unbegrenzter Modus: ein Booster pro Minute! Einmal kaufen, für immer.",
+  "paymentsGoogle": "Bezahlung über Google Play."
 }

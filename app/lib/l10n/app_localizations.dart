@@ -1043,6 +1043,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start'**
   String get start;
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Early Bird'**
+  String get support;
+
+  /// No description provided for @tipsTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy me a coffee'**
+  String get tipsTile;
+
+  /// No description provided for @tipsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird has no ads, no trackers, and is kept going by a solo dev. If the app is useful to you, thank me with a coffee!'**
+  String get tipsNote;
+
+  /// No description provided for @tipEspresso.
+  ///
+  /// In en, this message translates to:
+  /// **'Espresso'**
+  String get tipEspresso;
+
+  /// No description provided for @tipCappuccino.
+  ///
+  /// In en, this message translates to:
+  /// **'Cappuccino'**
+  String get tipCappuccino;
+
+  /// No description provided for @tipBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast'**
+  String get tipBreakfast;
+
+  /// No description provided for @tipBinoculars.
+  ///
+  /// In en, this message translates to:
+  /// **'Stabilized binoculars'**
+  String get tipBinoculars;
+
+  /// No description provided for @tipsPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments by Google Play. Nothing changes in the game.'**
+  String get tipsPayments;
+
+  /// No description provided for @thankYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you!'**
+  String get thankYou;
+
+  /// No description provided for @thankYouBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your support keeps Early Bird singing.'**
+  String get thankYouBody;
+
+  /// No description provided for @purchasesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases are not available on this phone.'**
+  String get purchasesUnavailable;
+
+  /// No description provided for @twitchPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitch Plus'**
+  String get twitchPlus;
+
+  /// No description provided for @twitchPlusPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited mode: a booster every minute! One purchase, for life.'**
+  String get twitchPlusPitch;
+
+  /// No description provided for @paymentsGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments by Google Play.'**
+  String get paymentsGoogle;
 }
 
 class _AppLocalizationsDelegate
