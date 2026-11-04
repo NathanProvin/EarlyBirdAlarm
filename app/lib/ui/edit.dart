@@ -6,6 +6,7 @@ import '../main.dart';
 import '../store.dart';
 
 const _snoozeChoices = [5, 10, 15];
+const _backupChoices = [3, 5, 10, 0]; // 0 = no backup alarm
 
 /// Narrow weekday name for DateTime.monday..sunday.
 String weekday(BuildContext context, int day) =>
@@ -138,6 +139,19 @@ class _EditScreenState extends State<EditScreen> {
                 DropdownMenuItem(value: m, child: Text(l.snoozeMinutes(m))),
             ],
             onChanged: (m) => setState(() => _a.snoozeMinutes = m!),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<int>(
+            value: _a.backupMinutes,
+            isExpanded: true,
+            items: [
+              for (final m in _backupChoices)
+                DropdownMenuItem(
+                  value: m,
+                  child: Text(m == 0 ? l.backupOff : l.backupMinutes(m)),
+                ),
+            ],
+            onChanged: (m) => setState(() => _a.backupMinutes = m!),
           ),
           const SizedBox(height: 48),
           FilledButton(onPressed: _save, child: Text(l.save)),

@@ -171,7 +171,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get creditsBody =>
-      'Presencia y temporadas de las aves: datos de observación de GBIF.org.\n\nNombres y fotos: Wikidata y Wikimedia Commons (CC0, dominio público, CC BY, CC BY-SA); el autor y la licencia de cada foto están en su carta (ⓘ).\n\nCantos y reclamos: grabaciones de xeno-canto.org (CC0, CC BY, CC BY-SA, y CC BY-NC-SA / BY-NC para algunas especies sin grabación libre); el autor y la licencia están en la carta (ⓘ).\n\nEstadísticas de las cartas: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia y Wikidata.';
+      'Presencia y temporadas de las aves: datos de observación de GBIF.org.\n\nNombres y fotos: Wikidata y Wikimedia Commons (CC0, dominio público, CC BY, CC BY-SA); el autor y la licencia de cada foto están en su carta (ⓘ).\n\nCantos y reclamos: grabaciones de xeno-canto.org e iNaturalist (CC0, CC BY, CC BY-SA); el autor y la licencia están en la carta (ⓘ). Gallo de la alarma de respaldo: Kalvin Chan, iNaturalist (CC0).\n\nEstadísticas de las cartas: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia y Wikidata.';
 
   @override
   String get tryNextTime => '¡La próxima vez será!';
@@ -589,4 +589,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get gyroHint => 'Las cartas se inclinan al mover el teléfono';
+
+  @override
+  String backupMinutes(int minutes) {
+    return 'Alarma de respaldo a los $minutes min';
+  }
+
+  @override
+  String get backupOff => 'Sin alarma de respaldo';
 }

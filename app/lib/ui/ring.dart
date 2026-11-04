@@ -12,12 +12,16 @@ import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../store.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
 
 // See MainActivity.kt: true keeps the app over the lock screen after the alarm stops.
 const _lockScreen = MethodChannel('early_bird/lock_screen');
+const _buzz = MethodChannel(
+  'early_bird/buzz',
+); // full-strength vibration (MainActivity)
 
 /// The quiz: a ringing [alarm], or a Twitch [training] quiz that plays its song in the
 /// app, can be left (the quiz is lost) and doesn't touch the streak.
@@ -55,6 +59,8 @@ class _RingScreenState extends State<RingScreen> {
   final _player = AudioPlayer(); // Twitch only: alarms play through the plugin
   Bird? _tapped;
 
+  Timer? _buzzTimer;
+
   @override
   void initState() {
     super.initState();
@@ -62,10 +68,31 @@ class _RingScreenState extends State<RingScreen> {
       _player.setLoopMode(LoopMode.one);
       playRecording(_player, _rec!.file);
     }
+    // With the backup alarm (the rooster), the phone also buzzes at full strength.
+    if (widget.alarm case final alarm?) {
+      final minutes = store.byId(mainIdOf(alarm.id))?.backupMinutes ?? 0;
+      if (minutes > 0) {
+        final start = alarm.id >= backupOffset
+            ? DateTime.now() // the backup itself opened the screen
+            : alarm.dateTime.add(Duration(minutes: minutes));
+        final wait = start.difference(DateTime.now());
+        _buzzTimer = Timer(
+          wait.isNegative ? Duration.zero : wait,
+          () => _buzz.invokeMethod<void>('start'),
+        );
+      }
+    }
+  }
+
+  void _stopBuzz() {
+    _buzzTimer?.cancel();
+    _buzz.invokeMethod<void>('stop');
   }
 
   @override
   void dispose() {
+    _buzzTimer?.cancel();
+    if (widget.alarm != null) _buzz.invokeMethod<void>('stop');
     _player.dispose();
     super.dispose();
   }
@@ -86,7 +113,8 @@ class _RingScreenState extends State<RingScreen> {
     final shown = Future<void>.delayed(const Duration(seconds: 2));
     if (widget.alarm case final alarm?) {
       await _lockScreen.invokeMethod<void>('hold', true);
-      await Alarm.stop(alarm.id);
+      _stopBuzz();
+      await store.stopRing(alarm.id);
     } else {
       await _player.stop();
     }
@@ -122,14 +150,8 @@ class _RingScreenState extends State<RingScreen> {
   Future<void> _snooze() async {
     final alarm = widget.alarm!;
     if (_tapped != null) return;
-    final minutes = store.byId(alarm.id)?.snoozeMinutes ?? 10;
-    await Alarm.stop(alarm.id);
-    // Same settings, so the same bird plays again.
-    await Alarm.set(
-      alarmSettings: alarm.copyWith(
-        dateTime: DateTime.now().add(Duration(minutes: minutes)),
-      ),
-    );
+    _stopBuzz();
+    await store.snooze(alarm); // the same bird again, and its backup
     if (mounted) Navigator.of(context).pop();
   }
 

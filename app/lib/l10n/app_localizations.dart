@@ -405,7 +405,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsBody.
   ///
   /// In en, this message translates to:
-  /// **'Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org recordings (CC0, CC BY, CC BY-SA, and CC BY-NC-SA / BY-NC for a few species with no free recording); each recordist and license are on the card (ⓘ).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.'**
+  /// **'Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org and iNaturalist recordings (CC0, CC BY, CC BY-SA); each recordist and license are on the card (ⓘ). Backup alarm rooster: Kalvin Chan, iNaturalist (CC0).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.'**
   String get creditsBody;
 
   /// No description provided for @tryNextTime.
@@ -1163,6 +1163,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cards tilt as you move the phone'**
   String get gyroHint;
+
+  /// No description provided for @backupMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup alarm after {minutes} min'**
+  String backupMinutes(int minutes);
+
+  /// No description provided for @backupOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup alarm'**
+  String get backupOff;
 }
 
 class _AppLocalizationsDelegate

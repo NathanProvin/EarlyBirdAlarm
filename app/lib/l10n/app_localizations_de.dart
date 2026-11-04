@@ -171,7 +171,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get creditsBody =>
-      'Vorkommen und Jahreszeiten der Vögel: Beobachtungsdaten von GBIF.org.\n\nNamen und Fotos: Wikidata und Wikimedia Commons (CC0, gemeinfrei, CC BY, CC BY-SA); Urheber und Lizenz jedes Fotos stehen auf seiner Karte (ⓘ).\n\nGesänge und Rufe: Aufnahmen von xeno-canto.org (CC0, CC BY, CC BY-SA, und CC BY-NC-SA / BY-NC für einige Arten ohne freie Aufnahme); Urheber und Lizenz stehen auf der Karte (ⓘ).\n\nKartenwerte: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia und Wikidata.';
+      'Vorkommen und Jahreszeiten der Vögel: Beobachtungsdaten von GBIF.org.\n\nNamen und Fotos: Wikidata und Wikimedia Commons (CC0, gemeinfrei, CC BY, CC BY-SA); Urheber und Lizenz jedes Fotos stehen auf seiner Karte (ⓘ).\n\nGesänge und Rufe: Aufnahmen von xeno-canto.org und iNaturalist (CC0, CC BY, CC BY-SA); Urheber und Lizenz stehen auf der Karte (ⓘ). Hahn des Notfallweckers: Kalvin Chan, iNaturalist (CC0).\n\nKartenwerte: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia und Wikidata.';
 
   @override
   String get tryNextTime => 'Beim nächsten Mal klappt\'s!';
@@ -591,4 +591,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gyroHint => 'Karten neigen sich, wenn du das Handy bewegst';
+
+  @override
+  String backupMinutes(int minutes) {
+    return 'Notfallwecker nach $minutes Min.';
+  }
+
+  @override
+  String get backupOff => 'Kein Notfallwecker';
 }

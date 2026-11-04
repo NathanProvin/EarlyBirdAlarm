@@ -536,6 +536,22 @@ def seconds_of(path):
         return 0
 
 
+def audio_seconds(path):
+    """Seconds of sound: the audio stream's length (the file's can include a text track),
+    else the file's; 0 with no audio or an unreadable file."""
+    probe = lambda entries: subprocess.run(
+        [str(FFMPEG.with_name("ffprobe.exe")), "-v", "error", "-select_streams", "a:0",
+         "-show_entries", entries, "-of", "csv=p=0", str(path)], capture_output=True, text=True).stdout
+    if not probe("stream=index").strip():
+        return 0
+    for entries in ("stream=duration", "format=duration"):
+        try:
+            return float(probe(entries).split()[0])
+        except (ValueError, IndexError):  # "N/A" in some containers
+            pass
+    return 0
+
+
 def inat_recordings(latin, n):
     """Up to n free iNaturalist sounds (research grade: the species ID is community-checked), the
     fallback between free and NC xeno-canto. They have no quality grade or song/call label: all
@@ -910,16 +926,16 @@ def main():
             name = f"{bird_id}-{'n' if 'src' in rec else ''}{i}.m4a"
             audio_out = OUT / "audio" / name
             # shortcut: delete site/v1/audio to re-encode after changing picks
-            if not audio_out.exists() or audio_out.stat().st_size < 2000:  # < 2 kB: an empty clip
+            if not audio_out.exists() or audio_seconds(audio_out) < 3:  # a clip with no real sound
                 src = rec.get("src")  # iNaturalist: already downloaded to measure its length
                 if not src:
                     src = tmp / f"{bird_id}-{rec['id']}.audio"
                     src.write_bytes(get(rec["file"], binary=True))
                 length = min(30, max(rec["seconds"] - 1, 5))
-                try:  # -vn: some files carry a cover image
+                try:  # -vn -sn -dn: some files carry a cover image or text tracks
                     # Leading silence is trimmed so the bird is heard the moment the alarm starts;
                     # 15 s of margin is decoded so the clip is still `length` long after trimming.
-                    ffmpeg("-ss", "1", "-t", str(length + 15), "-i", str(src), "-vn",
+                    ffmpeg("-ss", "1", "-t", str(length + 15), "-i", str(src), "-vn", "-sn", "-dn",
                            "-af", "silenceremove=start_periods=1:start_threshold=-45dB,"
                                   f"atrim=0:{length},asetpts=PTS-STARTPTS,"
                                   f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st={length - 2}:d=2",
@@ -930,7 +946,8 @@ def main():
                     continue
                 # A recording fainter than the silence threshold is trimmed away entirely: ffmpeg
                 # then writes an empty file without an error, and the alarm would ring silent.
-                if seconds_of(audio_out) < 3:
+                # (A file with no sound can still carry a text track that has a length.)
+                if audio_out.stat().st_size < 2000 or audio_seconds(audio_out) < 3:
                     audio_out.unlink()
                     print(f"    ! {rec.get('ref', 'XC' + str(rec['id']))} ({latin}) too faint, skipped")
                     continue

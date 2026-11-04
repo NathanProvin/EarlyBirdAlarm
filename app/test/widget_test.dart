@@ -289,6 +289,18 @@ void main() {
     );
   });
 
+  test('backup alarm: saved with the alarm, on by default, its own id', () {
+    final a = AlarmData(id: 7, hour: 7, minute: 0, backupMinutes: 5);
+    expect(AlarmData.fromJson(a.toJson()).backupMinutes, 5);
+    // An alarm saved before the backup existed gets it, 3 min after.
+    final old = a.toJson()..remove('backupMinutes');
+    expect(AlarmData.fromJson(old).backupMinutes, 3);
+    expect(AlarmData(id: 1, hour: 7, minute: 0).backupMinutes, 3);
+    expect(backupId(7), isNot(7));
+    expect(mainIdOf(backupId(7)), 7);
+    expect(mainIdOf(7), 7);
+  });
+
   test('ringsIn and stat formats', () {
     final l = lookupAppLocalizations(const Locale('en'));
     final mon8 = DateTime(2026, 10, 26, 8, 0, 30); // a Monday

@@ -50,7 +50,7 @@
   "alarmCall": "alarma",
   "seasonalBirds": "Aves de temporada",
   "credits": "Créditos",
-  "creditsBody": "Presencia y temporadas de las aves: datos de observación de GBIF.org.\n\nNombres y fotos: Wikidata y Wikimedia Commons (CC0, dominio público, CC BY, CC BY-SA); el autor y la licencia de cada foto están en su carta (ⓘ).\n\nCantos y reclamos: grabaciones de xeno-canto.org (CC0, CC BY, CC BY-SA, y CC BY-NC-SA / BY-NC para algunas especies sin grabación libre); el autor y la licencia están en la carta (ⓘ).\n\nEstadísticas de las cartas: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia y Wikidata.",
+  "creditsBody": "Presencia y temporadas de las aves: datos de observación de GBIF.org.\n\nNombres y fotos: Wikidata y Wikimedia Commons (CC0, dominio público, CC BY, CC BY-SA); el autor y la licencia de cada foto están en su carta (ⓘ).\n\nCantos y reclamos: grabaciones de xeno-canto.org e iNaturalist (CC0, CC BY, CC BY-SA); el autor y la licencia están en la carta (ⓘ). Gallo de la alarma de respaldo: Kalvin Chan, iNaturalist (CC0).\n\nEstadísticas de las cartas: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia y Wikidata.",
   "tryNextTime": "¡La próxima vez será!",
   "speciesCollected": "¡{ordinal} especie conseguida!",
   "streakLost": "Racha perdida",
@@ -176,5 +176,7 @@
   "shareText": "¡Reconocí el canto: {bird}! Carta {rarity} ganada. {link}",
   "shareCopied": "Enlace copiado: pégalo en tu mensaje si la app no lo incluye",
   "gyro": "Giro",
-  "gyroHint": "Las cartas se inclinan al mover el teléfono"
+  "gyroHint": "Las cartas se inclinan al mover el teléfono",
+  "backupMinutes": "Alarma de respaldo a los {minutes} min",
+  "backupOff": "Sin alarma de respaldo"
 }

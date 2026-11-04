@@ -259,8 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     Alarm.ringing.listen((set) {
       final alarm = set.alarms.firstOrNull;
-      if (alarm == null || alarm.id == _ringingId || !mounted) return;
-      _ringingId = alarm.id;
+      // A backup (the rooster) counts as its alarm: one ring screen for both.
+      if (alarm == null || mainIdOf(alarm.id) == _ringingId || !mounted) return;
+      _ringingId = mainIdOf(alarm.id);
       Navigator.of(context)
           .push(
             MaterialPageRoute<void>(builder: (_) => RingScreen(alarm: alarm)),

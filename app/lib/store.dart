@@ -20,6 +20,7 @@ class AlarmData {
     this.enabled = true,
     this.label = '',
     this.snoozeMinutes = 10,
+    this.backupMinutes = 3,
   });
 
   AlarmData.fromJson(Map<String, dynamic> j)
@@ -31,6 +32,7 @@ class AlarmData {
         enabled: j['enabled'] as bool,
         label: j['label'] as String,
         snoozeMinutes: j['snoozeMinutes'] as int,
+        backupMinutes: j['backupMinutes'] as int? ?? 3, // older alarms: on
       );
 
   final int id;
@@ -40,6 +42,7 @@ class AlarmData {
   bool enabled;
   String label;
   int snoozeMinutes;
+  int backupMinutes; // the rooster rings this long after the bird if unanswered; 0 = off
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -49,8 +52,18 @@ class AlarmData {
     'enabled': enabled,
     'label': label,
     'snoozeMinutes': snoozeMinutes,
+    'backupMinutes': backupMinutes,
   };
 }
+
+/// The backup alarm of alarm [id]: a rooster at full volume over the bird if nobody
+/// answers (see Store.save). Alarm ids stay far below this offset.
+int backupId(int id) => id + backupOffset;
+const backupOffset = 100000;
+const roosterAsset = 'assets/rooster.m4a'; // credit: l10n creditsBody
+
+/// The alarm a ringing id belongs to: itself, or the one it backs up.
+int mainIdOf(int id) => id >= backupOffset ? id - backupOffset : id;
 
 /// The first time after [now] at [a]'s hour and minute on one of its days.
 DateTime nextRing(AlarmData a, DateTime now) {
@@ -255,7 +268,10 @@ class Store extends ChangeNotifier {
     final scheduled = {for (final a in await Alarm.getAlarms()) a.id};
     final title = _prefs.getString('notificationTitle') ?? 'Guess the bird!';
     for (final a in alarms.where(
-      (a) => a.enabled && !scheduled.contains(a.id),
+      (a) =>
+          a.enabled &&
+          (!scheduled.contains(a.id) ||
+              (a.backupMinutes > 0 && !scheduled.contains(backupId(a.id)))),
     )) {
       await save(a, title);
     }
@@ -315,32 +331,97 @@ class Store extends ChangeNotifier {
     await _prefs.setString('notificationTitle', notificationTitle);
     await _write([...alarms.where((x) => x.id != a.id), a]);
     if (!a.enabled) {
-      await Alarm.stop(a.id);
+      await stopRing(a.id);
       return;
     }
     final at = nextRing(a, DateTime.now());
     final (bird, rec) = pickNext(at);
+    await _schedule(a, at, bird.id, rec.file, notificationTitle);
+  }
+
+  /// Sets alarm [a] to ring at [at] with [birdId]'s recording [recFile], and its backup.
+  Future<void> _schedule(
+    AlarmData a,
+    DateTime at,
+    String birdId,
+    String recFile,
+    String notificationTitle,
+  ) async {
+    final payload = jsonEncode({'bird': birdId, 'rec': recFile});
+    final notification = NotificationSettings(
+      title: notificationTitle, // big bold line of the banner
+      body: a.label.isEmpty ? 'Early Bird' : a.label,
+      androidStopAlarmOnDismiss: false, // only a guess stops it
+      icon: 'ic_notification', // white bird, res/drawable
+      iconColor: coral,
+    );
     await Alarm.set(
       alarmSettings: AlarmSettings(
         id: a.id,
         dateTime: at,
-        assetAudioPath: phonePath(rec.file),
-        payload: jsonEncode({'bird': bird.id, 'rec': rec.file}),
-        // Fade up over 60 s, but from 30%: starting silent hid the first seconds of song.
+        assetAudioPath: phonePath(recFile),
+        payload: payload,
+        // The phone's alarm volume goes to the maximum while it rings (put back after):
+        // a low alarm volume once let the user sleep through. The song still fades up
+        // over 60 s from 30%, so the start stays gentle (silent hid its first seconds).
         volumeSettings: VolumeSettings.staircaseFade(
+          volume: 1,
           fadeSteps: [
             VolumeFadeStep(Duration.zero, 0.3),
             VolumeFadeStep(const Duration(seconds: 60), 1),
           ],
         ),
-        notificationSettings: NotificationSettings(
-          title: notificationTitle, // big bold line of the banner
-          body: a.label.isEmpty ? 'Early Bird' : a.label,
-          androidStopAlarmOnDismiss: false, // only a guess stops it
-          icon: 'ic_notification', // white bird, res/drawable
-          iconColor: coral,
-        ),
+        notificationSettings: notification,
       ),
+    );
+    if (a.backupMinutes == 0) {
+      await Alarm.stop(backupId(a.id));
+      return;
+    }
+    // The backup: a rooster at full volume over the bird, the volume buttons locked.
+    // Scheduled by Android like the alarm, so it rings even if the app was closed.
+    await Alarm.set(
+      alarmSettings: AlarmSettings(
+        id: backupId(a.id),
+        dateTime: at.add(Duration(minutes: a.backupMinutes)),
+        assetAudioPath: roosterAsset,
+        payload: payload, // the same quiz, whichever of the two opens the app
+        allowAlarmOverlap: true,
+        volumeSettings: const VolumeSettings.fixed(
+          volume: 1,
+          volumeEnforced: true,
+        ),
+        notificationSettings: notification,
+      ),
+    );
+  }
+
+  /// Stops alarm [id] (or the one a backup id belongs to) and its backup.
+  Future<void> stopRing(int id) async {
+    await Alarm.stop(mainIdOf(id));
+    await Alarm.stop(backupId(mainIdOf(id)));
+  }
+
+  /// Snooze: the ringing alarm and its backup ring again after its snooze time, with
+  /// the same bird.
+  Future<void> snooze(AlarmSettings ringing) async {
+    final a = byId(mainIdOf(ringing.id));
+    await stopRing(ringing.id);
+    final at = DateTime.now().add(Duration(minutes: a?.snoozeMinutes ?? 10));
+    final song = jsonDecode(ringing.payload ?? '{}') as Map<String, dynamic>;
+    if (a == null || song['bird'] == null || song['rec'] == null) {
+      // An alarm deleted meanwhile, or an older payload: the same settings again.
+      await Alarm.set(
+        alarmSettings: ringing.copyWith(id: mainIdOf(ringing.id), dateTime: at),
+      );
+      return;
+    }
+    await _schedule(
+      a,
+      at,
+      song['bird'] as String,
+      song['rec'] as String,
+      _prefs.getString('notificationTitle') ?? 'Guess the bird!',
     );
   }
 
@@ -362,7 +443,7 @@ class Store extends ChangeNotifier {
           .first;
 
   Future<void> delete(AlarmData a) async {
-    await Alarm.stop(a.id);
+    await stopRing(a.id);
     await _write(alarms.where((x) => x.id != a.id).toList());
   }
 

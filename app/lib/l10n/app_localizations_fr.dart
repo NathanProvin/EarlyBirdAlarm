@@ -171,7 +171,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get creditsBody =>
-      'Présence et saisons des oiseaux : données d\'observation de GBIF.org.\n\nNoms et photos : Wikidata et Wikimedia Commons (CC0, domaine public, CC BY, CC BY-SA) ; l\'auteur et la licence de chaque photo sont sur sa carte (ⓘ).\n\nChants et cris : enregistrements de xeno-canto.org (CC0, CC BY, CC BY-SA, et CC BY-NC-SA / BY-NC pour quelques espèces sans enregistrement libre) ; l\'auteur et la licence sont sur la carte (ⓘ).\n\nStatistiques des cartes : AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipédia et Wikidata.';
+      'Présence et saisons des oiseaux : données d\'observation de GBIF.org.\n\nNoms et photos : Wikidata et Wikimedia Commons (CC0, domaine public, CC BY, CC BY-SA) ; l\'auteur et la licence de chaque photo sont sur sa carte (ⓘ).\n\nChants et cris : enregistrements de xeno-canto.org et iNaturalist (CC0, CC BY, CC BY-SA) ; l\'auteur et la licence sont sur la carte (ⓘ). Coq du réveil de secours : Kalvin Chan, iNaturalist (CC0).\n\nStatistiques des cartes : AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipédia et Wikidata.';
 
   @override
   String get tryNextTime => 'Ce sera pour la prochaine fois !';
@@ -589,4 +589,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get gyroHint => 'Les cartes s’inclinent quand tu bouges le téléphone';
+
+  @override
+  String backupMinutes(int minutes) {
+    return 'Réveil de secours après $minutes min';
+  }
+
+  @override
+  String get backupOff => 'Pas de réveil de secours';
 }
