@@ -201,40 +201,24 @@ Today: Europe + North America (`CELL_AREAS` in `pipeline/build.py`: 2°×2° cel
 
 
 ## DEPLOY
-#: 1
-Step: Upload a bundle that includes billing to internal testing. The Console won't let you create products before
-it has received one. Your current 1.0.0+1 bundle (built from main) doesn't include billing, so it has to be
-built from adding-tips.
-Who: Me (build), you (upload)
-How long: About 10 min to build
-────────────────────────────────────────
-#: 2
-Step: Payments profile (bank account, tax details): Monetize → Payments profile
-Who: You
-How long: Minutes to fill in; Google's verification can take 1–3 days
-────────────────────────────────────────
-#: 3
-Step: Create the 5 products and set them to Active (Monetize → Products → In-app products): tip_espresso 0.99,
-tip_cappuccino 1.99, tip_breakfast 4.99, tip_binoculars 19.99, twitch_plus 1.99
-Who: You
-How long: 10 min; they show up in apps after a few minutes to a few hours
-────────────────────────────────────────
-#: 4
-Step: Add your Gmail as a license tester (Settings → License testing) and as an internal tester, then accept the
-opt-in link on the S22
-Who: You
-How long: 5 min
-────────────────────────────────────────
-#: 5
-Step: Install from the Play internal-test link and try buying. As a license tester you pay nothing ("Test card,
-always approves")
-Who: You + me
-How long: Same day
+Status on 2026-11-04: 1.0.0+3 bundle built (`app/build/app/outputs/bundle/release/app-release.aab`, from 5f69344); catalog (1,292 species) and privacy pages live on gh-pages. Testers' emails go straight into the Play Console, never into the repo.
 
-Realistically, you can test once step 2 is approved: from tomorrow to a few days from now. You can do steps 1, 3 and 4 today.
+| # | Step | Who | Time |
+|---|---|---|---|
+| - [ ] 1 | **Upload 1.0.0+3** to Internal testing: Test and release → Testing → Internal testing → Create new release → the bundle above | You | 10 min |
+| - [ ] 2 | **Payments profile** (Monetize → Payments profile), then the **5 products** set to Active (`tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99, `twitch_plus` 1.99), and your Gmail as **license tester** (Settings → License testing) | You | 15 min, plus 1–3 days for Google to verify the profile |
+| - [ ] 3 | **Test on the S22** (cable): install from the internal-test link; test purchase (free as a license tester); **backup alarm** (rooster at 3 min, strong vibration, volume locked, guess and snooze stop it, still rings with the app killed) | You + me | 1 h |
+| - [ ] 4 | **Closed test, 16 testers**: Testing → Closed testing → Create track → Testers → Create email list, paste the 16 addresses → save → send them the **opt-in link** | You | 20 min |
+| - [ ] 5 | Testers open the link with the listed Google account, tap "Become a tester", install from the Play Store, keep it installed and open it now and then | Testers | — |
+| - [ ] 6 | **14 consecutive days with ≥ 12 opted-in testers** (16 = margin of 4). Updates during the test don't reset the clock | Everyone | 14 days |
+| - [ ] 7 | In parallel: **store listing** (`memory/store-listing.md`, `store/`) and **declarations**: Data safety, content rating, target audience, no ads, full-screen intent, exact alarms | You | 1 h |
+| - [ ] 8 | **Alarm video** for the foreground-service declaration (S22, locked screen, alarm rings, guess), unlisted YouTube | You | 15 min |
+| - [ ] 9 | After 14 days: **Apply for production** (Dashboard); Google reviews, up to ~7 days | You | 15 min + review |
+| - [ ] 10 | **Production release**, staged rollout 20 % → 100 % | You + me | — |
 
-The internal-test link is the reliable way to test. The profile build I install by cable might also show prices once the products exist, but Google doesn't guarantee that.
-
-I can build the step-1 bundle now, while the catalog build runs. It only has to contain billing to unlock product creation; the final bundle with the new offline birds will be a later upload. Two things first:
-1. Have you already uploaded 1.0.0+1 to the Console? If yes, this one must be 1.0.0+2. Every upload needs a higher number.
-2. Can I commit the work on adding-tips? A bundle should come from committed code, so we know exactly what's in it.
+**Before production (my side):**
+- [ ] **Own domain for the catalog** (`baseUrl` is built into the app; moving it later needs an app update). Set up when the user has a domain.
+- [ ] **Data safety:** Twitch Plus stays on the phone, payments via Google Play, so "no data collected" should hold; re-read the purchases question.
+- [ ] **7-night reliability run**, backup alarm included, on 2 phones if possible.
+- [ ] **Native DE and ES check** (app and store listing).
+- [ ] **Export the user's collection** (adb) before switching the S22 to the Play build: different signature = another app.
