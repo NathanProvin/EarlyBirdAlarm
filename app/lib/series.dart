@@ -44,11 +44,11 @@ const fullHouse = 'full-house',
 
 /// Pages of the Series screen, in order (a series' group, or an achievements page).
 const seriesGroups = [
+  'achievements',
+  'achievements2',
   'families',
   'habitats',
   'themes',
-  'achievements',
-  'achievements2',
 ];
 
 /// The rarity of the card each achievement gives once completed (2026-10-31).

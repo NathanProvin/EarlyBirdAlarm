@@ -627,7 +627,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get supportNudge => '¿Te gusta Early Bird? Invítame a un café';
 
   @override
-  String get viewWorld => 'Todas las aves del mundo';
+  String get viewWorld => 'Mundo';
 
   @override
   String get sortMenu => 'Ordenar y filtrar';

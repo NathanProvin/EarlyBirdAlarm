@@ -1233,7 +1233,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewWorld.
   ///
   /// In en, this message translates to:
-  /// **'All birds of the world'**
+  /// **'World'**
   String get viewWorld;
 
   /// No description provided for @sortMenu.

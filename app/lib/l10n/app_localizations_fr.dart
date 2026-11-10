@@ -627,7 +627,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get supportNudge => 'Early Bird vous plaît ? Offrez-moi un café';
 
   @override
-  String get viewWorld => 'Tous les oiseaux du monde';
+  String get viewWorld => 'Monde';
 
   @override
   String get sortMenu => 'Trier et filtrer';

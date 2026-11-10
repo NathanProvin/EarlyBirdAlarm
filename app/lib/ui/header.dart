@@ -22,7 +22,11 @@ class PageHeader extends StatelessWidget {
         children: [
           IconButton(
             tooltip: l.tipsTile,
-            icon: const Icon(Icons.coffee_outlined),
+            // In the theme's accent, to be seen.
+            icon: Icon(
+              Icons.coffee_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             onPressed: () => open(const TipsScreen()),
           ),
           Expanded(child: Center(child: center)),

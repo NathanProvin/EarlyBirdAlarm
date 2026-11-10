@@ -630,7 +630,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Gefällt dir Early Bird? Spendier mir einen Kaffee';
 
   @override
-  String get viewWorld => 'Alle Vögel der Welt';
+  String get viewWorld => 'Welt';
 
   @override
   String get sortMenu => 'Sortieren und filtern';

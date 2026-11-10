@@ -30,7 +30,7 @@ String seriesName(AppLocalizations l, SeriesState s) =>
       _ => l.fullSet,
     };
 
-/// What an achievement asks for (shown on a long press); null for a bird series.
+/// What an achievement asks for (shown on a tap); null for a bird series.
 String? seriesGoal(AppLocalizations l, SeriesState s) => s.series != null
     ? null
     : switch (s.id) {
@@ -259,14 +259,18 @@ class _Badge extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (claimable)
-              _Glow(
-                accent: scheme.primary,
-                sparkle: rarityColor[s.reward]!,
-                child: ring,
-              )
-            else
-              ring,
+            // The ring shrinks when large text needs the room (two-line names).
+            Flexible(
+              child: FittedBox(
+                child: claimable
+                    ? _Glow(
+                        accent: scheme.primary,
+                        sparkle: rarityColor[s.reward]!,
+                        child: ring,
+                      )
+                    : ring,
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               name,
@@ -287,7 +291,17 @@ class _Badge extends StatelessWidget {
         ),
       ),
     );
-    return goal == null ? badge : Tooltip(message: goal, child: badge);
+    // A tap shows an achievement's goal (unless it collects the reward).
+    return goal == null
+        ? badge
+        : Tooltip(
+            message: goal,
+            triggerMode: onTap == null
+                ? TooltipTriggerMode.tap
+                : TooltipTriggerMode.longPress,
+            showDuration: const Duration(seconds: 4),
+            child: badge,
+          );
   }
 }
 

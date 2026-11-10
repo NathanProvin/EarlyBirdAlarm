@@ -237,6 +237,21 @@ class _CollectionScreenState extends State<CollectionScreen> {
           '${l.viewWorld} '
           '(${species.keys.where(best.containsKey).length}/${species.length})',
     };
+    // The view names alone, for the pill.
+    final viewNames = {
+      for (final r in [?current, ...others]) r: r,
+      _all: l.viewAll,
+      _species: l.viewSpecies,
+      _world: l.viewWorld,
+    };
+    Widget round(String tip, VoidCallback onTap, Widget child) => Tooltip(
+      message: tip,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: child,
+      ),
+    );
     void open(Widget screen) =>
         Navigator.of(context)
             .push(MaterialPageRoute<void>(builder: (_) => screen));
@@ -247,60 +262,51 @@ class _CollectionScreenState extends State<CollectionScreen> {
           // The view (its name, as wide as the row allows), sort and filter, search; Trade
           // and Series on the right.
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: _Menu<String>(
-                        value: view,
-                        items: views,
-                        tooltip: l.viewMenu,
-                        onSelected: (v) => setState(() => _view = v),
-                        child: _Pill(views[view]!),
-                      ),
-                    ),
-                    Tooltip(
-                      message: l.sortMenu,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => _sortSheet(l),
-                        // The chosen rarity's colour around it while filtering.
-                        child: _Round(
-                          icon: Icons.swap_vert,
-                          ring: _tier == null ? null : [rarityColor[_tier]!],
-                        ),
-                      ),
-                    ),
-                    Tooltip(
-                      message: l.searchCollection,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => showSearch(
-                          context: context,
-                          delegate: _CollectionSearch(l.searchCollection),
-                        ),
-                        child: const _Round(icon: Icons.search),
-                      ),
-                    ),
-                  ],
+              // Just the view's name (counts are in its menu), kept short.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 150),
+                child: _Menu<String>(
+                  value: view,
+                  items: views,
+                  tooltip: l.viewMenu,
+                  onSelected: (v) => setState(() => _view = v),
+                  child: _Pill(viewNames[view]!),
                 ),
               ),
-              IconButton(
-                tooltip: l.trade,
-                icon: const Icon(Icons.swap_horiz),
-                onPressed: () => open(const TradeScreen()),
+              round(
+                l.sortMenu,
+                () => _sortSheet(l),
+                // The chosen rarity's colour around it while filtering.
+                _Round(
+                  icon: Icons.swap_vert,
+                  ring: _tier == null ? null : [rarityColor[_tier]!],
+                ),
               ),
-              IconButton(
-                tooltip: l.series,
+              round(
+                l.searchCollection,
+                () => showSearch(
+                  context: context,
+                  delegate: _CollectionSearch(l.searchCollection),
+                ),
+                const _Round(icon: Icons.search),
+              ),
+              round(
+                l.trade,
+                () => open(const TradeScreen()),
+                const _Round(icon: Icons.swap_horiz),
+              ),
+              round(
+                l.series,
+                () => open(const SeriesScreen()),
                 // A dot while a completed series or achievement waits to be collected.
-                icon: Badge(
+                Badge(
                   isLabelVisible: store.anyClaimable,
                   smallSize: 8,
                   backgroundColor: scheme.primary,
-                  child: const Icon(Icons.military_tech),
+                  child: const _Round(icon: Icons.military_tech),
                 ),
-                onPressed: () => open(const SeriesScreen()),
               ),
             ],
           ),

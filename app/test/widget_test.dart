@@ -757,7 +757,10 @@ void main() {
 
   test('covered area outline: outer cell sides only', () {
     expect(outlineEdges({'N48E002'}).length, 4);
-    expect(outlineEdges({'N48E002', 'N48E004'}).length, 6); // the shared side goes
+    expect(
+      outlineEdges({'N48E002', 'N48E004'}).length,
+      6,
+    ); // the shared side goes
     expect(outlineEdges({'N48E002', 'N50E002'}).length, 6);
   });
 
@@ -1011,7 +1014,10 @@ void main() {
     debugContentDir(Directory.systemTemp.createTempSync('eb_views'));
     species = {for (final b in birds) b.id: b};
     store.region = 'N48E002';
-    tester.view.physicalSize = const Size(1080, 6000); // every tile built at once
+    tester.view.physicalSize = const Size(
+      1080,
+      6000,
+    ); // every tile built at once
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
@@ -1027,7 +1033,10 @@ void main() {
         t.bird.id,
     ];
     // The default view: the region's birds, in card-number order.
-    expect(find.textContaining('/${birds.length})'), findsOneWidget);
+    expect(
+      find.textContaining('°N'),
+      findsOneWidget,
+    ); // the pill: the region's name
     expect(ids(), [for (final b in birds) b.id]);
     // Sort by name.
     await tester.tap(find.byTooltip('Sort and filter'));
@@ -1040,7 +1049,7 @@ void main() {
     // Every bird of the world.
     await tester.tap(find.byTooltip('Choose the view'));
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('All birds of the world').last);
+    await tester.tap(find.textContaining('World (').last);
     await tester.pumpAndSettle();
     expect(ids().length, species.length);
     store.region = null;
