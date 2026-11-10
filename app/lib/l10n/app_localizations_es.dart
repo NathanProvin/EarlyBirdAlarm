@@ -640,4 +640,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sortName => 'Nombre';
+
+  @override
+  String get coveredArea => 'Rojo: zona cubierta';
+
+  @override
+  String get confirmRegion => 'Confirmar';
+
+  @override
+  String get notCovered => 'Aún no cubierto';
 }

@@ -1259,6 +1259,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name'**
   String get sortName;
+
+  /// No description provided for @coveredArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Red: covered area'**
+  String get coveredArea;
+
+  /// No description provided for @confirmRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirmRegion;
+
+  /// No description provided for @notCovered.
+  ///
+  /// In en, this message translates to:
+  /// **'Not covered yet'**
+  String get notCovered;
 }
 
 class _AppLocalizationsDelegate

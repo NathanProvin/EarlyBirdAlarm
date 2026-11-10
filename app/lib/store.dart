@@ -270,6 +270,17 @@ class Store extends ChangeNotifier {
           .then((_) => notifyListeners());
 
   /// Region id from the catalog (a GPS cell like N48E002, or a country / bioregion like FR, US-NE).
+  /// Where the user dropped the region pin (lat, lon); null before the pin picker.
+  (double, double)? get pin =>
+      switch ((_prefs.getDouble('pinLat'), _prefs.getDouble('pinLon'))) {
+        (final lat?, final lon?) => (lat, lon),
+        _ => null,
+      };
+  Future<void> setPin(double lat, double lon) async {
+    await _prefs.setDouble('pinLat', lat);
+    await _prefs.setDouble('pinLon', lon);
+  }
+
   String? get region => _prefs.getString('region');
   set region(String? id) =>
       (id == null ? _prefs.remove('region') : _prefs.setString('region', id))

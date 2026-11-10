@@ -640,4 +640,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sortName => 'Nom';
+
+  @override
+  String get coveredArea => 'Rouge : zone couverte';
+
+  @override
+  String get confirmRegion => 'Valider';
+
+  @override
+  String get notCovered => 'Pas encore couvert';
 }

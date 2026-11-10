@@ -242,5 +242,8 @@
   "sortMenu": "Sort and filter",
   "sortNumber": "Number",
   "sortRarity": "Rarity",
-  "sortName": "Name"
+  "sortName": "Name",
+  "coveredArea": "Red: covered area",
+  "confirmRegion": "Confirm",
+  "notCovered": "Not covered yet"
 }

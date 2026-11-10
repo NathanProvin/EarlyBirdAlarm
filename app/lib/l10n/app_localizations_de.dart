@@ -643,4 +643,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sortName => 'Name';
+
+  @override
+  String get coveredArea => 'Rot: abgedeckter Bereich';
+
+  @override
+  String get confirmRegion => 'Bestätigen';
+
+  @override
+  String get notCovered => 'Noch nicht abgedeckt';
 }

@@ -638,4 +638,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sortName => 'Name';
+
+  @override
+  String get coveredArea => 'Red: covered area';
+
+  @override
+  String get confirmRegion => 'Confirm';
+
+  @override
+  String get notCovered => 'Not covered yet';
 }

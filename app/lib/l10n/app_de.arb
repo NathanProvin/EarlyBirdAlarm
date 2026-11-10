@@ -192,5 +192,8 @@
   "sortMenu": "Sortieren und filtern",
   "sortNumber": "Nummer",
   "sortRarity": "Seltenheit",
-  "sortName": "Name"
+  "sortName": "Name",
+  "coveredArea": "Rot: abgedeckter Bereich",
+  "confirmRegion": "Bestätigen",
+  "notCovered": "Noch nicht abgedeckt"
 }

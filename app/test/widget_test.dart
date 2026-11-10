@@ -755,6 +755,12 @@ void main() {
     expect(_b('robin').nameIn('es'), 'robin');
   });
 
+  test('covered area outline: outer cell sides only', () {
+    expect(outlineEdges({'N48E002'}).length, 4);
+    expect(outlineEdges({'N48E002', 'N48E004'}).length, 6); // the shared side goes
+    expect(outlineEdges({'N48E002', 'N50E002'}).length, 6);
+  });
+
   test('collection search ignores case and accents', () {
     expect(plainText('Eider à duvet'), 'eider a duvet');
     expect(plainText('Ánsar común'), 'ansar comun');

@@ -72,6 +72,23 @@ Rect _cellRect(String id) {
   return Rect.fromPoints(project(lat + 1, lon - 1), project(lat - 1, lon + 1));
 }
 
+/// The outer outline of the covered [cells] (map coordinates): each cell side whose
+/// neighbour isn't covered. The grid itself stays hidden (2026-11-10).
+@visibleForTesting
+List<(Offset, Offset)> outlineEdges(Set<String> cells) => [
+  for (final id in cells)
+    if (_cellCenter(id) case (final lat, final lon)) ...[
+      if (!cells.contains(cellAt(lat + 2, lon)))
+        (project(lat + 1, lon - 1), project(lat + 1, lon + 1)),
+      if (!cells.contains(cellAt(lat - 2, lon)))
+        (project(lat - 1, lon - 1), project(lat - 1, lon + 1)),
+      if (!cells.contains(cellAt(lat, lon - 2)))
+        (project(lat + 1, lon - 1), project(lat - 1, lon - 1)),
+      if (!cells.contains(cellAt(lat, lon + 2)))
+        (project(lat + 1, lon + 1), project(lat - 1, lon + 1)),
+    ],
+];
+
 /// Land and borders of the offline map (assets/map/world.json, from pipeline/world_map.py).
 Future<(Path, Path)>? _worldPaths;
 Future<(Path, Path)> _loadWorld() async {
@@ -94,13 +111,14 @@ Future<(Path, Path)> _loadWorld() async {
   return (paths('land', close: true), paths('borders', close: false));
 }
 
-const _green = Color(0xFF34A853);
+const _red = Color(0xFFD93025); // the covered area's outline
 const _marine = Color(0xFF1B4F8A); // sea tint and coasts
 const _cream = Color(0xFFF2E3B8); // land tint
 const _blue = Color(0xFF1A73E8); // the "my position" blue of map apps
 
-/// Where the user lives: tap a 2° cell on the world map, search a country / bioregion,
-/// or use the GPS. The choice is saved when leaving the screen.
+/// Where the user lives: drop a pin inside the covered area (red outline) or use the
+/// GPS; the region is the 2° cell under the pin. Search only moves the map. Confirm
+/// saves, back cancels.
 class RegionScreen extends StatefulWidget {
   const RegionScreen({super.key});
 
@@ -114,6 +132,10 @@ class _RegionScreenState extends State<RegionScreen>
   (Path, Path)? _map;
   bool _offline = false;
   String? _picked = store.region;
+  late Offset? _pin = switch (store.pin) {
+    (final lat, final lon) => project(lat, lon),
+    null => null,
+  };
   Offset? _me; // the user's position on the map, once located
   final _view = TransformationController();
   // The zoom, updated in 10 % steps: line widths follow it without repainting on every pan.
@@ -122,14 +144,11 @@ class _RegionScreenState extends State<RegionScreen>
     vsync: this,
     duration: const Duration(milliseconds: 500),
   );
-  late final _blink = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  )..value = 1;
   final _search = TextEditingController();
   final _searchFocus = FocusNode();
   Size _viewport = Size.zero;
   Set<String> _cells = {};
+  List<(Offset, Offset)> _edges = const [];
 
   @override
   void initState() {
@@ -147,7 +166,6 @@ class _RegionScreenState extends State<RegionScreen>
     _view.dispose();
     _zoom.dispose();
     _fly.dispose();
-    _blink.dispose();
     _search.dispose();
     _searchFocus.dispose();
     super.dispose();
@@ -166,6 +184,7 @@ class _RegionScreenState extends State<RegionScreen>
         for (final x in r ?? const <Map<String, dynamic>>[])
           if (x['kind'] == 'cell') x['id'] as String,
       };
+      _edges = outlineEdges(_cells);
     });
     if (r == null) return;
     if (_picked case final p?) _search.text = _name(p);
@@ -239,18 +258,40 @@ class _RegionScreenState extends State<RegionScreen>
     _fly.forward(from: 0).whenComplete(() => _fly.removeListener(step));
   }
 
-  void _pick(String id, {bool focus = false}) {
-    setState(() => _picked = id);
+  /// Drops the pin at [p] (map coordinates); the region is the cell [id].
+  void _drop(Offset p, String id) {
+    setState(() {
+      _pin = p;
+      _picked = id;
+    });
     _search.text = _name(id);
     _searchFocus.unfocus();
-    if (_cells.contains(id)) _blink.forward(from: 0);
-    if (focus) _focus(_areaOf(id));
   }
 
   void _tap(Offset p) {
     final (lat, lon) = unproject(p);
     final id = cellAt(lat, lon);
-    if (_cells.contains(id)) _pick(id);
+    if (_cells.contains(id)) {
+      _drop(p, id);
+    } else {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).notCovered)),
+        );
+    }
+  }
+
+  /// Saves the region under the pin, then leaves; the downloads run in the background
+  /// and, until they land, the previous birds keep ringing.
+  Future<void> _confirm() async {
+    final (lat, lon) = unproject(_pin!);
+    await store.setPin(lat, lon);
+    if (_picked != store.region) {
+      store.region = _picked;
+      unawaited(store.sync());
+    }
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _locate() async {
@@ -272,7 +313,8 @@ class _RegionScreenState extends State<RegionScreen>
         ),
       );
       if (!mounted) return;
-      setState(() => _me = project(pos.latitude, pos.longitude));
+      final me = project(pos.latitude, pos.longitude);
+      setState(() => _me = me);
       // The user's cell, else the nearest one with birds (it may be sea, or too few records).
       final own = cellAt(pos.latitude, pos.longitude);
       double far(String id) {
@@ -281,12 +323,11 @@ class _RegionScreenState extends State<RegionScreen>
             (lon - pos.longitude) * (lon - pos.longitude);
       }
 
-      _pick(
-        _cells.contains(own)
-            ? own
-            : _cells.reduce((a, b) => far(a) <= far(b) ? a : b),
-        focus: true,
-      );
+      final id = _cells.contains(own)
+          ? own
+          : _cells.reduce((a, b) => far(a) <= far(b) ? a : b);
+      _drop(me, id);
+      _focus(_areaOf(id));
     } on Exception {
       messenger.showSnackBar(SnackBar(content: Text(l.locationDenied)));
     }
@@ -299,128 +340,131 @@ class _RegionScreenState extends State<RegionScreen>
     final text = Theme.of(context).textTheme;
     final map = _map;
     final query = _search.text.toLowerCase();
-    return PopScope(
-      // The choice is saved on the way back; the downloads then run in the background
-      // and, until they land, the previous birds keep ringing.
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop && _picked != null && _picked != store.region) {
-          store.region = _picked;
-          unawaited(store.sync());
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(),
-        body: switch (_regions) {
-          _ when _offline => Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  l.offline,
-                  style: text.titleMedium,
-                  textAlign: TextAlign.center,
+    return Scaffold(
+      appBar: AppBar(title: Text(l.coveredArea, style: text.titleMedium)),
+      // Once a pin is down: one plain button.
+      bottomNavigationBar: _pin == null || _picked == null
+          ? null
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: FilledButton(
+                  onPressed: _confirm,
+                  child: Text(l.confirmRegion),
                 ),
-                const SizedBox(height: 16),
-                TextButton(onPressed: _load, child: Text(l.retry)),
-              ],
+              ),
             ),
+      body: switch (_regions) {
+        _ when _offline => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                l.offline,
+                style: text.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TextButton(onPressed: _load, child: Text(l.retry)),
+            ],
           ),
-          final regions? when map != null => LayoutBuilder(
-            builder: (context, box) {
-              _viewport = box.biggest;
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: ColoredBox(
-                      color: Color.alphaBlend(
-                        _marine.withValues(alpha: 0.10),
-                        scheme.surface,
-                      ),
-                      child: InteractiveViewer(
-                        transformationController: _view,
-                        constrained: false,
-                        minScale: _minScale,
-                        maxScale: 80,
-                        child: GestureDetector(
-                          onTapUp: (d) => _tap(d.localPosition),
-                          child: Stack(
-                            children: [
-                              RepaintBoundary(
-                                child: CustomPaint(
-                                  size: _mapSize,
-                                  painter: _MapPainter(
-                                    map,
-                                    [for (final c in _cells) _cellRect(c)],
-                                    _zoom,
-                                    border: scheme.outline.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              CustomPaint(
+        ),
+        final regions? when map != null => LayoutBuilder(
+          builder: (context, box) {
+            _viewport = box.biggest;
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Color.alphaBlend(
+                      _marine.withValues(alpha: 0.10),
+                      scheme.surface,
+                    ),
+                    child: InteractiveViewer(
+                      transformationController: _view,
+                      constrained: false,
+                      minScale: _minScale,
+                      maxScale: 80,
+                      child: GestureDetector(
+                        onTapUp: (d) => _tap(d.localPosition),
+                        child: Stack(
+                          children: [
+                            RepaintBoundary(
+                              child: CustomPaint(
                                 size: _mapSize,
-                                painter: _MarksPainter(
-                                  _view,
-                                  _blink,
-                                  cell: _cells.contains(_picked)
-                                      ? _cellRect(_picked!)
-                                      : null,
-                                  me: _me,
+                                painter: _MapPainter(
+                                  map,
+                                  _edges,
+                                  _zoom,
+                                  border: scheme.outline.withValues(alpha: 0.5),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            CustomPaint(
+                              size: _mapSize,
+                              painter: _MarksPainter(
+                                _view,
+                                pin: _pin,
+                                me: _me,
+                                color: scheme.primary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  Positioned(
-                    right: 16,
-                    bottom: 96 + MediaQuery.paddingOf(context).bottom,
-                    child: FloatingActionButton.small(
-                      heroTag: null,
-                      tooltip: l.useMyLocation,
-                      shape: const CircleBorder(),
-                      backgroundColor: scheme.surfaceContainerLowest,
-                      foregroundColor: _blue,
-                      onPressed: _locate,
-                      child: const Icon(Icons.my_location),
-                    ),
+                ),
+                Positioned(
+                  right: 16,
+                  bottom: 96 + MediaQuery.paddingOf(context).bottom,
+                  child: FloatingActionButton.small(
+                    heroTag: null,
+                    tooltip: l.useMyLocation,
+                    shape: const CircleBorder(),
+                    backgroundColor: scheme.surfaceContainerLowest,
+                    foregroundColor: _blue,
+                    onPressed: _locate,
+                    child: const Icon(Icons.my_location),
                   ),
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 16 + MediaQuery.paddingOf(context).bottom,
-                    child: _SearchBar(
-                      controller: _search,
-                      focus: _searchFocus,
-                      hint: l.searchRegion,
-                      results: query.isEmpty
-                          ? const []
-                          : [
-                              for (final r in regions)
-                                if (r['kind'] != 'cell' &&
-                                    localName(
-                                      r,
-                                      _lang,
-                                    ).toLowerCase().contains(query))
-                                  r,
-                            ].take(6).toList(),
-                      lang: _lang,
-                      comingSoon: l.comingSoon,
-                      onChanged: () => setState(() {}),
-                      onPick: (id) => _pick(id, focus: true),
-                    ),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 16 + MediaQuery.paddingOf(context).bottom,
+                  child: _SearchBar(
+                    controller: _search,
+                    focus: _searchFocus,
+                    hint: l.searchRegion,
+                    results: query.isEmpty
+                        ? const []
+                        : [
+                            for (final r in regions)
+                              if (r['kind'] != 'cell' &&
+                                  localName(
+                                    r,
+                                    _lang,
+                                  ).toLowerCase().contains(query))
+                                r,
+                          ].take(6).toList(),
+                    lang: _lang,
+                    comingSoon: l.comingSoon,
+                    onChanged: () => setState(() {}),
+                    // Search only moves the map; the pin chooses.
+                    onPick: (id) {
+                      _search.text = _name(id);
+                      _searchFocus.unfocus();
+                      _focus(_areaOf(id));
+                    },
                   ),
-                ],
-              );
-            },
-          ),
-          _ => const Center(child: CircularProgressIndicator()),
-        },
-      ),
+                ),
+              ],
+            );
+          },
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
     );
   }
 }
@@ -492,14 +536,14 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-/// Cream land, marine coasts (lake shores too), thinner borders and the discrete grid of
-/// the cells that have birds. Widths are in screen pixels at the current [zoom].
+/// Cream land, marine coasts (lake shores too), thinner borders and the red outline of
+/// the covered area. Widths are in screen pixels at the current [zoom].
 class _MapPainter extends CustomPainter {
-  _MapPainter(this.map, this.cells, this.zoom, {required this.border})
+  _MapPainter(this.map, this.edges, this.zoom, {required this.border})
     : super(repaint: zoom);
 
   final (Path, Path) map;
-  final List<Rect> cells;
+  final List<(Offset, Offset)> edges;
   final ValueListenable<double> zoom;
   final Color border;
 
@@ -513,48 +557,41 @@ class _MapPainter extends CustomPainter {
       ..strokeWidth = width * px;
     canvas.drawPath(map.$2, line(border, 0.6));
     canvas.drawPath(map.$1, line(_marine.withValues(alpha: 0.7), 1.2));
-    final grid = Path();
-    for (final r in cells) {
-      grid.addRect(r);
+    final outline = Path();
+    for (final (a, b) in edges) {
+      outline
+        ..moveTo(a.dx, a.dy)
+        ..lineTo(b.dx, b.dy);
     }
-    canvas.drawPath(grid, line(Colors.grey.withValues(alpha: 0.35), 0.6));
+    canvas.drawPath(outline, line(_red, 1.6));
   }
 
   @override
   bool shouldRepaint(_MapPainter old) =>
       old.map != map ||
-      old.cells.length != cells.length ||
+      old.edges.length != edges.length ||
       old.zoom != zoom ||
       old.border != border;
 }
 
-/// The picked cell (blinks three times, then stays green) and the user's position dot,
-/// sized for the screen whatever the zoom.
+/// The pin (a plain map-pin icon in the accent, its tip on the spot) and the user's
+/// position dot, sized for the screen whatever the zoom.
 class _MarksPainter extends CustomPainter {
-  _MarksPainter(this.view, this.blink, {required this.cell, required this.me})
-    : super(repaint: Listenable.merge([view, blink]));
+  _MarksPainter(
+    this.view, {
+    required this.pin,
+    required this.me,
+    required this.color,
+  }) : super(repaint: view);
 
   final TransformationController view;
-  final Animation<double> blink;
-  final Rect? cell;
+  final Offset? pin;
   final Offset? me;
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final scale = view.value.getMaxScaleOnAxis();
-    if (cell case final c?) {
-      final on = blink.isCompleted || (blink.value * 6).floor().isEven;
-      if (on) {
-        canvas.drawRect(c, Paint()..color = _green.withValues(alpha: 0.45));
-        canvas.drawRect(
-          c,
-          Paint()
-            ..color = _green
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2 / scale,
-        );
-      }
-    }
     if (me case final m?) {
       canvas.drawCircle(
         m,
@@ -564,8 +601,26 @@ class _MarksPainter extends CustomPainter {
       canvas.drawCircle(m, 8 / scale, Paint()..color = Colors.white);
       canvas.drawCircle(m, 6 / scale, Paint()..color = _blue);
     }
+    if (pin case final p?) {
+      final size = 40 / scale;
+      final icon = TextPainter(
+        text: TextSpan(
+          text: String.fromCharCode(Icons.place.codePoint),
+          style: TextStyle(
+            fontSize: size,
+            fontFamily: Icons.place.fontFamily,
+            package: Icons.place.fontPackage,
+            color: color,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      // The icon's tip sits about 8 % above its bottom edge.
+      icon.paint(canvas, p - Offset(icon.width / 2, icon.height * 0.92));
+    }
   }
 
   @override
-  bool shouldRepaint(_MarksPainter old) => old.cell != cell || old.me != me;
+  bool shouldRepaint(_MarksPainter old) =>
+      old.pin != pin || old.me != me || old.color != color;
 }

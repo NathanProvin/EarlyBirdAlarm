@@ -192,5 +192,8 @@
   "sortMenu": "Ordenar y filtrar",
   "sortNumber": "Número",
   "sortRarity": "Rareza",
-  "sortName": "Nombre"
+  "sortName": "Nombre",
+  "coveredArea": "Rojo: zona cubierta",
+  "confirmRegion": "Confirmar",
+  "notCovered": "Aún no cubierto"
 }
