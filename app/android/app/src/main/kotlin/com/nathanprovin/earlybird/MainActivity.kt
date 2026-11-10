@@ -32,8 +32,9 @@ class MainActivity : FlutterActivity() {
                 setShowWhenLocked(holdLockScreen)
                 result.success(null)
             }
-        // The backup alarm's vibration: full strength, long-short-long, until stopped. Alarm
-        // usage, so it buzzes in silent mode too (the alarm plugin's is weaker, fixed).
+        // Alarm vibrations until stopped, with alarm usage so they buzz in silent mode too.
+        // start(true): the backup's, full strength, long-short-long; start(false): after a
+        // bird's fade-in, 500 ms on / 500 ms off like the alarm plugin's.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/buzz")
             .setMethodCallHandler { call, result ->
                 val vibrator = if (Build.VERSION.SDK_INT >= 31) {
@@ -42,7 +43,9 @@ class MainActivity : FlutterActivity() {
                     @Suppress("DEPRECATION") getSystemService(Vibrator::class.java)
                 }
                 if (call.method == "start") {
-                    val effect = VibrationEffect.createWaveform(
+                    val effect = if (call.arguments == false) {
+                        VibrationEffect.createWaveform(longArrayOf(0, 500, 500), 0)
+                    } else VibrationEffect.createWaveform(
                         longArrayOf(0, 900, 200, 400, 200, 900, 500),
                         intArrayOf(0, 255, 0, 255, 0, 255, 0),
                         0, // repeat from the start

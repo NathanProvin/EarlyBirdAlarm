@@ -179,16 +179,12 @@
   "gyroHint": "Karten neigen sich, wenn du das Handy bewegst",
   "backupMinutes": "Notfallwecker nach {minutes} Min.",
   "backupOff": "Kein Notfallwecker",
-  "wakeTitle": "Weck-Check",
-  "wakeIntro": "Damit das Quiz beim Alarm erscheint, auch wenn das Handy gesperrt ist:",
   "wakeNotifications": "Benachrichtigungen",
   "wakeFullScreen": "Quiz auf dem Sperrbildschirm",
   "wakeBattery": "Akku: nicht eingeschränkt",
   "wakeFix": "Beheben",
-  "wakeTest": "Testen: Sperr dein Handy",
-  "wakeTestSoon": "Sperr jetzt dein Handy: Der Alarm klingelt in 10 Sekunden.",
-  "wakeTestDone": "Es klappt! Deine Alarme zeigen das Quiz.",
   "wakeMissing": "Ohne das kann ein Alarm klingeln, ohne das Quiz zu zeigen.",
   "wakeOk": "OK",
-  "wakeNotOk": "Fehlt"
+  "wakeNotOk": "Fehlt",
+  "alarmPermissions": "Weck-Berechtigungen"
 }

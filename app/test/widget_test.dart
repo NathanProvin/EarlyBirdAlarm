@@ -847,52 +847,53 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('onboarding: pages, Next, Skip leads to the Wake-up check', (
-    tester,
-  ) async {
-    // The Wake-up check reads Android: the full-screen permission is missing here.
-    final messenger = tester.binding.defaultBinaryMessenger;
-    messenger.setMockMethodCallHandler(
-      const MethodChannel('early_bird/wake'),
-      (call) async => call.method == 'fullScreen' ? false : true,
-    );
-    messenger.setMockMethodCallHandler(
-      const MethodChannel('flutter.baseflow.com/permissions/methods'),
-      (call) async => 1, // granted
-    );
-    SharedPreferences.setMockInitialValues({});
-    store = await Store.load();
-    expect(store.onboarded, isFalse);
-    await tester.pumpWidget(
-      MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const OnboardingScreen()),
+  testWidgets(
+    'onboarding: Skip leads to the region and permissions, then ends',
+    (tester) async {
+      // The permission rows read Android: the full-screen permission is missing here.
+      final messenger = tester.binding.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('early_bird/wake'),
+        (call) async => call.method == 'fullScreen' ? false : true,
+      );
+      messenger.setMockMethodCallHandler(
+        const MethodChannel('flutter.baseflow.com/permissions/methods'),
+        (call) async => 1, // granted
+      );
+      SharedPreferences.setMockInitialValues({});
+      store = await Store.load();
+      expect(store.onboarded, isFalse);
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const OnboardingScreen(),
+                ),
+              ),
+              child: const Text('open'),
             ),
-            child: const Text('open'),
           ),
         ),
-      ),
-    );
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-    expect(find.text('Early Bird'), findsOneWidget);
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-    expect(find.text('Choose a region'), findsOneWidget);
-    await tester.tap(find.text('Skip'));
-    await tester.pumpAndSettle();
-    expect(store.onboarded, isFalse); // Skip doesn't skip the Wake-up check
-    expect(find.text('Wake-up check'), findsOneWidget);
-    expect(find.text('Fix'), findsOneWidget); // only the full-screen row
-    await tester.tap(find.text('Start'));
-    await tester.pumpAndSettle();
-    expect(store.onboarded, isTrue);
-    expect(find.text('open'), findsOneWidget); // back where it started
-  });
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      expect(find.text('Early Bird'), findsOneWidget);
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+      expect(store.onboarded, isFalse); // Skip doesn't skip the permissions
+      expect(find.text('Choose a region'), findsOneWidget);
+      expect(find.text('Alarm permissions'), findsOneWidget);
+      expect(find.text('Fix'), findsOneWidget); // only the full-screen row
+      await tester.tap(find.text('Skip'));
+      await tester.pumpAndSettle();
+      expect(store.onboarded, isTrue);
+      expect(find.text('open'), findsOneWidget); // back where it started
+    },
+  );
 
   testWidgets('settings: a difficulty tap shows at once', (tester) async {
     // The store set by the onboarding test above (it can be set only once).

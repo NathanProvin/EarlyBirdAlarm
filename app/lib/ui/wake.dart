@@ -3,20 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../l10n/app_localizations.dart';
-import '../main.dart';
 
 const _wake = MethodChannel('early_bird/wake'); // MainActivity
 
-/// The Wake-up check: what Android needs so a ringing alarm shows the quiz over the lock
-/// screen, each with a Fix button, and a test ring. In the onboarding and in Settings.
-class WakeCheck extends StatefulWidget {
-  const WakeCheck({super.key});
+/// What Android needs so a ringing alarm shows the quiz over the lock screen, each with
+/// a Fix button. On the onboarding's region page.
+class AlarmPermissions extends StatefulWidget {
+  const AlarmPermissions({super.key});
 
   @override
-  State<WakeCheck> createState() => _WakeCheckState();
+  State<AlarmPermissions> createState() => _AlarmPermissionsState();
 }
 
-class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
+class _AlarmPermissionsState extends State<AlarmPermissions>
+    with WidgetsBindingObserver {
   bool? _notifications, _fullScreen, _battery;
 
   @override
@@ -57,14 +57,6 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
     await _refresh();
   }
 
-  Future<void> _test() async {
-    final l = AppLocalizations.of(context);
-    await store.testRing(l.guessTheBird);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l.wakeTestSoon)));
-  }
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -74,8 +66,10 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l.wakeIntro),
-        const SizedBox(height: 12),
+        Text(
+          l.alarmPermissions,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         _Row(l.wakeNotifications, _notifications, _fixNotifications),
         _Row(
           l.wakeFullScreen,
@@ -95,12 +89,6 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
             style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
         ],
-        const SizedBox(height: 16),
-        OutlinedButton.icon(
-          onPressed: _test,
-          icon: const Icon(Icons.alarm),
-          label: Text(l.wakeTest),
-        ),
       ],
     );
   }
@@ -152,18 +140,4 @@ class _Row extends StatelessWidget {
             ),
     );
   }
-}
-
-/// The Wake-up check on its own screen, from Settings.
-class WakeCheckScreen extends StatelessWidget {
-  const WakeCheckScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(AppLocalizations.of(context).wakeTitle)),
-    body: ListView(
-      padding: const EdgeInsets.all(24),
-      children: const [WakeCheck()],
-    ),
-  );
 }

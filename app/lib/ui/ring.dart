@@ -59,7 +59,7 @@ class _RingScreenState extends State<RingScreen> {
   final _player = AudioPlayer(); // Twitch only: alarms play through the plugin
   Bird? _tapped;
 
-  Timer? _buzzTimer;
+  Timer? _buzzTimer, _vibrateTimer;
 
   @override
   void initState() {
@@ -68,8 +68,16 @@ class _RingScreenState extends State<RingScreen> {
       _player.setLoopMode(LoopMode.one);
       playRecording(_player, _rec!.file);
     }
-    // With the backup alarm (the rooster), the phone also buzzes at full strength.
     if (widget.alarm case final alarm?) {
+      // The bird fades up over ringFade (Store._schedule), then the phone vibrates.
+      if (alarm.id < backupOffset) {
+        final wait = alarm.dateTime.add(ringFade).difference(DateTime.now());
+        _vibrateTimer = Timer(
+          wait.isNegative ? Duration.zero : wait,
+          () => _buzz.invokeMethod<void>('start', false),
+        );
+      }
+      // With the backup alarm (the rooster), the phone buzzes at full strength.
       final minutes = store.byId(mainIdOf(alarm.id))?.backupMinutes ?? 0;
       if (minutes > 0) {
         final start = alarm.id >= backupOffset
@@ -78,7 +86,7 @@ class _RingScreenState extends State<RingScreen> {
         final wait = start.difference(DateTime.now());
         _buzzTimer = Timer(
           wait.isNegative ? Duration.zero : wait,
-          () => _buzz.invokeMethod<void>('start'),
+          () => _buzz.invokeMethod<void>('start', true),
         );
       }
     }
@@ -86,12 +94,14 @@ class _RingScreenState extends State<RingScreen> {
 
   void _stopBuzz() {
     _buzzTimer?.cancel();
+    _vibrateTimer?.cancel();
     _buzz.invokeMethod<void>('stop');
   }
 
   @override
   void dispose() {
     _buzzTimer?.cancel();
+    _vibrateTimer?.cancel();
     if (widget.alarm != null) _buzz.invokeMethod<void>('stop');
     _player.dispose();
     super.dispose();
@@ -112,7 +122,6 @@ class _RingScreenState extends State<RingScreen> {
     // The answer stays on screen for 2 s, while the guess is saved.
     final shown = Future<void>.delayed(const Duration(seconds: 2));
     if (widget.alarm case final alarm?) {
-      if (alarm.id == testAlarmId) return _testDone(alarm);
       await _lockScreen.invokeMethod<void>('hold', true);
       _stopBuzz();
       await store.stopRing(alarm.id);
@@ -148,23 +157,8 @@ class _RingScreenState extends State<RingScreen> {
     );
   }
 
-  /// The Wake-up check's test ring: stop it, say it works, no card.
-  Future<void> _testDone(AlarmSettings alarm) async {
-    // Stay over the lock screen long enough to read it (the plugin hides the app on stop).
-    await _lockScreen.invokeMethod<void>('hold', true);
-    await store.stopRing(alarm.id);
-    if (!mounted) return;
-    final l = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(l.wakeTestDone)));
-    await Future<void>.delayed(const Duration(seconds: 3));
-    await _lockScreen.invokeMethod<void>('hold', false);
-    if (mounted) Navigator.of(context).pop();
-  }
-
   Future<void> _snooze() async {
     final alarm = widget.alarm!;
-    if (alarm.id == testAlarmId) return _testDone(alarm);
     if (_tapped != null) return;
     _stopBuzz();
     await store.snooze(alarm); // the same bird again, and its backup

@@ -597,13 +597,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get backupOff => 'No backup alarm';
 
   @override
-  String get wakeTitle => 'Wake-up check';
-
-  @override
-  String get wakeIntro =>
-      'So the quiz shows up when an alarm rings, even with the phone locked:';
-
-  @override
   String get wakeNotifications => 'Notifications';
 
   @override
@@ -616,16 +609,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wakeFix => 'Fix';
 
   @override
-  String get wakeTest => 'Test it: lock your phone';
-
-  @override
-  String get wakeTestSoon =>
-      'Lock your phone now: the alarm rings in 10 seconds.';
-
-  @override
-  String get wakeTestDone => 'It works! Your alarms will show the quiz.';
-
-  @override
   String get wakeMissing =>
       'Without these, an alarm can ring without showing the quiz.';
 
@@ -634,4 +617,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wakeNotOk => 'Missing';
+
+  @override
+  String get alarmPermissions => 'Alarm permissions';
 }

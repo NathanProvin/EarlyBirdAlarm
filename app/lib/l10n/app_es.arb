@@ -179,16 +179,12 @@
   "gyroHint": "Las cartas se inclinan al mover el teléfono",
   "backupMinutes": "Alarma de respaldo a los {minutes} min",
   "backupOff": "Sin alarma de respaldo",
-  "wakeTitle": "Prueba del despertador",
-  "wakeIntro": "Para que el quiz aparezca cuando suene una alarma, incluso con el móvil bloqueado:",
   "wakeNotifications": "Notificaciones",
   "wakeFullScreen": "Quiz en la pantalla de bloqueo",
   "wakeBattery": "Batería: sin restricciones",
   "wakeFix": "Arreglar",
-  "wakeTest": "Pruébalo: bloquea el móvil",
-  "wakeTestSoon": "Bloquea el móvil ahora: la alarma suena en 10 segundos.",
-  "wakeTestDone": "¡Funciona! Tus alarmas mostrarán el quiz.",
   "wakeMissing": "Sin esto, una alarma puede sonar sin mostrar el quiz.",
   "wakeOk": "OK",
-  "wakeNotOk": "Falta"
+  "wakeNotOk": "Falta",
+  "alarmPermissions": "Permisos del despertador"
 }

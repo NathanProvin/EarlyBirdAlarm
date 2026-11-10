@@ -12,8 +12,9 @@ import 'theme.dart';
 import 'wake.dart';
 
 /// The introduction, shown once on first launch (and from Settings): what the app is,
-/// the region, the game options, the collection features, a card to hold and tilt, and
-/// the Wake-up check. Skip jumps to the Wake-up check; finishing marks it seen.
+/// the region and the alarm permissions, the game options, the collection features, and
+/// a card to hold and tilt. Skip on the welcome page leads to the region and permissions
+/// (an alarm that can't show the quiz breaks the app); later, skip or finish marks it seen.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -22,7 +23,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pages = 7;
+  static const _pages = 6;
   final _pager = PageController();
   int _page = 0;
 
@@ -93,6 +94,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(l.introRegion),
                           const SizedBox(height: 24),
                           const RegionPill(),
+                          const SizedBox(height: 32),
+                          const AlarmPermissions(),
                         ],
                       ),
                       _Page(
@@ -167,17 +170,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         title: l.introExamineTitle,
                         body: [Text(l.introExamine)],
                       ),
-                      // Last, and where Skip leads: an alarm that can't show the quiz
-                      // over the lock screen breaks the whole app.
-                      _Page(
-                        top: Icon(
-                          Icons.alarm_on,
-                          size: 96,
-                          color: scheme.primary,
-                        ),
-                        title: l.wakeTitle,
-                        body: const [WakeCheck()],
-                      ),
                     ],
                   ),
                 ),
@@ -209,7 +201,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: [
                       if (!last)
                         TextButton(
-                          onPressed: () => _pager.jumpToPage(_pages - 1),
+                          onPressed: _page == 0
+                              ? () => _pager.jumpToPage(1)
+                              : _finish,
                           child: Text(l.skip),
                         ),
                       const Spacer(),

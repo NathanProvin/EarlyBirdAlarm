@@ -599,13 +599,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get backupOff => 'Pas de réveil de secours';
 
   @override
-  String get wakeTitle => 'Test du réveil';
-
-  @override
-  String get wakeIntro =>
-      'Pour que le quiz s\'affiche quand une alarme sonne, même téléphone verrouillé :';
-
-  @override
   String get wakeNotifications => 'Notifications';
 
   @override
@@ -618,16 +611,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wakeFix => 'Corriger';
 
   @override
-  String get wakeTest => 'Tester : verrouillez votre téléphone';
-
-  @override
-  String get wakeTestSoon =>
-      'Verrouillez votre téléphone : l\'alarme sonne dans 10 secondes.';
-
-  @override
-  String get wakeTestDone => 'Ça marche ! Vos alarmes afficheront le quiz.';
-
-  @override
   String get wakeMissing =>
       'Sans cela, une alarme peut sonner sans afficher le quiz.';
 
@@ -636,4 +619,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get wakeNotOk => 'Manquant';
+
+  @override
+  String get alarmPermissions => 'Autorisations du réveil';
 }

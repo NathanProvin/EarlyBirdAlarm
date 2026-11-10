@@ -61,8 +61,9 @@ class AlarmData {
 int backupId(int id) => id + backupOffset;
 const backupOffset = 100000;
 
-/// The Wake-up check's test ring (see Store.testRing): no card, no streak.
-const testAlarmId = backupOffset - 1;
+/// A ringing bird starts at 5 % and rises linearly to full volume over this time, then the
+/// phone starts vibrating (RingScreen): testers found the old start harsh (2026-11-10).
+const ringFade = Duration(seconds: 40);
 const roosterAsset = 'assets/rooster.m4a'; // credit: l10n creditsBody
 
 /// The alarm a ringing id belongs to: itself, or the one it backs up.
@@ -342,20 +343,6 @@ class Store extends ChangeNotifier {
     await _schedule(a, at, bird.id, rec.file, notificationTitle);
   }
 
-  /// The Wake-up check: the next bird rings in 10 s, so the user sees the quiz show up
-  /// over the lock screen. Answering it gives no card (see RingScreen).
-  Future<void> testRing(String notificationTitle) async {
-    final at = DateTime.now().add(const Duration(seconds: 10));
-    final (bird, rec) = pickNext(at);
-    final test = AlarmData(
-      id: testAlarmId,
-      hour: at.hour,
-      minute: at.minute,
-      backupMinutes: 0,
-    );
-    await _schedule(test, at, bird.id, rec.file, notificationTitle);
-  }
-
   /// Sets alarm [a] to ring at [at] with [birdId]'s recording [recFile], and its backup.
   Future<void> _schedule(
     AlarmData a,
@@ -379,15 +366,17 @@ class Store extends ChangeNotifier {
         assetAudioPath: phonePath(recFile),
         payload: payload,
         // The phone's alarm volume goes to the maximum while it rings (put back after):
-        // a low alarm volume once let the user sleep through. The song still fades up
-        // over 60 s from 30%, so the start stays gentle (silent hid its first seconds).
+        // a low alarm volume once let the user sleep through. The song fades up from 5 %
+        // (the plugin interpolates linearly between steps), so the start stays gentle.
         volumeSettings: VolumeSettings.staircaseFade(
           volume: 1,
           fadeSteps: [
-            VolumeFadeStep(Duration.zero, 0.3),
-            VolumeFadeStep(const Duration(seconds: 60), 1),
+            VolumeFadeStep(Duration.zero, 0.05),
+            VolumeFadeStep(ringFade, 1),
           ],
         ),
+        // The plugin's vibration starts at once: RingScreen starts one after the fade.
+        vibrate: false,
         notificationSettings: notification,
       ),
     );
