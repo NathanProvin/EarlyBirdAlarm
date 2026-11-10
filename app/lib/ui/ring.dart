@@ -69,9 +69,10 @@ class _RingScreenState extends State<RingScreen> {
       playRecording(_player, _rec!.file);
     }
     if (widget.alarm case final alarm?) {
-      // The bird fades up over ringFade (Store._schedule), then the phone vibrates.
+      // The bird fades up over ringFade (Store._schedule); the phone vibrates from
+      // ringVibrate.
       if (alarm.id < backupOffset) {
-        final wait = alarm.dateTime.add(ringFade).difference(DateTime.now());
+        final wait = alarm.dateTime.add(ringVibrate).difference(DateTime.now());
         _vibrateTimer = Timer(
           wait.isNegative ? Duration.zero : wait,
           () => _buzz.invokeMethod<void>('start', false),

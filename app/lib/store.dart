@@ -61,9 +61,11 @@ class AlarmData {
 int backupId(int id) => id + backupOffset;
 const backupOffset = 100000;
 
-/// A ringing bird starts at 5 % and rises linearly to full volume over this time, then the
-/// phone starts vibrating (RingScreen): testers found the old start harsh (2026-11-10).
-const ringFade = Duration(seconds: 40);
+/// A ringing bird starts silent and rises linearly to full volume over [ringFade]; the
+/// phone starts vibrating after [ringVibrate] (RingScreen). Testers found the old start
+/// harsh (2026-11-10).
+const ringFade = Duration(seconds: 60);
+const ringVibrate = Duration(seconds: 40);
 const roosterAsset = 'assets/rooster.m4a'; // credit: l10n creditsBody
 
 /// The alarm a ringing id belongs to: itself, or the one it backs up.
@@ -366,16 +368,16 @@ class Store extends ChangeNotifier {
         assetAudioPath: phonePath(recFile),
         payload: payload,
         // The phone's alarm volume goes to the maximum while it rings (put back after):
-        // a low alarm volume once let the user sleep through. The song fades up from 5 %
-        // (the plugin interpolates linearly between steps), so the start stays gentle.
+        // a low alarm volume once let the user sleep through. The song fades up from
+        // silence (the plugin interpolates linearly between steps), so the start is gentle.
         volumeSettings: VolumeSettings.staircaseFade(
           volume: 1,
           fadeSteps: [
-            VolumeFadeStep(Duration.zero, 0.05),
+            VolumeFadeStep(Duration.zero, 0),
             VolumeFadeStep(ringFade, 1),
           ],
         ),
-        // The plugin's vibration starts at once: RingScreen starts one after the fade.
+        // The plugin's vibration starts at once: RingScreen starts one at ringVibrate.
         vibrate: false,
         notificationSettings: notification,
       ),

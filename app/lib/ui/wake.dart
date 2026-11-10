@@ -60,9 +60,7 @@ class _AlarmPermissionsState extends State<AlarmPermissions>
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    // Battery is advice only: alarm-clock alarms get through battery optimisation (the
-    // S22 passed 7 nights optimised); it matters on brands that kill apps (Xiaomi…).
-    final missing = [_notifications, _fullScreen].contains(false);
+    final missing = [_notifications, _fullScreen, _battery].contains(false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -76,12 +74,13 @@ class _AlarmPermissionsState extends State<AlarmPermissions>
           _fullScreen,
           () => _wake.invokeMethod<void>('fixFullScreen'),
         ),
-        _Row(
-          l.wakeBattery,
-          _battery,
-          () => _wake.invokeMethod<void>('fixBattery'),
-          advice: true,
-        ),
+        // Only on brands that kill apps, while restricted (see MainActivity "battery").
+        if (_battery == false)
+          _Row(
+            l.wakeBattery,
+            _battery,
+            () => _wake.invokeMethod<void>('fixBattery'),
+          ),
         if (missing) ...[
           const SizedBox(height: 8),
           Text(
@@ -94,50 +93,33 @@ class _AlarmPermissionsState extends State<AlarmPermissions>
   }
 }
 
-/// One requirement: its name, then ✓ when met or a Fix button ([advice]: quieter).
+/// One requirement: its name, then ✓ when met or a Fix button.
 class _Row extends StatelessWidget {
-  const _Row(this.label, this.ok, this.onFix, {this.advice = false});
+  const _Row(this.label, this.ok, this.onFix);
   final String label;
   final bool? ok; // null while reading
   final VoidCallback onFix;
-  final bool advice;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    // The theme's buttons are full width (Size.fromHeight): not here.
-    const size = Size(88, 48);
-    final fix = Text(l.wakeFix);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(
-        ok != false
-            ? Icons.check_circle
-            : advice
-            ? Icons.info_outline
-            : Icons.error_outline,
-        color: ok != false
-            ? scheme.primary
-            : advice
-            ? scheme.onSurfaceVariant
-            : scheme.error,
+        ok == false ? Icons.error_outline : Icons.check_circle,
+        color: ok == false ? scheme.error : scheme.primary,
         semanticLabel: ok == false ? l.wakeNotOk : l.wakeOk,
       ),
       title: Text(label, textAlign: TextAlign.start),
-      trailing: ok != false
-          ? null
-          : advice
-          ? OutlinedButton(
-              style: OutlinedButton.styleFrom(minimumSize: size),
+      trailing: ok == false
+          ? FilledButton(
+              // The theme's buttons are full width (Size.fromHeight): not here.
+              style: FilledButton.styleFrom(minimumSize: const Size(88, 48)),
               onPressed: onFix,
-              child: fix,
+              child: Text(l.wakeFix),
             )
-          : FilledButton(
-              style: FilledButton.styleFrom(minimumSize: size),
-              onPressed: onFix,
-              child: fix,
-            ),
+          : null,
     );
   }
 }

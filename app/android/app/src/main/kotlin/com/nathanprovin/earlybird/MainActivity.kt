@@ -85,10 +85,15 @@ class MainActivity : FlutterActivity() {
                         }
                         result.success(null)
                     }
-                    // Read directly: permission_handler would need the restricted
-                    // REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission just to read it.
+                    // Alarm-clock alarms get through battery optimisation (the S22 passed 7
+                    // nights optimised), except on brands that kill apps anyway: only there
+                    // does "unrestricted" matter. Read directly: permission_handler would need
+                    // the restricted REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission.
                     "battery" -> result.success(
-                        getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(packageName)
+                        Build.MANUFACTURER.lowercase() !in setOf(
+                            "xiaomi", "huawei", "honor", "oppo", "vivo", "realme", "oneplus"
+                        ) || getSystemService(PowerManager::class.java)
+                            .isIgnoringBatteryOptimizations(packageName)
                     )
                     "fixBattery" -> {
                         // App info: Battery → Unrestricted (the wording varies by brand).
