@@ -435,7 +435,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewAll.
   ///
   /// In en, this message translates to:
-  /// **'All'**
+  /// **'Collected'**
   String get viewAll;
 
   /// No description provided for @viewRegion.
@@ -1229,6 +1229,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enjoying Early Bird? Buy me a coffee'**
   String get supportNudge;
+
+  /// No description provided for @viewWorld.
+  ///
+  /// In en, this message translates to:
+  /// **'All birds of the world'**
+  String get viewWorld;
+
+  /// No description provided for @sortMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort and filter'**
+  String get sortMenu;
+
+  /// No description provided for @sortNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get sortNumber;
+
+  /// No description provided for @sortRarity.
+  ///
+  /// In en, this message translates to:
+  /// **'Rarity'**
+  String get sortRarity;
+
+  /// No description provided for @sortName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get sortName;
 }
 
 class _AppLocalizationsDelegate

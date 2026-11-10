@@ -55,7 +55,7 @@
   "speciesCollected": "{ordinal} espèce collectée !",
   "streakLost": "Série perdue",
   "viewSpecies": "Espèces",
-  "viewAll": "Toutes",
+  "viewAll": "Collectionnées",
   "viewRegion": "Région",
   "allRarities": "Toutes raretés",
   "theme": "Thème",
@@ -187,5 +187,10 @@
   "wakeNotOk": "Manquant",
   "alarmPermissions": "Autorisations du réveil",
   "addAlarm": "Ajouter une alarme",
-  "supportNudge": "Early Bird vous plaît ? Offrez-moi un café"
+  "supportNudge": "Early Bird vous plaît ? Offrez-moi un café",
+  "viewWorld": "Tous les oiseaux du monde",
+  "sortMenu": "Trier et filtrer",
+  "sortNumber": "Numéro",
+  "sortRarity": "Rareté",
+  "sortName": "Nom"
 }

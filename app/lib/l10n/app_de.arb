@@ -55,7 +55,7 @@
   "speciesCollected": "{ordinal} Art gesammelt!",
   "streakLost": "Serie verloren",
   "viewSpecies": "Arten",
-  "viewAll": "Alle",
+  "viewAll": "Gesammelt",
   "viewRegion": "Region",
   "allRarities": "Alle Seltenheiten",
   "theme": "Design",
@@ -187,5 +187,10 @@
   "wakeNotOk": "Fehlt",
   "alarmPermissions": "Weck-Berechtigungen",
   "addAlarm": "Wecker hinzufügen",
-  "supportNudge": "Gefällt dir Early Bird? Spendier mir einen Kaffee"
+  "supportNudge": "Gefällt dir Early Bird? Spendier mir einen Kaffee",
+  "viewWorld": "Alle Vögel der Welt",
+  "sortMenu": "Sortieren und filtern",
+  "sortNumber": "Nummer",
+  "sortRarity": "Seltenheit",
+  "sortName": "Name"
 }

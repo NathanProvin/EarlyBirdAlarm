@@ -1037,7 +1037,24 @@ class CardTile extends StatelessWidget {
             ? _photoTile(number)
             : known
             ? Stack(
+                clipBehavior: Clip.none,
                 children: [
+                  // Duplicates as a pile: one or two cards peek out from behind.
+                  for (final angle in [-0.05, 0.035].take(copies - 1))
+                    Positioned.fill(
+                      child: Transform.rotate(
+                        angle: angle,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: paper,
+                            borderRadius: BorderRadius.circular(radius / 2),
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   IgnorePointer(
                     child: FittedBox(
                       child: SizedBox(

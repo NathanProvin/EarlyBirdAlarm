@@ -188,7 +188,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewSpecies => 'Species';
 
   @override
-  String get viewAll => 'All';
+  String get viewAll => 'Collected';
 
   @override
   String get viewRegion => 'Region';
@@ -623,4 +623,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportNudge => 'Enjoying Early Bird? Buy me a coffee';
+
+  @override
+  String get viewWorld => 'All birds of the world';
+
+  @override
+  String get sortMenu => 'Sort and filter';
+
+  @override
+  String get sortNumber => 'Number';
+
+  @override
+  String get sortRarity => 'Rarity';
+
+  @override
+  String get sortName => 'Name';
 }

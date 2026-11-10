@@ -998,6 +998,48 @@ void main() {
     },
   );
 
+  testWidgets('collection: region view first, world view, sort by name', (
+    tester,
+  ) async {
+    // The store set by the onboarding test above (it can be set only once).
+    debugContentDir(Directory.systemTemp.createTempSync('eb_views'));
+    species = {for (final b in birds) b.id: b};
+    store.region = 'N48E002';
+    tester.view.physicalSize = const Size(1080, 6000); // every tile built at once
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CollectionScreen()),
+      ),
+    );
+    await tester.pump();
+    List<String> ids() => [
+      for (final t in tester.widgetList<CardTile>(find.byType(CardTile)))
+        t.bird.id,
+    ];
+    // The default view: the region's birds, in card-number order.
+    expect(find.textContaining('/${birds.length})'), findsOneWidget);
+    expect(ids(), [for (final b in birds) b.id]);
+    // Sort by name.
+    await tester.tap(find.byTooltip('Sort and filter'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Name'));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(10, 10)); // closes the sheet
+    await tester.pumpAndSettle();
+    expect(ids(), [for (final b in birds) b.id]..sort());
+    // Every bird of the world.
+    await tester.tap(find.byTooltip('Choose the view'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('All birds of the world').last);
+    await tester.pumpAndSettle();
+    expect(ids().length, species.length);
+    store.region = null;
+  });
+
   testWidgets('tips: four tiles, unavailable without Google Play', (
     tester,
   ) async {

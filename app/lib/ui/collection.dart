@@ -33,8 +33,11 @@ Map<String, CardData> bestCards(List<CardData> cards) {
   return best;
 }
 
-// Views: every copy, the best copy of each species, or a region's birds (its id).
-const _all = 'all', _species = 'species';
+// Views: the current region (default; a region view is its displayed name), every copy,
+// the best copy of each species (shown as stacks), or every bird of the world.
+const _all = 'all', _species = 'species', _world = 'world';
+
+enum _Sort { number, rarity, name }
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -44,7 +47,9 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  String _view = _all;
+  String?
+  _view; // null: the default, the current region (every copy without one)
+  _Sort _sort = _Sort.number;
   String? _tier; // rarity filter, null = all
   final _fetching = <String>{}; // other regions' bird lists being downloaded
 
@@ -61,9 +66,81 @@ class _CollectionScreenState extends State<CollectionScreen> {
     return ids;
   }
 
+  /// Sort order and rarity filter, in a sheet (the header button).
+  void _sortSheet(AppLocalizations l) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setSheet) {
+        void set(VoidCallback change) {
+          setState(change);
+          setSheet(() {});
+        }
+
+        final title = Theme.of(context).textTheme.titleMedium;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            0,
+            24,
+            24 + MediaQuery.paddingOf(context).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l.sortMenu, style: title),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  for (final (s, label) in [
+                    (_Sort.number, l.sortNumber),
+                    (_Sort.rarity, l.sortRarity),
+                    (_Sort.name, l.sortName),
+                  ])
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: _sort == s,
+                      onSelected: (_) => set(() => _sort = s),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(l.rarityMenu, style: title),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: Text(l.allRarities),
+                    selected: _tier == null,
+                    onSelected: (_) => set(() => _tier = null),
+                  ),
+                  for (final t in tiers)
+                    ChoiceChip(
+                      avatar: CircleAvatar(
+                        radius: 7,
+                        backgroundColor: rarityColor[t],
+                      ),
+                      label: Text(rarityName(l, t)),
+                      selected: _tier == t,
+                      onSelected: (_) => set(() => _tier = t),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final cards = store.cards;
     final best = bestCards(cards);
     final heard = store.heard;
@@ -83,22 +160,30 @@ class _CollectionScreenState extends State<CollectionScreen> {
       }
     }
     final current = store.region == null ? null : nameOf(store.region!);
-    final regions = [
-      ?current,
-      ...(groups.keys.where((n) => n != current).toList()
-        ..sort((a, b) => wonIn[b]! - wonIn[a]!)),
-    ];
-    if (_view != _all && _view != _species && !regions.contains(_view)) {
-      _view = _all; // that region is gone (e.g. its cards were the only link)
+    final others = groups.keys.where((n) => n != current).toList()
+      ..sort((a, b) => wonIn[b]! - wonIn[a]!);
+    var view = _view ?? current ?? _all;
+    if (!{_all, _species, _world, ...groups.keys}.contains(view)) {
+      view =
+          current ??
+          _all; // that region is gone (e.g. its cards were the only link)
     }
     // Rarity belongs to cards: a bird not won yet has none (the filter hides it).
     String? rarityOf(Bird b, CardData? c) => c == null ? null : cardRarity(c);
     int rank((Bird, CardData?) e) =>
         e.$2 == null ? -1 : tiers.indexOf(cardRarity(e.$2!));
-    int rarest((Bird, CardData?) a, (Bird, CardData?) b) {
-      final t = rank(b) - rank(a);
-      return t != 0 ? t : a.$1.number.compareTo(b.$1.number);
-    }
+    int byNumber((Bird, CardData?) a, (Bird, CardData?) b) =>
+        a.$1.number.compareTo(b.$1.number);
+    final plain = <String, String>{};
+    String nameKey(Bird b) => plain[b.id] ??= plainText(b.nameIn(l.localeName));
+    final order = switch (_sort) {
+      _Sort.number => byNumber,
+      _Sort.rarity => (a, b) {
+        final t = rank(b) - rank(a);
+        return t != 0 ? t : byNumber(a, b);
+      },
+      _Sort.name => (a, b) => nameKey(a.$1).compareTo(nameKey(b.$1)),
+    };
 
     // A region view's species: each region's whole list when known, else the species won there.
     Set<String> idsOf(String name) => {
@@ -109,22 +194,22 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 if (c.region == r) c.birdId,
             },
     };
-    // (bird, card) entries; a null card is a "?" or "heard" tile (region views only).
-    final entries = switch (_view) {
+    // (bird, card) entries; a null card is a "?" or "heard" tile (region and world views).
+    final entries = switch (view) {
       _all => [
         for (final c in cards)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
-      ]..sort(rarest),
-      // One card per species, in card-number order (2026-11-03).
+      ],
       _species => [
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
-      ]..sort((a, b) => a.$1.number.compareTo(b.$1.number)),
+      ],
+      _world => [for (final b in species.values) (b, best[b.id])],
       final region => [
         for (final id in idsOf(region))
           if (birdById(id) case final b?) (b, best[id]),
-      ]..sort((a, b) => a.$1.number.compareTo(b.$1.number)),
-    };
+      ],
+    }..sort(order);
     final shown = [
       for (final e in entries)
         if (_tier == null || rarityOf(e.$1, e.$2) == _tier) e,
@@ -133,8 +218,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final e in shown)
         if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
-    // The region's many "?" stay 3 per row; won cards are shown whole 2 per row.
-    final compact = _view != _all && _view != _species;
+    // Region and world views' many "?" stay 3 per row; won cards are shown whole 2 per row.
+    final compact = view != _all && view != _species;
     // "France (7/353)"; "USA — Northeast (2)" until that region's list has arrived.
     String regionLabel(String name) {
       final known = groups[name]!.every((r) => _birdsOf(r) != null);
@@ -144,43 +229,43 @@ class _CollectionScreenState extends State<CollectionScreen> {
     }
 
     final views = {
+      for (final r in [?current]) r: regionLabel(r),
       _all: '${l.viewAll} (${cards.length})',
       _species: '${l.viewSpecies} (${best.length})',
-      for (final r in regions) r: regionLabel(r),
+      for (final r in others) r: regionLabel(r),
+      _world:
+          '${l.viewWorld} '
+          '(${species.keys.where(best.containsKey).length}/${species.length})',
     };
-    final label = Theme.of(context).textTheme.titleLarge
-        ?.copyWith(fontWeight: FontWeight.bold);
+    void open(Widget screen) =>
+        Navigator.of(context)
+            .push(MaterialPageRoute<void>(builder: (_) => screen));
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          // The two filters and the search on the left (the menus show the counts), Series on
-          // the right, Trade midway between them: it never touches the search button, even
-          // with a long label ("Échanger"), and sits a little right of the middle.
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+          // The view (its name), sort and filter, search; Trade and Series on the right.
           child: Row(
             children: [
-              _Menu<String>(
-                value: _view,
-                items: views,
-                tooltip: l.viewMenu,
-                onSelected: (v) => setState(() => _view = v),
-                child: const _Round(icon: Icons.expand_more),
+              Flexible(
+                child: _Menu<String>(
+                  value: view,
+                  items: views,
+                  tooltip: l.viewMenu,
+                  onSelected: (v) => setState(() => _view = v),
+                  child: _Pill(views[view]!),
+                ),
               ),
-              _Menu<String?>(
-                value: _tier,
-                items: {
-                  null: l.allRarities,
-                  for (final t in tiers) t: rarityName(l, t),
-                },
-                colors: rarityColor,
-                tooltip: l.rarityMenu,
-                onSelected: (t) => setState(() => _tier = t),
-                // Every rarity colour around it; the chosen one alone while filtering.
-                child: _Round(
-                  icon: Icons.arrow_drop_down,
-                  ring: _tier == null
-                      ? [for (final t in tiers) rarityColor[t]!]
-                      : [rarityColor[_tier]!],
+              Tooltip(
+                message: l.sortMenu,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => _sortSheet(l),
+                  // The chosen rarity's colour around it while filtering.
+                  child: _Round(
+                    icon: Icons.swap_vert,
+                    ring: _tier == null ? null : [rarityColor[_tier]!],
+                  ),
                 ),
               ),
               Tooltip(
@@ -194,53 +279,22 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   child: const _Round(icon: Icons.search),
                 ),
               ),
-              // Trade midway between the search and Series (equal gaps); both keep their
-              // natural size, and their labels shrink only if space runs out.
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox.shrink(),
-                    // Text only, large and bold: easier to read than icon + label.
-                    Flexible(
-                      child: TextButton(
-                        style: TextButton.styleFrom(textStyle: label),
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const TradeScreen(),
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(l.trade),
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      child: TextButton(
-                        style: TextButton.styleFrom(textStyle: label),
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const SeriesScreen(),
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          // A dot while a completed series or achievement waits to be
-                          // collected.
-                          child: Badge(
-                            isLabelVisible: store.anyClaimable,
-                            smallSize: 8,
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .primary,
-                            child: Text(l.series),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              const Spacer(),
+              IconButton(
+                tooltip: l.trade,
+                icon: const Icon(Icons.swap_horiz),
+                onPressed: () => open(const TradeScreen()),
+              ),
+              IconButton(
+                tooltip: l.series,
+                // A dot while a completed series or achievement waits to be collected.
+                icon: Badge(
+                  isLabelVisible: store.anyClaimable,
+                  smallSize: 8,
+                  backgroundColor: scheme.primary,
+                  child: const Icon(Icons.military_tech),
                 ),
+                onPressed: () => open(const SeriesScreen()),
               ),
             ],
           ),
@@ -267,7 +321,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               return CardTile(
                 bird: b,
                 card: c,
-                copies: _view == _all
+                copies: view == _all
                     ? 1
                     : cards.where((x) => x.birdId == b.id).length,
                 heard: heard.contains(b.id),
@@ -279,8 +333,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
                           builder: (_) => CardPager(
                             entries: openable,
                             initial: open,
-                            // "All" shows every copy as its own card: no ×N.
-                            showCopies: _view != _all,
+                            // "Collected" shows every copy as its own card: no ×N.
+                            showCopies: view != _all,
                           ),
                         ),
                       ),
@@ -289,6 +343,46 @@ class _CollectionScreenState extends State<CollectionScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The view menu's face: the current view's name in an outlined pill, ▾ after it.
+class _Pill extends StatelessWidget {
+  const _Pill(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // A 40 dp pill in a 48 dp touch target, like the round buttons.
+    return SizedBox(
+      height: 48,
+      child: Center(
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.fromLTRB(14, 0, 6, 0),
+          decoration: BoxDecoration(
+            border: Border.all(color: scheme.outline, width: 2.5),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Icon(Icons.expand_more),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

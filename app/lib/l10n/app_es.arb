@@ -55,7 +55,7 @@
   "speciesCollected": "¡{ordinal} especie conseguida!",
   "streakLost": "Racha perdida",
   "viewSpecies": "Especies",
-  "viewAll": "Todas",
+  "viewAll": "Coleccionadas",
   "viewRegion": "Región",
   "allRarities": "Todas las rarezas",
   "theme": "Tema",
@@ -187,5 +187,10 @@
   "wakeNotOk": "Falta",
   "alarmPermissions": "Permisos del despertador",
   "addAlarm": "Añadir una alarma",
-  "supportNudge": "¿Te gusta Early Bird? Invítame a un café"
+  "supportNudge": "¿Te gusta Early Bird? Invítame a un café",
+  "viewWorld": "Todas las aves del mundo",
+  "sortMenu": "Ordenar y filtrar",
+  "sortNumber": "Número",
+  "sortRarity": "Rareza",
+  "sortName": "Nombre"
 }

@@ -89,7 +89,7 @@
   "speciesCollected": "{ordinal} species collected!",
   "streakLost": "Streak lost",
   "viewSpecies": "Species",
-  "viewAll": "All",
+  "viewAll": "Collected",
   "viewRegion": "Region",
   "allRarities": "All rarities",
   "@speciesCollected": {
@@ -237,5 +237,10 @@
   "wakeNotOk": "Missing",
   "alarmPermissions": "Alarm permissions",
   "addAlarm": "Add an alarm",
-  "supportNudge": "Enjoying Early Bird? Buy me a coffee"
+  "supportNudge": "Enjoying Early Bird? Buy me a coffee",
+  "viewWorld": "All birds of the world",
+  "sortMenu": "Sort and filter",
+  "sortNumber": "Number",
+  "sortRarity": "Rarity",
+  "sortName": "Name"
 }
