@@ -68,7 +68,9 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final missing = [_notifications, _fullScreen, _battery].contains(false);
+    // Battery is advice only: alarm-clock alarms get through battery optimisation (the
+    // S22 passed 7 nights optimised); it matters on brands that kill apps (Xiaomi…).
+    final missing = [_notifications, _fullScreen].contains(false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -84,6 +86,7 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
           l.wakeBattery,
           _battery,
           () => _wake.invokeMethod<void>('fixBattery'),
+          advice: true,
         ),
         if (missing) ...[
           const SizedBox(height: 8),
@@ -103,33 +106,50 @@ class _WakeCheckState extends State<WakeCheck> with WidgetsBindingObserver {
   }
 }
 
-/// One requirement: its name, then ✓ when met or a Fix button.
+/// One requirement: its name, then ✓ when met or a Fix button ([advice]: quieter).
 class _Row extends StatelessWidget {
-  const _Row(this.label, this.ok, this.onFix);
+  const _Row(this.label, this.ok, this.onFix, {this.advice = false});
   final String label;
   final bool? ok; // null while reading
   final VoidCallback onFix;
+  final bool advice;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    // The theme's buttons are full width (Size.fromHeight): not here.
+    const size = Size(88, 48);
+    final fix = Text(l.wakeFix);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(
-        ok == false ? Icons.error_outline : Icons.check_circle,
-        color: ok == false ? scheme.error : scheme.primary,
+        ok != false
+            ? Icons.check_circle
+            : advice
+            ? Icons.info_outline
+            : Icons.error_outline,
+        color: ok != false
+            ? scheme.primary
+            : advice
+            ? scheme.onSurfaceVariant
+            : scheme.error,
         semanticLabel: ok == false ? l.wakeNotOk : l.wakeOk,
       ),
       title: Text(label, textAlign: TextAlign.start),
-      trailing: ok == false
-          ? FilledButton(
-              // The theme's buttons are full width (Size.fromHeight): not here.
-              style: FilledButton.styleFrom(minimumSize: const Size(88, 48)),
+      trailing: ok != false
+          ? null
+          : advice
+          ? OutlinedButton(
+              style: OutlinedButton.styleFrom(minimumSize: size),
               onPressed: onFix,
-              child: Text(l.wakeFix),
+              child: fix,
             )
-          : null,
+          : FilledButton(
+              style: FilledButton.styleFrom(minimumSize: size),
+              onPressed: onFix,
+              child: fix,
+            ),
     );
   }
 }

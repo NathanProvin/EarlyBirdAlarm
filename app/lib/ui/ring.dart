@@ -150,12 +150,16 @@ class _RingScreenState extends State<RingScreen> {
 
   /// The Wake-up check's test ring: stop it, say it works, no card.
   Future<void> _testDone(AlarmSettings alarm) async {
+    // Stay over the lock screen long enough to read it (the plugin hides the app on stop).
+    await _lockScreen.invokeMethod<void>('hold', true);
     await store.stopRing(alarm.id);
     if (!mounted) return;
     final l = AppLocalizations.of(context);
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(l.wakeTestDone)));
-    Navigator.of(context).pop();
+    await Future<void>.delayed(const Duration(seconds: 3));
+    await _lockScreen.invokeMethod<void>('hold', false);
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _snooze() async {
