@@ -102,7 +102,7 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 - **Codes and referrals:** word codes (`RedRobin`…), once per account (Firestore create-only document), invite code in shared links via the Play Install Referrer; rewards still to decide.
 - **Shiny = 6th tier above Legendary, card only** (never a bird tier), 1 / 1000, only species with a real free leucistic / melanistic photo picked by the user (~150 species found 2026-11-10).
 - **Card variants:** up to 5 Commons Quality / Featured / Valued photos per species, one per rarity, saved on the card.
-- **Order:** 1.0.1 lock-screen fix → Production → Infra → 1.1 (backup, codes, shiny, variants) → 1.2 Australia / NZ → later iOS, marketplace (~1,000+ daily players), region UI.
+- **Order (revised 2026-11-10):** 1.0.1 (lock-screen fix, tester feedback; done, not deployed) → Infra → 1.1 (backup, codes, shiny, variants) → Production → 1.2 Australia / NZ and the missing-species heatmap → later iOS, marketplace (~1,000+ daily players), region UI.
 
 ## Tester feedback round — decided 2026-11-10
 - **One term: Training** (Entraînement / Training / Entrenamiento) for the booster tab; the paid option is **Early Bird Plus**. Code names stay `twitch*`.
