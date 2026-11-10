@@ -657,11 +657,10 @@ class RevealScreen extends StatelessWidget {
                       )
                     else if (card != null && copies > 1)
                       CopiesBadge(copies, large: true),
-                    if (!training)
-                      Text(
-                        streakLost ? l.streakLost : l.streak(store.streak),
-                        style: text.bodySmall,
-                      ),
+                    Text(
+                      streakLost ? l.streakLost : l.streak(store.streak),
+                      style: text.bodySmall,
+                    ),
                     if (nudge)
                       TextButton.icon(
                         // The theme's buttons are full width (Size.fromHeight): not here.

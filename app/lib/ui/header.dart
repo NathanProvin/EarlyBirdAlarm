@@ -29,7 +29,11 @@ class PageHeader extends StatelessWidget {
             ),
             onPressed: () => open(const TipsScreen()),
           ),
-          Expanded(child: Center(child: center)),
+          Expanded(
+            child: Center(
+              child: FittedBox(fit: BoxFit.scaleDown, child: center),
+            ),
+          ),
           IconButton(
             tooltip: l.settings,
             icon: const Icon(Icons.settings_outlined),

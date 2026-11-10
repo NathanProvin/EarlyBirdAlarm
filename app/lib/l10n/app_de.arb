@@ -195,5 +195,6 @@
   "sortName": "Name",
   "coveredArea": "Rot: abgedeckter Bereich",
   "confirmRegion": "Bestätigen",
-  "notCovered": "Noch nicht abgedeckt"
+  "notCovered": "Noch nicht abgedeckt",
+  "supportShort": "Kostenlos, ohne Werbung, ohne Tracker"
 }

@@ -195,5 +195,6 @@
   "sortName": "Nombre",
   "coveredArea": "Rojo: zona cubierta",
   "confirmRegion": "Confirmar",
-  "notCovered": "Aún no cubierto"
+  "notCovered": "Aún no cubierto",
+  "supportShort": "Gratis, sin anuncios, sin rastreadores"
 }

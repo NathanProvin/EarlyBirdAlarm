@@ -66,8 +66,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
     return ids;
   }
 
-  /// Sort order and rarity filter, in a sheet (the header button).
-  void _sortSheet(AppLocalizations l) => showModalBottomSheet<void>(
+  /// The view, sort order and rarity filter, in one sheet (the header's first button).
+  void _optionsSheet(
+    AppLocalizations l,
+    Map<String, String> views,
+    String Function() view,
+  ) => showModalBottomSheet<void>(
+    isScrollControlled: true,
     context: context,
     showDragHandle: true,
     builder: (context) => StatefulBuilder(
@@ -89,6 +94,21 @@ class _CollectionScreenState extends State<CollectionScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(l.viewMenu, style: title),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final MapEntry(:key, value: label) in views.entries)
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: view() == key,
+                      onSelected: (_) => set(() => _view = key),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
               Text(l.sortMenu, style: title),
               const SizedBox(height: 8),
               Wrap(
@@ -264,24 +284,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Just the view's name (counts are in its menu), kept short.
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 150),
-                child: _Menu<String>(
-                  value: view,
-                  items: views,
-                  tooltip: l.viewMenu,
-                  onSelected: (v) => setState(() => _view = v),
-                  child: _Pill(viewNames[view]!),
-                ),
-              ),
-              round(
-                l.sortMenu,
-                () => _sortSheet(l),
-                // The chosen rarity's colour around it while filtering.
-                _Round(
-                  icon: Icons.swap_vert,
-                  ring: _tier == null ? null : [rarityColor[_tier]!],
+              // The view's name at a fixed width; view, sort and filter in one sheet.
+              Tooltip(
+                message: l.viewMenu,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: () =>
+                      _optionsSheet(l, views, () => _view ?? current ?? _all),
+                  child: _Pill(
+                    viewNames[view]!,
+                    // The chosen rarity's colour while filtering.
+                    ring: _tier == null ? null : rarityColor[_tier],
+                  ),
                 ),
               ),
               round(
@@ -305,7 +319,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   isLabelVisible: store.anyClaimable,
                   smallSize: 8,
                   backgroundColor: scheme.primary,
-                  child: const _Round(icon: Icons.military_tech),
+                  child: _Round(
+                    icon: Icons.military_tech,
+                    color: scheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -359,10 +376,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 }
 
-/// The view menu's face: the current view's name in an outlined pill, ▾ after it.
+/// The view button: the current view's name in an outlined pill of fixed width, the
+/// options icon after it; [ring] colours the outline while a rarity filter is on.
 class _Pill extends StatelessWidget {
-  const _Pill(this.label);
+  const _Pill(this.label, {this.ring});
   final String label;
+  final Color? ring;
 
   @override
   Widget build(BuildContext context) {
@@ -372,16 +391,16 @@ class _Pill extends StatelessWidget {
       height: 48,
       child: Center(
         child: Container(
+          width: 120,
           height: 40,
-          padding: const EdgeInsets.fromLTRB(14, 0, 6, 0),
+          padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
           decoration: BoxDecoration(
-            border: Border.all(color: scheme.outline, width: 2.5),
+            border: Border.all(color: ring ?? scheme.outline, width: 2.5),
             borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(
+              Expanded(
                 child: Text(
                   label,
                   maxLines: 1,
@@ -390,7 +409,7 @@ class _Pill extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
-              const Icon(Icons.expand_more),
+              const Icon(Icons.tune, size: 20),
             ],
           ),
         ),
@@ -512,68 +531,23 @@ class _CollectionSearch extends SearchDelegate<void> {
   }
 }
 
-/// A drop-down menu opened by tapping [child].
-class _Menu<T> extends StatelessWidget {
-  const _Menu({
-    required this.value,
-    required this.items,
-    required this.onSelected,
-    required this.tooltip,
-    required this.child,
-    this.colors = const {},
-  });
-  final T value;
-  final Map<T, String> items;
-  final ValueChanged<T> onSelected;
-  final String tooltip;
-  final Widget child;
-  final Map<T, Color> colors; // optional text color per item (rarities)
-
-  @override
-  Widget build(BuildContext context) => PopupMenuButton<T>(
-    initialValue: value,
-    tooltip: tooltip,
-    onSelected: onSelected,
-    itemBuilder: (_) => [
-      for (final MapEntry(:key, value: label) in items.entries)
-        PopupMenuItem(
-          value: key,
-          child: Text(label, style: TextStyle(color: colors[key])),
-        ),
-    ],
-    child: child,
-  );
-}
-
-/// A 40 dp round header button: an outline in the theme's colour, or a ring of [ring]
-/// colours (the rarity filter).
+/// A 40 dp round header button: an outline in the theme's colour around [icon].
 class _Round extends StatelessWidget {
-  const _Round({required this.icon, this.ring});
+  const _Round({required this.icon, this.color});
   final IconData icon;
-  final List<Color>? ring;
+  final Color? color; // the icon's, else the text colour
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final ring = this.ring;
     final circle = Container(
       width: 40,
       height: 40,
-      padding: const EdgeInsets.all(2.5),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: ring == null ? scheme.outline : ring.first,
-        gradient: ring != null && ring.length > 1
-            ? SweepGradient(colors: [...ring, ring.first])
-            : null,
+        border: Border.all(color: scheme.outline, width: 2.5),
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: scheme.surface,
-        ),
-        child: Icon(icon, size: 22, color: scheme.onSurface),
-      ),
+      child: Icon(icon, size: 22, color: color ?? scheme.onSurface),
     );
     // A 40 dp circle in a 48 dp touch target (Android's minimum).
     return SizedBox.square(dimension: 48, child: Center(child: circle));

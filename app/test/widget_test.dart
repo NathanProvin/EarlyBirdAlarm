@@ -383,15 +383,16 @@ void main() {
     expect(s.twitchReady(DateTime.now()), 5);
   });
 
-  test('a Twitch answer wins a card but leaves the streak alone', () async {
+  test('a Training answer wins a card and counts in the streak', () async {
     SharedPreferences.setMockInitialValues({'streak': 3});
     final s = await Store.load();
     final card = await s.answered(null, _b('robin'), null, true, '');
     expect(card, isNotNull);
     expect(s.cards.length, 1);
-    expect(s.streak, 3);
+    expect(s.streak, 4);
     await s.answered(null, _b('robin'), null, false, '');
-    expect(s.streak, 3);
+    expect(s.streak, 0);
+    expect(s.bestStreak, 4);
     expect(s.heard, {'robin'});
   });
 
@@ -945,7 +946,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.text('Training'), findsOneWidget);
+      expect(find.textContaining('Streak:'), findsOneWidget); // the header
       expect(find.text('Early Bird Plus'), findsOneWidget);
       expect(find.byIcon(Icons.hourglass_empty), findsNothing);
       while (store.twitchReady(DateTime.now()) > 0) {
@@ -955,7 +956,10 @@ void main() {
         const Duration(seconds: 1),
       ); // the screen redraws each second
       expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
-      expect(find.textContaining(':'), findsOneWidget); // the countdown, once
+      expect(
+        find.textContaining(RegExp(r'^\d\d:\d\d$')),
+        findsOneWidget,
+      ); // the countdown, once
       await tester.pumpWidget(const SizedBox()); // stops the pile's animations
     },
   );
@@ -1038,18 +1042,14 @@ void main() {
       findsOneWidget,
     ); // the pill: the region's name
     expect(ids(), [for (final b in birds) b.id]);
-    // Sort by name.
-    await tester.tap(find.byTooltip('Sort and filter'));
+    // One sheet for view, sort and filter: sort by name.
+    await tester.tap(find.byTooltip('Choose the view'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Name'));
     await tester.pumpAndSettle();
-    await tester.tapAt(const Offset(10, 10)); // closes the sheet
-    await tester.pumpAndSettle();
     expect(ids(), [for (final b in birds) b.id]..sort());
     // Every bird of the world.
-    await tester.tap(find.byTooltip('Choose the view'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('World (').last);
+    await tester.tap(find.textContaining('World ('));
     await tester.pumpAndSettle();
     expect(ids().length, species.length);
     store.region = null;

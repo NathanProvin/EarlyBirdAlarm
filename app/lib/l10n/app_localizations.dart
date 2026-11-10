@@ -1277,6 +1277,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not covered yet'**
   String get notCovered;
+
+  /// No description provided for @supportShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Free, no ads, no trackers'**
+  String get supportShort;
 }
 
 class _AppLocalizationsDelegate

@@ -527,13 +527,12 @@ class Store extends ChangeNotifier {
     bool correct,
     String notificationTitle,
   ) async {
-    if (alarmId != null) {
-      await _prefs.setInt(
-        'bestStreak',
-        bestStreak,
-      ); // before a miss resets the streak
-      await _prefs.setInt('streak', correct ? streak + 1 : 0);
-    }
+    // Alarms and Training both count (decided 2026-11-10).
+    await _prefs.setInt(
+      'bestStreak',
+      bestStreak,
+    ); // before a miss resets the streak
+    await _prefs.setInt('streak', correct ? streak + 1 : 0);
     await _prefs.setStringList('recent', [
       bird.id,
       ...recent.take(recentCount - 1),

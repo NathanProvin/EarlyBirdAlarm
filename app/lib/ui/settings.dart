@@ -191,7 +191,7 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Text(l.support, style: header),
                     const SizedBox(height: 6),
-                    Text(l.tipsNote),
+                    Text(l.supportShort),
                     const SizedBox(height: 12),
                     FilledButton.tonalIcon(
                       icon: const Icon(Icons.coffee_outlined),

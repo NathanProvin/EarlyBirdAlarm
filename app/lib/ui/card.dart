@@ -705,10 +705,13 @@ Future<void> playRecording(AudioPlayer player, String file) async {
   }
 }
 
+/// Plays [file]; a round filled button in [color], or with [glass] a bigger frosted one
+/// (on heard birds' tiles, to train on the songs that were missed).
 class PlayButton extends StatefulWidget {
-  const PlayButton(this.file, {required this.color, super.key});
+  const PlayButton(this.file, {this.color, this.glass = false, super.key});
   final String file;
-  final Color color;
+  final Color? color;
+  final bool glass;
 
   @override
   State<PlayButton> createState() => _PlayButtonState();
@@ -731,22 +734,47 @@ class _PlayButtonState extends State<PlayButton> {
   @override
   Widget build(BuildContext context) => StreamBuilder<bool>(
     stream: _player.playingStream,
-    builder: (context, snap) => IconButton.filled(
-      tooltip: AppLocalizations.of(context).play,
-      onPressed: _toggle,
-      style: IconButton.styleFrom(
-        backgroundColor: widget.color,
-        // A discreet outline lifts it off the card stock.
-        side: BorderSide(
-          color: Color.lerp(widget.color, Colors.white, 0.45)!,
-          width: 1.5,
+    builder: (context, snap) {
+      final icon = snap.data == true ? Icons.stop : Icons.play_arrow;
+      final tooltip = AppLocalizations.of(context).play;
+      if (widget.glass) {
+        return ClipOval(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Material(
+              color: Colors.white.withValues(alpha: 0.25),
+              shape: CircleBorder(
+                side: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  width: 1.5,
+                ),
+              ),
+              child: IconButton(
+                tooltip: tooltip,
+                onPressed: _toggle,
+                iconSize: 36,
+                padding: const EdgeInsets.all(12),
+                icon: Icon(icon, color: Colors.white),
+              ),
+            ),
+          ),
+        );
+      }
+      final color = widget.color!;
+      return IconButton.filled(
+        tooltip: tooltip,
+        onPressed: _toggle,
+        style: IconButton.styleFrom(
+          backgroundColor: color,
+          // A discreet outline lifts it off the card stock.
+          side: BorderSide(
+            color: Color.lerp(color, Colors.white, 0.45)!,
+            width: 1.5,
+          ),
         ),
-      ),
-      icon: Icon(
-        snap.data == true ? Icons.stop : Icons.play_arrow,
-        color: paper,
-      ),
-    ),
+        icon: Icon(icon, color: paper),
+      );
+    },
   );
 }
 
@@ -1067,6 +1095,7 @@ class CardTile extends StatelessWidget {
                   // Outside the shrunk card, so it stays readable.
                   if (copies > 1)
                     Positioned(right: 6, top: 6, child: CopiesBadge(copies)),
+                  ?_heardPlay(),
                 ],
               )
             : Container(
@@ -1135,9 +1164,21 @@ extension on CardTile {
         ),
         if (copies > 1)
           Positioned(right: 4, top: 4, child: CopiesBadge(copies)),
+        ?_heardPlay(),
       ],
     ),
   );
+
+  /// A heard (missed) bird's song, to train on: a big glass play button in the middle.
+  Widget? _heardPlay() {
+    if (card != null) return null;
+    final rec =
+        bird.recordings.where(onPhone).firstOrNull ??
+        bird.recordings.firstOrNull;
+    return rec == null
+        ? null
+        : Center(child: PlayButton(rec.file, glass: true));
+  }
 }
 
 class _Badge extends StatelessWidget {

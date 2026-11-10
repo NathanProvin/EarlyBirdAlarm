@@ -187,7 +187,6 @@ class _RegionScreenState extends State<RegionScreen>
       _edges = outlineEdges(_cells);
     });
     if (r == null) return;
-    if (_picked case final p?) _search.text = _name(p);
     // Opens on the current region, else on the area the catalog covers.
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focus(
@@ -264,7 +263,7 @@ class _RegionScreenState extends State<RegionScreen>
       _pin = p;
       _picked = id;
     });
-    _search.text = _name(id);
+    _search.clear(); // the pin says where: no cell name (2026-11-10)
     _searchFocus.unfocus();
   }
 

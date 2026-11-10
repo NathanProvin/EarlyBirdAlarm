@@ -195,5 +195,6 @@
   "sortName": "Nom",
   "coveredArea": "Rouge : zone couverte",
   "confirmRegion": "Valider",
-  "notCovered": "Pas encore couvert"
+  "notCovered": "Pas encore couvert",
+  "supportShort": "Gratuit, sans pub, sans traceurs"
 }

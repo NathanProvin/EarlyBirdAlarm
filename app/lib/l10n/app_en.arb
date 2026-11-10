@@ -245,5 +245,6 @@
   "sortName": "Name",
   "coveredArea": "Red: covered area",
   "confirmRegion": "Confirm",
-  "notCovered": "Not covered yet"
+  "notCovered": "Not covered yet",
+  "supportShort": "Free, no ads, no trackers"
 }

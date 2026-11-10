@@ -652,4 +652,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notCovered => 'Noch nicht abgedeckt';
+
+  @override
+  String get supportShort => 'Kostenlos, ohne Werbung, ohne Tracker';
 }

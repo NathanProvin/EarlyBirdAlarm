@@ -649,4 +649,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get notCovered => 'Pas encore couvert';
+
+  @override
+  String get supportShort => 'Gratuit, sans pub, sans traceurs';
 }

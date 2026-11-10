@@ -10,6 +10,7 @@ import '../store.dart';
 import 'booster.dart';
 import 'header.dart';
 import 'ring.dart';
+import 'streak.dart';
 
 /// Twitch Zone: a pile of up to [twitchMax] boosters, one more every [twitchEvery].
 /// Tearing one open starts a training quiz that can win a card.
@@ -73,13 +74,7 @@ class _TwitchScreenState extends State<TwitchScreen> {
             mainAxisSize: MainAxisSize.min,
             spacing: 8,
             children: [
-              Flexible(
-                child: Text(
-                  l.twitchZone,
-                  style: text.headlineSmall,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              StreakPill(store.streak),
               if (store.twitchPlus)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -150,7 +145,7 @@ class _TwitchScreenState extends State<TwitchScreen> {
 }
 
 /// The Plus button: the bolt and the name, tonal. With [attract] (no booster left) it
-/// pulses every 2 s: it swells with a glow and the bolt gives a little jolt.
+/// pulses every 2 s: a glow around it and its fill warming toward the accent.
 class _PlusButton extends StatefulWidget {
   const _PlusButton({required this.attract, required this.onPressed});
   final bool attract;
@@ -188,30 +183,35 @@ class _PlusButtonState extends State<_PlusButton>
           // A beat in the first 30 % of each cycle, then rest.
           final t = (_pulse.value / 0.3).clamp(0.0, 1.0);
           final beat = sin(t * pi);
-          return Transform.scale(
-            scale: 1 + 0.15 * beat,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: [
-                  if (beat > 0)
-                    BoxShadow(
-                      color: scheme.primary.withValues(alpha: 0.45 * beat),
-                      blurRadius: 14,
-                      spreadRadius: 2,
-                    ),
-                ],
-              ),
-              child: FilledButton.tonalIcon(
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: [
+                if (beat > 0)
+                  BoxShadow(
+                    color: scheme.primary.withValues(alpha: 0.45 * beat),
+                    blurRadius: 14,
+                    spreadRadius: 2,
+                  ),
+              ],
+            ),
+            child: FilledButton.tonalIcon(
+              style: FilledButton.styleFrom(
                 // The theme's buttons are full width (Size.fromHeight): not here.
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                onPressed: widget.onPressed,
-                icon: Transform.rotate(
-                  angle: 0.25 * sin(t * 3 * pi) * (1 - t),
-                  child: Icon(Icons.bolt, color: scheme.primary),
+                minimumSize: const Size(0, 48),
+                // The colour pulse: the tonal fill warms toward the accent.
+                backgroundColor: Color.lerp(
+                  scheme.secondaryContainer,
+                  Color.alphaBlend(
+                    scheme.primary.withValues(alpha: 0.35),
+                    scheme.secondaryContainer,
+                  ),
+                  beat,
                 ),
-                label: Text(l.twitchPlus),
               ),
+              onPressed: widget.onPressed,
+              icon: Icon(Icons.bolt, color: scheme.primary),
+              label: Text(l.twitchPlus),
             ),
           );
         },

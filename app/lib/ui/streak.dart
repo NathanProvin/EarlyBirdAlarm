@@ -87,14 +87,17 @@ class _StreakPillState extends State<StreakPill>
                       color: scheme.primary,
                     ),
                   ),
-                const SizedBox(width: 4),
-                Transform.translate(
-                  offset: Offset(0, y),
-                  child: CustomPaint(
-                    size: const Size.square(32),
-                    painter: BirdPainter.of(bird, flap: flap, asleep: n == 0),
+                // The bird comes with the first right answer.
+                if (n > 0) ...[
+                  const SizedBox(width: 4),
+                  Transform.translate(
+                    offset: Offset(0, y),
+                    child: CustomPaint(
+                      size: const Size.square(32),
+                      painter: BirdPainter.of(bird, flap: flap),
+                    ),
                   ),
-                ),
+                ],
               ],
             );
           },

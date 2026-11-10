@@ -647,4 +647,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notCovered => 'Not covered yet';
+
+  @override
+  String get supportShort => 'Free, no ads, no trackers';
 }
