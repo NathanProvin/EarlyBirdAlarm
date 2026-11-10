@@ -104,6 +104,12 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 - **Card variants:** up to 5 Commons Quality / Featured / Valued photos per species, one per rarity, saved on the card.
 - **Order:** 1.0.1 lock-screen fix → Production → Infra → 1.1 (backup, codes, shiny, variants) → 1.2 Australia / NZ → later iOS, marketplace (~1,000+ daily players), region UI.
 
+## Tester feedback round — decided 2026-11-10
+- **One term: Training** (Entraînement / Training / Entrenamiento) for the booster tab; the paid option is **Early Bird Plus**. Code names stay `twitch*`.
+- **Support visibility:** coffee button top-left on Alarms and Training (streak in the header's middle), a card at the top of Settings, one support line on the reveal from 30 cards (once). **Reviews:** Google's in-app review once from 15 cards, on closing a reveal, never gated by our own question (Play policy).
+- **Collection:** default view = the current region; "All" renamed Collected; a world view; sort by number / rarity / name.
+- **Region picker:** pin + Confirm, back cancels; the 2° grid stays in the backend but is hidden behind a red outline of the covered area; cell names kept for now.
+
 ## Tech choices
 - Flutter packages: `alarm`, `geolocator` (coarse), `http`, `path_provider`, `shared_preferences`, `flutter_localizations` (ARB en/fr), `just_audio` (card ▶ and the Twitch quiz song), `share_plus`, `url_launcher`, `permission_handler`. State: built-in `ChangeNotifier`. No package for animations, sensors or app info: boosters, flip and sparkles are plain Flutter (Transform, CustomPainter); the app version comes from a tiny Android channel (`early_bird/version` in MainActivity.kt).
 - Testing on the S22: `flutter build apk --profile` (near-release speed, same debug signature as debug builds, so data is kept) and `adb install --no-streaming -r` (streamed installs of the 107 MB APK fail on this USB link). Unit/widget tests in `app/test/widget_test.dart` cover the bird pick, cards, stats formats, Twitch maths, series rules, booster tap, the flip.
