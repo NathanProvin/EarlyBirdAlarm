@@ -1,13 +1,116 @@
 # Early Bird Alarm — Roadmap
 
-Iterative: each step ends with something that runs on a real Android device. Placeholders first, real content later. See `decisions.md` for rules and choices.
+Iterative: each step ends with something that runs on a real Android device. Placeholders first, real content later. See `decisions.md` for rules and choices ("Scaling — decided 2026-11-10" for the plan below).
 
-## Status — 2026-10-31
-- **App (`main`):** feature-complete for a first free Android release, now in **4 languages** (EN, FR, DE, ES). Since 2026-10-30: world-map region picker, balance pass (Twitch booster every 15 min — 1 min in test builds —, Epic/Legendary odds lowered on Medium/Hard), 20 bundled birds, readable copies badge, Settings with accent-filled pills for region and language (like the chosen difficulty), release `INTERNET` permission fixed.
-- **Trading merged into `main` (2026-11-01)** after the two-phone test (the user's S22 + a friend's phone, APK shared with Quick Share); `main` is again the only working branch.
-- **Pipeline / catalog:** published 2026-10-31: **1,713 species** (1,706 with a German name, 1,705 with a Spanish one), **1,212 regions** (1,159 GPS cells named "France · North"…, 40 countries, 13 bioregions) + 20 "coming soon" countries. A publish force-pushes ~800 MB in one go: needs a stable connection.
-- **Phone:** the user's collection was wiped 2026-10-30 to start fresh; their settings change often (they test too): read them before and after each session.
-- **Next:** the two-phone barter test; then "Next steps to release" A (series review, phone check) and B.
+## Status — 2026-11-10
+- **Live:** 1.0.0+3 in **closed testing** on Google Play, **14 active installs**, lots of constructive tester feedback. Catalog (1,292 species, 0 NC recordings, 1,212 regions) and privacy pages on GitHub Pages (`gh-pages`, ~506 MB: audio 410 MB, photos 63 MB, regions 34 MB).
+- **Plan rewritten 2026-11-10** around one bottleneck: **no accounts and no server** caps what the app can do (backup, codes, referrals, market, iOS sync). Order: **1.0.1 (lock-screen fix) → Production → Infra (domain, R2, Firebase) → 1.1 (backup, codes, shiny, variants) → 1.2 (Australia / NZ) → later (iOS, marketplace, region UI)**.
+- **Working branch:** `lock` (1.0.1).
+
+## Scaling vision and infrastructure
+Three layers, each with one job:
+
+| Layer | What it holds | Why | Cost |
+|---|---|---|---|
+| **Own domain** (e.g. `earlybird.app`, to buy) | Nothing: an address | `baseUrl` is compiled into the app (`app/lib/content.dart`). Pointing it at our domain means the host behind it can change **without an app update**. Must ship before Production | ~€10–15 / year |
+| **Cloudflare R2** behind the domain | The **catalog**: audio, photos, region lists, `species.json`, `series.json`. Same for everyone, read-only, big (0.5 GB now, several GB with regions + photo variants) | GitHub Pages: 1 GB cap, ~100 GB/month soft bandwidth, an 800 MB force-push per publish. R2: **no egress fees**, 10 GB free then ~€0.015 / GB-month, sync of changed files only | ~€0 at our scale |
+| **Firebase** (Auth + Firestore) | **Per-player data**: accounts, the collection, code redemptions, referrals; later wallets and the market. Private, writable, small (KB per player) | Nothing per player exists off the phone today. Firebase Storage/Hosting bills downloads (~€0.12 / GB), so the catalog stays on R2 | Spark (free): Auth free to 50k MAU, 50k reads / 20k writes a day. Blaze (pay as you go) only when Cloud Functions are needed (marketplace) |
+
+Rules that follow from it:
+- **Offline alarms stay sacred:** an alarm must ring and give a card with no network. Firebase is a mirror, never on the alarm's path; the catalog deck is prefetched as today.
+- **Cards stay rolled on the phone until the marketplace.** Then: cards pre-rolled and signed by the server when the deck is downloaded (online anyway), revealed offline. Older cards become "pre-season" (or admitted once after a plausibility check, as barter does).
+- **Saved data only grows:** new card / prefs fields are optional with defaults, keys are never renamed; a test loads a real 1.0.0+3 preferences file at every release.
+- **Accounts bring obligations:** Data safety ("account ID, collection"), privacy policy rewrite (EN/FR/DE/ES), **account deletion in the app and from a web page** (Play requirement); Sign in with Apple once on iOS.
+- **Card numbers stay permanent** (`pipeline/numbers.json`): new zones and species get the next numbers.
+
+## Phase 1.0.1 — Lock-screen quiz (branch `lock`, closed-test update)
+The alarm must show the quiz over the lock screen, screen off, on every tester's phone. Core loop first.
+- [ ] **Cause:** confirm on testers' phones (models, Android versions). Likely: Android 14+ turns the full-screen-intent permission off unless Play grants it (alarm-app declaration), plus vendor switches (Samsung sleeping apps, Xiaomi "Show on lock screen" / "Pop-up windows")
+- [ ] **Wake-up check** onboarding page before "Let's go": one row per requirement with ✓ or "Fix" (opens the right system screen): notifications, full-screen alarms (Android 14+, `canUseFullScreenIntent`), battery unrestricted; then **"Test it: lock your phone"** rings a short test alarm 10 s later so the user sees the quiz on the lock screen
+- [ ] Same page reachable from Settings (like "See the introduction again")
+- [ ] Play Console: **full-screen intent declaration** (alarm clock) so Play grants the permission on install
+- [ ] Tester feedback fixes (list to collect from the user)
+- [ ] Test: a 1.0.0+3 preferences file (cards, given, alarms, streak) loads in the new version
+- [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — so Production already has the movable address
+- [ ] Version `1.0.1+4`, release bundle, closed-test release (review: hours to ~2 days; the 14-day clock keeps running)
+
+## Production (Google Play)
+Updates during the closed test don't reset the clock. Testers' emails go into the Play Console only, never into the repo.
+- [x] Upload 1.0.0+3 to internal testing
+- [x] Closed test track, testers' email list, opt-in link sent; testers installed from the Play Store (14 active installs on 2026-11-10)
+- [ ] **14 consecutive days with ≥ 12 opted-in testers**
+- [ ] Payments profile, the 5 products Active (`tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99, `twitch_plus` 1.99), the user's Gmail as license tester; test purchase on the S22
+- [ ] S22 check of the backup alarm (rooster at 3 min, strong vibration, volume locked, guess and snooze stop it, rings with the app killed)
+- [ ] Store listing (`memory/store-listing.md`, `store/`: icon, feature graphic, 5 screenshots, `store/listing-translations.txt`) and declarations: Data safety, content rating, target audience, no ads, **full-screen intent**, exact alarms
+- [ ] Alarm video for the media-playback foreground-service declaration (S22, locked screen, alarm rings, guess), unlisted YouTube
+- [ ] Export the user's collection (adb) before switching the S22 to the Play build (different signature = another app)
+- [ ] After 14 days: **Apply for production** (Dashboard), Google review up to ~7 days; production with 1.0.1, staged rollout 20 % → 100 %
+- [ ] README: fill `PLAY_STORE_URL`
+
+## Phase Infra — domain, R2, Firebase (no visible app change)
+- [ ] **Catalog on Cloudflare R2** behind the domain (bucket + custom domain, CORS not needed for the app); `publish` syncs only changed files (rclone / wrangler) instead of the ~800 MB force-push; `gh-pages` kept as a fallback until R2 is proven, then frozen
+- [ ] Privacy pages served from the domain too (store listing link updated)
+- [ ] `species.json` re-fetched only when changed (ETag / Last-Modified); split by continent when the globe grows
+- [ ] **Firebase project** (`earlybird`, EU region): Auth (anonymous + Google), Firestore with security rules (a player reads and writes only their own documents), FlutterFire config for Android; plan details to discuss with the user
+- [ ] Account deletion: in Settings + a web page on the domain
+- [ ] Privacy policy (4 languages) and Data safety rewritten for accounts
+
+## Phase 1.1 — Accounts and collection features
+- [ ] **1 · Cloud backup:** a silent anonymous account at first launch; the collection (cards, given, heard, series, streak) mirrored to Firestore after each change (one document per player; shortcut: 1 MB ≈ 4,000 cards, split per card when someone gets near); Settings → "Sign in with Google to keep your collection"; signing in on a new phone restores it (merge: union of cards by key). Android Auto Backup stays as a second net
+- [ ] **3 · Referrals & Codes** (Settings → "Referrals & Codes"):
+  - Codes are words like `RedRobin`, `FavouriteGull`, `NiceTit`, case-insensitive, stored in Firestore (added or disabled from the console, optional end date / use cap); **once per account**, enforced by a create-only redemption document (security rules, no Cloud Functions → stays on the free plan)
+  - Each player gets their own invite code + Share; shared cards' Play link carries `&referrer=<code>`, read on first launch with the Play Install Referrer API (Firebase Dynamic Links is shut down; iOS will type the code)
+  - Rewards **to decide** (proposal: tester code = 1 guaranteed Rare from the region; newcomer = 1 Rare; inviter = 1 Rare per friend whose first alarm guess is right, cap 10, an Epic at 3 friends)
+- [ ] **4 · Shiny tier** (6th tier above Legendary, **card only**, never a bird tier): 1 / 1000 per card, only for species with a real aberrant photo; card says "Leucistic" or "Melanistic", holographic frame, own reveal. Sources (queried 2026-11-10, CC0 / BY / BY-SA only): iNaturalist projects "Albino & Leucistic birds", "Leucistic Birds", "Albino, Leucistic & Melanistic Animals", "Bird Aberrations" → **145 catalog species** (crows, Dark-eyed Junco, Canada Goose, House Sparrow, Blackbird, Jackdaw, Rock Dove, American Robin, Mallard…); "melanistic" search → **29** (Pheasant, Mallard…); Commons "Leucism in birds" (~20 species, overlapping). Only ~15 % of these observations are free-licensed. Pipeline makes a contact sheet per species, **the user picks** (being in a project doesn't prove the aberration). Barter: older app versions refuse a shiny card (harmless)
+- [ ] **5 · Card variants:** up to 5 photos per species from Commons Quality / Featured / Valued images (same licence filter, credit per photo), variant 1 = Common … 5 = Legendary, Featured ones to the top tiers, today's photo when there are none. Sample of 25 catalog species (2026-11-10): 40 % have ≥ 5, 12 % 3–4, 24 % 1–2, 24 % none. Each card saves its variant (new optional field) so its image never changes. Size: photos ~50 KB → +≤ 250 MB on R2; the deck downloads all variants of its ~14 birds (~3.5 MB)
+- [ ] One full catalog rebuild for 4 + 5, published to R2
+
+## Phase 1.2 — Australia and New Zealand (after the move to R2)
+- [ ] Free-recording sweep on AU / NZ species (xeno-canto free + iNaturalist) before committing
+- [ ] Zone in `CELL_AREAS` (same 2° cells; southern seasons need no change; the offline map already covers it), region names, `PLANNED` update
+- [ ] Offline birds for an "oc" continent (`continentOf()`, `build_fallback()`: 10 bundled birds, ~2 MB)
+- [ ] Overnight build (~1.5–2× today), publish, phone check
+- [ ] Store listing: mention Australia / NZ
+
+## Later
+### Region UI (cells unchanged, decided 2026-11-10)
+- [ ] Rework the region experience until the user is happy (picker, names, collection views); the 2° grid stays
+
+### iOS (Iteration 5)
+- [ ] AlarmKit (iOS 26+): Apple's alarm screen with a system Stop button, so the guess happens after opening the app — check custom-sound support first
+- [ ] Sign in with Apple (required next to Google), StoreKit products, cross-platform collections through Firebase
+- [ ] **QR-code trading** (Android ↔ iPhone; Nearby is Android-only): phones scan each other's screen for offer, counter-offer, confirmation; `qr_flutter` + `mobile_scanner`, same `TradeSession` messages, ~3–4 days
+- [ ] $99 / year, a Mac or a cloud Mac build (Codemagic), a real iPhone for alarm tests
+
+### Marketplace (when ~1,000+ daily players)
+- [ ] Server-signed pre-rolled cards (see rules above); Blaze plan + Cloud Functions; per-account issuance limits
+- [ ] Step 1, **the bank:** sell duplicates at a fixed price per rarity, buy a chosen card or a booster — currency gets value without liquidity
+- [ ] Step 2, **player listings:** fixed-price listings, a fee as the currency sink, daily caps per account, no free text
+- [ ] Currency never bought with nor turned into real money (else loot-box and virtual-currency rules)
+
+### More of the globe (after AU / NZ)
+Markets, in order (birders × willingness to pay × free-recording coverage × language cost):
+2. **Mexico + Central America (Costa Rica…)**: big Android market, birding tourism, Spanish already done, Mexico already "coming soon". Many Neotropical xeno-canto recordings are NC: fewer birds.
+3. **South Africa**: birding scene, English, good data.
+4. **Japan** (+ Korea, Taiwan): big birding culture, paying users; needs a new language (app strings, Wikidata names, listing, privacy page).
+5. **India**: huge Android base, very active eBird; English; low tips (growth / word of mouth more than revenue).
+6. **Brazil**: huge market, ~1,900 species; Portuguese; the biggest catalog.
+- Each market: free-recording sweep first; zone in `CELL_AREAS`; offline birds per continent; new languages through `LANGS`, `app_xx.arb`, listing, privacy page; build time grows ~linearly with regions (overnight).
+
+## Backlog (open items carried over from the history below)
+- [ ] User check on the phone: app icon (home screen, themed icon) and white-bird notification icon
+- [ ] TalkBack + maximum font size pass on the phone (alarm quiz screen included)
+- [ ] Check on the S22: the full region list, a fresh region download, the deck filling (14 songs) and rotating
+- [ ] Hand-pick widespread dropped species in `pipeline/overrides.csv` (`xc=…` / `commons=File:…`) and the 88 "no EN/FR name" species
+- [ ] `series.md` names against the current catalog (`py pipeline/build.py series` lists the missing ones)
+- [ ] Cards of species dropped from the catalog are hidden: show them with a "retired" badge instead (players read hidden cards as lost)
+- [ ] Play Store polish: localized screenshots, a promo video
+- [ ] 7-night reliability run with the backup alarm, on 2 phones
+- **Working notes:** Gradle heap is capped at 3 GB (`app/android/gradle.properties`) and Gradle is stopped after each build so the pipeline keeps enough memory. Before and after each phone session, read the saved settings (`adb shell run-as com.nathanprovin.earlybird cat shared_prefs/FlutterSharedPreferences.xml`): the user also uses the phone, and automated taps can land on the wrong screen. Screen recordings (`adb shell screenrecord`) + `.tools/ffmpeg` contact sheets are the way to check animations.
+
+---
+# History — done, and earlier plans as written
+Unchecked items below are either tracked above (Production, Backlog) or superseded by the plan above.
 
 ## Next steps to release (decided 2026-10-30)
 The fastest path: finish **A** today; create the Play developer account **now, in parallel** (identity check and the 14-day closed test are the long, unavoidable waits); meanwhile **B** and **C**.
@@ -51,9 +154,9 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 - [ ] **Closed test: at least 12 testers for 14 consecutive days** (required for new personal accounts before production) — recruit early: friends, family, birding groups
 - [ ] Store listing: texts rewritten for conversion 2026-11-03 (store title "Early Bird: Bird Song Alarm", launcher label stays "Early Bird") and graphics ready (`store/`: icon, feature graphic, 3 screenshots), all in `memory/store-listing.md`; paste into the Console
 - [ ] Declarations (answers drafted in `memory/store-listing.md`): Data safety (no data collected), full-screen intent and exact alarms (core alarm-clock features), media-playback foreground service (Play may ask for a short video), content rating (Everyone), target audience, no ads
-- [ ] **Share link (virality, before the next release build):** a shared card is only a PNG (`app/lib/ui/collection.dart` `_share`); add a localized `text` to `ShareParams` with the store link `https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird` (known from the package name, live once published), so every shared card is an invite. Also fill `PLAY_STORE_URL` in the README
+- [x] (done 2026-11-04, d7b7fbe: shared cards carry the Play link; README `PLAY_STORE_URL` still to fill → Production) **Share link (virality, before the next release build):** a shared card is only a PNG (`app/lib/ui/collection.dart` `_share`); add a localized `text` to `ShareParams` with the store link `https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird` (known from the package name, live once published), so every shared card is an invite. Also fill `PLAY_STORE_URL` in the README
 - [ ] Record the alarm video for the media-playback foreground-service declaration (S22, locked screen, alarm rings, dismiss; unlisted YouTube)
-- [ ] Internal test → closed test (14 days) → production
+- [ ] Internal test → closed test (14 days) → production — closed test running (14 active installs on 2026-11-10) → see "Production"
 
 ### Optional — not blocking a free Android release
 - [ ] iOS (Iteration 5)
@@ -62,13 +165,13 @@ The fastest path: finish **A** today; create the Play developer account **now, i
   1. **Tips** ("Buy me a coffee": e.g. 1 €, 3 €, 5 €) in Settings / Credits, a thank-you message, no gameplay effect. Google Play Billing consumable products (`in_app_purchase` package; Play requires its billing for in-app tips, no external payment link), a payments profile in the Console. Smallest and policy-safe.
   2. **Paid booster** (small microtransaction, e.g. 0.99 € for one booster now instead of waiting for the Twitch timer). Heavier: random cards bought with money = **loot box** rules — Play requires the card odds shown before purchase, the content rating changes to "In-game purchases (includes random items)", paid loot boxes are restricted in Belgium (and contested in the Netherlands: exclude those countries or skip), and it weakens "Free" in the listing. A non-random paid item (e.g. a chosen rarity) avoids the loot-box part.
   - Both first need: the **NC-licensed recordings replaced or removed** (line below: any monetization breaks the NC licence). Measured 2026-11-03: **961 species have only NC recordings** (3,134 of 4,936 recordings, 783 recordists; photos: none NC). These species are local (84 regions on average vs 299). Plan: (a) ask the top recordists for commercial permission on xeno-canto: 5 recordists cover 438 species, 20 cover 637, 50 cover 773; record each grant in `pipeline/overrides.csv`; (b) add iNaturalist sounds as a pipeline fallback — swept 2026-11-03 (research-grade observations with a CC0 / CC BY / CC BY-SA sound): **552 of the 961 NC species have ≥ 1 free sound** (369 have ≥ 3; 71 % of NC species-regions), and 19 of the 79 recording-dropped species come back (Subalpine and Orphean Warbler, Siberian Chiffchaff, Spotted Owl…); 141 have no iNat sound at all (sea ducks, skuas: rarely recorded, not a naming problem). iNat first, then asking only the recordists of what is left: top 5 → 707 of 961, top 20 → 795, top 50 → 871. iNat caveats: phone-quality, often short, no song/call label (default to "call", so Easy stays on xeno-canto songs); same ≥ 10 s and loudness checks as xeno-canto; (c) the user's own recordings; (d) drop whatever is left, the "Contains in-app purchases" label, Data safety review (Google processes the payment; nothing collected by the app), store listing and privacy policy updated.
-- [ ] **Branch `adding-tips` (started 2026-11-03):** pipeline done: recordings = free xeno-canto → free iNaturalist (`inat_recordings`: research grade, CC0 / BY / BY-SA, ≥ 10 s measured with ffprobe, one per recordist, local first, all tagged "call"; clips named `{id}-n{i}.m4a` so no old NC clip is reused) → NC xeno-canto only if `ALLOW_NC` (False on this branch). Listening sample: 17 of 20 species got a ≥ 10 s clip (Common Goldeneye, Great Egret, Greater Scaup… NC species are not all local). Sample **listened to and quality validated by the user (2026-11-03)**. Full catalog run started 2026-11-03 (`pipeline/cache/run-2026-11-03-inat.log`). **Tips and Twitch Plus coded 2026-11-03** (decisions.md "Tips and Twitch Plus"; privacy pages updated, not yet published; tests and a11y pass; not yet tried on the phone). **Full NC-free catalog built 2026-11-03 (third run: iNaturalist taxon resolved by exact name, 5 s minimum): 1,298 species (was 1,713), 0 NC; 752 on free xeno-canto, 546 on iNaturalist only (530 former NC species, 16 formerly dropped); 586 dropped (497 no free recording, 88 no EN/FR name, 1 no photo); 431 former NC species lost (Rough-legged Buzzard, Surf Scoter, Lesser Scaup, Glaucous Gull, Snowy Owl…); region median 251 birds (was 267), 53 regions < 50. First run had 1,210: a name check threw out renamed species and subspecies. Lost from series: Wallcreeper, Snowy Owl, Gyrfalcon, Ivory Gull, Mandarin Duck, Great Bustard, Ruff, Montagu's Harrier, Brown Pelican… Offline birds re-picked (0 NC). Rarity odds lowered (decisions.md).** Not published yet (publish with the tips release). **Card numbers made permanent** (`pipeline/numbers.json` = the live catalog's 1,713 numbers; kept species keep theirs, new ones get 1714+, no renumbering at publish) and **xeno-canto minimum 5 s** for species with nothing ≥ 10 s (+~13: Ruff, Pacific Diver, Hawk Owl, Broad-billed Sandpiper, Cinereous Vulture…; ~1,311 species expected), 2026-11-03. **Final species build on hold until the user's go** (then the eBird build, then offline birds re-picked). **Rarity from eBird + stars saved on cards coded 2026-11-03** (decisions.md): needs one more full build (new GBIF eBird counts, several hours once). Next: Play Console: payments profile, the 5 products, license testers, internal-test build to try real purchases; publish the NC-free catalog only with the tips release (the catalog is shared with the live app; cards of dropped species are kept but hidden)
-- [ ] Replace or remove the NC-licensed recordings (mandatory only before any monetization, ads included)
+- [x] (merged into main 2026-11-04, 5e0cbf6 → 5f69344; final catalog 1,292 species, 0 NC, live) **Branch `adding-tips` (started 2026-11-03):** pipeline done: recordings = free xeno-canto → free iNaturalist (`inat_recordings`: research grade, CC0 / BY / BY-SA, ≥ 10 s measured with ffprobe, one per recordist, local first, all tagged "call"; clips named `{id}-n{i}.m4a` so no old NC clip is reused) → NC xeno-canto only if `ALLOW_NC` (False on this branch). Listening sample: 17 of 20 species got a ≥ 10 s clip (Common Goldeneye, Great Egret, Greater Scaup… NC species are not all local). Sample **listened to and quality validated by the user (2026-11-03)**. Full catalog run started 2026-11-03 (`pipeline/cache/run-2026-11-03-inat.log`). **Tips and Twitch Plus coded 2026-11-03** (decisions.md "Tips and Twitch Plus"; privacy pages updated, not yet published; tests and a11y pass; not yet tried on the phone). **Full NC-free catalog built 2026-11-03 (third run: iNaturalist taxon resolved by exact name, 5 s minimum): 1,298 species (was 1,713), 0 NC; 752 on free xeno-canto, 546 on iNaturalist only (530 former NC species, 16 formerly dropped); 586 dropped (497 no free recording, 88 no EN/FR name, 1 no photo); 431 former NC species lost (Rough-legged Buzzard, Surf Scoter, Lesser Scaup, Glaucous Gull, Snowy Owl…); region median 251 birds (was 267), 53 regions < 50. First run had 1,210: a name check threw out renamed species and subspecies. Lost from series: Wallcreeper, Snowy Owl, Gyrfalcon, Ivory Gull, Mandarin Duck, Great Bustard, Ruff, Montagu's Harrier, Brown Pelican… Offline birds re-picked (0 NC). Rarity odds lowered (decisions.md).** Not published yet (publish with the tips release). **Card numbers made permanent** (`pipeline/numbers.json` = the live catalog's 1,713 numbers; kept species keep theirs, new ones get 1714+, no renumbering at publish) and **xeno-canto minimum 5 s** for species with nothing ≥ 10 s (+~13: Ruff, Pacific Diver, Hawk Owl, Broad-billed Sandpiper, Cinereous Vulture…; ~1,311 species expected), 2026-11-03. **Final species build on hold until the user's go** (then the eBird build, then offline birds re-picked). **Rarity from eBird + stars saved on cards coded 2026-11-03** (decisions.md): needs one more full build (new GBIF eBird counts, several hours once). Next: Play Console: payments profile, the 5 products, license testers, internal-test build to try real purchases; publish the NC-free catalog only with the tips release (the catalog is shared with the live app; cards of dropped species are kept but hidden)
+- [x] (done: the live 1,292-species catalog has no NC recording) Replace or remove the NC-licensed recordings (mandatory only before any monetization, ads included)
 - [ ] Play Store polish: localized screenshots (FR), a promo video
-- [ ] Phone-tilt parallax (gyroscope) for boosters and cards, if the finger version isn't enough
+- [x] (done 2026-11-04, 6a082a1, Settings switch on by default) Phone-tilt parallax (gyroscope) for boosters and cards, if the finger version isn't enough
 - [x] Slimmer app: 20 bundled birds instead of 30 (10 EU + 10 NA, 6.4 → 4.3 MB), 2026-10-31
 - [x] **German and Spanish** (2026-10-31): `LANGS = en, fr, de, es` in the pipeline; bird names from Wikidata labels / P1843 / GBIF vernacular names, a missing DE/ES name falls back to English (only EN + FR required, no new drops); region, direction and series names hand-written; app: `localName()` lookup, `app_de.arb` / `app_es.arb` (informal du / tú), ordinals, language drop-down, privacy pages DE/ES. Old app versions ignore the new fields (no `v2`)
-- [ ] Faster publish: push on top of the online `gh-pages` (only changed files are sent) instead of ~800 MB from scratch
+- [ ] → replaced by the R2 sync in "Infra" — Faster publish: push on top of the online `gh-pages` (only changed files are sent) instead of ~800 MB from scratch
 - [ ] **QR-code trading** (after the Nearby barter): phones scan each other's screen 2–3 times (offer, counter-offer, confirmation); works between Android and iPhone, camera permission only, nothing can drop mid-trade; clunkier than the live Nearby window. `qr_flutter` + `mobile_scanner`, same `TradeSession` messages, ~3–4 days
 - **Working notes:** Gradle heap is capped at 3 GB (`app/android/gradle.properties`) and Gradle is stopped after each build so the pipeline keeps enough memory. Before and after each phone session, read the saved settings (`adb shell run-as com.nathanprovin.earlybird cat shared_prefs/FlutterSharedPreferences.xml`): the user also uses the phone, and automated taps can land on the wrong screen. Screen recordings (`adb shell screenrecord`) + `.tools/ffmpeg` contact sheets are the way to check animations.
 
@@ -165,60 +268,3 @@ The fastest path: finish **A** today; create the Play developer account **now, i
 
 ### 4b — Play Store
 See "Next steps to release", D.
-
-## Future — Social & market (needs accounts; see decisions.md "Accounts")
-- [ ] Anonymous-first accounts + Sign in with Google/Apple; upload of the local collection
-- [ ] Server-minted cards (stat rolls on the server)
-- [ ] Trade cards with friends
-- [ ] Market with an in-game currency (no real money)
-- [ ] Before any monetization: replace or remove NC-licensed recordings
-
-## EXPANSION TO FULL GLOBE (planned 2026-11-03)
-Today: Europe + North America (`CELL_AREAS` in `pipeline/build.py`: 2°×2° cells, 40 countries, 13 bioregions), 20 "coming soon" countries (`PLANNED`).
-
-### Markets, in order (birders × willingness to pay × free-recording coverage × language cost)
-1. **Australia + New Zealand**: strong birding culture, high app spending, English, very good eBird and iNaturalist data. Low effort.
-2. **Mexico + Central America (Costa Rica…)**: big Android market, birding tourism, Spanish already done, Mexico already "coming soon". Many Neotropical xeno-canto recordings are NC: fewer birds in tips mode.
-3. **South Africa**: birding scene, English, good data.
-4. **Japan** (+ Korea, Taiwan): big birding culture, paying users; needs a new language (app strings, Wikidata names, listing, privacy page).
-5. **India**: huge Android base, very active eBird; English; low tips (growth / word of mouth more than revenue).
-6. **Brazil**: huge market, ~1,900 species; Portuguese; the biggest catalog.
-- [ ] Before committing to a market: run the free-recording sweep (as for iNaturalist, 2026-11-03) on its species to see how many survive in tips mode.
-
-### Technical plan
-- [ ] **Grid:** add the zone to `CELL_AREAS` (one line); seasons are per region and month, so the southern hemisphere needs no change; the offline world map already covers the planet.
-- [ ] **Hosting before the 1 GB GitHub Pages limit** (510 MB today; AU/NZ + Mexico + Central America ≈ 1–1.3 GB): move to Cloudflare (Pages: unlimited bandwidth, 20,000-file limit; or R2 for more files) **behind the user's own domain**, put in `baseUrl` (`app/lib/content.dart`) **before launch** so hosting can change without an app update. GitHub Pages also has a soft 100 GB/month bandwidth limit (≈ 5,000–6,000 active players at ~15 MB each the first time, then ~15 MB/month; a Twitch Plus player can use ~230 MB/month).
-- [ ] **Split `species.json`** (0.9 MB today, ~2 MB with ~2,500–3,000 species, re-fetched weekly by every player) by continent or region, and re-download only when changed (ETag / Last-Modified): roughly halves the bandwidth.
-- [ ] **Incremental publish:** push only changed files instead of the whole site from scratch (already listed under Optional).
-- [ ] **Offline birds per continent:** `continentOf()` (`app/lib/content.dart`) and `build_fallback()` only know "eu" / "na": add continent codes, 10 bundled birds each (~2 MB per continent in the app).
-- [ ] **Card numbers stay permanent** (`pipeline/numbers.json`, done 2026-11-03): new zones' species get the next numbers, nobody's cards renumber.
-- [ ] **Build time** grows with regions and species: ~1.5–2× today's (3–4 h for a full build), overnight.
-- [ ] **New languages:** `LANGS` in the pipeline (Wikidata labels), `app_xx.arb`, store listing, privacy page.
-
-## Iteration 5 — iOS
-- [ ] Evaluate AlarmKit (iOS 26+) vs the `alarm` package's background audio; check custom-sound support
-
-
-
-## DEPLOY
-Status on 2026-11-04: 1.0.0+3 bundle built (`app/build/app/outputs/bundle/release/app-release.aab`, from 5f69344); catalog (1,292 species) and privacy pages live on gh-pages. Testers' emails go straight into the Play Console, never into the repo.
-
-| # | Step | Who | Time |
-|---|---|---|---|
-| - [ ] 1 | **Upload 1.0.0+3** to Internal testing: Test and release → Testing → Internal testing → Create new release → the bundle above | You | 10 min |
-| - [ ] 2 | **Payments profile** (Monetize → Payments profile), then the **5 products** set to Active (`tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99, `twitch_plus` 1.99), and your Gmail as **license tester** (Settings → License testing) | You | 15 min, plus 1–3 days for Google to verify the profile |
-| - [ ] 3 | **Test on the S22** (cable): install from the internal-test link; test purchase (free as a license tester); **backup alarm** (rooster at 3 min, strong vibration, volume locked, guess and snooze stop it, still rings with the app killed) | You + me | 1 h |
-| - [ ] 4 | **Closed test, 16 testers**: Testing → Closed testing → Create track → Testers → Create email list, paste the 16 addresses → save → send them the **opt-in link** | You | 20 min |
-| - [ ] 5 | Testers open the link with the listed Google account, tap "Become a tester", install from the Play Store, keep it installed and open it now and then | Testers | — |
-| - [ ] 6 | **14 consecutive days with ≥ 12 opted-in testers** (16 = margin of 4). Updates during the test don't reset the clock | Everyone | 14 days |
-| - [ ] 7 | In parallel: **store listing** (`memory/store-listing.md`, `store/`) and **declarations**: Data safety, content rating, target audience, no ads, full-screen intent, exact alarms | You | 1 h |
-| - [ ] 8 | **Alarm video** for the foreground-service declaration (S22, locked screen, alarm rings, guess), unlisted YouTube | You | 15 min |
-| - [ ] 9 | After 14 days: **Apply for production** (Dashboard); Google reviews, up to ~7 days | You | 15 min + review |
-| - [ ] 10 | **Production release**, staged rollout 20 % → 100 % | You + me | — |
-
-**Before production (my side):**
-- [ ] **Own domain for the catalog** (`baseUrl` is built into the app; moving it later needs an app update). Set up when the user has a domain.
-- [ ] **Data safety:** Twitch Plus stays on the phone, payments via Google Play, so "no data collected" should hold; re-read the purchases question.
-- [ ] **7-night reliability run**, backup alarm included, on 2 phones if possible.
-- [ ] **Native DE and ES check** (app and store listing).
-- [ ] **Export the user's collection** (adb) before switching the S22 to the Play build: different signature = another app.
