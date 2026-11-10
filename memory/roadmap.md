@@ -60,8 +60,8 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 ## Phase Infra — domain, R2, Firebase (no visible app change)
 - [x] (2026-11-10) **Domain** `earlybirdalarm.app` (Cloudflare Registrar); `baseUrl` = `https://cdn.earlybirdalarm.app/v1/` (the GitHub Pages step skipped: straight to R2)
 - [x] (2026-11-10) **Catalog on Cloudflare R2**: bucket `earlybird-catalog` (EU jurisdiction, `.eu.` S3 endpoint), custom domain `cdn.earlybirdalarm.app`, r2.dev off; `publish` mirrors it with rclone (winget), keys in `keys/r2.txt`; first sync 493 MB / 5,604 files in 2.5 min, an unchanged re-run 0 B in 20 s. `gh-pages` frozen as is for 1.0.0+3 phones (`publish gh-pages` pushes it again if ever needed)
-- [ ] S22 check: a profile build downloads its deck from R2
-- [ ] (pages live at `https://cdn.earlybirdalarm.app/privacy.html`, text names Cloudflare; README updated) Privacy policy URL changed in the Play Console and `memory/store-listing.md`
+- [x] S22 check (2026-11-10): a profile build with the region list made stale re-downloaded `species.json`, `regions.json`, `series.json` and `regions/N48E002.json` from R2 (same MD5 as the bucket), prefs unchanged
+- [x] (2026-11-10) Privacy pages at `https://cdn.earlybirdalarm.app/privacy.html` (text names Cloudflare); URL changed in the Play Console, README and `memory/store-listing.md`
 - [ ] `species.json` re-fetched only when changed (ETag / Last-Modified); split by continent when the globe grows
 - [ ] **Firebase project** (`earlybird`, EU region): Auth (anonymous + Google), Firestore with security rules (a player reads and writes only their own documents), FlutterFire config for Android; plan details to discuss with the user
 - [ ] Account deletion: in Settings + a web page on the domain
