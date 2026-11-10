@@ -67,7 +67,7 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] (2026-11-10) FlutterFire config for Android (`firebase_core` 5.1.0, `firebase_auth` 7.0.1); `google-services.json` and `firebase_options.dart` git-ignored (API key, public repo), regenerate from `app/` with `flutterfire configure --project=earlybird-alarm --platforms=android --android-package-name=com.nathanprovin.earlybird --yes` (FlutterFire CLI in `.tools/pub-cache/bin`)
 - [x] (2026-11-10) Firestore rules (`app/firestore.rules`: own `players/{uid}` only, all else closed), deployed; live check `py -I app/firestore_rules_check.py`: 9 / 9 ok (two throwaway anonymous accounts, deleted after)
 - [x] (2026-11-10) Silent anonymous sign-in at launch (`app/lib/account.dart`, never awaited: offline the app works as before)
-- [ ] S22 check: a profile build creates an anonymous user (Authentication → Users)
+- [x] S22 check (2026-11-10): the profile build created one anonymous user at launch; a relaunch kept the same user; prefs unchanged
 - [ ] Restrict the Firebase API key in Google Cloud (Android apps: package + SHA-1s) once Google sign-in works
 - [ ] Account deletion: in Settings + a web page on the domain
 - [ ] Privacy policy (4 languages) and Data safety rewritten for accounts
