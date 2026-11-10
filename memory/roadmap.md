@@ -6,7 +6,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - **Live:** 1.0.0+3 in **closed testing** on Google Play, **14 active installs**, lots of constructive tester feedback. Catalog (1,292 species, 0 NC recordings, 1,212 regions) and privacy pages on GitHub Pages (`gh-pages`, ~506 MB: audio 410 MB, photos 63 MB, regions 34 MB).
 - **Plan rewritten 2026-11-10** around one bottleneck: **no accounts and no server** caps what the app can do (backup, codes, referrals, market, iOS sync). Order (revised 2026-11-10): **1.0.1 (lock-screen fix, tester feedback) → Infra (domain, R2, Firebase) → 1.1 (backup, codes, shiny, variants) → Production → 1.2 (Australia / NZ, heatmap) → later (iOS, marketplace, region UI)**.
 - **1.0.1 done on `lock` (2026-11-10), not deployed:** the infrastructure migration and Phase 1.1 come first; production ships with them. Next: **Infra → 1.1 → Production**.
-- **Working branch:** `lock` (1.0.1, to merge into `main` before Infra).
+- **Working branch:** `main` (`lock` merged 2026-11-10).
 
 ## Scaling vision and infrastructure
 Three layers, each with one job:
@@ -46,7 +46,7 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] Closed test track, testers' email list, opt-in link sent; testers installed from the Play Store (14 active installs on 2026-11-10)
 - [ ] **14 consecutive days with ≥ 12 opted-in testers**
 - [x] Payments profile and the 5 one-time products created in the Play Console (2026-11-10): `tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99 €, `twitch_plus` 1.99 € titled "Early Bird Plus" (English titles and descriptions; no icons yet)
-- [ ] The user's Gmail as license tester; test purchase from a Play install (tips page shows the 4 prices, "Thank you!"; Plus on the Training page)
+- [ ] (license tester set in the Play Console, 2026-11-10) Test purchase from a Play install, with the next bundle (tips page shows the 4 prices, "Thank you!"; Plus on the Training page)
 - [ ] Play Console: **full-screen intent declaration** (alarm clock) so Play grants the permission on install
 - [ ] (S22, Android 16, 2026-11-10: **bug reproduced** with the full-screen permission denied by adb — screen stays off, only a notification; Fix opens "Alertes en plein écran", the row turns ✓ on return; with it on, the screen wakes and the quiz shows over the lock screen; the test answer saves no card and shows "Ça marche !" 3 s over the lock screen, then the phone stays locked and the screen goes off. Battery row made advice only: the S22 passed 7 nights with battery optimised. Left: a tester's phone) **Then on a tester's Android 14+ phone:** the onboarding page, each Fix button (full-screen screen, app info → Battery), the test ring with the screen locked (answering gives no card, snooze just stops it)
 - [ ] Release bundle: version bump, signed bundle, upload (the first release after Infra and 1.1)
