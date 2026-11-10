@@ -3,10 +3,11 @@
 Run from the repo root:  py pipeline/build.py            (all regions)
                          py pipeline/build.py N48E002,FR (a few regions, for testing)
                          py pipeline/build.py fallback   (copy the offline birds into the app)
-                         py pipeline/build.py publish    (push the catalog + privacy pages to GitHub Pages)
+                         py pipeline/build.py publish    (sync the catalog + privacy pages to Cloudflare R2)
+                         py pipeline/build.py publish gh-pages (also force-push them to GitHub Pages)
 Reads GBIF (presence, taxonomy), Wikidata (EN/FR names, photo), Wikimedia Commons (photo
 credits), xeno-canto (recordings), AVONET and Wikipedia (card stats), then writes the static
-site to pipeline/site/v1/ (published on GitHub Pages) and pipeline/report.md.
+site to pipeline/site/v1/ (published on R2, cdn.earlybirdalarm.app) and pipeline/report.md.
 Every download is cached in pipeline/cache/, so re-runs are fast.
 """
 
@@ -14,6 +15,7 @@ import csv
 import hashlib
 import html
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -796,8 +798,8 @@ PAGES_REPO = "https://github.com/NathanProvin/EarlyBirdAlarm.git"
 
 
 def publish():
-    """Force-push the catalog and the static pages (privacy policy) to the gh-pages branch,
-    which GitHub Pages serves at https://nathanprovin.github.io/EarlyBirdAlarm/.
+    """Publishes the catalog and the static pages (privacy policy) to R2 (SITE_URL), and with
+    `publish gh-pages` also force-pushes them to https://nathanprovin.github.io/EarlyBirdAlarm/.
     Only the files species.json references are published; the branch keeps no history."""
     species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
     files = {b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]}
@@ -813,19 +815,45 @@ def publish():
     for f in (ROOT.parent / "site-static").iterdir():
         page = f.read_text(encoding="utf-8").replace("CONTACT_HREF", href).replace("CONTACT_TEXT", text)
         (PAGES / f.name).write_text(page, encoding="utf-8")
+    sync_r2()
+    print(f"published {len(species)} species, {len(regions)} regions, {len(files)} files to {SITE_URL}")
+    if sys.argv[2:] != ["gh-pages"]:
+        return
+    # The old address, still read by 1.0.0+3 phones: `publish gh-pages` also force-pushes it (~800 MB).
     (PAGES / ".nojekyll").touch()  # serve files as they are
     git = lambda *a: subprocess.run(["git", *a], cwd=PAGES, check=True)
     git("init", "-q", "-b", "gh-pages")
     git("add", "-A")
     git("commit", "-q", "-m", f"Catalog: {len(species)} species, {len(regions)} regions")
     git("push", "-q", "--force", PAGES_REPO, "gh-pages")
-    print(f"published {len(species)} species, {len(regions)} regions, {len(files)} files")
+    print("also pushed to GitHub Pages")
+
+
+SITE_URL = "https://cdn.earlybirdalarm.app/"  # the R2 bucket's custom domain (app: content.dart baseUrl)
+R2_BUCKET = "earlybird-catalog"
+R2_ENDPOINT = "https://f824474b5c02f0753566056efb861cf0.eu.r2.cloudflarestorage.com"  # EU jurisdiction
+R2_KEYS = ROOT.parent / "keys" / "r2.txt"  # access key id, then secret key (git-ignored)
+
+
+def sync_r2():
+    """Mirror PAGES to the R2 bucket: only changed files go up, files gone from PAGES are deleted."""
+    key_id, secret = R2_KEYS.read_text().split()[:2]
+    # winget install Rclone.Rclone: on PATH only in new terminals, so else found in winget's folder
+    rclone = shutil.which("rclone") or str(next(
+        Path(os.environ["LOCALAPPDATA"], "Microsoft", "WinGet", "Packages").glob("Rclone.Rclone_*/rclone-*/rclone.exe")))
+    env = os.environ | {"RCLONE_CONFIG_R2_TYPE": "s3", "RCLONE_CONFIG_R2_PROVIDER": "Cloudflare",
+                        "RCLONE_CONFIG_R2_ACCESS_KEY_ID": key_id, "RCLONE_CONFIG_R2_SECRET_ACCESS_KEY": secret,
+                        "RCLONE_CONFIG_R2_ENDPOINT": R2_ENDPOINT,
+                        "RCLONE_CONFIG_R2_NO_CHECK_BUCKET": "true"}  # the token only reaches this bucket
+    subprocess.run([rclone, "sync", str(PAGES), f"r2:{R2_BUCKET}", "--checksum", "--fast-list",
+                    "--exclude", ".git/**", "--exclude", ".nojekyll", "--transfers", "16",
+                    "--stats-one-line", "--stats", "30s", "--stats-log-level", "NOTICE"], env=env, check=True)
 
 
 def main():
     if sys.argv[1:] == ["fallback"]:
         return build_fallback()
-    if sys.argv[1:] == ["publish"]:
+    if sys.argv[1:2] == ["publish"]:
         return publish()
     if sys.argv[1:] == ["series"]:
         return build_series()

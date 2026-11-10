@@ -10,8 +10,9 @@ import 'package:path_provider/path_provider.dart';
 import 'birds.dart';
 import 'series.dart';
 
-/// The catalog built by pipeline/build.py, on GitHub Pages (decisions.md "Delivery").
-const baseUrl = 'https://nathanprovin.github.io/EarlyBirdAlarm/v1/';
+/// The catalog built by pipeline/build.py, on Cloudflare R2 behind our domain (decisions.md
+/// "Delivery"); 1.0.0+3 phones still read nathanprovin.github.io.
+const baseUrl = 'https://cdn.earlybirdalarm.app/v1/';
 
 /// Songs kept on the phone for upcoming rings.
 const deckSize = 14;

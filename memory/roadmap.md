@@ -58,9 +58,10 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [ ] README: fill `PLAY_STORE_URL`
 
 ## Phase Infra — domain, R2, Firebase (no visible app change)
-- [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — before any production release, so the hosting can change without an app update
-- [ ] **Catalog on Cloudflare R2** behind the domain (bucket + custom domain, CORS not needed for the app); `publish` syncs only changed files (rclone / wrangler) instead of the ~800 MB force-push; `gh-pages` kept as a fallback until R2 is proven, then frozen
-- [ ] Privacy pages served from the domain too (store listing link updated)
+- [x] (2026-11-10) **Domain** `earlybirdalarm.app` (Cloudflare Registrar); `baseUrl` = `https://cdn.earlybirdalarm.app/v1/` (the GitHub Pages step skipped: straight to R2)
+- [x] (2026-11-10) **Catalog on Cloudflare R2**: bucket `earlybird-catalog` (EU jurisdiction, `.eu.` S3 endpoint), custom domain `cdn.earlybirdalarm.app`, r2.dev off; `publish` mirrors it with rclone (winget), keys in `keys/r2.txt`; first sync 493 MB / 5,604 files in 2.5 min, an unchanged re-run 0 B in 20 s. `gh-pages` frozen as is for 1.0.0+3 phones (`publish gh-pages` pushes it again if ever needed)
+- [ ] S22 check: a profile build downloads its deck from R2
+- [ ] (pages live at `https://cdn.earlybirdalarm.app/privacy.html`, text names Cloudflare; README updated) Privacy policy URL changed in the Play Console and `memory/store-listing.md`
 - [ ] `species.json` re-fetched only when changed (ETag / Last-Modified); split by continent when the globe grows
 - [ ] **Firebase project** (`earlybird`, EU region): Auth (anonymous + Google), Firestore with security rules (a player reads and writes only their own documents), FlutterFire config for Android; plan details to discuss with the user
 - [ ] Account deletion: in Settings + a web page on the domain

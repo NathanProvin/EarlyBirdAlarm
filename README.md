@@ -81,7 +81,7 @@ Settings → Credits.
 
 No account, no analytics, no ads. Your alarms, settings and cards stay on your phone; the
 position (optional) is only used on the phone to pick a region. See the
-[privacy policy](https://nathanprovin.github.io/EarlyBirdAlarm/privacy.html).
+[privacy policy](https://cdn.earlybirdalarm.app/privacy.html).
 
 ## Contact
 
