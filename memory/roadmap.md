@@ -36,7 +36,8 @@ The alarm must show the quiz over the lock screen, screen off, on every tester's
   - Support: a card at the top of Settings; a one-time line on the card reveal from 30 cards; Google's in-app review asked once when a reveal is closed from 15 cards (`in_app_review` 2.0.12; never shows on sideloaded builds: check with an internal-test install)
   - Collection: opens on the region; view pill (region, Collected, Species, other regions, all birds of the world); sort (number / rarity / name) and rarity filter in one sheet; Trade and Series as icons; duplicates drawn as a pile in the Species view. Checked: the region view only lists the region's species (France · Nord: ~350 of 1,292 species, the all-year list), not the catalog
   - Region picker: grid and green square hidden, red outline of the covered area ("Red: covered area"), a pin (tap or GPS; tapping outside: "Not covered yet"), a plain Confirm button, back cancels, search only moves the map; cell names kept (place names later)
-- [ ] S22 check of the Collection views and the region picker (pin, Confirm)
+  - Later rounds the same day: "World" view; Trade / Series in round outlines, the medal in the accent; one fixed-width button opens a sheet (view as a drop-down that closes it, sort, rarity as six circles); heard birds get a glass play button (small tiles and the full card, under "Try next time"); no cell name under the pin; a smaller support card ("Free, no ads, no trackers"); Plus pulses its colour and glow only; the streak pill also heads Training, Training answers count in it, no bird at 0; "Perfect week" and "Iron streak" count alarm answers only (`alarmStreak`, seeded from the 1.0.0+3 streak); Series opens on achievements, a tap shows an achievement's goal; coffee icon in the accent
+- [x] S22 check of all the feedback screens (Collection bar and sheet, heard tiles, region picker, Training header, Settings): **validated by the user (2026-11-10)**
 - [x] (2026-11-10, `app/test/upgrade_test.dart`, written from the 1.0.0+3 format; swap in a real S22 export when the phone is connected) Test: a 1.0.0+3 preferences file (cards, given, alarms, streak) loads in the new version
 - [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — so Production already has the movable address
 - [ ] Version `1.0.1+4`, release bundle, closed-test release (review: hours to ~2 days; the 14-day clock keeps running)
@@ -78,6 +79,7 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [ ] Offline birds for an "oc" continent (`continentOf()`, `build_fallback()`: 10 bundled birds, ~2 MB)
 - [ ] Overnight build (~1.5–2× today), publish, phone check
 - [ ] Store listing: mention Australia / NZ
+- [ ] **Missing-species heatmap** (tester request 2026-11-10; ~1.5–2 days): a bottom-left toggle on the region picker tints each covered cell by the share of its species not collected yet (or the count: to decide; the count always favours species-rich areas). Data: one pipeline file, each cell's species as card numbers (measured 2026-11-10: 1,159 cells, 260,761 pairs, 1.1 MB raw, ~0.1 MB gzip), downloaded once and refreshed with the catalog; per-region files would be ~34 MB. Tap a cell → "42 species missing here". Same file later for "where to find this bird" on a missing card
 
 ## Later
 ### Region UI (cells unchanged, decided 2026-11-10)
