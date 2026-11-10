@@ -18,6 +18,7 @@ import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
 import 'package:early_bird/ui/settings.dart';
 import 'package:early_bird/ui/tips.dart';
+import 'package:early_bird/ui/twitch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -921,6 +922,33 @@ void main() {
       expect(shown(), {d});
     }
   });
+
+  testWidgets(
+    'training: Plus offered on a full pile, countdown centered when empty',
+    (tester) async {
+      // The store set by the onboarding test above (it can be set only once).
+      await tester.pumpWidget(
+        MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: TwitchScreen()),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Training'), findsOneWidget);
+      expect(find.text('Early Bird Plus'), findsOneWidget);
+      expect(find.byIcon(Icons.hourglass_empty), findsNothing);
+      while (store.twitchReady(DateTime.now()) > 0) {
+        await store.useTwitch();
+      }
+      await tester.pump(
+        const Duration(seconds: 1),
+      ); // the screen redraws each second
+      expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
+      expect(find.textContaining(':'), findsOneWidget); // the countdown, once
+      await tester.pumpWidget(const SizedBox()); // stops the pile's animations
+    },
+  );
 
   testWidgets('tips: four tiles, unavailable without Google Play', (
     tester,

@@ -11,10 +11,10 @@ import 'purchases.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
+import 'ui/header.dart';
 import 'ui/onboarding.dart';
 import 'ui/region.dart';
 import 'ui/ring.dart';
-import 'ui/settings.dart';
 import 'ui/streak.dart';
 import 'ui/theme.dart';
 import 'ui/twitch.dart';
@@ -286,8 +286,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ? null
               : FloatingActionButton(
                   elevation: 0,
+                  tooltip: l.addAlarm,
                   onPressed: _edit,
-                  child: const Icon(Icons.add),
+                  child: const Icon(Icons.add_alarm),
                 ),
           bottomNavigationBar: _BottomBar(
             tab: _tab,
@@ -302,25 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 // Other tabs use the whole screen: no streak / settings row there.
-                if (_tab == 1)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 12, 12),
-                    child: Row(
-                      children: [
-                        StreakPill(store.streak),
-                        const Spacer(),
-                        IconButton(
-                          tooltip: l.settings,
-                          icon: const Icon(Icons.settings_outlined),
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const SettingsScreen(),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                if (_tab == 1) PageHeader(center: StreakPill(store.streak)),
                 if (_tab == 0)
                   const Expanded(child: TwitchScreen())
                 else if (_tab == 2)

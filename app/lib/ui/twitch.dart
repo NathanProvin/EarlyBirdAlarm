@@ -8,6 +8,7 @@ import '../main.dart';
 import '../purchases.dart';
 import '../store.dart';
 import 'booster.dart';
+import 'header.dart';
 import 'ring.dart';
 
 /// Twitch Zone: a pile of up to [twitchMax] boosters, one more every [twitchEvery].
@@ -56,87 +57,100 @@ class _TwitchScreenState extends State<TwitchScreen> {
     final charges = twitchCharges(store.twitchStart, now, store.twitchPeriod);
     final next = twitchNextIn(store.twitchStart, now, store.twitchPeriod);
     final scheme = Theme.of(context).colorScheme;
+    final ready = store.twitchReady(now);
+    final countdown = Text(
+      '${next.inMinutes.toString().padLeft(2, '0')}:'
+      '${(next.inSeconds % 60).toString().padLeft(2, '0')}',
+      style: text.displaySmall?.copyWith(
+        color: scheme.primary,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
     return Column(
       children: [
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 8,
-          children: [
-            Flexible(child: Text(l.twitchZone, style: text.headlineMedium)),
-            if (store.twitchPlus)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        PageHeader(
+          center: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              Flexible(
                 child: Text(
-                  'Plus',
-                  style: text.labelMedium?.copyWith(color: scheme.onPrimary),
+                  l.twitchZone,
+                  style: text.headlineSmall,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(l.twitchInfo, style: text.bodyMedium),
-        Expanded(
-          child: Center(
-            child: FittedBox(
-              child: BoosterPile(
-                // Bonus boosters from series add to the pile, drawn up to 5 high.
-                count: min(store.twitchReady(now), twitchMax),
-                onTorn: _open,
-                label: l.openBooster,
-              ),
-            ),
+              if (store.twitchPlus)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: scheme.primary,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Plus',
+                    style: text.labelMedium?.copyWith(color: scheme.onPrimary),
+                  ),
+                ),
+            ],
           ),
         ),
-        // Only the countdown: the pile itself shows how many are left. While it runs,
-        // Twitch Plus is offered in the corner (until bought).
-        SizedBox(
-          height: 64,
-          child: charges < twitchMax
-              ? Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Text(
-                      '${next.inMinutes.toString().padLeft(2, '0')}:'
-                      '${(next.inSeconds % 60).toString().padLeft(2, '0')}',
-                      style: text.displaySmall?.copyWith(
-                        color: scheme.primary,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    if (!store.twitchPlus)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          // Pulses when the pile is empty: the moment Plus is worth it.
-                          child: _PlusButton(
-                            attract: store.twitchReady(now) == 0,
-                            onPressed: () => showModalBottomSheet<void>(
-                              context: context,
-                              showDragHandle: true,
-                              builder: (_) => const _PlusSheet(),
-                            ),
-                          ),
+        Expanded(
+          child: Center(
+            // An empty pile gives its place to the countdown.
+            child: ready == 0
+                ? Semantics(
+                    liveRegion: true,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.hourglass_empty,
+                          size: 48,
+                          color: scheme.primary,
                         ),
-                      ),
-                  ],
-                )
-              : null,
+                        const SizedBox(height: 8),
+                        countdown,
+                      ],
+                    ),
+                  )
+                : FittedBox(
+                    child: BoosterPile(
+                      // Bonus boosters from series add to the pile, drawn up to 5 high.
+                      count: min(ready, twitchMax),
+                      onTorn: _open,
+                      label: l.openBooster,
+                    ),
+                  ),
+          ),
         ),
-        // Clear of the glass bottom bar.
-        SizedBox(height: MediaQuery.paddingOf(context).bottom),
+        // The countdown while the pile refills (the pile shows how many are left).
+        if (ready > 0 && charges < twitchMax) countdown,
+        // Plus is offered until bought, full pile or not; it pulses when the pile is
+        // empty, the moment it's worth it.
+        if (!store.twitchPlus) ...[
+          const SizedBox(height: 12),
+          _PlusButton(
+            attract: ready == 0,
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              showDragHandle: true,
+              builder: (_) => const _PlusSheet(),
+            ),
+          ),
+        ],
+        // Higher than the glass bottom bar's edge.
+        SizedBox(height: 32 + MediaQuery.paddingOf(context).bottom),
       ],
     );
   }
 }
 
-/// The Twitch Plus button: the bolt in the theme accent. With [attract] (no booster
-/// left) it pulses every 2 s: it swells with a glow and the bolt gives a little jolt.
+/// The Plus button: the bolt and the name, tonal. With [attract] (no booster left) it
+/// pulses every 2 s: it swells with a glow and the bolt gives a little jolt.
 class _PlusButton extends StatefulWidget {
   const _PlusButton({required this.attract, required this.onPressed});
   final bool attract;
@@ -178,7 +192,7 @@ class _PlusButtonState extends State<_PlusButton>
             scale: 1 + 0.15 * beat,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(999),
                 boxShadow: [
                   if (beat > 0)
                     BoxShadow(
@@ -188,13 +202,15 @@ class _PlusButtonState extends State<_PlusButton>
                     ),
                 ],
               ),
-              child: IconButton.filledTonal(
-                tooltip: l.twitchPlus,
+              child: FilledButton.tonalIcon(
+                // The theme's buttons are full width (Size.fromHeight): not here.
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
                 onPressed: widget.onPressed,
                 icon: Transform.rotate(
                   angle: 0.25 * sin(t * 3 * pi) * (1 - t),
                   child: Icon(Icons.bolt, color: scheme.primary),
                 ),
+                label: Text(l.twitchPlus),
               ),
             ),
           );

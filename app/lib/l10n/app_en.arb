@@ -11,7 +11,7 @@
       }
     }
   },
-  "streak": "Streak {count}",
+  "streak": "Streak: {count}",
   "@streak": {
     "placeholders": {
       "count": {
@@ -113,9 +113,8 @@
   "seasonalInfo": "Only birds present this month",
   "allBirdsInfo": "All birds in the region",
   "creditsSubtitle": "Sources, licenses and privacy",
-  "twitch": "Twitch",
-  "twitchInfo": "Train and earn cards",
-  "twitchZone": "Twitch Zone",
+  "twitch": "Training",
+  "twitchZone": "Training",
   "openBooster": "Open a booster",
   "listenAgain": "Listen again",
   "series": "Series",
@@ -193,7 +192,7 @@
   "introGameTitle": "Gameplay",
   "introLater": "Harder settings give better rewards; you can change them later in Settings.",
   "introCollectionTitle": "Collect cards",
-  "introTwitch": "Twitch Zone: a free booster every 15 minutes to train your ear.",
+  "introTwitch": "Training: a free booster every 15 minutes to train your ear.",
   "introSeries": "Series and achievements: complete them to collect guaranteed rare cards.",
   "introTrade": "Trade: meet another birder and swap cards face to face.",
   "introExamineTitle": "Examine cards",
@@ -215,7 +214,7 @@
   "thankYou": "Thank you!",
   "thankYouBody": "Your support keeps Early Bird singing.",
   "purchasesUnavailable": "Purchases are not available on this phone.",
-  "twitchPlus": "Twitch Plus",
+  "twitchPlus": "Early Bird Plus",
   "twitchPlusPitch": "Unlimited mode: a booster every minute! One purchase, for life.",
   "paymentsGoogle": "Payments by Google Play.",
   "shareTitle": "{rarity} card!",
@@ -236,5 +235,6 @@
   "wakeMissing": "Without these, an alarm can ring without showing the quiz.",
   "wakeOk": "OK",
   "wakeNotOk": "Missing",
-  "alarmPermissions": "Alarm permissions"
+  "alarmPermissions": "Alarm permissions",
+  "addAlarm": "Add an alarm"
 }

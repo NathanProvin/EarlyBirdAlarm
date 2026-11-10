@@ -45,7 +45,7 @@ class _StreakPillState extends State<StreakPill>
       label: l.streak(n),
       excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(6, 2, 12, 2),
+        padding: const EdgeInsets.fromLTRB(14, 2, 6, 2),
         decoration: BoxDecoration(
           color: scheme.secondaryContainer,
           borderRadius: BorderRadius.circular(999),
@@ -69,16 +69,8 @@ class _StreakPillState extends State<StreakPill>
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Transform.translate(
-                  offset: Offset(0, y),
-                  child: CustomPaint(
-                    size: const Size.square(32),
-                    painter: BirdPainter.of(bird, flap: flap, asleep: n == 0),
-                  ),
-                ),
-                const SizedBox(width: 4),
                 Text(
-                  '$n',
+                  l.streak(n),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: n == 0
@@ -95,6 +87,14 @@ class _StreakPillState extends State<StreakPill>
                       color: scheme.primary,
                     ),
                   ),
+                const SizedBox(width: 4),
+                Transform.translate(
+                  offset: Offset(0, y),
+                  child: CustomPaint(
+                    size: const Size.square(32),
+                    painter: BirdPainter.of(bird, flap: flap, asleep: n == 0),
+                  ),
+                ),
               ],
             );
           },

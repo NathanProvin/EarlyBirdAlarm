@@ -25,7 +25,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String streak(int count) {
-    return 'Racha $count';
+    return 'Racha: $count';
   }
 
   @override
@@ -239,13 +239,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get creditsSubtitle => 'Fuentes, licencias y privacidad';
 
   @override
-  String get twitch => 'Pajarero';
+  String get twitch => 'Entrenamiento';
 
   @override
-  String get twitchInfo => 'Entrena y gana cartas';
-
-  @override
-  String get twitchZone => 'Zona Pajarera';
+  String get twitchZone => 'Entrenamiento';
 
   @override
   String get openBooster => 'Abrir un sobre';
@@ -486,7 +483,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introTwitch =>
-      'Zona Pajarera: un sobre gratis cada 15 minutos para entrenar el oído.';
+      'Entrenamiento: un sobre gratis cada 15 minutos para entrenar el oído.';
 
   @override
   String get introSeries =>
@@ -557,7 +554,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las compras no están disponibles en este teléfono.';
 
   @override
-  String get twitchPlus => 'Pajarero Plus';
+  String get twitchPlus => 'Early Bird Plus';
 
   @override
   String get twitchPlusPitch =>
@@ -622,4 +619,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get alarmPermissions => 'Permisos del despertador';
+
+  @override
+  String get addAlarm => 'Añadir una alarma';
 }

@@ -129,7 +129,7 @@ abstract class AppLocalizations {
   /// No description provided for @streak.
   ///
   /// In en, this message translates to:
-  /// **'Streak {count}'**
+  /// **'Streak: {count}'**
   String streak(int count);
 
   /// No description provided for @once.
@@ -537,19 +537,13 @@ abstract class AppLocalizations {
   /// No description provided for @twitch.
   ///
   /// In en, this message translates to:
-  /// **'Twitch'**
+  /// **'Training'**
   String get twitch;
-
-  /// No description provided for @twitchInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'Train and earn cards'**
-  String get twitchInfo;
 
   /// No description provided for @twitchZone.
   ///
   /// In en, this message translates to:
-  /// **'Twitch Zone'**
+  /// **'Training'**
   String get twitchZone;
 
   /// No description provided for @openBooster.
@@ -981,7 +975,7 @@ abstract class AppLocalizations {
   /// No description provided for @introTwitch.
   ///
   /// In en, this message translates to:
-  /// **'Twitch Zone: a free booster every 15 minutes to train your ear.'**
+  /// **'Training: a free booster every 15 minutes to train your ear.'**
   String get introTwitch;
 
   /// No description provided for @introSeries.
@@ -1113,7 +1107,7 @@ abstract class AppLocalizations {
   /// No description provided for @twitchPlus.
   ///
   /// In en, this message translates to:
-  /// **'Twitch Plus'**
+  /// **'Early Bird Plus'**
   String get twitchPlus;
 
   /// No description provided for @twitchPlusPitch.
@@ -1223,6 +1217,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Alarm permissions'**
   String get alarmPermissions;
+
+  /// No description provided for @addAlarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an alarm'**
+  String get addAlarm;
 }
 
 class _AppLocalizationsDelegate

@@ -25,7 +25,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String streak(int count) {
-    return 'Streak $count';
+    return 'Streak: $count';
   }
 
   @override
@@ -239,13 +239,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creditsSubtitle => 'Sources, licenses and privacy';
 
   @override
-  String get twitch => 'Twitch';
+  String get twitch => 'Training';
 
   @override
-  String get twitchInfo => 'Train and earn cards';
-
-  @override
-  String get twitchZone => 'Twitch Zone';
+  String get twitchZone => 'Training';
 
   @override
   String get openBooster => 'Open a booster';
@@ -484,7 +481,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introTwitch =>
-      'Twitch Zone: a free booster every 15 minutes to train your ear.';
+      'Training: a free booster every 15 minutes to train your ear.';
 
   @override
   String get introSeries =>
@@ -556,7 +553,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Purchases are not available on this phone.';
 
   @override
-  String get twitchPlus => 'Twitch Plus';
+  String get twitchPlus => 'Early Bird Plus';
 
   @override
   String get twitchPlusPitch =>
@@ -620,4 +617,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alarmPermissions => 'Alarm permissions';
+
+  @override
+  String get addAlarm => 'Add an alarm';
 }
