@@ -244,42 +244,48 @@ class _CollectionScreenState extends State<CollectionScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-          // The view (its name), sort and filter, search; Trade and Series on the right.
+          // The view (its name, as wide as the row allows), sort and filter, search; Trade
+          // and Series on the right.
           child: Row(
             children: [
-              Flexible(
-                child: _Menu<String>(
-                  value: view,
-                  items: views,
-                  tooltip: l.viewMenu,
-                  onSelected: (v) => setState(() => _view = v),
-                  child: _Pill(views[view]!),
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: _Menu<String>(
+                        value: view,
+                        items: views,
+                        tooltip: l.viewMenu,
+                        onSelected: (v) => setState(() => _view = v),
+                        child: _Pill(views[view]!),
+                      ),
+                    ),
+                    Tooltip(
+                      message: l.sortMenu,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _sortSheet(l),
+                        // The chosen rarity's colour around it while filtering.
+                        child: _Round(
+                          icon: Icons.swap_vert,
+                          ring: _tier == null ? null : [rarityColor[_tier]!],
+                        ),
+                      ),
+                    ),
+                    Tooltip(
+                      message: l.searchCollection,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => showSearch(
+                          context: context,
+                          delegate: _CollectionSearch(l.searchCollection),
+                        ),
+                        child: const _Round(icon: Icons.search),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Tooltip(
-                message: l.sortMenu,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => _sortSheet(l),
-                  // The chosen rarity's colour around it while filtering.
-                  child: _Round(
-                    icon: Icons.swap_vert,
-                    ring: _tier == null ? null : [rarityColor[_tier]!],
-                  ),
-                ),
-              ),
-              Tooltip(
-                message: l.searchCollection,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () => showSearch(
-                    context: context,
-                    delegate: _CollectionSearch(l.searchCollection),
-                  ),
-                  child: const _Round(icon: Icons.search),
-                ),
-              ),
-              const Spacer(),
               IconButton(
                 tooltip: l.trade,
                 icon: const Icon(Icons.swap_horiz),
