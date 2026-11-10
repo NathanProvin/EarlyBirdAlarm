@@ -4,8 +4,9 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 
 ## Status — 2026-11-10
 - **Live:** 1.0.0+3 in **closed testing** on Google Play, **14 active installs**, lots of constructive tester feedback. Catalog (1,292 species, 0 NC recordings, 1,212 regions) and privacy pages on GitHub Pages (`gh-pages`, ~506 MB: audio 410 MB, photos 63 MB, regions 34 MB).
-- **Plan rewritten 2026-11-10** around one bottleneck: **no accounts and no server** caps what the app can do (backup, codes, referrals, market, iOS sync). Order: **1.0.1 (lock-screen fix) → Production → Infra (domain, R2, Firebase) → 1.1 (backup, codes, shiny, variants) → 1.2 (Australia / NZ) → later (iOS, marketplace, region UI)**.
-- **Working branch:** `lock` (1.0.1).
+- **Plan rewritten 2026-11-10** around one bottleneck: **no accounts and no server** caps what the app can do (backup, codes, referrals, market, iOS sync). Order (revised 2026-11-10): **1.0.1 (lock-screen fix, tester feedback) → Infra (domain, R2, Firebase) → 1.1 (backup, codes, shiny, variants) → Production → 1.2 (Australia / NZ, heatmap) → later (iOS, marketplace, region UI)**.
+- **1.0.1 done on `lock` (2026-11-10), not deployed:** the infrastructure migration and Phase 1.1 come first; production ships with them. Next: **Infra → 1.1 → Production**.
+- **Working branch:** `lock` (1.0.1, to merge into `main` before Infra).
 
 ## Scaling vision and infrastructure
 Three layers, each with one job:
@@ -23,13 +24,12 @@ Rules that follow from it:
 - **Accounts bring obligations:** Data safety ("account ID, collection"), privacy policy rewrite (EN/FR/DE/ES), **account deletion in the app and from a web page** (Play requirement); Sign in with Apple once on iOS.
 - **Card numbers stay permanent** (`pipeline/numbers.json`): new zones and species get the next numbers.
 
-## Phase 1.0.1 — Lock-screen quiz (branch `lock`, closed-test update)
+## Phase 1.0.1 — Lock-screen quiz and tester feedback — DONE 2026-11-10 (branch `lock`, not deployed)
+Open ends moved: the domain to Infra; the full-screen declaration, the tester-phone check and the release bundle to Production.
 The alarm must show the quiz over the lock screen, screen off, on every tester's phone. Core loop first.
 - [x] (reproduced on the S22 by denying the permission, 2026-11-10; the S22's Play install had it granted) **Cause:** confirm on testers' phones (models, Android versions). Likely: Android 14+ turns the full-screen-intent permission off unless Play grants it (alarm-app declaration), plus vendor switches (Samsung sleeping apps, Xiaomi "Show on lock screen" / "Pop-up windows")
 - [x] **Alarm permissions on the onboarding's region page** (2026-11-10, user's choice, replacing a separate "Wake-up check" page, its Settings entry and its test ring): under the region pill, "Alarm permissions" lists notifications, quiz over the lock screen (Android 14+, `canUseFullScreenIntent`) and, only on brands that kill apps (Xiaomi, Huawei, Honor, Oppo, Vivo, Realme, OnePlus) while restricted, battery unrestricted (elsewhere alarm-clock alarms get through battery optimisation: hidden), each with ✓ or a Fix button that opens the right system screen (`app/lib/ui/wake.dart`); Skip on the welcome page leads there. Seen on the S22
 - [x] **Gentler ring** (testers found it harsh, 2026-11-10): the bird starts silent and rises linearly to full volume over 60 s (`ringFade`; first try 5 % over 40 s was still too harsh for the user), the phone vibrates from 40 s (`ringVibrate`) (500 ms on / off; the plugin's own vibration is off because it can only start at once). Checked on the S22: no vibration at 5 / 20 / 35 s, vibrating at 45 s; the volume ramp itself can't be read with adb, to listen to. Limit: the vibration comes from the quiz screen, so it needs the quiz to show (the permission above)
-- [ ] (S22, Android 16, 2026-11-10: **bug reproduced** with the full-screen permission denied by adb — screen stays off, only a notification; Fix opens "Alertes en plein écran", the row turns ✓ on return; with it on, the screen wakes and the quiz shows over the lock screen; the test answer saves no card and shows "Ça marche !" 3 s over the lock screen, then the phone stays locked and the screen goes off. Battery row made advice only: the S22 passed 7 nights with battery optimised. Left: a tester's phone) **Try it on the S22 and a tester's Android 14+ phone:** the onboarding page, each Fix button (full-screen screen, app info → Battery), the test ring with the screen locked (answering gives no card, snooze just stops it)
-- [ ] Play Console: **full-screen intent declaration** (alarm clock) so Play grants the permission on install
 - [x] **Tester feedback fixes** (list from the user 2026-11-10, coded the same day; seen on the S22: Alarms header, Training page with a full pile, Collection header):
   - Header shared by Alarms and Training: coffee (tips) left, gear right; Alarms: "Streak: N" pill (text, flame, bird on the right) in the middle; add-alarm button = alarm + plus icon
   - **Training** replaces Twitch / Cocheur everywhere (tab, title; the subtitle removed); the paid option is now **Early Bird Plus** (product id `twitch_plus` unchanged: rename its title in the Console), a labeled button offered even on a full pile; empty pile → countdown centered with an hourglass, else countdown at the bottom, raised
@@ -39,23 +39,26 @@ The alarm must show the quiz over the lock screen, screen off, on every tester's
   - Later rounds the same day: "World" view; Trade / Series in round outlines, the medal in the accent; one fixed-width button opens a sheet (view as a drop-down that closes it, sort, rarity as six circles); heard birds get a glass play button (small tiles and the full card, under "Try next time"); no cell name under the pin; a smaller support card ("Free, no ads, no trackers"); Plus pulses its colour and glow only; the streak pill also heads Training, Training answers count in it, no bird at 0; "Perfect week" and "Iron streak" count alarm answers only (`alarmStreak`, seeded from the 1.0.0+3 streak); Series opens on achievements, a tap shows an achievement's goal; coffee icon in the accent
 - [x] S22 check of all the feedback screens (Collection bar and sheet, heard tiles, region picker, Training header, Settings): **validated by the user (2026-11-10)**
 - [x] (2026-11-10, `app/test/upgrade_test.dart`, written from the 1.0.0+3 format; swap in a real S22 export when the phone is connected) Test: a 1.0.0+3 preferences file (cards, given, alarms, streak) loads in the new version
-- [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — so Production already has the movable address
-- [ ] Version `1.0.1+4`, release bundle, closed-test release (review: hours to ~2 days; the 14-day clock keeps running)
 
 ## Production (Google Play)
 Updates during the closed test don't reset the clock. Testers' emails go into the Play Console only, never into the repo.
 - [x] Upload 1.0.0+3 to internal testing
 - [x] Closed test track, testers' email list, opt-in link sent; testers installed from the Play Store (14 active installs on 2026-11-10)
 - [ ] **14 consecutive days with ≥ 12 opted-in testers**
-- [ ] Payments profile, the 5 products Active (`tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99, `twitch_plus` 1.99), the user's Gmail as license tester; test purchase on the S22
+- [x] Payments profile and the 5 one-time products created in the Play Console (2026-11-10): `tip_espresso` 0.99, `tip_cappuccino` 1.99, `tip_breakfast` 4.99, `tip_binoculars` 19.99 €, `twitch_plus` 1.99 € titled "Early Bird Plus" (English titles and descriptions; no icons yet)
+- [ ] The user's Gmail as license tester; test purchase from a Play install (tips page shows the 4 prices, "Thank you!"; Plus on the Training page)
+- [ ] Play Console: **full-screen intent declaration** (alarm clock) so Play grants the permission on install
+- [ ] (S22, Android 16, 2026-11-10: **bug reproduced** with the full-screen permission denied by adb — screen stays off, only a notification; Fix opens "Alertes en plein écran", the row turns ✓ on return; with it on, the screen wakes and the quiz shows over the lock screen; the test answer saves no card and shows "Ça marche !" 3 s over the lock screen, then the phone stays locked and the screen goes off. Battery row made advice only: the S22 passed 7 nights with battery optimised. Left: a tester's phone) **Then on a tester's Android 14+ phone:** the onboarding page, each Fix button (full-screen screen, app info → Battery), the test ring with the screen locked (answering gives no card, snooze just stops it)
+- [ ] Release bundle: version bump, signed bundle, upload (the first release after Infra and 1.1)
 - [ ] S22 check of the backup alarm (rooster at 3 min, strong vibration, volume locked, guess and snooze stop it, rings with the app killed)
 - [ ] Store listing (`memory/store-listing.md`, `store/`: icon, feature graphic, 5 screenshots, `store/listing-translations.txt`) and declarations: Data safety, content rating, target audience, no ads, **full-screen intent**, exact alarms
 - [ ] Alarm video for the media-playback foreground-service declaration (S22, locked screen, alarm rings, guess), unlisted YouTube
 - [ ] Export the user's collection (adb) before switching the S22 to the Play build (different signature = another app)
-- [ ] After 14 days: **Apply for production** (Dashboard), Google review up to ~7 days; production with 1.0.1, staged rollout 20 % → 100 %
+- [ ] After 14 days: **Apply for production** (Dashboard), Google review up to ~7 days; production with the Infra + 1.1 release, staged rollout 20 % → 100 %
 - [ ] README: fill `PLAY_STORE_URL`
 
 ## Phase Infra — domain, R2, Firebase (no visible app change)
+- [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — before any production release, so the hosting can change without an app update
 - [ ] **Catalog on Cloudflare R2** behind the domain (bucket + custom domain, CORS not needed for the app); `publish` syncs only changed files (rclone / wrangler) instead of the ~800 MB force-push; `gh-pages` kept as a fallback until R2 is proven, then frozen
 - [ ] Privacy pages served from the domain too (store listing link updated)
 - [ ] `species.json` re-fetched only when changed (ETag / Last-Modified); split by continent when the globe grows
