@@ -599,4 +599,43 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get backupOff => 'Kein Notfallwecker';
+
+  @override
+  String get wakeTitle => 'Weck-Check';
+
+  @override
+  String get wakeIntro =>
+      'Damit das Quiz beim Alarm erscheint, auch wenn das Handy gesperrt ist:';
+
+  @override
+  String get wakeNotifications => 'Benachrichtigungen';
+
+  @override
+  String get wakeFullScreen => 'Quiz auf dem Sperrbildschirm';
+
+  @override
+  String get wakeBattery => 'Akku: nicht eingeschränkt';
+
+  @override
+  String get wakeFix => 'Beheben';
+
+  @override
+  String get wakeTest => 'Testen: Sperr dein Handy';
+
+  @override
+  String get wakeTestSoon =>
+      'Sperr jetzt dein Handy: Der Alarm klingelt in 10 Sekunden.';
+
+  @override
+  String get wakeTestDone => 'Es klappt! Deine Alarme zeigen das Quiz.';
+
+  @override
+  String get wakeMissing =>
+      'Ohne das kann ein Alarm klingeln, ohne das Quiz zu zeigen.';
+
+  @override
+  String get wakeOk => 'OK';
+
+  @override
+  String get wakeNotOk => 'Fehlt';
 }

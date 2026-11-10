@@ -26,11 +26,12 @@ Rules that follow from it:
 ## Phase 1.0.1 — Lock-screen quiz (branch `lock`, closed-test update)
 The alarm must show the quiz over the lock screen, screen off, on every tester's phone. Core loop first.
 - [ ] **Cause:** confirm on testers' phones (models, Android versions). Likely: Android 14+ turns the full-screen-intent permission off unless Play grants it (alarm-app declaration), plus vendor switches (Samsung sleeping apps, Xiaomi "Show on lock screen" / "Pop-up windows")
-- [ ] **Wake-up check** onboarding page before "Let's go": one row per requirement with ✓ or "Fix" (opens the right system screen): notifications, full-screen alarms (Android 14+, `canUseFullScreenIntent`), battery unrestricted; then **"Test it: lock your phone"** rings a short test alarm 10 s later so the user sees the quiz on the lock screen
-- [ ] Same page reachable from Settings (like "See the introduction again")
+- [x] (coded 2026-11-10, `app/lib/ui/wake.dart`; last onboarding page, **Skip leads to it**; not yet tried on a phone) **Wake-up check** onboarding page before "Let's go": one row per requirement with ✓ or "Fix" (opens the right system screen): notifications, full-screen alarms (Android 14+, `canUseFullScreenIntent`), battery unrestricted; then **"Test it: lock your phone"** rings a short test alarm 10 s later so the user sees the quiz on the lock screen
+- [x] (2026-11-10) Same page reachable from Settings (like "See the introduction again")
+- [ ] **Try it on the S22 and a tester's Android 14+ phone:** the onboarding page, each Fix button (full-screen screen, app info → Battery), the test ring with the screen locked (answering gives no card, snooze just stops it)
 - [ ] Play Console: **full-screen intent declaration** (alarm clock) so Play grants the permission on install
 - [ ] Tester feedback fixes (list to collect from the user)
-- [ ] Test: a 1.0.0+3 preferences file (cards, given, alarms, streak) loads in the new version
+- [x] (2026-11-10, `app/test/upgrade_test.dart`, written from the 1.0.0+3 format; swap in a real S22 export when the phone is connected) Test: a 1.0.0+3 preferences file (cards, given, alarms, streak) loads in the new version
 - [ ] **Buy the domain**, point it at GitHub Pages first (CNAME), set `baseUrl` to it — so Production already has the movable address
 - [ ] Version `1.0.1+4`, release bundle, closed-test release (review: hours to ~2 days; the 14-day clock keeps running)
 

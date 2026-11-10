@@ -1,11 +1,16 @@
 package com.nathanprovin.earlybird
 
+import android.app.NotificationManager
+import android.content.Intent
 import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
+import android.os.PowerManager
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -58,6 +63,39 @@ class MainActivity : FlutterActivity() {
                     vibrator.cancel()
                 }
                 result.success(null)
+            }
+        // Wake-up check: Android 14+ only shows the quiz over the lock screen with the
+        // full-screen permission, which is off unless Play grants it or the user does.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/wake")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "fullScreen" -> result.success(
+                        Build.VERSION.SDK_INT < 34 ||
+                            getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+                    )
+                    "fixFullScreen" -> {
+                        val page = Uri.parse("package:$packageName")
+                        try {
+                            startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, page))
+                        } catch (e: Exception) {
+                            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, page))
+                        }
+                        result.success(null)
+                    }
+                    // Read directly: permission_handler would need the restricted
+                    // REQUEST_IGNORE_BATTERY_OPTIMIZATIONS permission just to read it.
+                    "battery" -> result.success(
+                        getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(packageName)
+                    )
+                    "fixBattery" -> {
+                        // App info: Battery → Unrestricted (the wording varies by brand).
+                        startActivity(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        )
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
             }
         // The app version for the Credits screen.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/version")

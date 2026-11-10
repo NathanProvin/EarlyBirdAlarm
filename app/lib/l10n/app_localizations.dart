@@ -1175,6 +1175,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No backup alarm'**
   String get backupOff;
+
+  /// No description provided for @wakeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wake-up check'**
+  String get wakeTitle;
+
+  /// No description provided for @wakeIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'So the quiz shows up when an alarm rings, even with the phone locked:'**
+  String get wakeIntro;
+
+  /// No description provided for @wakeNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get wakeNotifications;
+
+  /// No description provided for @wakeFullScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz over the lock screen'**
+  String get wakeFullScreen;
+
+  /// No description provided for @wakeBattery.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery: unrestricted'**
+  String get wakeBattery;
+
+  /// No description provided for @wakeFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix'**
+  String get wakeFix;
+
+  /// No description provided for @wakeTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test it: lock your phone'**
+  String get wakeTest;
+
+  /// No description provided for @wakeTestSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock your phone now: the alarm rings in 10 seconds.'**
+  String get wakeTestSoon;
+
+  /// No description provided for @wakeTestDone.
+  ///
+  /// In en, this message translates to:
+  /// **'It works! Your alarms will show the quiz.'**
+  String get wakeTestDone;
+
+  /// No description provided for @wakeMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Without these, an alarm can ring without showing the quiz.'**
+  String get wakeMissing;
+
+  /// No description provided for @wakeOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get wakeOk;
+
+  /// No description provided for @wakeNotOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing'**
+  String get wakeNotOk;
 }
 
 class _AppLocalizationsDelegate

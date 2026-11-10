@@ -178,5 +178,17 @@
   "gyro": "Gyro",
   "gyroHint": "Les cartes s’inclinent quand tu bouges le téléphone",
   "backupMinutes": "Réveil de secours après {minutes} min",
-  "backupOff": "Pas de réveil de secours"
+  "backupOff": "Pas de réveil de secours",
+  "wakeTitle": "Test du réveil",
+  "wakeIntro": "Pour que le quiz s'affiche quand une alarme sonne, même téléphone verrouillé :",
+  "wakeNotifications": "Notifications",
+  "wakeFullScreen": "Quiz sur l'écran verrouillé",
+  "wakeBattery": "Batterie : non restreinte",
+  "wakeFix": "Corriger",
+  "wakeTest": "Tester : verrouillez votre téléphone",
+  "wakeTestSoon": "Verrouillez votre téléphone : l'alarme sonne dans 10 secondes.",
+  "wakeTestDone": "Ça marche ! Vos alarmes afficheront le quiz.",
+  "wakeMissing": "Sans cela, une alarme peut sonner sans afficher le quiz.",
+  "wakeOk": "OK",
+  "wakeNotOk": "Manquant"
 }

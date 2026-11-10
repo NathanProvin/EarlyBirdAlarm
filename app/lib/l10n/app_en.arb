@@ -228,5 +228,17 @@
   "gyroHint": "Cards tilt as you move the phone",
   "backupMinutes": "Backup alarm after {minutes} min",
   "@backupMinutes": {"placeholders": {"minutes": {"type": "int"}}},
-  "backupOff": "No backup alarm"
+  "backupOff": "No backup alarm",
+  "wakeTitle": "Wake-up check",
+  "wakeIntro": "So the quiz shows up when an alarm rings, even with the phone locked:",
+  "wakeNotifications": "Notifications",
+  "wakeFullScreen": "Quiz over the lock screen",
+  "wakeBattery": "Battery: unrestricted",
+  "wakeFix": "Fix",
+  "wakeTest": "Test it: lock your phone",
+  "wakeTestSoon": "Lock your phone now: the alarm rings in 10 seconds.",
+  "wakeTestDone": "It works! Your alarms will show the quiz.",
+  "wakeMissing": "Without these, an alarm can ring without showing the quiz.",
+  "wakeOk": "OK",
+  "wakeNotOk": "Missing"
 }

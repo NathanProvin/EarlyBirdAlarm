@@ -597,4 +597,43 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get backupOff => 'Sin alarma de respaldo';
+
+  @override
+  String get wakeTitle => 'Prueba del despertador';
+
+  @override
+  String get wakeIntro =>
+      'Para que el quiz aparezca cuando suene una alarma, incluso con el móvil bloqueado:';
+
+  @override
+  String get wakeNotifications => 'Notificaciones';
+
+  @override
+  String get wakeFullScreen => 'Quiz en la pantalla de bloqueo';
+
+  @override
+  String get wakeBattery => 'Batería: sin restricciones';
+
+  @override
+  String get wakeFix => 'Arreglar';
+
+  @override
+  String get wakeTest => 'Pruébalo: bloquea el móvil';
+
+  @override
+  String get wakeTestSoon =>
+      'Bloquea el móvil ahora: la alarma suena en 10 segundos.';
+
+  @override
+  String get wakeTestDone => '¡Funciona! Tus alarmas mostrarán el quiz.';
+
+  @override
+  String get wakeMissing =>
+      'Sin esto, una alarma puede sonar sin mostrar el quiz.';
+
+  @override
+  String get wakeOk => 'OK';
+
+  @override
+  String get wakeNotOk => 'Falta';
 }

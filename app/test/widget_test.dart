@@ -19,6 +19,7 @@ import 'package:early_bird/ui/region.dart';
 import 'package:early_bird/ui/settings.dart';
 import 'package:early_bird/ui/tips.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -846,7 +847,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('onboarding: pages, Next, Skip marks it seen', (tester) async {
+  testWidgets('onboarding: pages, Next, Skip leads to the Wake-up check', (
+    tester,
+  ) async {
+    // The Wake-up check reads Android: the full-screen permission is missing here.
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('early_bird/wake'),
+      (call) async => call.method == 'fullScreen' ? false : true,
+    );
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('flutter.baseflow.com/permissions/methods'),
+      (call) async => 1, // granted
+    );
     SharedPreferences.setMockInitialValues({});
     store = await Store.load();
     expect(store.onboarded, isFalse);
@@ -871,6 +884,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Choose a region'), findsOneWidget);
     await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+    expect(store.onboarded, isFalse); // Skip doesn't skip the Wake-up check
+    expect(find.text('Wake-up check'), findsOneWidget);
+    expect(find.text('Fix'), findsOneWidget); // only the full-screen row
+    await tester.tap(find.text('Start'));
     await tester.pumpAndSettle();
     expect(store.onboarded, isTrue);
     expect(find.text('open'), findsOneWidget); // back where it started

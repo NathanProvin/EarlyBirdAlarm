@@ -8,6 +8,7 @@ import 'credits.dart';
 import 'onboarding.dart';
 import 'region.dart';
 import 'theme.dart';
+import 'wake.dart';
 import 'tips.dart';
 
 /// "Phone": a little phone, its left half the light theme with a sun, its right half
@@ -313,6 +314,17 @@ class SettingsScreen extends StatelessWidget {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const OnboardingScreen(),
+                ),
+              ),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l.wakeTitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const WakeCheckScreen(),
                 ),
               ),
             ),

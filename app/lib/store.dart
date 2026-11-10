@@ -60,6 +60,9 @@ class AlarmData {
 /// answers (see Store.save). Alarm ids stay far below this offset.
 int backupId(int id) => id + backupOffset;
 const backupOffset = 100000;
+
+/// The Wake-up check's test ring (see Store.testRing): no card, no streak.
+const testAlarmId = backupOffset - 1;
 const roosterAsset = 'assets/rooster.m4a'; // credit: l10n creditsBody
 
 /// The alarm a ringing id belongs to: itself, or the one it backs up.
@@ -337,6 +340,20 @@ class Store extends ChangeNotifier {
     final at = nextRing(a, DateTime.now());
     final (bird, rec) = pickNext(at);
     await _schedule(a, at, bird.id, rec.file, notificationTitle);
+  }
+
+  /// The Wake-up check: the next bird rings in 10 s, so the user sees the quiz show up
+  /// over the lock screen. Answering it gives no card (see RingScreen).
+  Future<void> testRing(String notificationTitle) async {
+    final at = DateTime.now().add(const Duration(seconds: 10));
+    final (bird, rec) = pickNext(at);
+    final test = AlarmData(
+      id: testAlarmId,
+      hour: at.hour,
+      minute: at.minute,
+      backupMinutes: 0,
+    );
+    await _schedule(test, at, bird.id, rec.file, notificationTitle);
   }
 
   /// Sets alarm [a] to ring at [at] with [birdId]'s recording [recFile], and its backup.

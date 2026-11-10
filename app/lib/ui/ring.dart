@@ -112,6 +112,7 @@ class _RingScreenState extends State<RingScreen> {
     // The answer stays on screen for 2 s, while the guess is saved.
     final shown = Future<void>.delayed(const Duration(seconds: 2));
     if (widget.alarm case final alarm?) {
+      if (alarm.id == testAlarmId) return _testDone(alarm);
       await _lockScreen.invokeMethod<void>('hold', true);
       _stopBuzz();
       await store.stopRing(alarm.id);
@@ -147,8 +148,19 @@ class _RingScreenState extends State<RingScreen> {
     );
   }
 
+  /// The Wake-up check's test ring: stop it, say it works, no card.
+  Future<void> _testDone(AlarmSettings alarm) async {
+    await store.stopRing(alarm.id);
+    if (!mounted) return;
+    final l = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l.wakeTestDone)));
+    Navigator.of(context).pop();
+  }
+
   Future<void> _snooze() async {
     final alarm = widget.alarm!;
+    if (alarm.id == testAlarmId) return _testDone(alarm);
     if (_tapped != null) return;
     _stopBuzz();
     await store.snooze(alarm); // the same bird again, and its backup

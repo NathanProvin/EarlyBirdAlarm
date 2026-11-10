@@ -9,10 +9,11 @@ import 'booster.dart';
 import 'card.dart';
 import 'settings.dart';
 import 'theme.dart';
+import 'wake.dart';
 
 /// The introduction, shown once on first launch (and from Settings): what the app is,
-/// the region, the game options, the collection features, and a card to hold and tilt.
-/// Skip or finish marks it seen.
+/// the region, the game options, the collection features, a card to hold and tilt, and
+/// the Wake-up check. Skip jumps to the Wake-up check; finishing marks it seen.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -21,7 +22,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pages = 6;
+  static const _pages = 7;
   final _pager = PageController();
   int _page = 0;
 
@@ -166,6 +167,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         title: l.introExamineTitle,
                         body: [Text(l.introExamine)],
                       ),
+                      // Last, and where Skip leads: an alarm that can't show the quiz
+                      // over the lock screen breaks the whole app.
+                      _Page(
+                        top: Icon(
+                          Icons.alarm_on,
+                          size: 96,
+                          color: scheme.primary,
+                        ),
+                        title: l.wakeTitle,
+                        body: const [WakeCheck()],
+                      ),
                     ],
                   ),
                 ),
@@ -196,7 +208,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Row(
                     children: [
                       if (!last)
-                        TextButton(onPressed: _finish, child: Text(l.skip)),
+                        TextButton(
+                          onPressed: () => _pager.jumpToPage(_pages - 1),
+                          child: Text(l.skip),
+                        ),
                       const Spacer(),
                       FilledButton(
                         // The theme's buttons are full width (Size.fromHeight): not here.
