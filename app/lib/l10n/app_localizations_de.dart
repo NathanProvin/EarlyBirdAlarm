@@ -624,4 +624,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get addAlarm => 'Wecker hinzufügen';
+
+  @override
+  String get supportNudge =>
+      'Gefällt dir Early Bird? Spendier mir einen Kaffee';
 }

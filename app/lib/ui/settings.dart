@@ -181,6 +181,31 @@ class SettingsScreen extends StatelessWidget {
             24 + MediaQuery.paddingOf(context).bottom,
           ),
           children: [
+            // First, where testers will see it (2026-11-10): the pitch and one button.
+            Card(
+              margin: const EdgeInsets.only(bottom: 18),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(l.support, style: header),
+                    const SizedBox(height: 6),
+                    Text(l.tipsNote),
+                    const SizedBox(height: 12),
+                    FilledButton.tonalIcon(
+                      icon: const Icon(Icons.coffee_outlined),
+                      label: Text(l.tipsTile),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const TipsScreen(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             Text(l.region, style: header),
             const SizedBox(height: 8),
             const RegionPill(),
@@ -282,17 +307,6 @@ class SettingsScreen extends StatelessWidget {
                 ])
                   Expanded(child: _ThemeSwatch(value, label)),
               ],
-            ),
-            const SizedBox(height: 18),
-            Text(l.support, style: header),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(l.tipsTile),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const TipsScreen()),
-              ),
             ),
             const SizedBox(height: 18),
             Text(l.credits, style: header),

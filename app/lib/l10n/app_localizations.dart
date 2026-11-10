@@ -1223,6 +1223,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add an alarm'**
   String get addAlarm;
+
+  /// No description provided for @supportNudge.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying Early Bird? Buy me a coffee'**
+  String get supportNudge;
 }
 
 class _AppLocalizationsDelegate

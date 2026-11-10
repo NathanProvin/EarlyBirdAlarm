@@ -622,4 +622,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get addAlarm => 'Ajouter une alarme';
+
+  @override
+  String get supportNudge => 'Early Bird vous plaît ? Offrez-moi un café';
 }

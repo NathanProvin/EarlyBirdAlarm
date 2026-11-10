@@ -16,6 +16,7 @@ import 'package:early_bird/ui/collection.dart';
 import 'package:early_bird/ui/gyro.dart';
 import 'package:early_bird/ui/onboarding.dart';
 import 'package:early_bird/ui/region.dart';
+import 'package:early_bird/ui/ring.dart';
 import 'package:early_bird/ui/settings.dart';
 import 'package:early_bird/ui/tips.dart';
 import 'package:early_bird/ui/twitch.dart';
@@ -947,6 +948,53 @@ void main() {
       expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
       expect(find.textContaining(':'), findsOneWidget); // the countdown, once
       await tester.pumpWidget(const SizedBox()); // stops the pile's animations
+    },
+  );
+
+  testWidgets(
+    'reveal: review asked once from 15 cards, support line once from 30',
+    (tester) async {
+      final asked = <String>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('dev.britannio.in_app_review'),
+        (call) async => asked.add(call.method),
+      );
+      // The store set by the onboarding test above (it can be set only once).
+      while (store.cards.length < 30) {
+        await store.answered(null, _b('robin'), null, true, '');
+      }
+      Future<void> reveal() async {
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        RevealScreen(bird: _b('robin'), card: store.cards.last),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+      }
+
+      await reveal();
+      expect(find.text('Enjoying Early Bird? Buy me a coffee'), findsOneWidget);
+      await tester.tap(find.byTooltip('Done'));
+      await tester.pumpAndSettle();
+      expect(asked, ['requestReview']);
+      await reveal();
+      expect(find.text('Enjoying Early Bird? Buy me a coffee'), findsNothing);
+      await tester.tap(find.byTooltip('Done'));
+      await tester.pumpAndSettle();
+      expect(asked, ['requestReview']); // not again
     },
   );
 

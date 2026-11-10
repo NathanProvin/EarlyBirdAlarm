@@ -236,5 +236,6 @@
   "wakeOk": "OK",
   "wakeNotOk": "Missing",
   "alarmPermissions": "Alarm permissions",
-  "addAlarm": "Add an alarm"
+  "addAlarm": "Add an alarm",
+  "supportNudge": "Enjoying Early Bird? Buy me a coffee"
 }

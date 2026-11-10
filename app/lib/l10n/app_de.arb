@@ -186,5 +186,6 @@
   "wakeOk": "OK",
   "wakeNotOk": "Fehlt",
   "alarmPermissions": "Weck-Berechtigungen",
-  "addAlarm": "Wecker hinzufügen"
+  "addAlarm": "Wecker hinzufügen",
+  "supportNudge": "Gefällt dir Early Bird? Spendier mir einen Kaffee"
 }

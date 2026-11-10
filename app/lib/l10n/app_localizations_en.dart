@@ -620,4 +620,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addAlarm => 'Add an alarm';
+
+  @override
+  String get supportNudge => 'Enjoying Early Bird? Buy me a coffee';
 }

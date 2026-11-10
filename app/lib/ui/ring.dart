@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:in_app_review/in_app_review.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../birds.dart';
@@ -16,6 +17,7 @@ import '../store.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
+import 'tips.dart';
 
 // See MainActivity.kt: true keeps the app over the lock screen after the alarm stops.
 const _lockScreen = MethodChannel('early_bird/lock_screen');
@@ -616,6 +618,18 @@ class RevealScreen extends StatelessWidget {
     final card = this.card;
     final cards = store.cards;
     final copies = cards.where((c) => c.birdId == bird.id).length;
+    final nudge = card != null && cards.length >= 30 && !store.supportNudged;
+    // A natural break: Google decides whether its review sheet shows (never on a
+    // sideloaded build). No question of ours first: Play forbids gating reviews.
+    void close() {
+      if (nudge) store.supportNudged = true;
+      if (card != null && cards.length >= 15 && !store.reviewAsked) {
+        store.reviewAsked = true;
+        unawaited(InAppReview.instance.requestReview());
+      }
+      Navigator.of(context).pop();
+    }
+
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) _lockScreen.invokeMethod<void>('hold', false);
@@ -628,7 +642,7 @@ class RevealScreen extends StatelessWidget {
               bird: bird,
               card: card,
               recording: recording,
-              onClose: () => Navigator.of(context).pop(),
+              onClose: close,
               flipIn: card != null,
               header: Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -647,6 +661,23 @@ class RevealScreen extends StatelessWidget {
                       Text(
                         streakLost ? l.streakLost : l.streak(store.streak),
                         style: text.bodySmall,
+                      ),
+                    if (nudge)
+                      TextButton.icon(
+                        // The theme's buttons are full width (Size.fromHeight): not here.
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                        ),
+                        icon: const Icon(Icons.coffee_outlined),
+                        label: Text(l.supportNudge),
+                        onPressed: () {
+                          store.supportNudged = true;
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const TipsScreen(),
+                            ),
+                          );
+                        },
                       ),
                   ],
                 ),

@@ -235,6 +235,13 @@ class Store extends ChangeNotifier {
   set onboarded(bool on) =>
       _prefs.setBool('onboarded', on).then((_) => notifyListeners());
 
+  /// Closing a card reveal asks Google's in-app review once, from 15 cards, and the
+  /// reveal shows a support line once, from 30 cards (decided 2026-11-10).
+  bool get reviewAsked => _prefs.getBool('reviewAsked') ?? false;
+  set reviewAsked(bool on) => _prefs.setBool('reviewAsked', on);
+  bool get supportNudged => _prefs.getBool('supportNudged') ?? false;
+  set supportNudged(bool on) => _prefs.setBool('supportNudged', on);
+
   /// Cards and boosters lean as the phone moves (ui/gyro.dart).
   bool get gyro => _prefs.getBool('gyro') ?? true;
   set gyro(bool on) =>

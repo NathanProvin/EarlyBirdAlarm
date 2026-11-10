@@ -186,5 +186,6 @@
   "wakeOk": "OK",
   "wakeNotOk": "Manquant",
   "alarmPermissions": "Autorisations du réveil",
-  "addAlarm": "Ajouter une alarme"
+  "addAlarm": "Ajouter une alarme",
+  "supportNudge": "Early Bird vous plaît ? Offrez-moi un café"
 }
