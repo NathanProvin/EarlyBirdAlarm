@@ -1,0 +1,24 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "earlybird-alarm",
+          "appId": "1:23183644227:android:0f1f4e503dc6fc428426f6",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "earlybird-alarm",
+          "configurations": {
+            "android": "1:23183644227:android:0f1f4e503dc6fc428426f6"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

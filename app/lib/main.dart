@@ -5,6 +5,7 @@ import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'account.dart';
 import 'content.dart';
 import 'l10n/app_localizations.dart';
 import 'purchases.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
   unawaited(store.sync());
   unawaited(store.healAlarms());
   unawaited(initPurchases());
+  unawaited(signInQuietly());
   runApp(
     ListenableBuilder(
       listenable: store,

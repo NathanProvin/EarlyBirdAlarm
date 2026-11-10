@@ -63,7 +63,12 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] S22 check (2026-11-10): a profile build with the region list made stale re-downloaded `species.json`, `regions.json`, `series.json` and `regions/N48E002.json` from R2 (same MD5 as the bucket), prefs unchanged
 - [x] (2026-11-10) Privacy pages at `https://cdn.earlybirdalarm.app/privacy.html` (text names Cloudflare); URL changed in the Play Console, README and `memory/store-listing.md`
 - [ ] `species.json` re-fetched only when changed (ETag / Last-Modified); split by continent when the globe grows
-- [ ] **Firebase project** (`earlybird`, EU region): Auth (anonymous + Google), Firestore with security rules (a player reads and writes only their own documents), FlutterFire config for Android; plan details to discuss with the user
+- [x] (2026-11-10) **Firebase project** `earlybird-alarm` (Spark, no Analytics): Firestore `(default)` in `europe-west1`; Auth anonymous + Google; Android app with 7 fingerprints (debug, upload, Play signing keys incl. hybrid); CLI logged in on the PC
+- [x] (2026-11-10) FlutterFire config for Android (`firebase_core` 5.1.0, `firebase_auth` 7.0.1); `google-services.json` and `firebase_options.dart` git-ignored (API key, public repo), regenerate from `app/` with `flutterfire configure --project=earlybird-alarm --platforms=android --android-package-name=com.nathanprovin.earlybird --yes` (FlutterFire CLI in `.tools/pub-cache/bin`)
+- [x] (2026-11-10) Firestore rules (`app/firestore.rules`: own `players/{uid}` only, all else closed), deployed; live check `py -I app/firestore_rules_check.py`: 9 / 9 ok (two throwaway anonymous accounts, deleted after)
+- [x] (2026-11-10) Silent anonymous sign-in at launch (`app/lib/account.dart`, never awaited: offline the app works as before)
+- [ ] S22 check: a profile build creates an anonymous user (Authentication → Users)
+- [ ] Restrict the Firebase API key in Google Cloud (Android apps: package + SHA-1s) once Google sign-in works
 - [ ] Account deletion: in Settings + a web page on the domain
 - [ ] Privacy policy (4 languages) and Data safety rewritten for accounts
 

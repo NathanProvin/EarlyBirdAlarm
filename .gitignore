@@ -6,3 +6,6 @@ __pycache__/
 pipeline/site/
 keys/
 app/android/key.properties
+# Firebase config with the project's API key (regenerate: see firestore_rules_check.py / roadmap Infra)
+app/android/app/google-services.json
+app/lib/firebase_options.dart

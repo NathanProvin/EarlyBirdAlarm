@@ -1,0 +1,11 @@
+rules_version = '2';
+// Deploy from app/:  firebase deploy --only firestore:rules --project earlybird-alarm
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // A player reads and writes only their own document (the collection backup, Phase 1.1).
+    match /players/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    // Everything else stays closed; codes and redemptions get their rules with Phase 1.1.
+  }
+}
