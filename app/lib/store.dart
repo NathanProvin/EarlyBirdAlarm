@@ -169,8 +169,18 @@ class Store extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The longest streak ever (for the "Perfect week" achievement).
+  /// The longest streak ever (alarms and Training).
   int get bestStreak => max(_prefs.getInt('bestStreak') ?? 0, streak);
+
+  /// Alarm answers only, for the streak achievements ("Perfect week", "Iron streak"):
+  /// Training would make them too easy (decided 2026-11-10). Until 1.0.1 the streak was
+  /// alarms only, so the old values seed these.
+  int get alarmStreak =>
+      _prefs.getInt('alarmStreak') ?? _prefs.getInt('streak') ?? 0;
+  int get bestAlarmStreak => max(
+    _prefs.getInt('bestAlarmStreak') ?? _prefs.getInt('bestStreak') ?? 0,
+    alarmStreak,
+  );
 
   /// Series and achievements already collected ("region:id" for series, the id for
   /// achievements). Before 2026-10-31 completing one gave a Twitch booster at once; those
@@ -185,7 +195,7 @@ class Store extends ChangeNotifier {
 
   /// Anything to collect on the Series screen (a dot on its button).
   bool get anyClaimable =>
-      seriesStates(birds, achievementCards, bestStreak).any(claimable);
+      seriesStates(birds, achievementCards, bestAlarmStreak).any(claimable);
 
   /// Collects a completed series or achievement: a card of its guaranteed [SeriesState.reward]
   /// rarity, of one of the series' birds (an achievement: a bird drafted as for a ring).
@@ -527,6 +537,14 @@ class Store extends ChangeNotifier {
     bool correct,
     String notificationTitle,
   ) async {
+    // Seeded from the old keys on the first answer of any kind, before 'streak' changes.
+    final best = bestAlarmStreak, current = alarmStreak;
+    await _prefs.setInt('bestAlarmStreak', best); // before a miss resets it
+    if (alarmId != null) {
+      await _prefs.setInt('alarmStreak', correct ? current + 1 : 0);
+    } else if (!_prefs.containsKey('alarmStreak')) {
+      await _prefs.setInt('alarmStreak', current);
+    }
     // Alarms and Training both count (decided 2026-11-10).
     await _prefs.setInt(
       'bestStreak',

@@ -390,9 +390,11 @@ void main() {
     expect(card, isNotNull);
     expect(s.cards.length, 1);
     expect(s.streak, 4);
+    expect(s.alarmStreak, 3); // achievements: alarms only, seeded from 1.0.0+3
     await s.answered(null, _b('robin'), null, false, '');
     expect(s.streak, 0);
     expect(s.bestStreak, 4);
+    expect((s.alarmStreak, s.bestAlarmStreak), (3, 3));
     expect(s.heard, {'robin'});
   });
 

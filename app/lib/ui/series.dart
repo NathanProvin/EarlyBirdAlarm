@@ -83,7 +83,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
     final states = seriesStates(
       birds,
       store.achievementCards,
-      store.bestStreak,
+      store.bestAlarmStreak,
     );
     // One page per group (the families take two), 6 badges at most per page.
     final pages = [
