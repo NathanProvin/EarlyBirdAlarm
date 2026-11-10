@@ -95,18 +95,21 @@ class _CollectionScreenState extends State<CollectionScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l.viewMenu, style: title),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
+              // Choosing a view closes the sheet: the collection shows at once.
+              DropdownButton<String>(
+                isExpanded: true,
+                value: view(),
+                items: [
                   for (final MapEntry(:key, value: label) in views.entries)
-                    ChoiceChip(
-                      label: Text(label),
-                      selected: view() == key,
-                      onSelected: (_) => set(() => _view = key),
+                    DropdownMenuItem(
+                      value: key,
+                      child: Text(label, overflow: TextOverflow.ellipsis),
                     ),
                 ],
+                onChanged: (v) {
+                  setState(() => _view = v);
+                  Navigator.of(context).pop();
+                },
               ),
               const SizedBox(height: 16),
               Text(l.sortMenu, style: title),
@@ -129,26 +132,25 @@ class _CollectionScreenState extends State<CollectionScreen> {
               const SizedBox(height: 16),
               Text(l.rarityMenu, style: title),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              // Six circles: all (empty), then each rarity; the choice named below.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ChoiceChip(
-                    label: Text(l.allRarities),
-                    selected: _tier == null,
-                    onSelected: (_) => set(() => _tier = null),
-                  ),
-                  for (final t in tiers)
-                    ChoiceChip(
-                      avatar: CircleAvatar(
-                        radius: 7,
-                        backgroundColor: rarityColor[t],
-                      ),
-                      label: Text(rarityName(l, t)),
+                  for (final t in [null, ...tiers])
+                    _RarityDot(
+                      color: t == null ? null : rarityColor[t],
+                      label: t == null ? l.allRarities : rarityName(l, t),
                       selected: _tier == t,
-                      onSelected: (_) => set(() => _tier = t),
+                      onTap: () => set(() => _tier = t),
                     ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  _tier == null ? l.allRarities : rarityName(l, _tier!),
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
               ),
             ],
           ),
@@ -531,6 +533,57 @@ class _CollectionSearch extends SearchDelegate<void> {
   }
 }
 
+/// One rarity choice in the filter: a filled circle in [color], or an empty one for
+/// all; the chosen one gets a ring.
+class _RarityDot extends StatelessWidget {
+  const _RarityDot({
+    required this.color,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+  final Color? color;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: selected ? scheme.onSurface : Colors.transparent,
+              width: 2.5,
+            ),
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color,
+              border: color == null
+                  ? Border.all(color: scheme.outline, width: 2.5)
+                  : null,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A 40 dp round header button: an outline in the theme's colour around [icon].
 class _Round extends StatelessWidget {
   const _Round({required this.icon, this.color});
@@ -730,7 +783,13 @@ class _CardDetailState extends State<CardDetail> {
                         child: _flip(
                           RepaintBoundary(
                             key: _boundary,
-                            child: BirdCardView(bird: bird, card: card),
+                            child: BirdCardView(
+                              bird: bird,
+                              card: card,
+                              play: card == null
+                                  ? widget.recording?.file ?? playableFile(bird)
+                                  : null,
+                            ),
                           ),
                         ),
                       ),

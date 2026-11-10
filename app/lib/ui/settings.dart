@@ -183,17 +183,21 @@ class SettingsScreen extends StatelessWidget {
           children: [
             // First, where testers will see it (2026-11-10): the pitch and one button.
             Card(
-              margin: const EdgeInsets.only(bottom: 18),
+              margin: const EdgeInsets.only(bottom: 12),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(l.support, style: header),
                     const SizedBox(height: 6),
                     Text(l.supportShort),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     FilledButton.tonalIcon(
+                      // Lower than the theme's buttons: the themes row stays on screen.
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(40),
+                      ),
                       icon: const Icon(Icons.coffee_outlined),
                       label: Text(l.tipsTile),
                       onPressed: () => Navigator.of(context).push(

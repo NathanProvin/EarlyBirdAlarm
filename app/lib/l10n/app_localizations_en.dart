@@ -298,7 +298,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewMenu => 'Choose the view';
 
   @override
-  String get rarityMenu => 'Filter by rarity';
+  String get rarityMenu => 'Rarity';
 
   @override
   String get lookingForBirder => 'Looking for a birder nearby…';
@@ -628,7 +628,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewWorld => 'World';
 
   @override
-  String get sortMenu => 'Sort and filter';
+  String get sortMenu => 'Sort';
 
   @override
   String get sortNumber => 'Number';

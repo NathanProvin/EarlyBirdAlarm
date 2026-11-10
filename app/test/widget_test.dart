@@ -1048,9 +1048,12 @@ void main() {
     await tester.tap(find.text('Name'));
     await tester.pumpAndSettle();
     expect(ids(), [for (final b in birds) b.id]..sort());
-    // Every bird of the world.
-    await tester.tap(find.textContaining('World ('));
+    // Every bird of the world: picked in the drop-down, which closes the sheet.
+    await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('World (').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(DropdownButton<String>), findsNothing);
     expect(ids().length, species.length);
     store.region = null;
   });

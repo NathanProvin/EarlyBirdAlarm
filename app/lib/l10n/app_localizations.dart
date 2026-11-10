@@ -639,7 +639,7 @@ abstract class AppLocalizations {
   /// No description provided for @rarityMenu.
   ///
   /// In en, this message translates to:
-  /// **'Filter by rarity'**
+  /// **'Rarity'**
   String get rarityMenu;
 
   /// No description provided for @lookingForBirder.
@@ -1239,7 +1239,7 @@ abstract class AppLocalizations {
   /// No description provided for @sortMenu.
   ///
   /// In en, this message translates to:
-  /// **'Sort and filter'**
+  /// **'Sort'**
   String get sortMenu;
 
   /// No description provided for @sortNumber.

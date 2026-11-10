@@ -25,9 +25,11 @@ String rarityName(AppLocalizations l, String tier) => switch (tier) {
 /// The full trading card. Without [card] the bird is only "heard": a grey, blurred card
 /// showing just its name and "Try next time!".
 class BirdCardView extends StatelessWidget {
-  const BirdCardView({required this.bird, this.card, super.key});
+  const BirdCardView({required this.bird, this.card, this.play, super.key});
   final Bird bird;
   final CardData? card;
+  final String?
+  play; // a heard card's recording: a play button under "Try next time"
 
   @override
   Widget build(BuildContext context) => Theme(
@@ -222,6 +224,10 @@ class BirdCardView extends StatelessWidget {
                                       l.tryNextTime,
                                       style: text.titleMedium,
                                     ),
+                                    if (play case final file?) ...[
+                                      const SizedBox(height: 12),
+                                      PlayButton(file, glass: true),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -686,6 +692,11 @@ String kindName(AppLocalizations l, String kind) => switch (kind) {
   _ => l.alarmCall,
 };
 
+/// A recording of [bird] to play: one on the phone if any, else the first (streamed).
+String? playableFile(Bird bird) =>
+    (bird.recordings.where(onPhone).firstOrNull ?? bird.recordings.firstOrNull)
+        ?.file;
+
 /// Plays a catalog recording from the start: from the phone, or streamed from the
 /// catalog if it's not there.
 Future<void> playRecording(AudioPlayer player, String file) async {
@@ -708,10 +719,17 @@ Future<void> playRecording(AudioPlayer player, String file) async {
 /// Plays [file]; a round filled button in [color], or with [glass] a bigger frosted one
 /// (on heard birds' tiles, to train on the songs that were missed).
 class PlayButton extends StatefulWidget {
-  const PlayButton(this.file, {this.color, this.glass = false, super.key});
+  const PlayButton(
+    this.file, {
+    this.color,
+    this.glass = false,
+    this.small = false,
+    super.key,
+  });
   final String file;
   final Color? color;
   final bool glass;
+  final bool small; // a smaller glass button (the collection's small tiles)
 
   @override
   State<PlayButton> createState() => _PlayButtonState();
@@ -752,8 +770,8 @@ class _PlayButtonState extends State<PlayButton> {
               child: IconButton(
                 tooltip: tooltip,
                 onPressed: _toggle,
-                iconSize: 36,
-                padding: const EdgeInsets.all(12),
+                iconSize: widget.small ? 24 : 36,
+                padding: EdgeInsets.all(widget.small ? 6 : 12),
                 icon: Icon(icon, color: Colors.white),
               ),
             ),
@@ -1169,15 +1187,16 @@ extension on CardTile {
     ),
   );
 
-  /// A heard (missed) bird's song, to train on: a big glass play button in the middle.
+  /// A heard (missed) bird's song, to train on: a glass play button, small and low on
+  /// the small tiles.
   Widget? _heardPlay() {
-    if (card != null) return null;
-    final rec =
-        bird.recordings.where(onPhone).firstOrNull ??
-        bird.recordings.firstOrNull;
-    return rec == null
+    final file = card == null ? playableFile(bird) : null;
+    return file == null
         ? null
-        : Center(child: PlayButton(rec.file, glass: true));
+        : Align(
+            alignment: compact ? const Alignment(0, 0.3) : Alignment.center,
+            child: PlayButton(file, glass: true, small: compact),
+          );
   }
 }
 
