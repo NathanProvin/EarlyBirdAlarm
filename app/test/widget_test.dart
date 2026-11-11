@@ -95,6 +95,11 @@ void main() {
       for (var i = 0; i < 300; i++) rollCard(bird, null, rarity: 'rare').photo,
     }..remove('s1.jpg');
     expect(seen, {null, 'v1.jpg', 'v2.jpg'});
+    // A photo picked when the bird was drawn (downloaded during the quiz) is the card's.
+    String? drawn(String? path) =>
+        rollCard(bird, null, rarity: 'rare', drawnPhoto: (path: path)).photo;
+    expect(drawn('v2.jpg'), anyOf('v2.jpg', 's1.jpg'));
+    expect(drawn(null), anyOf(isNull, 's1.jpg'));
     final shiny = rollCard(bird, null, rarity: 'shiny');
     expect((shiny.rarity, shiny.photo), ('shiny', 's1.jpg'));
     expect(bird.photoOf(shiny.photo).kind, 'leucistic');

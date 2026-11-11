@@ -94,6 +94,8 @@ CardData rollCard(
   required String rarity,
   String? recording,
   Random? random,
+  ({String? path})?
+  drawnPhoto, // picked when the bird was drawn (see drawPhoto)
 }) {
   // 'shiny' asks for a Shiny card (dev preview); a bird without a Shiny photo gives Legendary.
   if (rarity == 'shiny' && bird.shiny.isEmpty) rarity = 'legendary';
@@ -114,11 +116,9 @@ CardData rollCard(
   // tied to the rarity, the best photos of common birds were out of reach).
   final photo = rarity == 'shiny'
       ? bird.shiny[r.nextInt(bird.shiny.length)].photo
-      : bird.variants.isEmpty
-      ? null
-      : [null, ...bird.variants.map((v) => v.photo)][r.nextInt(
-          bird.variants.length + 1,
-        )];
+      : drawnPhoto != null
+      ? drawnPhoto.path
+      : drawPhoto(bird, r);
   return CardData(
     birdId: bird.id,
     stats: {
@@ -137,6 +137,14 @@ CardData rollCard(
     photo: photo,
   );
 }
+
+/// A card's photo: any of the bird's photos at random, the catalog one included (null).
+/// Picked when the bird is drawn, so it downloads while the song plays (Store.pickNext).
+String? drawPhoto(Bird bird, [Random? random]) => bird.variants.isEmpty
+    ? null
+    : [null, ...bird.variants.map((v) => v.photo)][(random ?? Random()).nextInt(
+        bird.variants.length + 1,
+      )];
 
 /// Standard normal value (Box-Muller).
 double _normal(Random r) =>

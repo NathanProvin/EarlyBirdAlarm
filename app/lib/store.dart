@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -481,12 +482,59 @@ class Store extends ChangeNotifier {
       for (final MapEntry(:key, :value) in _held.entries)
         if (key != forAlarm) value,
     };
-    return deckPile(
+    final next =
+        deckPile(
           monthFor(at),
           difficulty,
           resting(monthFor(at)),
         ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
         _fallback(at);
+    _drawPhoto(next.$1, next.$2.file);
+    return next;
+  }
+
+  /// The card photo of each pending draw (song → photo, "" for the catalog photo), picked
+  /// at the draw so it downloads while the song plays: the reveal needn't wait
+  /// (2026-11-11). Kept in the preferences: an alarm's draw outlives an app restart.
+  Map<String, String> get _drawn => {
+    for (final e
+        in (jsonDecode(_prefs.getString('drawnPhotos') ?? '{}') as Map).entries)
+      e.key as String: e.value as String,
+  };
+
+  void _drawPhoto(Bird bird, String song) {
+    final photo = drawPhoto(bird);
+    // Only the draws still pending: this one and the scheduled alarms'.
+    final pending = {..._held.values, song};
+    unawaited(
+      _prefs.setString(
+        'drawnPhotos',
+        jsonEncode({
+          for (final MapEntry(:key, :value) in _drawn.entries)
+            if (pending.contains(key)) key: value,
+          song: photo ?? '',
+        }),
+      ),
+    );
+    if (photo != null && !localFile(photo).existsSync()) {
+      _fetching[photo] = _fetch(photo);
+    }
+  }
+
+  /// Photo downloads under way, so the reveal waits for the same one, never a second.
+  final _fetching = <String, Future<bool>>{};
+
+  Future<bool> _fetch(String photo) async {
+    final clock = Stopwatch()..start();
+    final ok = await download(photo);
+    if (devTools) {
+      // Timing log (dev builds): the download itself, during the quiz.
+      debugPrint(
+        'photo fetch: ${clock.elapsedMilliseconds} ms, '
+        '${ok ? '${localFile(photo).lengthSync() ~/ 1024} KB' : 'failed'}',
+      );
+    }
+    return ok;
   }
 
   /// How many of the last songs played can't come back yet: [playedCount], or half the
@@ -663,15 +711,30 @@ class Store extends ChangeNotifier {
               ),
             ),
             recording: recording?.file,
+            drawnPhoto: switch (_drawn[recording?.file]) {
+              final String p => (path: p.isEmpty ? null : p),
+              null => null, // drawn before this version, or a bundled bird
+            },
           )
         : null;
     if (card != null) {
       await _prefs.setString('cards', jsonEncode([...cards, card]));
-      // Its own photo, fetched once now for the reveal (a few seconds at most; offline the
-      // catalog photo shows and the next sync fetches it).
-      if (card.photo case final p? when !localFile(p).existsSync()) {
-        await download(p)
-            .timeout(const Duration(seconds: 4), onTimeout: () => false);
+      // Its own photo: usually already fetched during the quiz; else waited for here (4 s
+      // at most; offline the catalog photo shows and the next sync fetches it).
+      if (card.photo case final p?) {
+        final clock = Stopwatch()..start();
+        var how = 'ready';
+        if (!localFile(p).existsSync()) {
+          final ok = await (_fetching[p] ?? download(p)).timeout(
+            const Duration(seconds: 4),
+            onTimeout: () => false,
+          );
+          how = ok ? 'waited' : 'not yet';
+        }
+        if (devTools) {
+          // Timing log (dev builds): what the player waits at the reveal.
+          debugPrint('photo reveal: ${clock.elapsedMilliseconds} ms ($how)');
+        }
       }
     }
     await _prefs.setStringList(

@@ -106,6 +106,8 @@ class _DevDrawState extends State<_DevDraw> {
   Future<void> _run() async {
     for (var i = 0; i < count && mounted; i++) {
       final (bird, rec) = store.pickNext(DateTime.now());
+      // The quickest realistic answer: the card's photo downloads meanwhile, as in a quiz.
+      await Future<void>.delayed(const Duration(seconds: 2));
       await store.answered(null, bird, rec, true, '');
       await store.sync();
       if (mounted) setState(() => _done = i + 1);
