@@ -174,7 +174,7 @@ void main() {
     for (final (d, odds) in [
       // 2026-11-03: tiers above Common × 0.8 (Easy Uncommon / Rare × 0.95, Expert × 1);
       // 2026-11-11: Legendary × 0.8 again on Medium, Hard and Expert.
-      (Difficulty.easy, [76.7, 17.9, 4.5, 0.9, 0]),
+      (Difficulty.easy, [74.4, 17.8, 4.5, 0.9, 2.3]),
       (Difficulty.medium, [72.4, 18.3, 6.4, 2.2, 0.6]),
       (Difficulty.hard, [61.8, 20.6, 10.3, 5.2, 2.1]),
       // Hard's curve with Epic and Legendary × 1.2; Legendary × 0.8.
@@ -226,13 +226,16 @@ void main() {
       if (t == 'legendary') again++;
     }
     expect(again / 20000, closeTo(0.19, 0.015));
-    // Easy never gives a Legendary card, even for a legendary bird.
-    for (var i = 0; i < 2000; i++) {
-      expect(
-        drawRarity(Difficulty.easy, birdTier: 'legendary'),
-        isNot('legendary'),
-      );
+    // Easy: a Legendary card is a rare event (it only rings Common and Uncommon birds).
+    final e = Random(5);
+    var easy = 0;
+    for (var i = 0; i < 100000; i++) {
+      if (drawRarity(Difficulty.easy, birdTier: 'uncommon', random: e) ==
+          'legendary') {
+        easy++;
+      }
     }
+    expect(easy, inInclusiveRange(15, 65)); // ~0.035 % for an Uncommon bird (~1 in 6,000 overall: Common birds give ~none)
   });
 
   test(

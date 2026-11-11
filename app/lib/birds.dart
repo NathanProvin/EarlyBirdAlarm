@@ -34,9 +34,9 @@ const _allowed = {
 /// 2026-10-30; a Blackbird can come as a Legendary copy). The odds decay exponentially
 /// with the tier, like radioactive decay: each step up is [rarityDecay] times as likely
 /// as the one below, so Common is always the most frequent card (2026-10-31; before,
-/// Uncommon beat Common on Hard). Easy never gives a Legendary card.
+/// Uncommon beat Common on Hard).
 /// Final odds, after [rarityScale] (Common / Uncommon / Rare / Epic / Legendary):
-/// Easy 76.7 / 17.9 / 4.5 / 0.9 / 0 %, Medium 72.4 / 18.3 / 6.4 / 2.2 / 0.6 %,
+/// Easy 74.4 / 17.8 / 4.5 / 0.9 / 2.3 %, Medium 72.4 / 18.3 / 6.4 / 2.2 / 0.6 %,
 /// Hard 61.8 / 20.6 / 10.3 / 5.2 / 2.1 %, Expert 51.4 / 25.3 / 12.7 / 7.6 / 3.0 %.
 const rarityDecay = {
   Difficulty.easy: 0.25,
@@ -53,9 +53,12 @@ const expertBoost = 1.2;
 /// Common takes the rest. 2026-11-03, rare cards dropped too often: 20 % fewer, except
 /// Uncommon and Rare on Easy (5 % fewer, to hook new players) and Expert (unchanged, to
 /// reward experts). 2026-11-11, after a 1,278-card simulation (Legendary only 1.65×
-/// rarer than Epic): Legendary 20 % fewer again on Medium, Hard and Expert.
+/// rarer than Epic): Legendary 20 % fewer again on Medium, Hard and Expert; and a tiny
+/// Legendary chance on Easy (none before). Easy rings only Common and Uncommon birds and
+/// leans 6× per tier toward them, so its 2.3 % base gives ~1 Legendary card in 6,000
+/// (France · Nord): once in 1.5–2 years for an active player.
 const rarityScale = {
-  Difficulty.easy: [0.95, 0.95, 0.8, 0.8],
+  Difficulty.easy: [0.95, 0.95, 0.8, 8],
   Difficulty.medium: [0.8, 0.8, 0.8, 0.64],
   Difficulty.hard: [0.8, 0.8, 0.8, 0.64],
   Difficulty.expert: [1.0, 1.0, 1.0, 0.8],
@@ -66,13 +69,11 @@ final cardOdds = {for (final d in Difficulty.values) d: _odds(d)};
 
 Map<String, double> _odds(Difficulty d) {
   final w = [
-    for (final (k, t) in tiers.indexed)
-      d == Difficulty.easy && t == 'legendary'
-          ? 0.0
-          : pow(rarityDecay[d]!, k) *
-                (d == Difficulty.expert && k >= tiers.indexOf('epic')
-                    ? expertBoost
-                    : 1.0),
+    for (var k = 0; k < tiers.length; k++)
+      pow(rarityDecay[d]!, k) *
+          (d == Difficulty.expert && k >= tiers.indexOf('epic')
+              ? expertBoost
+              : 1.0),
   ];
   final sum = w.reduce((a, b) => a + b);
   final up = [
