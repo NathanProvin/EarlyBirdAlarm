@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../birds.dart';
 import 'gyro.dart';
+import 'shiny.dart';
 import 'theme.dart';
 
 /// The app icon (half-sun on the horizon, perched bird), drawn from the shapes of
@@ -479,17 +480,20 @@ class _Sparkle extends CustomPainter {
     this.fx,
     this.ms,
     this.level,
-    this.color, {
+    this.palette, {
     required this.behind,
   });
   final _Effects fx;
   final double ms;
-  final int level;
-  final Color color;
+  final int level; // 5: Shiny
+  final List<Color>
+  palette; // the rarity's colour and white; a Shiny look's colours
   final bool behind;
 
-  Color _tint(int i, double alpha) => (i.isEven ? color : Colors.white)
-      .withValues(alpha: alpha.clamp(0.0, 1.0));
+  Color get color => palette.first;
+
+  Color _tint(int i, double alpha) =>
+      palette[i % palette.length].withValues(alpha: alpha.clamp(0.0, 1.0));
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -509,7 +513,10 @@ class _Sparkle extends CustomPainter {
           const Radius.circular(radius + 8),
         ),
         Paint()
-          ..color = color.withValues(alpha: (0.45 + 0.1 * level) * sin(pi * t))
+          // A white aura vanishes on a light screen: the leucistic one is icy blue.
+          ..color = (palette.length > 2 ? palette[2] : color).withValues(
+            alpha: min(1, 0.45 + 0.1 * level) * sin(pi * t),
+          )
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, 14.0 + 3 * level),
       );
       return;
@@ -555,9 +562,15 @@ class _Sparkle extends CustomPainter {
           Paint()..color = Colors.white.withValues(alpha: fade),
         );
     }
-    if (level == 4 && ms > 600 && ms < 1400) {
-      // One sheen across the face, top left to bottom right.
-      final x = (ms - 600) / 800 * 3 - 1.5;
+    if (level == 5) _shells(canvas, size, fade);
+    // One sheen across the face, top left to bottom right; a second one on a Shiny card.
+    final sheen = level >= 4 && ms > 600 && ms < 1400
+        ? ms - 600
+        : level == 5 && ms > 2300 && ms < 3100
+        ? ms - 2300
+        : null;
+    if (sheen != null) {
+      final x = sheen / 800 * 3 - 1.5;
       canvas
         ..save()
         ..clipRRect(
@@ -584,6 +597,73 @@ class _Sparkle extends CustomPainter {
     }
   }
 
+  /// Shiny fireworks: shells rise from the card's edge, flash, and burst into rings of
+  /// glittering stars that drift down as they fade.
+  void _shells(Canvas canvas, Size size, double fade) {
+    final c = size.center(Offset.zero);
+    for (final (i, (p, dist, at, n, r)) in fx.shells.indexed) {
+      final t = ms - at;
+      if (t < 0) continue;
+      final start = _onEdge(size, p, 0);
+      final dir = (start - c) / (start - c).distance;
+      final burst = start + dir * size.width * dist;
+      final col = palette[i % palette.length];
+      if (t < 260) {
+        // The rising shell and its trail.
+        final e = Curves.easeOut.transform(t / 260);
+        final head = Offset.lerp(start, burst, e)!;
+        canvas
+          ..drawLine(
+            Offset.lerp(start, burst, max(0, e - 0.35))!,
+            head,
+            Paint()
+              ..color = col.withValues(alpha: 0.7)
+              ..strokeWidth = 2
+              ..strokeCap = StrokeCap.round,
+          )
+          ..drawCircle(head, 2.6, Paint()..color = Colors.white);
+        continue;
+      }
+      final b = (t - 260) / 1300;
+      if (b >= 1) continue;
+      if (b < 0.12) {
+        // The flash.
+        canvas.drawCircle(
+          burst,
+          10 + 30 * b / 0.12,
+          Paint()
+            ..color = col.withValues(alpha: 0.8 * (1 - b / 0.12))
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+        );
+      }
+      final e = Curves.easeOutCubic.transform(b);
+      for (var k = 0; k < n; k++) {
+        final a = 2 * pi * k / n + i;
+        final star =
+            burst +
+            Offset(cos(a), sin(a)) * r * e +
+            Offset(0, 26 * b * b); // falling as it fades
+        // Glitter: each star flickers once the burst opens.
+        if (b > 0.4 && sin(ms / 28 + k * 1.7) < -0.2) continue;
+        final alpha = (1 - b) * fade;
+        canvas
+          ..drawCircle(
+            star,
+            4.5 * (1 - b),
+            Paint()..color = col.withValues(alpha: 0.25 * alpha),
+          )
+          ..drawCircle(
+            star,
+            1.6,
+            Paint()
+              ..color = (k.isEven ? Colors.white : col).withValues(
+                alpha: alpha,
+              ),
+          );
+      }
+    }
+  }
+
   @override
   bool shouldRepaint(_Sparkle old) => old.ms != ms;
 }
@@ -593,7 +673,7 @@ class _Effects {
   _Effects(int level) {
     final r = Random();
     burst = List.generate(
-      const [12, 18, 26, 36, 50][level],
+      const [12, 18, 26, 36, 50, 72][level],
       (_) => (
         r.nextDouble(), // where on the card's border it starts
         0.3 + r.nextDouble() * (0.3 + 0.1 * level),
@@ -601,7 +681,7 @@ class _Effects {
       ),
     );
     twinkles = List.generate(
-      const [0, 6, 10, 14, 20][level],
+      const [0, 6, 10, 14, 20, 30][level],
       (_) => (
         r.nextDouble(), // where on the edge
         4 + r.nextDouble() * 14, // how far out
@@ -610,8 +690,20 @@ class _Effects {
         3 + r.nextDouble() * 4 + level, // size
       ),
     );
-    orbits = const [0, 0, 0, 2, 3][level];
+    orbits = const [0, 0, 0, 2, 3, 4][level];
+    shells = [
+      if (level == 5)
+        for (var i = 0; i < 10; i++)
+          (
+            r.nextDouble(), // where on the border it rises from
+            0.15 + r.nextDouble() * 0.3, // how far out it bursts
+            550.0 + i * 260 + r.nextDouble() * 120, // when it rises, ms
+            18 + r.nextInt(10), // stars
+            34 + r.nextDouble() * 30, // burst radius
+          ),
+    ];
   }
+  late final List<(double, double, double, int, double)> shells;
   late final List<(double, double, double)> burst;
   late final List<(double, double, double, double, double)> twinkles;
   late final int orbits;
@@ -620,8 +712,14 @@ class _Effects {
 /// A card just won: it flips face up in place, from its [CardBack] to [child], with
 /// sparkles of its [rarity] that grow richer from Common to Legendary.
 class CardFlip extends StatefulWidget {
-  const CardFlip({required this.rarity, required this.child, super.key});
+  const CardFlip({
+    required this.rarity,
+    required this.child,
+    this.kind,
+    super.key,
+  });
   final String rarity;
+  final String? kind; // a Shiny card's look: leucistic or melanistic
   final Widget child;
 
   @override
@@ -630,12 +728,12 @@ class CardFlip extends StatefulWidget {
 
 class _CardFlipState extends State<CardFlip>
     with SingleTickerProviderStateMixin {
-  /// The whole reveal: 1.1 s for a Common card, up to 2.5 s for a Legendary one.
-  static double lengthMs(int level) => 1100.0 + 350 * level;
+  /// The whole reveal: 1.1 s for a Common card, up to 2.5 s for a Legendary one, and
+  /// 4.2 s of fireworks for a Shiny one.
+  static double lengthMs(int level) => level >= 5 ? 4200 : 1100.0 + 350 * level;
 
-  // Shiny reveals with Legendary's effects; its holographic frame does the rest.
   late final int _level = widget.rarity == 'shiny'
-      ? tiers.length - 1
+      ? 5
       : max(0, tiers.indexOf(widget.rarity));
   late final _fx = _Effects(_level);
   late final _c = AnimationController(
@@ -649,8 +747,11 @@ class _CardFlipState extends State<CardFlip>
     (275, HapticFeedback.heavyImpact),
     for (var i = 0; i <= _level; i++)
       (480.0 + 110 * i, HapticFeedback.lightImpact),
-    if (_level == 4) (900, HapticFeedback.mediumImpact), // the Legendary sheen
-  ];
+    if (_level >= 4) (900, HapticFeedback.mediumImpact), // the Legendary sheen
+    // A pop for each Shiny shell as it bursts.
+    for (final shell in _fx.shells)
+      (shell.$3 + 260, HapticFeedback.lightImpact),
+  ]..sort((a, b) => a.$1.compareTo(b.$1));
   var _felt = 0;
 
   @override
@@ -690,7 +791,9 @@ class _CardFlipState extends State<CardFlip>
     // Each face is painted once and reused while it turns: smooth frames.
     final front = RepaintBoundary(child: widget.child);
     const back = RepaintBoundary(child: CardBack());
-    final color = rarityColor[widget.rarity] ?? rarityColor['common']!;
+    final palette = widget.rarity == 'shiny'
+        ? shinyPalette(widget.kind)
+        : [rarityColor[widget.rarity] ?? rarityColor['common']!, Colors.white];
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) {
@@ -702,7 +805,7 @@ class _CardFlipState extends State<CardFlip>
         Widget fx({required bool behind}) => Positioned.fill(
           child: IgnorePointer(
             child: CustomPaint(
-              painter: _Sparkle(_fx, ms, _level, color, behind: behind),
+              painter: _Sparkle(_fx, ms, _level, palette, behind: behind),
             ),
           ),
         );

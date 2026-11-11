@@ -12,6 +12,7 @@ import '../birds.dart';
 import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
+import 'shiny.dart';
 import 'theme.dart';
 
 String rarityName(AppLocalizations l, String tier) => switch (tier) {
@@ -49,17 +50,30 @@ class BirdCardView extends StatelessWidget {
     final rarity =
         card?.rarity ??
         bird.rarity; // the card keeps the rarity it was won with
-    final frame = card == null ? unknownColor : rarityColor[rarity]!;
+    final shiny = card != null && rarity == 'shiny';
+    final kind = shiny ? bird.photoOf(card.photo).kind : null;
+    final ivory =
+        shiny && !isMelanistic(kind); // a light frame: dark header text
+    final frame = card == null
+        ? unknownColor
+        : shiny
+        ? shinyAccent(kind)
+        : rarityColor[rarity]!;
+    // Shiny looks: 5 leucistic (diamond), 6 melanistic (obsidian); see shiny.dart.
+    final level = shiny
+        ? (isMelanistic(kind) ? 6 : 5)
+        : max(0, tiers.indexOf(rarity));
     final label = text.labelLarge?.copyWith(
-      color: card == null ? ink : paper,
+      color: card == null || ivory ? ink : paper,
       fontWeight: FontWeight.bold,
       // Lifts the light text off the textured (and, on gold, bright) frame.
       shadows: card == null
           ? null
           : [
               Shadow(
-                color: Color.lerp(frame, ink, 0.7)!,
+                color: ivory ? Colors.white : Color.lerp(frame, ink, 0.7)!,
                 offset: const Offset(0, 1),
+                blurRadius: ivory ? 3 : 0,
               ),
             ],
     );
@@ -83,12 +97,7 @@ class BirdCardView extends StatelessWidget {
       ),
       // A won card is printed on textured card stock tinted with its rarity.
       child: CustomPaint(
-        painter: card == null
-            ? null
-            : _CardStock(
-                frame,
-                max(0, tiers.indexOf(rarity == 'shiny' ? 'legendary' : rarity)),
-              ),
+        painter: card == null ? null : _CardStock(frame, level, kind),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -165,92 +174,113 @@ class BirdCardView extends StatelessWidget {
           painter: card == null
               ? _PlainFrame(frame)
               : _FrameMaterial(
-                  frame,
-                  max(0, cardTiers.indexOf(rarity)),
+                  shiny ? shinyFrameColor(kind) : frame,
+                  level,
                   inset,
                   MediaQuery.devicePixelRatioOf(context),
                 ),
-          child: Padding(
-            padding: EdgeInsets.all(inset),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '#${bird.number.toString().padLeft(3, '0')}',
-                          style: label,
-                        ),
-                      ),
-                      Text(
-                        card == null
-                            ? l.heard
-                            : rarity == 'shiny'
-                            ? shinyKindName(l, bird.photoOf(card.photo).kind)
-                            : rarityName(l, rarity),
-                        style: label,
-                      ),
-                      Expanded(
-                        child: Text(
-                          card == null ? '' : '${card.quality} %',
-                          style: label,
-                          textAlign: TextAlign.end,
-                        ),
-                      ),
-                    ],
-                  ),
+          child: Stack(
+            children: [
+              // A Shiny card lives: magma under the face, sparkles over it.
+              if (shiny)
+                Positioned.fill(
+                  child: ShinyLife(kind: kind, inset: inset, above: false),
                 ),
-                Expanded(
-                  child: card != null
-                      ? face
-                      : Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            ImageFiltered(
-                              imageFilter: ui.ImageFilter.blur(
-                                sigmaX: 8,
-                                sigmaY: 8,
-                              ),
-                              child: ColorFiltered(
-                                colorFilter: const ColorFilter.mode(
-                                  Colors.grey,
-                                  BlendMode.saturation,
-                                ),
-                                child: face,
+              Padding(
+                padding: EdgeInsets.all(inset),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '#${bird.number.toString().padLeft(3, '0')}',
+                              style: label,
+                            ),
+                          ),
+                          // Shrinks rather than squeezing the number and the
+                          // quality ("Shiny · Melanistic").
+                          Flexible(
+                            flex: 2,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                card == null
+                                    ? l.heard
+                                    : shiny
+                                    ? '${l.shiny} · ${shinyKindName(l, kind)}'
+                                    : rarityName(l, rarity),
+                                style: label,
                               ),
                             ),
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      bird.nameIn(l.localeName),
-                                      style: text.headlineSmall,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    Text(bird.latin, style: _latin(text)),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      l.tryNextTime,
-                                      style: text.titleMedium,
-                                    ),
-                                    if (play case final file?) ...[
-                                      const SizedBox(height: 12),
-                                      PlayButton(file, glass: true),
-                                    ],
-                                  ],
-                                ),
-                              ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              card == null ? '' : '${card.quality} %',
+                              style: label,
+                              textAlign: TextAlign.end,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: card != null
+                          ? face
+                          : Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ImageFiltered(
+                                  imageFilter: ui.ImageFilter.blur(
+                                    sigmaX: 8,
+                                    sigmaY: 8,
+                                  ),
+                                  child: ColorFiltered(
+                                    colorFilter: const ColorFilter.mode(
+                                      Colors.grey,
+                                      BlendMode.saturation,
+                                    ),
+                                    child: face,
+                                  ),
+                                ),
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          bird.nameIn(l.localeName),
+                                          style: text.headlineSmall,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        Text(bird.latin, style: _latin(text)),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          l.tryNextTime,
+                                          style: text.titleMedium,
+                                        ),
+                                        if (play case final file?) ...[
+                                          const SizedBox(height: 12),
+                                          PlayButton(file, glass: true),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              if (shiny)
+                Positioned.fill(
+                  child: ShinyLife(kind: kind, inset: inset, above: true),
+                ),
+            ],
           ),
         ),
       ),
@@ -264,9 +294,10 @@ class BirdCardView extends StatelessWidget {
 /// Common and Uncommon, a coarse paper grain for Rare, the soft shadow of foliage for
 /// Epic, and a golden camouflage for Legendary.
 class _CardStock extends CustomPainter {
-  const _CardStock(this.color, this.level);
+  const _CardStock(this.color, this.level, [this.kind]);
   final Color color;
-  final int level;
+  final int level; // 5 and 6: Shiny, leucistic and melanistic (shiny.dart)
+  final String? kind;
 
   /// Each pattern is drawn once per size into an image (blurred leaves and thousands of
   /// specks are too slow to redraw), at 2× — enough for patterns this faint.
@@ -294,6 +325,7 @@ class _CardStock extends CustomPainter {
   }
 
   void _draw(Canvas canvas, Size size) {
+    if (level >= 5) return paintShinyStock(canvas, size, kind);
     canvas.drawRect(
       Offset.zero & size,
       Paint()..color = color.withValues(alpha: 0.05),
@@ -441,6 +473,15 @@ class _FrameMaterial extends CustomPainter {
       Offset.zero & size,
       const Radius.circular(radius),
     );
+    if (level >= 5) {
+      // Shiny: its own material and a triple engraving, more worked than the gold.
+      paintShinyFrame(canvas, size, level == 6 ? 'melanistic' : 'leucistic');
+      for (final at in const [0.22, 0.5, 0.8]) {
+        _groove(canvas, size, at: at);
+      }
+      _rim(canvas, size);
+      return;
+    }
     canvas.drawRRect(outer, Paint()..color = color);
     if (level == 2) canvas.drawRRect(outer, _brushedLight(size));
     if (level == 3) canvas.drawRRect(outer, _foil(size));
@@ -637,10 +678,16 @@ class _FrameMaterial extends CustomPainter {
 
   /// A thin engraved line running round the frame, midway through it; with
   /// [cornersOnly], just its rounded corners.
-  void _groove(Canvas canvas, Size size, {bool cornersOnly = false}) {
+  void _groove(
+    Canvas canvas,
+    Size size, {
+    bool cornersOnly = false,
+    double at =
+        0.5, // how far into the frame: 0 its outer edge, 1 its inner edge
+  }) {
     final groove = RRect.fromRectAndRadius(
-      (Offset.zero & size).deflate(inset / 2),
-      Radius.circular(radius - inset / 2),
+      (Offset.zero & size).deflate(inset * at),
+      Radius.circular(radius - inset * at),
     );
     canvas.save();
     if (cornersOnly) {

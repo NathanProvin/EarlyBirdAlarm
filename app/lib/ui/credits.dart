@@ -63,13 +63,19 @@ class CreditsScreen extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
-                for (final t in cardTiers)
+                for (final (t, kind) in [
+                  for (final t in tiers) (t, null),
+                  ('shiny', 'leucistic'),
+                  ('shiny', 'melanistic'),
+                ])
                   ActionChip(
-                    label: Text(rarityName(l, t)),
-                    labelStyle: TextStyle(color: rarityColor[t]),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => _Preview(t)),
+                    label: Text(
+                      kind == null
+                          ? rarityName(l, t)
+                          : '${l.shiny} · ${shinyKindName(l, kind)}',
                     ),
+                    labelStyle: TextStyle(color: rarityColor[t]),
+                    onPressed: () => _preview(context, t, kind),
                   ),
               ],
             ),
@@ -121,20 +127,39 @@ class _DevDrawState extends State<_DevDraw> {
 }
 
 /// A card of [rarity] for a random bird of the region, revealed as if just won; not saved.
+/// Opens a reveal of [rarity]. A Shiny one needs a bird with a photo of that [kind]: one of
+/// the region if there is one, else any (a random region bird mostly has none, and then
+/// rollCard falls back to Legendary: the bug seen on 2026-11-11).
+void _preview(BuildContext context, String rarity, String? kind) {
+  bool fits(Bird b) =>
+      b.shiny.isNotEmpty && b.shiny.every((s) => s.kind == kind);
+  final pool = kind == null
+      ? birds
+      : [
+          ...birds.where(fits),
+          if (!birds.any(fits)) ...species.values.where(fits),
+        ];
+  if (pool.isEmpty) return;
+  final bird = pool[Random().nextInt(pool.length)];
+  final card = rollCard(bird, store.region, rarity: rarity);
+  Navigator.of(context)
+      .push(MaterialPageRoute<void>(builder: (_) => _Preview(bird, card)));
+}
+
 class _Preview extends StatelessWidget {
-  const _Preview(this.rarity);
-  final String rarity;
+  const _Preview(this.bird, this.card);
+  final Bird bird;
+  final CardData card; // rolled once: a rebuild must not show another card
 
   @override
   Widget build(BuildContext context) {
-    final bird = birds[Random().nextInt(birds.length)];
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
           child: CardDetail(
             bird: bird,
-            card: rollCard(bird, store.region, rarity: rarity),
+            card: card,
             flipIn: true,
             onClose: () => Navigator.of(context).pop(),
           ),
