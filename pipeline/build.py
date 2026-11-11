@@ -61,7 +61,8 @@ PHOTO_WIDTH = 1200
 
 
 def save_photo(src, out):
-    ffmpeg("-i", str(src), "-vf", f"scale='min({PHOTO_WIDTH},iw)':-2", "-q:v", "2", str(out))
+    # One frame: some camera JPEGs carry a second image (MPO) that ffmpeg reads as a video.
+    ffmpeg("-i", str(src), "-vf", f"scale='min({PHOTO_WIDTH},iw)':-2", "-frames:v", "1", "-q:v", "2", str(out))
 
 
 def get(url, params=None, headers=None, binary=False):
@@ -893,12 +894,13 @@ _extras = None
 def full_size(url):
     """The original of a contact-sheet photo: iNaturalist "medium" (500 px) → "original" (up
     to 2048 px); a Commons thumbnail → the uploaded file. save_photo scales it to PHOTO_WIDTH."""
-    if "/thumb/" in url:
-        return url.split("?")[0].replace("/thumb/", "/").rsplit("/", 1)[0]
+    if "/thumb/" in url:  # .../commons/thumb/a/a7/Name.jpg/960px-Name.jpg → upload host, a/a7/Name.jpg
+        path = url.split("?")[0].split("/thumb/", 1)[1].rsplit("/", 1)[0]
+        return "https://upload.wikimedia.org/wikipedia/commons/" + path
     return url.replace("/medium.", "/original.")
 
 
-assert full_size("https://up.wm.org/wikipedia/commons/thumb/4/4a/A_%283%29.jpg/960px-A_%283%29.jpg?utm=x") ==     "https://up.wm.org/wikipedia/commons/4/4a/A_%283%29.jpg"
+assert full_size("https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/A_%283%29.jpg/960px-A_%283%29.jpg?u=x")     == "https://upload.wikimedia.org/wikipedia/commons/4/4a/A_%283%29.jpg"
 
 
 def read_rows(path):
