@@ -182,7 +182,7 @@ Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté 
 ## Data safety form
 (Rewritten 2026-11-11 for the 1.1 accounts; before 1.1 the answer was "no data collected".)
 - **Does the app collect or share user data?** Collects: yes. Shares: no.
-  - **Personal info → Email address, Name:** collected only when the user taps "Sign in with Google" (optional). Purpose: **Account management**. Not shared.
+  - **Personal info → Email address, Name:** collected only when the user signs in with Google or an email and password (optional; the name with Google only). Purpose: **Account management**. Not shared.
   - **Personal info → User IDs:** the Firebase account ID (anonymous at first launch, automatic). Purpose: **App functionality, Account management** (the cloud backup). Not shared. Required (created silently), but it holds game data only.
   - **App activity → Other user-generated content / In-app actions:** the card collection (cards, birds heard, series, streaks, bonus boosters), stored in Firestore (EU) for the backup. Purpose: **App functionality**. Not shared.
   - Processed by Google Firebase as our service provider (not "sharing" under Play's definition).
@@ -190,7 +190,7 @@ Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté 
   - **Face-to-face trading:** cards go directly from one phone to the other (Google Nearby Connections); nothing goes to a server → not shared.
   - No analytics, no advertising ID, no crash reporting.
 - **Is data encrypted in transit?** Yes (HTTPS to Cloudflare and Firebase; Nearby Connections encrypts its connections).
-- **Can users request deletion?** Yes: in the app (Settings → Account → Delete account) and from the web page **https://cdn.earlybirdalarm.app/delete-account.html** (the URL Play asks for in "Data deletion").
+- **Can users request deletion?** Yes: in the app (person icon on Alarms / Training → Delete account) and from the web page **https://cdn.earlybirdalarm.app/delete-account.html** (the URL Play asks for in "Data deletion").
 
 ## Permission declarations
 ### Full-screen intent (`USE_FULL_SCREEN_INTENT`)
