@@ -201,6 +201,10 @@ Future<bool> syncRegion(
     await Future.wait(photos.skip(i).take(8).map(download));
   }
   await topUpDeck(month, difficulty, heard: heard, played: played);
+  // The pile's cards are never thrown away: each one waits for its turn to ring.
+  final pile = {
+    for (final (_, r) in deckPile(month, difficulty, played)) r.file,
+  };
   // The variant and Shiny photos of the birds that can ring next (any other card's photo
   // streams from the web when it's missing): ~14 birds, not the whole region.
   final extras = [
@@ -215,7 +219,7 @@ Future<bool> syncRegion(
   for (var i = 0; i < extras.length; i += 8) {
     await Future.wait(extras.skip(i).take(8).map(download));
   }
-  await _cleanUp(keep);
+  await _cleanUp({...keep, ...pile});
   return stale;
 }
 
@@ -227,9 +231,10 @@ bool fresh(Recording r, Set<String> played) =>
 /// can ring this month at [difficulty] and weren't [heard] recently, so alarms ring a
 /// downloaded bird even offline. Each song rings once, then the deck brings a new one:
 /// before 2026-10-31 a played song kept counting, and the deck froze on ~24 species.
-/// New birds are drawn weighted like the rings themselves (common birds more often),
-/// since every song of the deck ends up ringing. Best effort: stops at the first
-/// network error.
+/// The deck is a pile ([deckPile]): rings draw its top card, and each free slot gets a
+/// new bird drawn by rarity weight (common birds more often), put under the pile. Every
+/// card of the pile ends up ringing, so the birds ring as often as they are drawn here.
+/// Best effort: stops at the first network error.
 Future<void> topUpDeck(
   int? month,
   Difficulty difficulty, {
@@ -274,11 +279,29 @@ void _dropOldPhotos() {
   }
 }
 
+/// The deck as a physical pile (2026-11-11, user): its fresh songs (downloaded, never
+/// [played]) for birds that can ring this [month] at [difficulty], top first; the top is
+/// the card that has waited longest (the oldest download), a new card goes under.
+List<(Bird, Recording)> deckPile(
+  int? month,
+  Difficulty difficulty,
+  Set<String> played,
+) {
+  final cards = [
+    for (final b in pool(month, difficulty).keys)
+      for (final r in b.playable(difficulty))
+        if (fresh(r, played)) (b, r, localFile(r.file).lastModifiedSync()),
+  ]..sort((a, b) => a.$3.compareTo(b.$3));
+  return [for (final (b, r, _) in cards) (b, r)];
+}
+
 /// Downloaded songs kept on the phone at most; the oldest go first.
 const keepSongs = 60;
 
 /// Deletes the oldest downloaded songs beyond [keepSongs], never one in [keep] (the songs
-/// of scheduled alarms). A card's ▶ streams its song from the site when it's gone.
+/// of scheduled alarms and of the pile). A card's ▶ streams its song from the site when
+/// it's gone. Before 2026-11-11 the pile's oldest cards could go: scarce birds, drawn
+/// less often from a weighted deck, were deleted before ringing (half their share).
 Future<void> _cleanUp(Set<String> keep) async {
   final dir = Directory('${_root.path}/audio');
   if (!dir.existsSync()) return;

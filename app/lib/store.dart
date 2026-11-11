@@ -131,6 +131,10 @@ class Store extends ChangeNotifier {
   static Future<Store> load() async =>
       Store._(await SharedPreferences.getInstance());
 
+  /// The pile's cards held by scheduled alarms (alarm id → song): the next draw takes the
+  /// top card no alarm holds, so two alarms, or an alarm and a booster, never share one.
+  final _held = <int, String>{};
+
   List<AlarmData> get alarms => [
     for (final j in jsonDecode(_prefs.getString('alarms') ?? '[]') as List)
       AlarmData.fromJson(j as Map<String, dynamic>),
@@ -299,7 +303,11 @@ class Store extends ChangeNotifier {
   /// Schedules every enabled alarm the alarm plugin doesn't have, e.g. after a Google
   /// backup restore (only our preferences are backed up, not the plugin's schedule).
   Future<void> healAlarms() async {
-    final scheduled = {for (final a in await Alarm.getAlarms()) a.id};
+    final set = await Alarm.getAlarms();
+    for (final a in set) {
+      if (_songOf(a.payload) case final song?) _held[a.id] = song;
+    }
+    final scheduled = {for (final a in set) a.id};
     final title = _prefs.getString('notificationTitle') ?? 'Guess the bird!';
     for (final a in alarms.where(
       (a) =>
@@ -369,7 +377,7 @@ class Store extends ChangeNotifier {
       return;
     }
     final at = nextRing(a, DateTime.now());
-    final (bird, rec) = pickNext(at);
+    final (bird, rec) = pickNext(at, forAlarm: a.id);
     await _schedule(a, at, bird.id, rec.file, notificationTitle);
   }
 
@@ -381,6 +389,7 @@ class Store extends ChangeNotifier {
     String recFile,
     String notificationTitle,
   ) async {
+    _held[a.id] = recFile;
     final payload = jsonEncode({'bird': birdId, 'rec': recFile});
     final notification = NotificationSettings(
       title: notificationTitle, // big bold line of the banner
@@ -434,6 +443,7 @@ class Store extends ChangeNotifier {
 
   /// Stops alarm [id] (or the one a backup id belongs to) and its backup.
   Future<void> stopRing(int id) async {
+    _held.remove(mainIdOf(id));
     await Alarm.stop(mainIdOf(id));
     await Alarm.stop(backupId(mainIdOf(id)));
   }
@@ -461,16 +471,24 @@ class Store extends ChangeNotifier {
     );
   }
 
-  /// The bird and recording to play at [at]. Only a recording already on the phone can
-  /// play: a fresh song of the deck first (not rung yet), then any downloaded one, then
-  /// the bundled birds of the region, then any.
-  (Bird, Recording) pickNext(DateTime at) =>
-      pickBird(
-        recent,
-        monthFor(at),
-        difficulty,
-        (r) => fresh(r, played.toSet()),
-      ) ??
+  /// The bird and recording to play at [at]: the top card of the pile ([deckPile]) that
+  /// no other alarm holds ([forAlarm]: the alarm being scheduled may take its own card
+  /// back). An empty pile (offline, first launch): any downloaded song, then the bundled
+  /// birds of the region, then any.
+  (Bird, Recording) pickNext(DateTime at, {int? forAlarm}) {
+    final held = {
+      for (final MapEntry(:key, :value) in _held.entries)
+        if (key != forAlarm) value,
+    };
+    return deckPile(
+          monthFor(at),
+          difficulty,
+          played.toSet(),
+        ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
+        _fallback(at);
+  }
+
+  (Bird, Recording) _fallback(DateTime at) =>
       pickBird(recent, monthFor(at), difficulty, downloaded) ??
       pickBird(recent, monthFor(at), difficulty, onPhone) ??
       species.values
