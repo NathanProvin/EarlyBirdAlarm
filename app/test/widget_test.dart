@@ -90,13 +90,11 @@ void main() {
       ],
     };
     final bird = Bird.fromJson(json);
-    String? photo(String rarity) => rollCard(bird, null, rarity: rarity).photo;
-    expect(photo('legendary'), anyOf('v1.jpg', 's1.jpg')); // 1 in 500 is Shiny
-    expect(photo('epic'), anyOf('v2.jpg', 's1.jpg'));
-    expect(
-      photo('rare'),
-      anyOf(isNull, 's1.jpg'),
-    ); // no third variant: catalog photo
+    // Any rarity: the catalog photo (null) or a variant, at random (1 in 500 is Shiny).
+    final seen = {
+      for (var i = 0; i < 300; i++) rollCard(bird, null, rarity: 'rare').photo,
+    }..remove('s1.jpg');
+    expect(seen, {null, 'v1.jpg', 'v2.jpg'});
     final shiny = rollCard(bird, null, rarity: 'shiny');
     expect((shiny.rarity, shiny.photo), ('shiny', 's1.jpg'));
     expect(bird.photoOf(shiny.photo).kind, 'leucistic');
@@ -174,12 +172,13 @@ void main() {
   test('card rarity: drawn from the odds of the difficulty', () {
     final r = Random(7);
     for (final (d, odds) in [
-      // 2026-11-03: tiers above Common × 0.8 (Easy Uncommon / Rare × 0.95, Expert × 1).
+      // 2026-11-03: tiers above Common × 0.8 (Easy Uncommon / Rare × 0.95, Expert × 1);
+      // 2026-11-11: Legendary × 0.8 again on Medium, Hard and Expert.
       (Difficulty.easy, [76.7, 17.9, 4.5, 0.9, 0]),
-      (Difficulty.medium, [72.3, 18.3, 6.4, 2.2, 0.8]),
-      (Difficulty.hard, [61.3, 20.6, 10.3, 5.2, 2.6]),
-      // Hard's curve with Epic and Legendary × 1.2, unscaled.
-      (Difficulty.expert, [50.6, 25.3, 12.7, 7.6, 3.8]),
+      (Difficulty.medium, [72.4, 18.3, 6.4, 2.2, 0.6]),
+      (Difficulty.hard, [61.8, 20.6, 10.3, 5.2, 2.1]),
+      // Hard's curve with Epic and Legendary × 1.2; Legendary × 0.8.
+      (Difficulty.expert, [51.4, 25.3, 12.7, 7.6, 3.0]),
     ]) {
       final seen = <String, int>{};
       for (var i = 0; i < 20000; i++) {
@@ -207,13 +206,26 @@ void main() {
       return {for (final t in tiers) t: (seen[t] ?? 0) / 20000};
     }
 
-    // Hard (each step ×½, × 0.8 above Common, lean ×3): a common bird 88/9.9/1.6/0.3/0 %,
-    // a legendary one 11/11/16.5/25/37 %: the card peaks at the bird's own tier.
+    // Hard (each step ×½, × 0.8 above Common, Legendary × 0.64, lean ×3): a common bird
+    // 88/9.8/1.6/0.3/0 %, a legendary one 12/12/18/27/32 %: it peaks at its own tier.
     final common = shares('common'), legendary = shares('legendary');
-    expect(common['common'], closeTo(0.881, 0.015));
+    expect(common['common'], closeTo(0.883, 0.015));
     expect(common['legendary'], lessThan(0.01));
-    expect(legendary['common'], closeTo(0.109, 0.01));
-    expect(legendary['legendary'], closeTo(0.37, 0.015));
+    expect(legendary['common'], closeTo(0.118, 0.01));
+    expect(legendary['legendary'], closeTo(0.32, 0.015));
+    // A species already owned as Legendary: half the Legendary odds (32 → ~19 %).
+    final r = Random(4);
+    var again = 0;
+    for (var i = 0; i < 20000; i++) {
+      final t = drawRarity(
+        Difficulty.hard,
+        birdTier: 'legendary',
+        ownsLegendary: true,
+        random: r,
+      );
+      if (t == 'legendary') again++;
+    }
+    expect(again / 20000, closeTo(0.19, 0.015));
     // Easy never gives a Legendary card, even for a legendary bird.
     for (var i = 0; i < 2000; i++) {
       expect(

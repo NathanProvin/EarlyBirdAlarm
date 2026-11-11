@@ -36,8 +36,8 @@ const _allowed = {
 /// as the one below, so Common is always the most frequent card (2026-10-31; before,
 /// Uncommon beat Common on Hard). Easy never gives a Legendary card.
 /// Final odds, after [rarityScale] (Common / Uncommon / Rare / Epic / Legendary):
-/// Easy 76.7 / 17.9 / 4.5 / 0.9 / 0 %, Medium 72.3 / 18.3 / 6.4 / 2.2 / 0.8 %,
-/// Hard 61.3 / 20.6 / 10.3 / 5.2 / 2.6 %, Expert 50.6 / 25.3 / 12.7 / 7.6 / 3.8 %.
+/// Easy 76.7 / 17.9 / 4.5 / 0.9 / 0 %, Medium 72.4 / 18.3 / 6.4 / 2.2 / 0.6 %,
+/// Hard 61.8 / 20.6 / 10.3 / 5.2 / 2.1 %, Expert 51.4 / 25.3 / 12.7 / 7.6 / 3.0 %.
 const rarityDecay = {
   Difficulty.easy: 0.25,
   Difficulty.medium: 0.35,
@@ -52,12 +52,13 @@ const expertBoost = 1.2;
 /// Share kept from the decay curve for each tier above Common (Uncommon → Legendary);
 /// Common takes the rest. 2026-11-03, rare cards dropped too often: 20 % fewer, except
 /// Uncommon and Rare on Easy (5 % fewer, to hook new players) and Expert (unchanged, to
-/// reward experts).
+/// reward experts). 2026-11-11, after a 1,278-card simulation (Legendary only 1.65×
+/// rarer than Epic): Legendary 20 % fewer again on Medium, Hard and Expert.
 const rarityScale = {
   Difficulty.easy: [0.95, 0.95, 0.8, 0.8],
-  Difficulty.medium: [0.8, 0.8, 0.8, 0.8],
-  Difficulty.hard: [0.8, 0.8, 0.8, 0.8],
-  Difficulty.expert: [1.0, 1.0, 1.0, 1.0],
+  Difficulty.medium: [0.8, 0.8, 0.8, 0.64],
+  Difficulty.hard: [0.8, 0.8, 0.8, 0.64],
+  Difficulty.expert: [1.0, 1.0, 1.0, 0.8],
 };
 
 /// The odds of each rarity by difficulty (they sum to 1).
@@ -92,8 +93,15 @@ const rarityLean = 1.5;
 
 /// The rarity of a card won at [difficulty]: [cardOdds], tilted toward [birdTier] (how
 /// scarce the bird is this month) so a scarce bird rarely comes as a Common card and a
-/// common one rarely as a Legendary.
-String drawRarity(Difficulty difficulty, {String? birdTier, Random? random}) {
+/// common one rarely as a Legendary. Once the player [ownsLegendary] of this species,
+/// another Legendary copy is half as likely (2026-11-11: scarce birds piled up Legendary
+/// duplicates, e.g. 5 Legendary Ruffs in a simulation).
+String drawRarity(
+  Difficulty difficulty, {
+  String? birdTier,
+  bool ownsLegendary = false,
+  Random? random,
+}) {
   final bird = birdTier == null ? null : tiers.indexOf(birdTier);
   final w = {
     for (final (i, t) in tiers.indexed)
@@ -101,7 +109,8 @@ String drawRarity(Difficulty difficulty, {String? birdTier, Random? random}) {
           cardOdds[difficulty]![t]! /
           (bird == null
               ? 1
-              : pow(rarityLean / rarityDecay[difficulty]!, (i - bird).abs())),
+              : pow(rarityLean / rarityDecay[difficulty]!, (i - bird).abs())) *
+          (ownsLegendary && t == 'legendary' ? 0.5 : 1),
   };
   var r = (random ?? Random()).nextDouble() * w.values.reduce((a, b) => a + b);
   return w.entries

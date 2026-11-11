@@ -110,13 +110,15 @@ CardData rollCard(
       (rarity == 'shiny' || r.nextDouble() < shinyOdds)) {
     rarity = 'shiny';
   }
-  // The best variants go to the top rarities: Legendary gets the first, Epic the second…
-  final k = tiers.length - 1 - tiers.indexOf(rarity);
+  // Any of the bird's photos, the catalog one included (null), at random (2026-11-11:
+  // tied to the rarity, the best photos of common birds were out of reach).
   final photo = rarity == 'shiny'
       ? bird.shiny[r.nextInt(bird.shiny.length)].photo
-      : k < bird.variants.length
-      ? bird.variants[k].photo
-      : null;
+      : bird.variants.isEmpty
+      ? null
+      : [null, ...bird.variants.map((v) => v.photo)][r.nextInt(
+          bird.variants.length + 1,
+        )];
   return CardData(
     birdId: bird.id,
     stats: {

@@ -608,6 +608,9 @@ class Store extends ChangeNotifier {
             rarity: drawRarity(
               difficulty,
               birdTier: bird.tierIn(monthFor(DateTime.now())) ?? bird.rarity,
+              ownsLegendary: achievementCards.any(
+                (c) => c.birdId == bird.id && c.rarity == 'legendary',
+              ),
             ),
             recording: recording?.file,
           )
