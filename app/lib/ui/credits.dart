@@ -141,7 +141,13 @@ void _preview(BuildContext context, String rarity, String? kind) {
         ];
   if (pool.isEmpty) return;
   final bird = pool[Random().nextInt(pool.length)];
-  final card = rollCard(bird, store.region, rarity: rarity);
+  // With a recording, as a won card has: its ▶ shows.
+  final card = rollCard(
+    bird,
+    store.region,
+    rarity: rarity,
+    recording: bird.recordings.firstOrNull?.file,
+  );
   Navigator.of(context)
       .push(MaterialPageRoute<void>(builder: (_) => _Preview(bird, card)));
 }

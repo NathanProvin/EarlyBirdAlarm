@@ -139,7 +139,18 @@ class BirdCardView extends StatelessWidget {
                   if (recording != null)
                     Column(
                       children: [
-                        PlayButton(recording.file, color: frame),
+                        PlayButton(
+                          recording.file,
+                          color: frame,
+                          // The frame's material (cardboard, leather… diamond).
+                          texture: _FrameMaterial(
+                            shiny ? shinyFrameColor(kind) : frame,
+                            level,
+                            0,
+                            MediaQuery.devicePixelRatioOf(context),
+                          ),
+                          iconColor: ivory ? ink : paper,
+                        ),
                         Text(kindName(l, recording.kind), style: _latin(text)),
                       ],
                     ),
@@ -804,12 +815,17 @@ class PlayButton extends StatefulWidget {
   const PlayButton(
     this.file, {
     this.color,
+    this.texture,
+    this.iconColor = paper,
     this.glass = false,
     this.small = false,
     super.key,
   });
   final String file;
   final Color? color;
+  final CustomPainter?
+  texture; // painted in the round button instead of flat [color]
+  final Color iconColor;
   final bool glass;
   final bool small; // a smaller glass button (the collection's small tiles)
 
@@ -861,18 +877,32 @@ class _PlayButtonState extends State<PlayButton> {
         );
       }
       final color = widget.color!;
-      return IconButton.filled(
+      final button = IconButton.filled(
         tooltip: tooltip,
         onPressed: _toggle,
         style: IconButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: widget.texture == null ? color : Colors.transparent,
           // A discreet outline lifts it off the card stock.
           side: BorderSide(
             color: Color.lerp(color, Colors.white, 0.45)!,
             width: 1.5,
           ),
         ),
-        icon: Icon(icon, color: paper),
+        icon: Icon(icon, color: widget.iconColor),
+      );
+      if (widget.texture == null) return button;
+      return Stack(
+        alignment: Alignment.center,
+        children: [
+          // The 40 dp disc inside the button's 48 dp touch target.
+          ClipOval(
+            child: CustomPaint(
+              size: const Size.square(40),
+              painter: widget.texture,
+            ),
+          ),
+          button,
+        ],
       );
     },
   );
