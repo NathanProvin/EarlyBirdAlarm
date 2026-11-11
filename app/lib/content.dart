@@ -218,8 +218,19 @@ Future<bool> syncRegion(
 }
 
 /// A downloaded song that hasn't rung yet: what the deck is made of (see [topUpDeck]).
-bool fresh(Recording r, Set<String> played) =>
-    downloaded(r) && !played.contains(r.file);
+bool fresh(Recording r, Set<String> played, Map<String, DateTime> songs) =>
+    songs.containsKey(r.file) && !played.contains(r.file);
+
+/// The downloaded songs and their dates, from one listing of the folder (2026-11-11: the
+/// pile checked every playable recording on disk, 1,000+ checks per draw).
+Map<String, DateTime> songsOnPhone() {
+  final dir = Directory('${_root.path}/audio');
+  if (!dir.existsSync()) return const {};
+  return {
+    for (final f in dir.listSync().whereType<File>())
+      'audio/${f.uri.pathSegments.last}': f.lastModifiedSync(),
+  };
+}
 
 /// Keeps [deckSize] fresh songs on the phone (downloaded, never [played]) for birds that
 /// can ring this month at [difficulty] and weren't [heard] recently, so alarms ring a
@@ -241,7 +252,9 @@ Future<void> topUpDeck(
     for (final MapEntry(key: b, value: w) in pool(month, difficulty).entries)
       if (!heard.contains(b.id)) (b, pow(random.nextDouble(), 1 / w)),
   ]..sort((a, b) => b.$2.compareTo(a.$2));
-  bool inDeck(Bird b) => b.playable(difficulty).any((r) => fresh(r, played));
+  final songs = songsOnPhone();
+  bool inDeck(Bird b) =>
+      b.playable(difficulty).any((r) => fresh(r, played, songs));
   var have = candidates.where((c) => inDeck(c.$1)).length;
   for (final (b, _) in candidates) {
     if (have >= deckSize) return;
@@ -277,10 +290,11 @@ List<(Bird, Recording)> deckPile(
   Difficulty difficulty,
   Set<String> played,
 ) {
+  final songs = songsOnPhone();
   final cards = [
     for (final b in pool(month, difficulty).keys)
       for (final r in b.playable(difficulty))
-        if (fresh(r, played)) (b, r, localFile(r.file).lastModifiedSync()),
+        if (fresh(r, played, songs)) (b, r, songs[r.file]!),
   ]..sort((a, b) => a.$3.compareTo(b.$3));
   return [for (final (b, r, _) in cards) (b, r)];
 }

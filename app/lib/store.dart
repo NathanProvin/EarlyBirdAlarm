@@ -224,7 +224,7 @@ class Store extends ChangeNotifier {
       recording: bird.recordings.firstOrNull?.file,
       random: random,
     );
-    await _prefs.setString('cards', jsonEncode([...cards, card]));
+    await _saveCards([...cards, card]);
     await _prefs.setStringList('heard', [
       for (final id in heard)
         if (id != bird.id) id,
@@ -494,6 +494,7 @@ class Store extends ChangeNotifier {
   /// back). An empty pile (offline, first launch): any downloaded song, then the bundled
   /// birds of the region, then any.
   (Bird, Recording) pickNext(DateTime at, {int? forAlarm}) {
+    final clock = Stopwatch()..start();
     final held = {
       for (final MapEntry(:key, :value) in _held.entries)
         if (key != forAlarm) value,
@@ -506,6 +507,10 @@ class Store extends ChangeNotifier {
         ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
         _fallback(at);
     _drawPhoto(next.$1, next.$2.file, alarm: forAlarm != null);
+    // Timing log (dev builds): the draw, pile building included.
+    if (devTools) {
+      debugPrint('perf: draw ${clock.elapsedMicroseconds / 1000} ms');
+    }
     return next;
   }
 
@@ -606,38 +611,49 @@ class Store extends ChangeNotifier {
     await _write(alarms.where((x) => x.id != a.id).toList());
   }
 
-  /// Every card earned, oldest first (duplicates included).
-  List<CardData> get cards => [
-    for (final j in jsonDecode(_prefs.getString('cards') ?? '[]') as List)
-      CardData.fromJson(j as Map<String, dynamic>),
-  ];
+  /// Every card earned, oldest first (duplicates included). Decoded once and kept: it was
+  /// decoded at every read, several times per redraw, and froze the app at 10,000 cards
+  /// (5 MB of JSON; 2026-11-11). Changed only through [_saveCards].
+  List<CardData> get cards => _cards ??= _decode('cards');
 
   /// Cards given away in face-to-face trades (see [trade]).
-  List<CardData> get given => [
-    for (final j in jsonDecode(_prefs.getString('given') ?? '[]') as List)
+  List<CardData> get given => _given ??= _decode('given');
+
+  List<CardData>? _cards, _given, _achievement;
+
+  List<CardData> _decode(String key) => List.unmodifiable([
+    for (final j in jsonDecode(_prefs.getString(key) ?? '[]') as List)
       CardData.fromJson(j as Map<String, dynamic>),
-  ];
+  ]);
+
+  /// Saves the cards (and the given ones) and keeps them decoded.
+  Future<void> _saveCards(List<CardData> list, [List<CardData>? gave]) async {
+    _cards = List.unmodifiable(list);
+    _achievement = null;
+    await _prefs.setString('cards', jsonEncode(list));
+    if (gave != null) {
+      _given = List.unmodifiable(gave);
+      await _prefs.setString('given', jsonEncode(gave));
+    }
+  }
 
   /// What series and achievements count: the cards owned plus the ones given away, so a
   /// trade never takes progress back (decided 2026-10-31).
-  List<CardData> get achievementCards => [...cards, ...given];
+  List<CardData> get achievementCards =>
+      _achievement ??= List.unmodifiable([...cards, ...given]);
 
   /// A face-to-face trade: [give] leaves the collection (kept in [given]), [get] joins it.
   /// Both are marked as traded now.
   Future<void> trade(List<CardData> give, List<CardData> get) async {
     final now = DateTime.now();
     final gone = {for (final c in give) c.key};
-    await _prefs.setString(
-      'cards',
-      jsonEncode([
+    await _saveCards(
+      [
         for (final c in cards)
           if (!gone.contains(c.key)) c,
         for (final c in get) c.tradedAt(now),
-      ]),
-    );
-    await _prefs.setString(
-      'given',
-      jsonEncode([...given, for (final c in give) c.tradedAt(now)]),
+      ],
+      [...given, for (final c in give) c.tradedAt(now)],
     );
     final won = {for (final c in get) c.birdId};
     await _prefs.setStringList('heard', [
@@ -667,6 +683,7 @@ class Store extends ChangeNotifier {
   Future<void> restore(Map<String, Object?> b) async {
     await _prefs.setString('cards', b['cards'] as String);
     await _prefs.setString('given', b['given'] as String);
+    _cards = _given = _achievement = null; // decoded again at the next read
     for (final k in ['heard', 'seriesDone']) {
       await _prefs.setStringList(k, (b[k] as List).cast<String>());
     }
@@ -698,6 +715,7 @@ class Store extends ChangeNotifier {
     bool correct,
     String notificationTitle,
   ) async {
+    final clock = Stopwatch()..start();
     // Seeded from the old keys on the first answer of any kind, before 'streak' changes.
     final best = bestAlarmStreak, current = alarmStreak;
     await _prefs.setInt('bestAlarmStreak', best); // before a miss resets it
@@ -753,7 +771,11 @@ class Store extends ChangeNotifier {
           )
         : null;
     if (card != null) {
-      await _prefs.setString('cards', jsonEncode([...cards, card]));
+      await _saveCards([...cards, card]);
+      // Timing log (dev builds): the answer's bookkeeping, up to the card saved.
+      if (devTools) {
+        debugPrint('perf: answer ${clock.elapsedMicroseconds / 1000} ms');
+      }
       // Its own photo: usually already fetched during the quiz; else waited for here (4 s
       // at most; offline the catalog photo shows and the next sync fetches it).
       if (card.photo case final p?) {
