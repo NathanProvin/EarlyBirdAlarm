@@ -809,7 +809,8 @@ def publish():
     `publish gh-pages` also force-pushes them to https://nathanprovin.github.io/EarlyBirdAlarm/.
     Only the files species.json references are published; the branch keeps no history."""
     species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
-    files = {b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]} |             {x["photo"] for b in species for x in [*b.get("variants", []), *b.get("shiny", [])]}
+    files = ({b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]}
+             | {x["photo"] for b in species for x in [*b.get("variants", []), *b.get("shiny", [])]})
     missing = [f for f in files if not (OUT / f).exists()]
     assert not missing, f"{len(missing)} catalog files missing (e.g. {missing[:3]}): finish the build first"
     shutil.rmtree(PAGES, ignore_errors=True)
@@ -977,7 +978,8 @@ def main():
             continue
 
         # Photo: yours first, then Commons.
-        photo_out = OUT / "photos" / f"{bird_id}.jpg"
+        # The width is in the name: phones fetch a photo again when its size changes (1.1).
+        photo_out = OUT / "photos" / f"{bird_id}-w{PHOTO_WIDTH}.jpg"
         mine = MY_PHOTOS / f"{latin.replace(' ', '_')}.jpg"
         if mine.exists():
             save_photo(mine, photo_out)
@@ -1054,7 +1056,7 @@ def main():
             **{g: n for g, n in names.items() if n and n.lower() != latin.lower()},
             "order": t["order"], "family": t["family"],
             "recordings": recordings,
-            "photo": f"photos/{bird_id}.jpg",
+            "photo": f"photos/{photo_out.name}",
             "photoCredit": photo_credit,
             **extra,
             "_key": key, "_wd_latin": wd_latin, "_reach": reach[key],

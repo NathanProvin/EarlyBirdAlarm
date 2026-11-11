@@ -191,6 +191,7 @@ Future<bool> syncRegion(
       'regions.json',
     ); // region names (also fetched by the region screen)
     await initContent(region);
+    _dropOldPhotos();
   }
   final photos = [
     for (final b in birds)
@@ -253,6 +254,23 @@ Future<void> topUpDeck(
     if (recs.isEmpty) continue; // every song of this bird has rung lately
     if (!await download(recs[random.nextInt(recs.length)].file)) return;
     have++;
+  }
+}
+
+/// Deletes downloaded photos the catalog no longer lists: dropped species, and the 600 px
+/// photos of 1.0 (since 1.1 a photo's name carries its width, so a sharper one is fetched).
+void _dropOldPhotos() {
+  final dir = Directory('${_root.path}/photos');
+  if (!dir.existsSync() || species.isEmpty) return;
+  final used = {
+    for (final b in species.values) ...[
+      b.photo,
+      for (final v in b.variants) v.photo,
+      for (final v in b.shiny) v.photo,
+    ],
+  };
+  for (final f in dir.listSync().whereType<File>()) {
+    if (!used.contains('photos/${f.uri.pathSegments.last}')) f.deleteSync();
   }
 }
 
