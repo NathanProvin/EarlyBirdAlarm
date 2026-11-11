@@ -215,5 +215,8 @@
   "emailInUse": "Diese E-Mail hat schon ein Konto: melde dich an.",
   "weakPassword": "Passwort: mindestens 6 Zeichen.",
   "invalidEmail": "Prüfe die E-Mail-Adresse.",
-  "introAccountTitle": "Behalte deine Sammlung"
+  "introAccountTitle": "Behalte deine Sammlung",
+  "shiny": "Shiny",
+  "leucistic": "Leuzistisch",
+  "melanistic": "Melanistisch"
 }

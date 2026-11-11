@@ -712,4 +712,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Conserva tu colección';
+
+  @override
+  String get shiny => 'Shiny';
+
+  @override
+  String get leucistic => 'Leucístico';
+
+  @override
+  String get melanistic => 'Melánico';
 }

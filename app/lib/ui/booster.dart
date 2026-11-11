@@ -633,7 +633,10 @@ class _CardFlipState extends State<CardFlip>
   /// The whole reveal: 1.1 s for a Common card, up to 2.5 s for a Legendary one.
   static double lengthMs(int level) => 1100.0 + 350 * level;
 
-  late final int _level = max(0, tiers.indexOf(widget.rarity));
+  // Shiny reveals with Legendary's effects; its holographic frame does the rest.
+  late final int _level = widget.rarity == 'shiny'
+      ? tiers.length - 1
+      : max(0, tiers.indexOf(widget.rarity));
   late final _fx = _Effects(_level);
   late final _c = AnimationController(
     vsync: this,

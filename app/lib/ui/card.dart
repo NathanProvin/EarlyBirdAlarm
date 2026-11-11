@@ -19,8 +19,13 @@ String rarityName(AppLocalizations l, String tier) => switch (tier) {
   'uncommon' => l.uncommon,
   'rare' => l.rare,
   'epic' => l.epic,
+  'shiny' => l.shiny,
   _ => l.legendary,
 };
+
+/// "Leucistic" / "Melanistic": what a Shiny card's header says instead of its rarity.
+String shinyKindName(AppLocalizations l, String? kind) =>
+    kind == 'melanistic' ? l.melanistic : l.leucistic;
 
 /// The full trading card. Without [card] the bird is only "heard": a grey, blurred card
 /// showing just its name and "Try next time!".
@@ -80,7 +85,10 @@ class BirdCardView extends StatelessWidget {
       child: CustomPaint(
         painter: card == null
             ? null
-            : _CardStock(frame, max(0, tiers.indexOf(rarity))),
+            : _CardStock(
+                frame,
+                max(0, tiers.indexOf(rarity == 'shiny' ? 'legendary' : rarity)),
+              ),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
@@ -92,7 +100,7 @@ class BirdCardView extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(radius - 8),
-                      child: BirdPhoto(bird),
+                      child: BirdPhoto(bird, photo: card?.photo),
                     ),
                   ],
                 ),
@@ -144,7 +152,9 @@ class BirdCardView extends StatelessWidget {
         ),
       ),
     );
-    final inset = rarity == 'legendary' && card != null ? 14.0 : 8.0;
+    final inset = (rarity == 'legendary' || rarity == 'shiny') && card != null
+        ? 14.0
+        : 8.0;
     // The card is a fixed-size picture: text grows with the phone's font size, up to 1.3×.
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
@@ -156,7 +166,7 @@ class BirdCardView extends StatelessWidget {
               ? _PlainFrame(frame)
               : _FrameMaterial(
                   frame,
-                  max(0, tiers.indexOf(rarity)),
+                  max(0, cardTiers.indexOf(rarity)),
                   inset,
                   MediaQuery.devicePixelRatioOf(context),
                 ),
@@ -175,7 +185,11 @@ class BirdCardView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        card == null ? l.heard : rarityName(l, rarity),
+                        card == null
+                            ? l.heard
+                            : rarity == 'shiny'
+                            ? shinyKindName(l, bird.photoOf(card.photo).kind)
+                            : rarityName(l, rarity),
                         style: label,
                       ),
                       Expanded(
@@ -431,6 +445,7 @@ class _FrameMaterial extends CustomPainter {
     if (level == 2) canvas.drawRRect(outer, _brushedLight(size));
     if (level == 3) canvas.drawRRect(outer, _foil(size));
     if (level == 4) canvas.drawRRect(outer, _polishedGold(size));
+    if (level == 5) canvas.drawRRect(outer, _holographic(size));
     final tile = _tiles.putIfAbsent((level, color, dpr), _tile);
     canvas.drawRRect(
       outer,
@@ -446,6 +461,26 @@ class _FrameMaterial extends CustomPainter {
     if (level >= 2) _groove(canvas, size, cornersOnly: level == 2);
     _rim(canvas, size);
   }
+
+  /// Shiny: a holographic film, rainbow bands swept diagonally over pearl, soft enough for
+  /// the light header text (a "treasure" exception to the flat Dawn rules, as gold is).
+  Paint _holographic(Size size) => Paint()
+    ..shader = ui.Gradient.linear(
+      Offset.zero,
+      Offset(size.width, size.height),
+      const [
+        Color(0xFF9C8BC4),
+        Color(0xFF7FA8D8),
+        Color(0xFF6FC0B8),
+        Color(0xFFA9C97A),
+        Color(0xFFD9B66E),
+        Color(0xFFD48C9E),
+        Color(0xFF9C8BC4),
+        Color(0xFF7FA8D8),
+        Color(0xFF6FC0B8),
+      ],
+      const [0, 0.12, 0.25, 0.37, 0.5, 0.62, 0.75, 0.88, 1],
+    );
 
   /// Polished gold titanium: smooth, with sharp mirror-like reflections — warm yellow
   /// highlights and gold shadows alternating diagonally, as on a curved polished metal;
@@ -1163,7 +1198,7 @@ extension on CardTile {
         ClipRRect(
           borderRadius: BorderRadius.circular(radius - 10),
           child: card != null
-              ? BirdPhoto(bird)
+              ? BirdPhoto(bird, photo: card!.photo)
               : Opacity(
                   opacity: 0.5,
                   child: ColorFiltered(
@@ -1250,14 +1285,17 @@ class CopiesBadge extends StatelessWidget {
 /// The bird's photo, never cropped: the whole photo over a blurred, zoomed copy of itself
 /// that fills the box. From the phone (downloaded or bundled), or the web if it's missing.
 class BirdPhoto extends StatelessWidget {
-  const BirdPhoto(this.bird, {super.key});
+  const BirdPhoto(this.bird, {this.photo, super.key});
   final Bird bird;
+  final String?
+  photo; // a card's variant or Shiny photo; null: the catalog photo
 
   @override
   Widget build(BuildContext context) {
-    final path = phonePath(bird.photo);
+    final file = bird.photoOf(photo).photo;
+    final path = phonePath(file);
     final ImageProvider image = path == null
-        ? NetworkImage('$baseUrl${bird.photo}')
+        ? NetworkImage('$baseUrl$file')
         : path.startsWith('assets/')
         ? AssetImage(path)
         : FileImage(File(path));

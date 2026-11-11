@@ -56,6 +56,12 @@ XC_NC_LICENSE = re.compile(r"creativecommons\.org/licenses/(by-nc|by-nc-sa)/", r
 # Branch adding-tips (2026-11-03): the paid version can't use NC recordings, so the NC fallback is off
 # and species with no free xeno-canto or iNaturalist recording are dropped.
 ALLOW_NC = False
+# Card photos (2026-11-11: quality first, was 600 px at -q:v 4): 1200 px wide, never upscaled.
+PHOTO_WIDTH = 1200
+
+
+def save_photo(src, out):
+    ffmpeg("-i", str(src), "-vf", f"scale='min({PHOTO_WIDTH},iw)':-2", "-q:v", "2", str(out))
 
 
 def get(url, params=None, headers=None, binary=False):
@@ -462,7 +468,7 @@ def commons_photo(file_name):
     """(thumbnail URL, credit) or None when the license isn't allowed."""
     r = get("https://commons.wikimedia.org/w/api.php", {
         "action": "query", "format": "json", "prop": "imageinfo", "titles": f"File:{file_name}",
-        "iiprop": "url|extmetadata", "iiurlwidth": 600,
+        "iiprop": "url|extmetadata", "iiurlwidth": PHOTO_WIDTH,
         "iiextmetadatafilter": "LicenseShortName|Artist",
     })
     info = next(iter(r["query"]["pages"].values())).get("imageinfo", [{}])[0]
@@ -802,7 +808,7 @@ def publish():
     `publish gh-pages` also force-pushes them to https://nathanprovin.github.io/EarlyBirdAlarm/.
     Only the files species.json references are published; the branch keeps no history."""
     species = json.loads((OUT / "species.json").read_text(encoding="utf-8"))
-    files = {b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]}
+    files = {b["photo"] for b in species} | {r["file"] for b in species for r in b["recordings"]} |             {x["photo"] for b in species for x in [*b.get("variants", []), *b.get("shiny", [])]}
     missing = [f for f in files if not (OUT / f).exists()]
     assert not missing, f"{len(missing)} catalog files missing (e.g. {missing[:3]}): finish the build first"
     shutil.rmtree(PAGES, ignore_errors=True)
@@ -848,6 +854,56 @@ def sync_r2():
     subprocess.run([rclone, "sync", str(PAGES), f"r2:{R2_BUCKET}", "--checksum", "--fast-list",
                     "--exclude", ".git/**", "--exclude", ".nojekyll", "--transfers", "16",
                     "--stats-one-line", "--stats", "30s", "--stats-log-level", "NOTICE"], env=env, check=True)
+
+
+def extra_photos(bird_id, tmp, base_url):
+    """Card variants (cache/variants.json from variants.py, best first: the best goes to
+    Legendary) and Shiny photos (pipeline/shiny.csv, picked by the user from shiny.py's
+    sheets), as {"variants": [...], "shiny": [...]}; keys left out when empty."""
+    global _extras
+    if _extras is None:
+        v = CACHE / "variants.json"
+        cands = CACHE / "shiny" / "candidates.json"
+        shiny = {}
+        if cands.exists():
+            c = json.loads(cands.read_text(encoding="utf-8"))
+            for row in read_rows(ROOT / "shiny.csv"):
+                shiny.setdefault(row["id"], []).append({**c[row["id"]][int(row["pick"]) - 1], "kind": row["kind"]})
+        _extras = json.loads(v.read_text(encoding="utf-8")) if v.exists() else {}, shiny
+    variants, shiny = _extras
+    out = {}
+    # The catalog photo itself is not a variant again.
+    picks = [x for x in variants.get(bird_id, []) if urllib.parse.quote(x["file"].replace(" ", "_")) not in base_url]
+    for key, items, url_of in [("variants", picks, lambda x: x["thumb"]),
+                               ("shiny", shiny.get(bird_id, []), lambda x: full_size(x["url"]))]:
+        for i, x in enumerate(items, 1):
+            name = f"{bird_id}-{key[0]}{i}.jpg"  # -v1 … -v5, -s1 …
+            if not (OUT / "photos" / name).exists():
+                src = tmp / f"{name}.src"
+                src.write_bytes(get(url_of(x), binary=True))
+                save_photo(src, OUT / "photos" / name)
+            out.setdefault(key, []).append({"photo": f"photos/{name}", "credit": f"Photo: {x['credit']}",
+                                            **({"kind": x["kind"]} if key == "shiny" else {})})
+    return out
+
+
+_extras = None
+
+
+def full_size(url):
+    """The original of a contact-sheet photo: iNaturalist "medium" (500 px) → "original" (up
+    to 2048 px); a Commons thumbnail → the uploaded file. save_photo scales it to PHOTO_WIDTH."""
+    if "/thumb/" in url:
+        return url.split("?")[0].replace("/thumb/", "/").rsplit("/", 1)[0]
+    return url.replace("/medium.", "/original.")
+
+
+assert full_size("https://up.wm.org/wikipedia/commons/thumb/4/4a/A_%283%29.jpg/960px-A_%283%29.jpg?utm=x") ==     "https://up.wm.org/wikipedia/commons/4/4a/A_%283%29.jpg"
+
+
+def read_rows(path):
+    with open(path, encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
 def main():
@@ -922,7 +978,7 @@ def main():
         photo_out = OUT / "photos" / f"{bird_id}.jpg"
         mine = MY_PHOTOS / f"{latin.replace(' ', '_')}.jpg"
         if mine.exists():
-            ffmpeg("-i", str(mine), "-vf", "scale=600:-2", "-q:v", "4", str(photo_out))
+            save_photo(mine, photo_out)
             photo_credit = f"Photo: {my_credits.get(mine.name, '© ' + MY_NAME)}"
         else:
             found = next(filter(None, map(commons_photo, images)), None) or commons_search(latin)
@@ -932,8 +988,9 @@ def main():
             if not photo_out.exists():
                 src = tmp / f"{bird_id}.photo"
                 src.write_bytes(get(found[0], binary=True))
-                ffmpeg("-i", str(src), "-vf", "scale=600:-2", "-q:v", "4", str(photo_out))
+                save_photo(src, photo_out)
             photo_credit = f"Photo: {found[1]}"
+        extra = extra_photos(bird_id, tmp, "" if mine.exists() else found[0])
 
         if not xc_key:
             drop("recordings skipped (no API key)")
@@ -997,6 +1054,7 @@ def main():
             "recordings": recordings,
             "photo": f"photos/{bird_id}.jpg",
             "photoCredit": photo_credit,
+            **extra,
             "_key": key, "_wd_latin": wd_latin, "_reach": reach[key],
         })
         seen[en.lower()] = birds[-1]
@@ -1011,9 +1069,10 @@ def main():
     nc = lambda credit: "-NC" in credit.rsplit(" · ", 1)[-1]
     assert nc("A from FRANCE · XC1 · CC BY-NC-SA 4.0") and not nc("A from FRANCE · CC BY-SA 2.0")
     for b in birds:  # self-check: the app must never get a file that's missing or non-free
-        files |= {b["photo"], *(r["file"] for r in b["recordings"])}
+        extras = [*b.get("variants", []), *b.get("shiny", [])]
+        files |= {b["photo"], *(r["file"] for r in b["recordings"]), *(x["photo"] for x in extras)}
         assert all((OUT / f).exists() for f in files), b["id"]
-        assert not nc(b["photoCredit"]), b["id"]
+        assert not any(nc(c) for c in [b["photoCredit"], *(x["credit"] for x in extras)]), b["id"]
         assert all(nc(r["credit"]) == bool(r.get("nc")) for r in b["recordings"]), b["id"]  # NC only if flagged
         assert all(r["kind"] in KINDS for r in b["recordings"]), b["id"]
     keep = {b["id"] for b in birds}

@@ -76,6 +76,47 @@ void main() {
     ];
   });
 
+  test('variants go to the top rarities, Shiny cards get a Shiny photo', () {
+    final json = <String, Object>{
+      'id': 'crow', 'latin': 'c', 'en': 'c', 'fr': 'c', //
+      'order': 'o', 'family': 'f', 'photo': 'p.jpg', 'photoCredit': 'base',
+      'number': 1, 'recordings': <Object>[], 'stats': <String, Object>{},
+      'variants': [
+        {'photo': 'v1.jpg', 'credit': 'one'},
+        {'photo': 'v2.jpg', 'credit': 'two'},
+      ],
+      'shiny': [
+        {'photo': 's1.jpg', 'credit': 'white', 'kind': 'leucistic'},
+      ],
+    };
+    final bird = Bird.fromJson(json);
+    String? photo(String rarity) => rollCard(bird, null, rarity: rarity).photo;
+    expect(photo('legendary'), anyOf('v1.jpg', 's1.jpg')); // 1 in 1000 is Shiny
+    expect(photo('epic'), anyOf('v2.jpg', 's1.jpg'));
+    expect(
+      photo('rare'),
+      anyOf(isNull, 's1.jpg'),
+    ); // no third variant: catalog photo
+    final shiny = rollCard(bird, null, rarity: 'shiny');
+    expect((shiny.rarity, shiny.photo), ('shiny', 's1.jpg'));
+    expect(bird.photoOf(shiny.photo).kind, 'leucistic');
+    // Saved and read back; an unknown or missing photo falls back to the catalog's.
+    final back = CardData.fromJson(jsonDecode(jsonEncode(shiny.toJson())));
+    expect(back.photo, 's1.jpg');
+    expect(bird.photoOf(null).credit, 'base');
+    expect(bird.photoOf('gone.jpg').photo, 'p.jpg');
+    // About 1 card in 1000 turns Shiny.
+    final r = Random(1);
+    final n = [
+      for (var i = 0; i < 20000; i++)
+        rollCard(bird, null, rarity: 'common', random: r),
+    ].where((c) => c.rarity == 'shiny').length;
+    expect(n, inInclusiveRange(8, 35));
+    // A bird without a Shiny photo never gives one, even when asked (dev preview).
+    final plain = Bird.fromJson({...json}..remove('shiny'));
+    expect(rollCard(plain, null, rarity: 'shiny').rarity, 'legendary');
+  });
+
   test('a card keeps the rarity stars of the region where it was won', () {
     Bird inRegion(int? level) => Bird.fromJson(
       {

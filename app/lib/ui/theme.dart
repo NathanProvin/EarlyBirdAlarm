@@ -15,6 +15,7 @@ const rarityColor = {
   'rare': Color(0xFF3B7DB8),
   'epic': Color(0xFF8A4FB0),
   'legendary': Color(0xFFD9A21B),
+  'shiny': Color(0xFF8FA3B8), // pearl, under the holographic sheen (card.dart)
 };
 const unknownColor = Color(0xFFDDD5CA); // not discovered yet
 

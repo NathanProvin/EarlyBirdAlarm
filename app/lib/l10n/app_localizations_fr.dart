@@ -712,4 +712,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Gardez votre collection';
+
+  @override
+  String get shiny => 'Shiny';
+
+  @override
+  String get leucistic => 'Leucique';
+
+  @override
+  String get melanistic => 'Mélanique';
 }

@@ -14,6 +14,7 @@ class CardData {
     this.level,
     this.recording,
     this.traded,
+    this.photo,
   });
 
   CardData.fromJson(Map<String, dynamic> j)
@@ -30,6 +31,7 @@ class CardData {
         level: j['level'] as int?,
         recording: j['recording'] as String?,
         traded: DateTime.tryParse(j['traded'] as String? ?? ''),
+        photo: j['photo'] as String?,
       );
 
   final String birdId;
@@ -45,6 +47,8 @@ class CardData {
   final String?
   recording; // file of the recording that rang (null before UI round 1)
   final DateTime? traded; // when it changed hands in a face-to-face trade
+  // Its variant or Shiny photo, so its picture never changes (null: the catalog photo).
+  final String? photo;
 
   /// Identifies one card among all copies: its bird and the moment it was won.
   String get key => '$birdId@${earned.toIso8601String()}';
@@ -60,6 +64,7 @@ class CardData {
     level: level,
     recording: recording,
     traded: when,
+    photo: photo,
   );
 
   Map<String, dynamic> toJson() => {
@@ -72,6 +77,7 @@ class CardData {
     'level': ?level,
     'recording': ?recording,
     'traded': ?traded?.toIso8601String(),
+    'photo': ?photo,
   };
 }
 
@@ -89,6 +95,8 @@ CardData rollCard(
   String? recording,
   Random? random,
 }) {
+  // 'shiny' asks for a Shiny card (dev preview); a bird without a Shiny photo gives Legendary.
+  if (rarity == 'shiny' && bird.shiny.isEmpty) rarity = 'legendary';
   final r = random ?? Random();
   final t = _studentT3(r);
   final specimen = t > 0 ? t : -_normal(r).abs() * 0.35;
@@ -97,6 +105,18 @@ CardData rollCard(
       e.key: (e.value, (0.8 * specimen + 0.6 * _normal(r)).clamp(-3.0, 3.0)),
   };
   final percentiles = [for (final (_, z) in rolls.values) _cdf(z)];
+  // Drawn last, and only for birds that have one: the other rolls stay as they were.
+  if (bird.shiny.isNotEmpty &&
+      (rarity == 'shiny' || r.nextDouble() < shinyOdds)) {
+    rarity = 'shiny';
+  }
+  // The best variants go to the top rarities: Legendary gets the first, Epic the second…
+  final k = tiers.length - 1 - tiers.indexOf(rarity);
+  final photo = rarity == 'shiny'
+      ? bird.shiny[r.nextInt(bird.shiny.length)].photo
+      : k < bird.variants.length
+      ? bird.variants[k].photo
+      : null;
   return CardData(
     birdId: bird.id,
     stats: {
@@ -112,6 +132,7 @@ CardData rollCard(
     region: region,
     level: bird.level,
     recording: recording,
+    photo: photo,
   );
 }
 

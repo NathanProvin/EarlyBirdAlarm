@@ -105,7 +105,7 @@ List<SeriesState> seriesStates(
   String? rarityOf(CardData c) => c.rarity ?? birdById(c.birdId)?.rarity;
   int atLeast(String tier) => cards.where((c) {
     final r = rarityOf(c);
-    return r != null && tiers.indexOf(r) >= tiers.indexOf(tier);
+    return r != null && cardTiers.indexOf(r) >= cardTiers.indexOf(tier);
   }).length;
   final series = [
     for (final s in allSeries)

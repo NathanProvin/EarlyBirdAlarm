@@ -35,7 +35,13 @@ CardData? checkCard(Object? json) {
     final card = CardData.fromJson(json! as Map<String, dynamic>);
     final bird = birdById(card.birdId);
     if (bird == null) return null;
-    if (card.rarity != null && !tiers.contains(card.rarity)) return null;
+    if (card.rarity != null && !cardTiers.contains(card.rarity)) return null;
+    // A photo must be one of this bird's (a variant, or a Shiny one on a Shiny card).
+    if (card.photo case final p?
+        when bird.photoOf(p).photo != p ||
+            (bird.photoOf(p).kind != null) != (card.rarity == 'shiny')) {
+      return null;
+    }
     if (card.quality < 0 || card.quality > 100) return null;
     if (card.earned.isAfter(DateTime.now().add(const Duration(days: 1)))) {
       return null;

@@ -215,5 +215,8 @@
   "emailInUse": "Cet e-mail a déjà un compte : connectez-vous.",
   "weakPassword": "Mot de passe : 6 caractères minimum.",
   "invalidEmail": "Vérifiez l'adresse e-mail.",
-  "introAccountTitle": "Gardez votre collection"
+  "introAccountTitle": "Gardez votre collection",
+  "shiny": "Shiny",
+  "leucistic": "Leucique",
+  "melanistic": "Mélanique"
 }

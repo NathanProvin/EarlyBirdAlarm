@@ -6,6 +6,11 @@ enum Difficulty { easy, medium, hard, expert }
 /// Rarity tiers, most common first.
 const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 
+/// Card rarities: the bird tiers plus Shiny (1.1), a card only, never a bird's tier: a
+/// leucistic or melanistic photo, [shinyOdds] per card of a species that has one.
+const cardTiers = [...tiers, 'shiny'];
+const shinyOdds = 1 / 1000;
+
 /// Step 1 of a ring, the bird: how often a species rings, by how common it is this month
 /// in the region (scarce birds a little more often than the 16/8/4/2/1 of 3b; 2026-10-30),
 /// and which of those tiers each difficulty drafts from.
@@ -152,6 +157,18 @@ class Bird {
       family = j['family'] as String,
       photo = j['photo'] as String,
       photoCredit = j['photoCredit'] as String,
+      variants = [
+        for (final v in j['variants'] as List? ?? const [])
+          (photo: v['photo'] as String, credit: v['credit'] as String),
+      ],
+      shiny = [
+        for (final v in j['shiny'] as List? ?? const [])
+          (
+            photo: v['photo'] as String,
+            credit: v['credit'] as String,
+            kind: v['kind'] as String,
+          ),
+      ],
       number = j['number'] as int,
       recordings = [
         for (final r in j['recordings'] as List)
@@ -168,6 +185,11 @@ class Bird {
 
   final String id, latin, name, order, family, photo, photoCredit;
   final Map<String, String> names; // language -> common name (see localName)
+  /// Extra photos (catalog 1.1), best first: the best one goes to Legendary cards.
+  final List<({String photo, String credit})> variants;
+
+  /// Leucistic / melanistic photos for Shiny cards (picked by hand).
+  final List<({String photo, String credit, String kind})> shiny;
   final int number; // card number, in taxonomic order over all species
   final List<Recording> recordings;
   final Map<String, ({double mean, double sd})> stats; // missing = unknown
@@ -178,6 +200,18 @@ class Bird {
   final int? level;
 
   String nameIn(String locale) => localName(names, locale);
+
+  /// The photo of a card (its variant or Shiny photo, saved when won) and its credit; the
+  /// catalog photo for older cards, heard birds, or a photo the catalog no longer has.
+  ({String photo, String credit, String? kind}) photoOf(String? photo) =>
+      [
+        for (final v in variants)
+          (photo: v.photo, credit: v.credit, kind: null),
+        for (final v in shiny) (photo: v.photo, credit: v.credit, kind: v.kind),
+      ].firstWhere(
+        (v) => v.photo == photo,
+        orElse: () => (photo: this.photo, credit: photoCredit, kind: null),
+      );
 
   /// How common the species is: its commonest tier of the year in the region. Cards
   /// have their own rarity (drawn when won); this one is for cards from before 2026-10-30.

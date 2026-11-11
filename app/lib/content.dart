@@ -200,6 +200,20 @@ Future<bool> syncRegion(
     await Future.wait(photos.skip(i).take(8).map(download));
   }
   await topUpDeck(month, difficulty, heard: heard, played: played);
+  // The variant and Shiny photos of the birds that can ring next (any other card's photo
+  // streams from the web when it's missing): ~14 birds, not the whole region.
+  final extras = [
+    for (final b in birds)
+      if (b.recordings.any((r) => fresh(r, played)))
+        for (final p in [
+          ...b.variants.map((v) => v.photo),
+          ...b.shiny.map((v) => v.photo),
+        ])
+          if (!localFile(p).existsSync()) p,
+  ];
+  for (var i = 0; i < extras.length; i += 8) {
+    await Future.wait(extras.skip(i).take(8).map(download));
+  }
   await _cleanUp(keep);
   return stale;
 }

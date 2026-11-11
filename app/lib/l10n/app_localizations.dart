@@ -1397,6 +1397,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep your collection'**
   String get introAccountTitle;
+
+  /// No description provided for @shiny.
+  ///
+  /// In en, this message translates to:
+  /// **'Shiny'**
+  String get shiny;
+
+  /// No description provided for @leucistic.
+  ///
+  /// In en, this message translates to:
+  /// **'Leucistic'**
+  String get leucistic;
+
+  /// No description provided for @melanistic.
+  ///
+  /// In en, this message translates to:
+  /// **'Melanistic'**
+  String get melanistic;
 }
 
 class _AppLocalizationsDelegate

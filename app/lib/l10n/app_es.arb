@@ -215,5 +215,8 @@
   "emailInUse": "Este correo ya tiene cuenta: inicia sesión.",
   "weakPassword": "Contraseña: al menos 6 caracteres.",
   "invalidEmail": "Revisa la dirección de correo.",
-  "introAccountTitle": "Conserva tu colección"
+  "introAccountTitle": "Conserva tu colección",
+  "shiny": "Shiny",
+  "leucistic": "Leucístico",
+  "melanistic": "Melánico"
 }

@@ -63,7 +63,7 @@ class CreditsScreen extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
-                for (final t in tiers)
+                for (final t in cardTiers)
                   ActionChip(
                     label: Text(rarityName(l, t)),
                     labelStyle: TextStyle(color: rarityColor[t]),

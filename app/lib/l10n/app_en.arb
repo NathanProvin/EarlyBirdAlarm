@@ -265,5 +265,8 @@
   "emailInUse": "This email already has an account: sign in.",
   "weakPassword": "Password: at least 6 characters.",
   "invalidEmail": "Check the email address.",
-  "introAccountTitle": "Keep your collection"
+  "introAccountTitle": "Keep your collection",
+  "shiny": "Shiny",
+  "leucistic": "Leucistic",
+  "melanistic": "Melanistic"
 }

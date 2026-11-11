@@ -25,7 +25,7 @@ String cardRarity(CardData c) =>
 /// The best copy of each owned bird, by bird id: the rarest, then the best quality.
 Map<String, CardData> bestCards(List<CardData> cards) {
   final best = <String, CardData>{};
-  int score(CardData c) => tiers.indexOf(cardRarity(c)) * 1000 + c.quality;
+  int score(CardData c) => cardTiers.indexOf(cardRarity(c)) * 1000 + c.quality;
   for (final c in cards) {
     if (best[c.birdId] case final b? when score(b) >= score(c)) continue;
     best[c.birdId] = c;
@@ -136,7 +136,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  for (final t in [null, ...tiers])
+                  for (final t in [null, ...cardTiers])
                     _RarityDot(
                       color: t == null ? null : rarityColor[t],
                       label: t == null ? l.allRarities : rarityName(l, t),
@@ -193,7 +193,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     // Rarity belongs to cards: a bird not won yet has none (the filter hides it).
     String? rarityOf(Bird b, CardData? c) => c == null ? null : cardRarity(c);
     int rank((Bird, CardData?) e) =>
-        e.$2 == null ? -1 : tiers.indexOf(cardRarity(e.$2!));
+        e.$2 == null ? -1 : cardTiers.indexOf(cardRarity(e.$2!));
     int byNumber((Bird, CardData?) a, (Bird, CardData?) b) =>
         a.$1.number.compareTo(b.$1.number);
     final plain = <String, String>{};
@@ -723,7 +723,10 @@ class _CardDetailState extends State<CardDetail> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final credit in [?recording?.credit, widget.bird.photoCredit])
+          for (final credit in [
+            ?recording?.credit,
+            widget.bird.photoOf(widget.card?.photo).credit,
+          ])
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
@@ -775,8 +778,8 @@ class _CardDetailState extends State<CardDetail> {
                         // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
                         shine:
                             card != null &&
-                            tiers.indexOf(cardRarity(card)) >=
-                                tiers.indexOf('epic'),
+                            cardTiers.indexOf(cardRarity(card)) >=
+                                cardTiers.indexOf('epic'),
                         shineAfter: widget.flipIn
                             ? const Duration(milliseconds: 1100)
                             : Duration.zero,
