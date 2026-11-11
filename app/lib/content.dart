@@ -297,6 +297,12 @@ List<(Bird, Recording)> deckPile(
   return [for (final (b, r, _) in cards) (b, r)];
 }
 
+/// Puts the downloaded song [path] under the pile, as if just downloaded.
+void toBottom(String path) {
+  final f = localFile(path);
+  if (f.existsSync()) f.setLastModifiedSync(DateTime.now());
+}
+
 /// Downloaded songs kept on the phone at most; the oldest go first.
 const keepSongs = 60;
 

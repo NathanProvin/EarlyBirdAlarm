@@ -342,7 +342,7 @@ class Store extends ChangeNotifier {
       monthFor(DateTime.now()),
       difficulty,
       heard: recent.toSet(), // the deck rotates past the birds just heard
-      played: played.toSet(),
+      played: resting(monthFor(DateTime.now())),
       keep: scheduled,
     )) {
       await rescheduleAll();
@@ -483,10 +483,24 @@ class Store extends ChangeNotifier {
     return deckPile(
           monthFor(at),
           difficulty,
-          played.toSet(),
+          resting(monthFor(at)),
         ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
         _fallback(at);
   }
+
+  /// How many of the last songs played can't come back yet: [playedCount], or half the
+  /// songs that can ring now when that's fewer (2026-11-11: Easy has ~110 songs in a
+  /// region, so a 200-song rest held them all after a week and the pile ran dry).
+  int _rest(int? month) {
+    final songs = pool(
+      month,
+      difficulty,
+    ).keys.fold(0, (n, b) => n + b.playable(difficulty).length);
+    return min(playedCount, max(1, songs ~/ 2));
+  }
+
+  /// The songs still resting: out of the pile until enough others have rung.
+  Set<String> resting(int? month) => played.take(_rest(month)).toSet();
 
   (Bird, Recording) _fallback(DateTime at) =>
       pickBird(recent, monthFor(at), difficulty, downloaded) ??
@@ -616,6 +630,16 @@ class Store extends ChangeNotifier {
         recording.file,
         ...played.where((f) => f != recording.file).take(playedCount - 1),
       ]);
+      // The song whose rest just ended goes under the pile, as a new card would (its file
+      // is old: it would come back on top).
+      if (played.elementAtOrNull(_rest(monthFor(DateTime.now())))
+          case final back?) {
+        try {
+          toBottom(back);
+        } on Error catch (e) {
+          debugPrint('pile: $e'); // no content folder (tests)
+        }
+      }
     }
     // The bird was drafted when the alarm was set; the card's rarity is drawn now,
     // leaning toward how scarce the bird is this month (all year with "All birds").
