@@ -9,7 +9,9 @@ const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 /// Card rarities: the bird tiers plus Shiny (1.1), a card only, never a bird's tier: a
 /// leucistic or melanistic photo, [shinyOdds] per card of a species that has one.
 const cardTiers = [...tiers, 'shiny'];
-const shinyOdds = 1 / 1000;
+// 1 / 500 (2026-11-11): ~1 Shiny card in 1,000 overall (half the cards are of species
+// with a Shiny photo), about one every 4 months for an active player.
+const shinyOdds = 1 / 500;
 
 /// Step 1 of a ring, the bird: how often a species rings, by how common it is this month
 /// in the region (scarce birds a little more often than the 16/8/4/2/1 of 3b; 2026-10-30),

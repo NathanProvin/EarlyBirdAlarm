@@ -91,7 +91,7 @@ void main() {
     };
     final bird = Bird.fromJson(json);
     String? photo(String rarity) => rollCard(bird, null, rarity: rarity).photo;
-    expect(photo('legendary'), anyOf('v1.jpg', 's1.jpg')); // 1 in 1000 is Shiny
+    expect(photo('legendary'), anyOf('v1.jpg', 's1.jpg')); // 1 in 500 is Shiny
     expect(photo('epic'), anyOf('v2.jpg', 's1.jpg'));
     expect(
       photo('rare'),
@@ -105,13 +105,13 @@ void main() {
     expect(back.photo, 's1.jpg');
     expect(bird.photoOf(null).credit, 'base');
     expect(bird.photoOf('gone.jpg').photo, 'p.jpg');
-    // About 1 card in 1000 turns Shiny.
+    // About 1 card in 500 turns Shiny.
     final r = Random(1);
     final n = [
       for (var i = 0; i < 20000; i++)
         rollCard(bird, null, rarity: 'common', random: r),
     ].where((c) => c.rarity == 'shiny').length;
-    expect(n, inInclusiveRange(8, 35));
+    expect(n, inInclusiveRange(22, 60));
     // A bird without a Shiny photo never gives one, even when asked (dev preview).
     final plain = Bird.fromJson({...json}..remove('shiny'));
     expect(rollCard(plain, null, rarity: 'shiny').rarity, 'legendary');
