@@ -214,6 +214,9 @@ Future<bool> syncRegion(
     })
       if (!localFile(p).existsSync()) p,
   ];
+  debugPrint(
+    'sync: ${bulk ? 'Wi-Fi' : 'mobile data'}, ${photos.length} photos to fetch',
+  );
   for (var i = 0; i < photos.length; i += 8) {
     await Future.wait(photos.skip(i).take(8).map(download));
   }

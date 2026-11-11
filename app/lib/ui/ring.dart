@@ -52,11 +52,14 @@ class _RingScreenState extends State<RingScreen> {
   late final Recording? _rec =
       widget.training?.$2 ??
       _bird.recordings.where((r) => r.file == _payload['rec']).firstOrNull;
-  late final List<Bird> _choices = choicesFor(
-    _bird,
-    store.monthFor(widget.alarm?.dateTime ?? DateTime.now()),
-    store.difficulty,
-  );
+  // Picked at the draw, photos fetched with it (else picked now, as before).
+  late final List<Bird> _choices =
+      store.drawnChoices(_bird, _rec?.file) ??
+      choicesFor(
+        _bird,
+        store.monthFor(widget.alarm?.dateTime ?? DateTime.now()),
+        store.difficulty,
+      );
   late final int _oldStreak = store.streak;
   final _player = AudioPlayer(); // Twitch only: alarms play through the plugin
   Bird? _tapped;

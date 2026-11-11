@@ -362,6 +362,7 @@ class Store extends ChangeNotifier {
       await rescheduleAll();
       notifyListeners();
     }
+    _prepareQuizzes();
   }
 
   /// The song file an alarm will play, from its payload {"bird", "rec"} (null if older).
@@ -507,6 +508,7 @@ class Store extends ChangeNotifier {
         ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
         _fallback(at);
     _drawPhoto(next.$1, next.$2.file, alarm: forAlarm != null);
+    _drawChoices(next.$1, next.$2.file, monthFor(at));
     // Timing log (dev builds): the draw, pile building included.
     if (devTools) {
       debugPrint('perf: draw ${clock.elapsedMicroseconds / 1000} ms');
@@ -549,6 +551,65 @@ class Store extends ChangeNotifier {
     if (photo != null && !localFile(photo).existsSync()) {
       _fetching[photo] = _fetch(photo);
     }
+  }
+
+  /// Each pile card's quiz (song → the 4 bird ids), picked when the card joins the pile
+  /// and its catalog photos fetched then: when it's drawn ~14 cards later, the whole quiz
+  /// is on the phone. On mobile data the region's photos aren't all there, and wrong
+  /// answers picked when the quiz opened showed blank while they came (2026-11-11).
+  Map<String, List<String>> get _choicesDrawn => {
+    for (final e in (jsonDecode(
+      _prefs.getString('drawnChoices') ?? '{}',
+    ) as Map).entries)
+      e.key as String: (e.value as List).cast<String>(),
+  };
+
+  Future<void> _saveChoices(Map<String, List<String>> m) =>
+      _prefs.setString('drawnChoices', jsonEncode(m));
+
+  /// Gives each pile card without one its quiz, forgets the cards gone, fetches photos.
+  void _prepareQuizzes() {
+    final month = monthFor(DateTime.now());
+    final pile = deckPile(month, difficulty, resting(month));
+    final keep = {..._held.values, for (final (_, r) in pile) r.file};
+    final m = {
+      for (final MapEntry(:key, :value) in _choicesDrawn.entries)
+        if (keep.contains(key)) key: value,
+    };
+    for (final (b, r) in pile) {
+      m[r.file] ??= [for (final c in choicesFor(b, month, difficulty)) c.id];
+    }
+    unawaited(_saveChoices(m));
+    for (final id in {for (final ids in m.values) ...ids}) {
+      if (birdById(id) case final b? when phonePath(b.photo) == null) {
+        unawaited(keepPhoto(b.photo));
+      }
+    }
+  }
+
+  /// A drawn card without a quiz yet (the pile was empty, or a card from before this
+  /// version) gets one now; its photos come while the quiz opens.
+  void _drawChoices(Bird bird, String song, int? month) {
+    if (_choicesDrawn.containsKey(song)) return;
+    final choices = choicesFor(bird, month, difficulty);
+    unawaited(
+      _saveChoices({
+        ..._choicesDrawn,
+        song: [for (final b in choices) b.id],
+      }),
+    );
+    for (final b in choices) {
+      if (phonePath(b.photo) == null) unawaited(keepPhoto(b.photo));
+    }
+  }
+
+  /// The quiz choices picked when [song] was drawn; null if drawn before this version or
+  /// no longer valid (a bird gone from the catalog, or not the one ringing).
+  List<Bird>? drawnChoices(Bird bird, String? song) {
+    final ids = _choicesDrawn[song];
+    if (ids == null || !ids.contains(bird.id)) return null;
+    final choices = [for (final id in ids) ?birdById(id)];
+    return choices.length == ids.length ? choices : null;
   }
 
   /// Photo downloads under way, so the reveal waits for the same one, never a second.
