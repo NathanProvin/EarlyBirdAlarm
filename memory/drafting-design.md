@@ -77,16 +77,16 @@ The reveal flips the card with effects growing with rarity (Shiny: 4.2 s of fire
 
 Ranked by priority; **to fix**: 1–7 and 10 (8 and 9 left aside by the user).
 
-1. **Cloud backup stops after ~3,250 cards** (one 1 MB Firestore document, 322 bytes a card measured; ~7 months at 16 cards a day): writes then fail silently.
-2. **Alarm photos deleted after prefetch:** the sync's photo cleanup doesn't keep pending draws' photos; an alarm's photo, picked at scheduling, is deleted by the next sync (and a sync finishing during a quiz deletes the one being prefetched).
-3. **Firestore free quota ~1,000 active players:** one write per collection change (~16+ a day each, the whole document each time) against 20,000 writes a day on the Spark plan.
+1. ✅ *(fixed 2026-11-11, Phase B: chunks of 1,000)* **Cloud backup stops after ~3,250 cards** (one 1 MB Firestore document, 322 bytes a card measured; ~7 months at 16 cards a day): writes then fail silently.
+2. ✅ *(fixed, Phase A, checked on the S22)* **Alarm photos deleted after prefetch:** the sync's photo cleanup doesn't keep pending draws' photos; an alarm's photo, picked at scheduling, is deleted by the next sync (and a sync finishing during a quiz deletes the one being prefetched).
+3. ✅ *(fixed, Phase B: batched writes, changed documents only)* **Firestore free quota ~1,000 active players:** one write per collection change (~16+ a day each, the whole document each time) against 20,000 writes a day on the Spark plan.
 4. **~70–90 MB of catalog photos on mobile data without asking** (first sync, region change).
-5. **Collection decoded from JSON at each `cards` read** and rewritten whole at each card: stutters at ~10,000 cards.
-6. **Hundreds of file checks on the main thread** at each draw / sync / answer (pile building).
-7. **Startup race:** the cards held by alarms are filled by `healAlarms()`, after the sync: a booster opened right at launch can take an alarm's card.
+5. ✅ *(fixed, Phase C: the app froze at 10,000 cards, now runs; an answer still costs ~0.8 s at 10,000 cards, hidden by the 2 s answer display)* **Collection decoded from JSON at each `cards` read** and rewritten whole at each card: stutters at ~10,000 cards.
+6. ✅ *(fixed, Phase C: a draw takes 1.8 ms at 10,000 cards)* **Hundreds of file checks on the main thread** at each draw / sync / answer (pile building).
+7. ✅ *(fixed, Phase A)* **Startup race:** the cards held by alarms are filled by `healAlarms()`, after the sync: a booster opened right at launch can take an alarm's card.
 8. *(left aside)* Manual region choice lets players farm Legendary-rich regions.
 9. *(left aside)* Small regions on Easy can empty the pile (last-10 exclusion on a ~10–15-species pool).
-10. **Shiny won offline shows the normal catalog photo** under "Shiny · Leucistic" until the next sync.
+10. ✅ *(fixed for alarms, Phase A: their Shiny photo is prefetched)* **Shiny won offline shows the normal catalog photo** under "Shiny · Leucistic" until the next sync.
 11. Low: a Legendary-tier bird gives 30 % Common on Hard; clock changes refill boosters; forged cards through a self-written cloud document (server-signed cards planned); Easy leans to Uncommon; pile order depends on file dates; tiny leftovers (`_fetching`, stale `drawnPhotos`).
 
 Not tested yet: Medium and Expert simulations, weak networks, a real alarm ringing with the pile (where risk 2 shows), a unit test for the pile.
