@@ -6,6 +6,7 @@ Iterative: each step ends with something that runs on a real Android device. Pla
 - **Live:** 1.0.0+3 in **closed testing** on Google Play, **14 active installs**, lots of constructive tester feedback. Catalog (1,292 species, 0 NC recordings, 1,212 regions) and privacy pages on GitHub Pages (`gh-pages`, ~506 MB: audio 410 MB, photos 63 MB, regions 34 MB).
 - **Plan rewritten 2026-11-10** around one bottleneck: **no accounts and no server** caps what the app can do (backup, codes, referrals, market, iOS sync). Order (revised 2026-11-10): **1.0.1 (lock-screen fix, tester feedback) → Infra (domain, R2, Firebase) → 1.1 (backup, codes, shiny, variants) → Production → 1.2 (Australia / NZ, heatmap) → later (iOS, marketplace, region UI)**.
 - **1.0.1 done on `lock` (2026-11-10), not deployed:** the infrastructure migration and Phase 1.1 come first; production ships with them. Next: **Infra → 1.1 → Production**.
+- **2026-11-11:** everything pushed. 1.1 order decided: **backup + Account page → variants + Shiny (one rebuild) → codes + referrals** (so the tester code can give a Shiny). Step 1 coded (not yet on the phone).
 - **Working branch:** `main` (`lock` merged 2026-11-10).
 
 ## Scaling vision and infrastructure
@@ -69,12 +70,12 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] (2026-11-10) Silent anonymous sign-in at launch (`app/lib/account.dart`, never awaited: offline the app works as before)
 - [x] S22 check (2026-11-10): the profile build created one anonymous user at launch; a relaunch kept the same user; prefs unchanged
 - [ ] Restrict the Firebase API key in Google Cloud (Android apps: package + SHA-1s) once Google sign-in works
-- [ ] Account deletion: in Settings + a web page on the domain
-- [ ] Privacy policy (4 languages) and Data safety rewritten for accounts
+- [ ] (coded 2026-11-11: Settings → Account → Delete account; `site-static/delete-account.html`, 4 languages, **not published yet**: publish with the release) Account deletion: in Settings + a web page on the domain
+- [ ] (written 2026-11-11, `site-static/privacy*.html` "from version 1.1", Data safety answers in `memory/store-listing.md`; **publish and fill in the Console with the release**) Privacy policy (4 languages) and Data safety rewritten for accounts
 
 ## Phase 1.1 — Accounts and collection features
-- [ ] **1 · Cloud backup:** a silent anonymous account at first launch; the collection (cards, given, heard, series, streak) mirrored to Firestore after each change (one document per player; shortcut: 1 MB ≈ 4,000 cards, split per card when someone gets near); Settings → "Sign in with Google to keep your collection"; signing in on a new phone restores it (merge: union of cards by key). Android Auto Backup stays as a second net
-- [ ] **3 · Referrals & Codes** (Settings → "Referrals & Codes"):
+- [ ] (coded 2026-11-11: `cloud_firestore` 7.1.0, `google_sign_in` 7.2.0; `account.dart` mirrors `Store.backup` to `players/{uid}` on every store change that touches the collection, `mergeBackups` (unit test `test/account_test.dart`), Settings → Account (`ui/account.dart`), `cloudOff` after a deletion; **left: S22 check** — sign in, clear data, sign in again, delete) **1 · Cloud backup:** a silent anonymous account at first launch; the collection (cards, given, heard, series, streak) mirrored to Firestore after each change (one document per player; shortcut: 1 MB ≈ 4,000 cards, split per card when someone gets near); Settings → "Sign in with Google to keep your collection"; signing in on a new phone restores it (merge: union of cards by key). Android Auto Backup stays as a second net
+- [ ] **3 · Referrals & Codes** (Settings → Account; decided 2026-11-11, after Shiny: tester code = 1 Shiny from the region, or a Legendary when it has none; invited newcomer = a welcome card on a last onboarding page, Rare 60 / Epic 35 / Legendary 5 %, page skipped without an invite; inviter = achievements at 1 / 3 / 10 friends whose first alarm guess is right, +1 booster each like every achievement; who invited whom: `invites/{code}` and create-only `referrals/{friendUid}` in Firestore, rules only):
   - Codes are words like `RedRobin`, `FavouriteGull`, `NiceTit`, case-insensitive, stored in Firestore (added or disabled from the console, optional end date / use cap); **once per account**, enforced by a create-only redemption document (security rules, no Cloud Functions → stays on the free plan)
   - Each player gets their own invite code + Share; shared cards' Play link carries `&referrer=<code>`, read on first launch with the Play Install Referrer API (Firebase Dynamic Links is shut down; iOS will type the code)
   - Rewards **to decide** (proposal: tester code = 1 guaranteed Rare from the region; newcomer = 1 Rare; inviter = 1 Rare per friend whose first alarm guess is right, cap 10, an Epic at 3 friends)

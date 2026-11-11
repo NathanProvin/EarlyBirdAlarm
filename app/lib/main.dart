@@ -31,7 +31,7 @@ Future<void> main() async {
   unawaited(store.sync());
   unawaited(store.healAlarms());
   unawaited(initPurchases());
-  unawaited(signInQuietly());
+  unawaited(signInQuietly(store));
   runApp(
     ListenableBuilder(
       listenable: store,

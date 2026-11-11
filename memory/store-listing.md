@@ -180,12 +180,17 @@ En español, inglés, francés y alemán.
 Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
 
 ## Data safety form
-- **Does the app collect or share user data?** No.
-  - **Location** (approximate and precise): used only on the device — to pick the bird region ("Use my location"), and because Android requires it for the Bluetooth search of face-to-face trading. Never transmitted → not "collected" under Play's definition (processed ephemerally on device).
-  - **Face-to-face trading:** the cards the user chooses to trade go directly from one phone to the other (Google Nearby Connections, Bluetooth / Wi-Fi). They are game items, not personal data; nothing goes to a server, to the developer or to a third party → not "shared" under Play's definition. A random, per-session name is used for pairing; no account, no identifier.
-  - No personal info, no identifiers, no analytics, no crash reporting.
-- **Is data encrypted in transit?** Yes (HTTPS downloads from GitHub Pages; Nearby Connections encrypts its connections).
-- **Can users request deletion?** No data is collected; uninstalling removes everything. Android Auto Backup is handled by Google in the user's own account.
+(Rewritten 2026-11-11 for the 1.1 accounts; before 1.1 the answer was "no data collected".)
+- **Does the app collect or share user data?** Collects: yes. Shares: no.
+  - **Personal info → Email address, Name:** collected only when the user taps "Sign in with Google" (optional). Purpose: **Account management**. Not shared.
+  - **Personal info → User IDs:** the Firebase account ID (anonymous at first launch, automatic). Purpose: **App functionality, Account management** (the cloud backup). Not shared. Required (created silently), but it holds game data only.
+  - **App activity → Other user-generated content / In-app actions:** the card collection (cards, birds heard, series, streaks, bonus boosters), stored in Firestore (EU) for the backup. Purpose: **App functionality**. Not shared.
+  - Processed by Google Firebase as our service provider (not "sharing" under Play's definition).
+  - **Location** (approximate and precise): used only on the device — to pick the bird region ("Use my location"), and because Android requires it for the Bluetooth search of face-to-face trading. Never transmitted → not collected.
+  - **Face-to-face trading:** cards go directly from one phone to the other (Google Nearby Connections); nothing goes to a server → not shared.
+  - No analytics, no advertising ID, no crash reporting.
+- **Is data encrypted in transit?** Yes (HTTPS to Cloudflare and Firebase; Nearby Connections encrypts its connections).
+- **Can users request deletion?** Yes: in the app (Settings → Account → Delete account) and from the web page **https://cdn.earlybirdalarm.app/delete-account.html** (the URL Play asks for in "Data deletion").
 
 ## Permission declarations
 ### Full-screen intent (`USE_FULL_SCREEN_INTENT`)

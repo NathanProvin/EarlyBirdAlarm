@@ -196,5 +196,14 @@
   "coveredArea": "Rot: abgedeckter Bereich",
   "confirmRegion": "Bestätigen",
   "notCovered": "Noch nicht abgedeckt",
-  "supportShort": "Kostenlos, ohne Werbung, ohne Tracker"
+  "supportShort": "Kostenlos, ohne Werbung, ohne Tracker",
+  "account": "Konto",
+  "accountSubtitle": "Deine Sammlung sichern",
+  "accountPitch": "Melde dich mit Google an, um deine Sammlung auf jedem Handy zu behalten.",
+  "signInGoogle": "Mit Google anmelden",
+  "accountSignedIn": "Angemeldet als {email}. Deine Sammlung ist gesichert und kommt auf jedem Handy zurück, auf dem du dich anmeldest.",
+  "deleteAccount": "Konto löschen",
+  "deleteAccountBody": "Dein Konto und seine Online-Sicherung werden gelöscht. Deine Karten bleiben auf diesem Handy.",
+  "accountDeleted": "Konto gelöscht",
+  "accountError": "Etwas ist schiefgelaufen. Prüfe deine Verbindung und versuche es erneut."
 }

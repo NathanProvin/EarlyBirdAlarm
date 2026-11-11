@@ -246,5 +246,15 @@
   "coveredArea": "Red: covered area",
   "confirmRegion": "Confirm",
   "notCovered": "Not covered yet",
-  "supportShort": "Free, no ads, no trackers"
+  "supportShort": "Free, no ads, no trackers",
+  "account": "Account",
+  "accountSubtitle": "Back up your collection",
+  "accountPitch": "Sign in with Google to keep your collection on every phone.",
+  "signInGoogle": "Sign in with Google",
+  "accountSignedIn": "Signed in as {email}. Your collection is backed up and comes back on any phone you sign in with.",
+  "@accountSignedIn": {"placeholders": {"email": {"type": "String"}}},
+  "deleteAccount": "Delete account",
+  "deleteAccountBody": "This deletes your account and its cloud backup. Your cards stay on this phone.",
+  "accountDeleted": "Account deleted",
+  "accountError": "Something went wrong. Check your connection and try again."
 }

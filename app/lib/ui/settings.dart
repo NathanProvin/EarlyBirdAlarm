@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../birds.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'account.dart';
 import 'bird_icon.dart';
 import 'credits.dart';
 import 'onboarding.dart';
@@ -311,6 +312,17 @@ class SettingsScreen extends StatelessWidget {
                 ])
                   Expanded(child: _ThemeSwatch(value, label)),
               ],
+            ),
+            const SizedBox(height: 18),
+            Text(l.account, style: header),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(l.accountSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const AccountScreen()),
+              ),
             ),
             const SizedBox(height: 18),
             Text(l.credits, style: header),

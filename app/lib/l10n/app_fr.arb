@@ -196,5 +196,14 @@
   "coveredArea": "Rouge : zone couverte",
   "confirmRegion": "Valider",
   "notCovered": "Pas encore couvert",
-  "supportShort": "Gratuit, sans pub, sans traceurs"
+  "supportShort": "Gratuit, sans pub, sans traceurs",
+  "account": "Compte",
+  "accountSubtitle": "Sauvegarder votre collection",
+  "accountPitch": "Connectez-vous avec Google pour garder votre collection sur tous vos téléphones.",
+  "signInGoogle": "Se connecter avec Google",
+  "accountSignedIn": "Connecté en tant que {email}. Votre collection est sauvegardée et revient sur tout téléphone où vous vous connectez.",
+  "deleteAccount": "Supprimer le compte",
+  "deleteAccountBody": "Votre compte et sa sauvegarde en ligne seront supprimés. Vos cartes restent sur ce téléphone.",
+  "accountDeleted": "Compte supprimé",
+  "accountError": "Un problème est survenu. Vérifiez votre connexion et réessayez."
 }

@@ -1283,6 +1283,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free, no ads, no trackers'**
   String get supportShort;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @accountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up your collection'**
+  String get accountSubtitle;
+
+  /// No description provided for @accountPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google to keep your collection on every phone.'**
+  String get accountPitch;
+
+  /// No description provided for @signInGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInGoogle;
+
+  /// No description provided for @accountSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}. Your collection is backed up and comes back on any phone you sign in with.'**
+  String accountSignedIn(String email);
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes your account and its cloud backup. Your cards stay on this phone.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted'**
+  String get accountDeleted;
+
+  /// No description provided for @accountError.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Check your connection and try again.'**
+  String get accountError;
 }
 
 class _AppLocalizationsDelegate

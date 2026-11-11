@@ -655,4 +655,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get supportShort => 'Kostenlos, ohne Werbung, ohne Tracker';
+
+  @override
+  String get account => 'Konto';
+
+  @override
+  String get accountSubtitle => 'Deine Sammlung sichern';
+
+  @override
+  String get accountPitch =>
+      'Melde dich mit Google an, um deine Sammlung auf jedem Handy zu behalten.';
+
+  @override
+  String get signInGoogle => 'Mit Google anmelden';
+
+  @override
+  String accountSignedIn(String email) {
+    return 'Angemeldet als $email. Deine Sammlung ist gesichert und kommt auf jedem Handy zurück, auf dem du dich anmeldest.';
+  }
+
+  @override
+  String get deleteAccount => 'Konto löschen';
+
+  @override
+  String get deleteAccountBody =>
+      'Dein Konto und seine Online-Sicherung werden gelöscht. Deine Karten bleiben auf diesem Handy.';
+
+  @override
+  String get accountDeleted => 'Konto gelöscht';
+
+  @override
+  String get accountError =>
+      'Etwas ist schiefgelaufen. Prüfe deine Verbindung und versuche es erneut.';
 }

@@ -650,4 +650,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get supportShort => 'Free, no ads, no trackers';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get accountSubtitle => 'Back up your collection';
+
+  @override
+  String get accountPitch =>
+      'Sign in with Google to keep your collection on every phone.';
+
+  @override
+  String get signInGoogle => 'Sign in with Google';
+
+  @override
+  String accountSignedIn(String email) {
+    return 'Signed in as $email. Your collection is backed up and comes back on any phone you sign in with.';
+  }
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountBody =>
+      'This deletes your account and its cloud backup. Your cards stay on this phone.';
+
+  @override
+  String get accountDeleted => 'Account deleted';
+
+  @override
+  String get accountError =>
+      'Something went wrong. Check your connection and try again.';
 }

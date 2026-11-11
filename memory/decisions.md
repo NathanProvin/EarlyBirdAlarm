@@ -104,6 +104,12 @@ Goal: make the game shareable and give a reason to keep waking up with it ("gott
 - **Card variants:** up to 5 Commons Quality / Featured / Valued photos per species, one per rarity, saved on the card.
 - **Order (revised 2026-11-10):** 1.0.1 (lock-screen fix, tester feedback; done, not deployed) → Infra → 1.1 (backup, codes, shiny, variants) → Production → 1.2 Australia / NZ and the missing-species heatmap → later iOS, marketplace (~1,000+ daily players), region UI.
 
+## Accounts, codes and referrals — decided 2026-11-11
+- **1.1 order:** backup + Account page → card variants + Shiny (one catalog rebuild) → codes + referrals, all in the production release. Codes come last so the tester code can give a Shiny.
+- **Backup:** the collection only (cards, given, heard, series, streaks, bonus boosters), one Firestore document per player, written when the collection changes. Alarms and settings stay on Android Auto Backup. Sign-in with Google links the anonymous account (same uid); an existing Google account merges both collections (cards by key, a given card stays given, higher counters). Deleting the account keeps the cards on the phone and stops the backup (`cloudOff`) until the next Google sign-in.
+- **Settings → Account** gathers sign-in, deletion, and later Invite friends and Enter a code. The code page in the onboarding appears **only for invited players** (a welcome card, Rare 60 / Epic 35 / Legendary 5 %); an empty code field for everyone was rejected (friction at the start).
+- **Referrals:** each player's word invite code rides on the Play link (`&referrer=`, read with the Play Install Referrer at first launch; typing it is the fallback). The inviter is rewarded with achievements (1 / 3 / 10 friends whose first alarm guess is right), never told who. Self-invites are possible with several accounts; the achievements cap it.
+
 ## Tester feedback round — decided 2026-11-10
 - **One term: Training** (Entraînement / Training / Entrenamiento) for the booster tab; the paid option is **Early Bird Plus**. Code names stay `twitch*`.
 - **Support visibility:** coffee button top-left on Alarms and Training (streak in the header's middle), a card at the top of Settings, one support line on the reveal from 30 cards (once). **Reviews:** Google's in-app review once from 15 cards, on closing a reveal, never gated by our own question (Play policy).

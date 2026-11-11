@@ -527,6 +527,44 @@ class Store extends ChangeNotifier {
   /// Ids of birds guessed wrong and not yet won as a card.
   Set<String> get heard => {...?_prefs.getStringList('heard')};
 
+  /// The collection as mirrored to the cloud (account.dart), in the form it is saved.
+  Map<String, Object?> get backup => {
+    'cards': _prefs.getString('cards') ?? '[]',
+    'given': _prefs.getString('given') ?? '[]',
+    'heard': heard.toList(),
+    'seriesDone': _collected.toList(),
+    'streak': streak,
+    'bestStreak': bestStreak,
+    'alarmStreak': alarmStreak,
+    'bestAlarmStreak': bestAlarmStreak,
+    'twitchBonus': twitchBonus,
+  };
+
+  /// Replaces the collection with [b] (a merged [backup]).
+  Future<void> restore(Map<String, Object?> b) async {
+    await _prefs.setString('cards', b['cards'] as String);
+    await _prefs.setString('given', b['given'] as String);
+    for (final k in ['heard', 'seriesDone']) {
+      await _prefs.setStringList(k, (b[k] as List).cast<String>());
+    }
+    for (final k in [
+      'streak',
+      'bestStreak',
+      'alarmStreak',
+      'bestAlarmStreak',
+      'twitchBonus',
+    ]) {
+      await _prefs.setInt(k, b[k] as int);
+    }
+    notifyListeners();
+  }
+
+  /// Set when the player deleted their account: no new anonymous account, no backup,
+  /// until they sign in with Google again.
+  bool get cloudOff => _prefs.getBool('cloudOff') ?? false;
+  set cloudOff(bool on) =>
+      _prefs.setBool('cloudOff', on).then((_) => notifyListeners());
+
   /// Records a guess (a correct one wins a card, returned), then schedules
   /// the alarm's next ring or turns it off. A null [alarmId] is a Twitch quiz:
   /// the wake-up streak and alarms are left alone.

@@ -652,4 +652,36 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get supportShort => 'Gratis, sin anuncios, sin rastreadores';
+
+  @override
+  String get account => 'Cuenta';
+
+  @override
+  String get accountSubtitle => 'Guarda tu colección';
+
+  @override
+  String get accountPitch =>
+      'Inicia sesión con Google para conservar tu colección en todos tus móviles.';
+
+  @override
+  String get signInGoogle => 'Iniciar sesión con Google';
+
+  @override
+  String accountSignedIn(String email) {
+    return 'Sesión iniciada como $email. Tu colección está guardada y vuelve en cualquier móvil donde inicies sesión.';
+  }
+
+  @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountBody =>
+      'Se eliminarán tu cuenta y su copia en la nube. Tus cartas se quedan en este móvil.';
+
+  @override
+  String get accountDeleted => 'Cuenta eliminada';
+
+  @override
+  String get accountError =>
+      'Algo salió mal. Revisa tu conexión e inténtalo de nuevo.';
 }
