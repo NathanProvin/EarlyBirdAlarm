@@ -9,9 +9,10 @@ const tiers = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
 /// Card rarities: the bird tiers plus Shiny (1.1), a card only, never a bird's tier: a
 /// leucistic or melanistic photo, [shinyOdds] per card of a species that has one.
 const cardTiers = [...tiers, 'shiny'];
-// 1 / 500 (2026-11-11): ~1 Shiny card in 1,000 overall (half the cards are of species
-// with a Shiny photo), about one every 4 months for an active player.
-const shinyOdds = 1 / 500;
+// 1 / 1250 (2026-11-11, user: "one every 6 months"): about half the cards are of species
+// with a Shiny photo, so at 16 cards a day (1 alarm + 3 Training sessions of 5) one
+// Shiny every 5-7 months, whatever the difficulty (France · Nord, November / May).
+const shinyOdds = 1 / 1250;
 
 /// Step 1 of a ring, the bird: how often a species rings, by how common it is this month
 /// in the region (scarce birds a little more often than the 16/8/4/2/1 of 3b; 2026-10-30),
@@ -37,7 +38,7 @@ const _allowed = {
 /// Uncommon beat Common on Hard).
 /// Final odds, after [rarityScale] (Common / Uncommon / Rare / Epic / Legendary):
 /// Easy 74.4 / 17.8 / 4.5 / 0.9 / 2.3 %, Medium 72.4 / 18.3 / 6.4 / 2.2 / 0.6 %,
-/// Hard 61.8 / 20.6 / 10.3 / 5.2 / 2.1 %, Expert 51.4 / 25.3 / 12.7 / 7.6 / 3.0 %.
+/// Hard 72.0 / 20.6 / 6.0 / 1.1 / 0.25 %, Expert 64.7 / 25.3 / 7.4 / 2.0 / 0.63 %.
 const rarityDecay = {
   Difficulty.easy: 0.25,
   Difficulty.medium: 0.35,
@@ -60,8 +61,12 @@ const expertBoost = 1.2;
 const rarityScale = {
   Difficulty.easy: [0.95, 0.95, 0.8, 8],
   Difficulty.medium: [0.8, 0.8, 0.8, 0.64],
-  Difficulty.hard: [0.8, 0.8, 0.8, 0.64],
-  Difficulty.expert: [1.0, 1.0, 1.0, 0.8],
+  // Hard and Expert fitted to targets at 16 cards a day (2026-11-11, user; France · Nord,
+  // average of November and May, with the lean and the draft): Hard an Epic every ~3
+  // days and a Legendary every ~2 weeks, Expert every ~2 days and every ~week; Rare
+  // a quarter lower on both (pipeline/cache/fit_odds.py, not versioned).
+  Difficulty.hard: [0.8, 0.466, 0.171, 0.077],
+  Difficulty.expert: [1.0, 0.581, 0.262, 0.166],
 };
 
 /// The odds of each rarity by difficulty (they sum to 1).
