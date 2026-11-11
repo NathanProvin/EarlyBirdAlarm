@@ -9,7 +9,7 @@ Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Upda
 - **Category:** Lifestyle (alternative: Education)
 - **Tags:** alarm clock, birds, birdwatching, nature, card collecting
 - **Contact email:** nanodev009@gmail.com
-- **Privacy policy URL:** https://nathanprovin.github.io/EarlyBirdAlarm/privacy.html
+- **Privacy policy URL:** https://cdn.earlybirdalarm.app/privacy.html
 - **Price:** free; no ads, no in-app purchases (v1)
 - **Languages of the listing:** English (default), French, German, Spanish
 
@@ -21,7 +21,7 @@ Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Upda
 ## Store title (≤ 30 chars)
 - **Recommended:** Early Bird: Bird Song Alarm (puts the searched words "bird song" and "alarm" in the title, which counts most for search ranking; the launcher label is unchanged)
 - **FR:** Early Bird : réveil oiseaux
-- **DE:** Early Bird: Vogelstimmen-Wecker
+- **DE:** Early Bird: Vogelstimmenwecker
 - **ES:** Early Bird: alarma de cantos
 - Fallback: Early Bird Alarm
 

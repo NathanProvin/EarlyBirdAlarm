@@ -1,0 +1,134 @@
+=== French (fr-FR) ===
+
+App name:
+Early Bird : réveil oiseaux
+
+Short description:
+Réveil au chant d'un vrai oiseau : devinez-le, gagnez sa carte, échangez-la.
+
+Full description:
+Ton alarme chante. Devine l'oiseau. Gagne sa carte.
+Chaque matin, un oiseau te réveille : devine-le et remporte sa carte. Combien d'espèces collecteras-tu ?
+
+FONCTIONNEMENT
+1. Règle l'alarme. Elle sonne avec le chant d'un vrai oiseau, observé ce mois-ci dans ta région, d'après des données de terrain.
+2. Devine l'oiseau pour arrêter l'alarme.
+3. Bonne réponse ? Tu gagnes sa carte. Raté ? Retiens son chant pour la prochaine fois !
+En quelques semaines, les chants des oiseaux de ta région n'auront plus de secrets pour toi.
+
+COLLECTER
+• Plus de 1 700 espèces d'Europe et d'Amérique du Nord, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• 5 raretés de cartes, de Commune à Légendaire
+• Des séries à compléter et des succès, chacun récompensé par une carte de rareté garantie
+• Zone Cocheur : un booster gratuit toutes les 15 min pour t'entraîner
+
+ÉCHANGER
+• Une Légendaire ? Partage-la avec tes amis
+• Échange des cartes en personne, téléphone contre téléphone, par Bluetooth. Pas de compte, pas de serveur
+• Il te manque une chouette ? Échange-la contre une corneille !
+
+S'ENTRAÎNER
+• Facile, Moyen, Difficile : des chants d'oiseaux communs aux cris d'espèces rares
+• Expert : sans photos, juste le nom de l'oiseau
+• Un lien direct de chaque espèce collectionnée vers sa page Wikipédia
+
+UN VRAI RÉVEIL
+• Plusieurs alarmes, jours de répétition, rappel
+• Sonne sur l'écran verrouillé
+• Fonctionne hors ligne une fois ta région téléchargée
+
+GRATUIT. SANS PUB. SANS COMPTE. SANS PISTAGE.
+
+En français, anglais, allemand et espagnol.
+
+Pour les ornithos, les amoureux de la nature, les collectionneurs et tous ceux qui en ont assez de leur réveil habituel.
+
+
+=== German (de-DE) ===
+
+App name:
+Early Bird: Vogelstimmenwecker
+
+Short description:
+Wach auf mit echtem Vogelgesang: Vogel erraten, Karte gewinnen, tauschen.
+
+Full description:
+Dein Wecker singt. Errate den Vogel. Sammle seine Karte. Jeden Morgen weckt dich ein Vogel aus deiner Gegend: Errätst du ihn, gehört seine Karte dir. Wie viele Arten schaffst du?
+
+SO FUNKTIONIERT'S
+1. Stell deinen Wecker. Er klingelt mit echtem Vogelgesang, diesen Monat in deiner Gegend beobachtet, nach echten Daten.
+2. Errate den Vogel, um ihn auszuschalten.
+3. Richtig? Du gewinnst seine Karte. Falsch? Merk ihn dir und versuch es später noch mal!
+In ein paar Wochen erkennst du die Vögel, die um dich herum singen.
+
+SAMMELN
+• Über 1.700 Arten aus Europa und Nordamerika mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• 5 Kartenseltenheiten, von Häufig bis Legendär
+• Serien zum Vervollständigen und Erfolge, jeweils belohnt mit einer Karte garantierter Seltenheit
+• Twitcher-Zone: alle 15 Min. ein kostenloser Booster, um dein Gehör zu trainieren
+
+ZEIGEN UND TAUSCHEN
+• Eine Legendäre gezogen? Teile die Karte mit deinen Freunden
+• Tausche Karten von Angesicht zu Angesicht: zwei Telefone nebeneinander, per Bluetooth. Kein Konto, kein Server
+• Dir fehlt eine Eule? Vielleicht hat dein Freund eine: Tausch sie gegen eine Krähe!
+
+TRAINIERE DEIN GEHÖR
+• Leicht, Mittel, Schwer: vom Gesang häufiger Vögel bis zu den Rufen seltener Arten
+• Experte: keine Fotos, tippe den Namen des Vogels
+• Direkter Link von deinen gesammelten Arten zu ihrem Wikipedia-Artikel
+
+EIN ECHTER WECKER
+• Mehrere Wecker, Wiederholungstage, Schlummern
+• Klingelt auf dem Sperrbildschirm
+• Funktioniert offline, sobald deine Region geladen ist
+
+KOSTENLOS. KEINE WERBUNG. KEIN KONTO. KEIN TRACKING.
+
+Auf Deutsch, Englisch, Französisch und Spanisch.
+
+Für Vogelbeobachter, Naturfreunde, Sammler und alle, die genug von ihrem langweiligen Wecker haben.
+
+
+=== Spanish (es-ES) ===
+
+App name:
+Early Bird: alarma de cantos
+
+Short description:
+Despierta con cantos de aves reales: adivina el ave, gana su carta, cámbiala.
+
+Full description:
+Tu alarma canta. Adivina el ave. Colecciona su carta. Cada mañana te despierta un ave de tu zona: adivínala para ganar su carta. ¿Cuántas especies conseguirás?
+
+CÓMO FUNCIONA
+1. Pon tu alarma. Suena con el canto de un ave real, vista este mes en tu zona, según datos reales.
+2. Adivina el ave para apagarla.
+3. ¿Acierto? Ganas su carta. ¿Fallo? ¡Recuérdala y vuelve a intentarlo más tarde!
+En pocas semanas reconocerás las aves que cantan a tu alrededor.
+
+COLECCIONA
+• Más de 1.700 especies de Europa y Norteamérica con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• 5 rarezas de cartas, de Común a Legendaria
+• Series para completar y logros, cada uno con una carta de rareza garantizada
+• Zona Pajarera: un sobre gratis cada 15 min para entrenar el oído
+
+PRESUME E INTERCAMBIA
+• ¿Te ha salido una Legendaria? Comparte la carta con tus amigos
+• Intercambia cartas en persona: dos teléfonos juntos, por Bluetooth. Sin cuenta, sin servidor
+• ¿Te falta un búho? Quizá tu amigo tenga uno: ¡cámbiaselo por un cuervo!
+
+ENTRENA EL OÍDO
+• Fácil, Media, Difícil: de los cantos de aves comunes a los reclamos de especies raras
+• Experto: sin fotos, escribe el nombre del ave
+• Enlace directo de tus especies coleccionadas a su página de Wikipedia
+
+UN DESPERTADOR DE VERDAD
+• Varias alarmas, días de repetición, posponer
+• Suena en la pantalla de bloqueo
+• Funciona sin conexión una vez descargada tu región
+
+GRATIS. SIN ANUNCIOS. SIN CUENTA. SIN RASTREO.
+
+En español, inglés, francés y alemán.
+
+Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.

@@ -63,7 +63,7 @@ def main():
     out = ROOT / "store"
     out.mkdir(exist_ok=True)
     (ROOT / "docs").mkdir(exist_ok=True)
-    icon(512).save(out / "icon-512.png")
+    icon(512).convert("RGBA").save(out / "icon-512.png")  # Play wants a 32-bit PNG
     icon(512).save(ROOT / "docs" / "logo.png")
     icon(192).save(ROOT / "app" / "assets" / "icon.png")  # the logo on shared cards
     feature_graphic().save(out / "feature-graphic.png")
