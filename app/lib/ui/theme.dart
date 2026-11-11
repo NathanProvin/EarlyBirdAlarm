@@ -83,6 +83,16 @@ final cardTheme = _themeOf((
   surface: unknownColor,
 ));
 
+/// A melanistic Shiny card (shiny.dart): obsidian, white text, violet accent.
+final obsidianCardTheme = _themeOf((
+  brightness: Brightness.dark,
+  background: const Color(0xFF141118),
+  text: paper,
+  accent: const Color(0xFFB57CFF),
+  onAccent: ink,
+  surface: const Color(0xFF2E2838),
+));
+
 ThemeData themeFor(String name) =>
     _themeOf(palettes[name] ?? palettes[lightTheme]!);
 

@@ -39,7 +39,11 @@ class BirdCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Theme(
-    data: cardTheme,
+    // Cards are printed on paper, except a melanistic Shiny: obsidian, white text.
+    data:
+        card?.rarity == 'shiny' && isMelanistic(bird.photoOf(card!.photo).kind)
+        ? obsidianCardTheme
+        : cardTheme,
     child: Builder(builder: _build),
   );
 
@@ -83,7 +87,7 @@ class BirdCardView extends StatelessWidget {
     final face = Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: paper,
+        color: shiny && isMelanistic(kind) ? obsidianFace : paper,
         borderRadius: BorderRadius.circular(radius - 6),
         // A won card's thickness: a thin dark band where the face meets the frame.
         boxShadow: card == null
@@ -475,10 +479,12 @@ class _FrameMaterial extends CustomPainter {
     );
     if (level >= 5) {
       // Shiny: its own material and a triple engraving, more worked than the gold.
-      paintShinyFrame(canvas, size, level == 6 ? 'melanistic' : 'leucistic');
-      for (final at in const [0.22, 0.5, 0.8]) {
-        _groove(canvas, size, at: at);
-      }
+      paintShinyFrame(
+        canvas,
+        size,
+        level == 6 ? 'melanistic' : 'leucistic',
+        inset,
+      );
       _rim(canvas, size);
       return;
     }
@@ -678,16 +684,10 @@ class _FrameMaterial extends CustomPainter {
 
   /// A thin engraved line running round the frame, midway through it; with
   /// [cornersOnly], just its rounded corners.
-  void _groove(
-    Canvas canvas,
-    Size size, {
-    bool cornersOnly = false,
-    double at =
-        0.5, // how far into the frame: 0 its outer edge, 1 its inner edge
-  }) {
+  void _groove(Canvas canvas, Size size, {bool cornersOnly = false}) {
     final groove = RRect.fromRectAndRadius(
-      (Offset.zero & size).deflate(inset * at),
-      Radius.circular(radius - inset * at),
+      (Offset.zero & size).deflate(inset / 2),
+      Radius.circular(radius - inset / 2),
     );
     canvas.save();
     if (cornersOnly) {
@@ -946,7 +946,7 @@ class _StatRow extends StatelessWidget {
                   value: value == null ? 0 : percentileOf(bird, stat, value),
                   minHeight: 6,
                   color: color,
-                  backgroundColor: unknownColor,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                 ),
               ),
             ),
