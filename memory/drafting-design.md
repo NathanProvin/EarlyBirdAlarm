@@ -80,7 +80,7 @@ Ranked by priority; **to fix**: 1–7 and 10 (8 and 9 left aside by the user).
 1. ✅ *(fixed 2026-11-11, Phase B: chunks of 1,000)* **Cloud backup stops after ~3,250 cards** (one 1 MB Firestore document, 322 bytes a card measured; ~7 months at 16 cards a day): writes then fail silently.
 2. ✅ *(fixed, Phase A, checked on the S22)* **Alarm photos deleted after prefetch:** the sync's photo cleanup doesn't keep pending draws' photos; an alarm's photo, picked at scheduling, is deleted by the next sync (and a sync finishing during a quiz deletes the one being prefetched).
 3. ✅ *(fixed, Phase B: batched writes, changed documents only)* **Firestore free quota ~1,000 active players:** one write per collection change (~16+ a day each, the whole document each time) against 20,000 writes a day on the Spark plan.
-4. **~70–90 MB of catalog photos on mobile data without asking** (first sync, region change).
+4. ✅ *(fixed, Phase D: bulk on Wi-Fi only, photos fetched once as shown, quizzes prepared in the pile)* **~70–90 MB of catalog photos on mobile data without asking** (first sync, region change).
 5. ✅ *(fixed, Phase C: the app froze at 10,000 cards, now runs; an answer still costs ~0.8 s at 10,000 cards, hidden by the 2 s answer display)* **Collection decoded from JSON at each `cards` read** and rewritten whole at each card: stutters at ~10,000 cards.
 6. ✅ *(fixed, Phase C: a draw takes 1.8 ms at 10,000 cards)* **Hundreds of file checks on the main thread** at each draw / sync / answer (pile building).
 7. ✅ *(fixed, Phase A)* **Startup race:** the cards held by alarms are filled by `healAlarms()`, after the sync: a booster opened right at launch can take an alarm's card.
