@@ -163,7 +163,8 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
 
 /// Brings the phone up to date with [region] in the background: species list and seasons
 /// (re-fetched weekly, as the catalog is rebuilt), the song deck, the region's catalog
-/// photos, then the photos of the cards the player [owned] that are still missing.
+/// photos, then the photos still missing that the player [wanted]: owned cards' and
+/// pending draws' (read again at the clean-up, so a draw made meanwhile is kept).
 /// Best effort: whatever fails is fetched at the next call (app start, after each guess).
 /// Returns true when new region data arrived, so alarms should pick new birds.
 Future<bool> syncRegion(
@@ -173,7 +174,7 @@ Future<bool> syncRegion(
   Set<String> heard = const {},
   Set<String> played = const {},
   Set<String> keep = const {},
-  Set<String> owned = const {},
+  Set<String> Function()? wanted,
 }) async {
   final regionFile = localFile('regions/$region.json');
   // A catalog from before German and Spanish (2026-10-31) is refreshed at once, not
@@ -201,7 +202,7 @@ Future<bool> syncRegion(
   // then). Variant and Shiny photos are never fetched ahead (2026-11-11: all of a pile
   // bird's photos came down, ~15 MB a day, though a card shows only one).
   final photos = [
-    for (final p in {for (final b in birds) b.photo, ...owned})
+    for (final p in {for (final b in birds) b.photo, ...?wanted?.call()})
       if (!localFile(p).existsSync()) p,
   ];
   for (var i = 0; i < photos.length; i += 8) {
@@ -212,7 +213,7 @@ Future<bool> syncRegion(
     for (final (_, r) in deckPile(month, difficulty, played)) r.file,
   };
   await _cleanUp({...keep, ...pile});
-  _cleanPhotos({for (final b in birds) b.photo, ...owned});
+  _cleanPhotos({for (final b in birds) b.photo, ...?wanted?.call()});
   return stale;
 }
 

@@ -135,6 +135,8 @@ class Store extends ChangeNotifier {
   /// The pile's cards held by scheduled alarms (alarm id → song): the next draw takes the
   /// top card no alarm holds, so two alarms, or an alarm and a booster, never share one.
   final _held = <int, String>{};
+  final _heldBird =
+      <int, String>{}; // alarm id → bird, for its Shiny photo (#10)
 
   List<AlarmData> get alarms => [
     for (final j in jsonDecode(_prefs.getString('alarms') ?? '[]') as List)
@@ -303,12 +305,21 @@ class Store extends ChangeNotifier {
 
   /// Schedules every enabled alarm the alarm plugin doesn't have, e.g. after a Google
   /// backup restore (only our preferences are backed up, not the plugin's schedule).
-  Future<void> healAlarms() async {
-    final set = await Alarm.getAlarms();
-    for (final a in set) {
-      if (_songOf(a.payload) case final song?) _held[a.id] = song;
+  /// Reads which pile cards the scheduled alarms hold: before the first screen, so a
+  /// booster opened at launch can't take an alarm's card (2026-11-11).
+  Future<void> loadHeld() async {
+    try {
+      for (final a in await Alarm.getAlarms()) {
+        if (_songOf(a.payload) case final song?) _held[a.id] = song;
+        if (_birdOf(a.payload) case final bird?) _heldBird[a.id] = bird;
+      }
+    } on Object catch (e) {
+      debugPrint('alarms: $e');
     }
-    final scheduled = {for (final a in set) a.id};
+  }
+
+  Future<void> healAlarms() async {
+    final scheduled = {for (final a in await Alarm.getAlarms()) a.id};
     final title = _prefs.getString('notificationTitle') ?? 'Guess the bird!';
     for (final a in alarms.where(
       (a) =>
@@ -345,7 +356,8 @@ class Store extends ChangeNotifier {
       heard: recent.toSet(), // the deck rotates past the birds just heard
       played: resting(monthFor(DateTime.now())),
       keep: scheduled,
-      owned: ownedPhotos,
+      // Read when needed, so a draw made during this sync keeps its photo too.
+      wanted: () => {...ownedPhotos, ..._pendingPhotos},
     )) {
       await rescheduleAll();
       notifyListeners();
@@ -353,9 +365,11 @@ class Store extends ChangeNotifier {
   }
 
   /// The song file an alarm will play, from its payload {"bird", "rec"} (null if older).
-  static String? _songOf(String? payload) {
+  static String? _songOf(String? payload) => _field(payload, 'rec');
+  static String? _birdOf(String? payload) => _field(payload, 'bird');
+  static String? _field(String? payload, String key) {
     try {
-      return (jsonDecode(payload ?? '') as Map<String, dynamic>)['rec']
+      return (jsonDecode(payload ?? '') as Map<String, dynamic>)[key]
           as String?;
     } on Object {
       return null;
@@ -392,6 +406,7 @@ class Store extends ChangeNotifier {
     String notificationTitle,
   ) async {
     _held[a.id] = recFile;
+    _heldBird[a.id] = birdId;
     final payload = jsonEncode({'bird': birdId, 'rec': recFile});
     final notification = NotificationSettings(
       title: notificationTitle, // big bold line of the banner
@@ -446,6 +461,7 @@ class Store extends ChangeNotifier {
   /// Stops alarm [id] (or the one a backup id belongs to) and its backup.
   Future<void> stopRing(int id) async {
     _held.remove(mainIdOf(id));
+    _heldBird.remove(mainIdOf(id));
     await Alarm.stop(mainIdOf(id));
     await Alarm.stop(backupId(mainIdOf(id)));
   }
@@ -489,7 +505,7 @@ class Store extends ChangeNotifier {
           resting(monthFor(at)),
         ).where((c) => !held.contains(c.$2.file)).firstOrNull ??
         _fallback(at);
-    _drawPhoto(next.$1, next.$2.file);
+    _drawPhoto(next.$1, next.$2.file, alarm: forAlarm != null);
     return next;
   }
 
@@ -502,8 +518,17 @@ class Store extends ChangeNotifier {
       e.key as String: e.value as String,
   };
 
-  void _drawPhoto(Bird bird, String song) {
+  void _drawPhoto(Bird bird, String song, {bool alarm = false}) {
     final photo = drawPhoto(bird);
+    // An alarm may ring offline: its bird's Shiny photo comes along too (#10), so a
+    // Shiny card won then still shows it. A booster is played online: fetched at the win.
+    if (alarm) {
+      for (final s in bird.shiny) {
+        if (!localFile(s.photo).existsSync()) {
+          _fetching[s.photo] = _fetch(s.photo);
+        }
+      }
+    }
     // Only the draws still pending: this one and the scheduled alarms'.
     final pending = {..._held.values, song};
     unawaited(
@@ -553,6 +578,16 @@ class Store extends ChangeNotifier {
   Set<String> get ownedPhotos => {
     for (final c in cards)
       if (birdById(c.birdId) case final b?) b.photoOf(c.photo).photo,
+  };
+
+  /// Photos of draws not answered yet: the quiz in progress and the scheduled alarms
+  /// (with their bird's Shiny photo). The clean-up keeps them (#2: an alarm's photo,
+  /// fetched at scheduling, was deleted by the next sync).
+  Set<String> get _pendingPhotos => {
+    for (final p in _drawn.values)
+      if (p.isNotEmpty) p,
+    for (final id in _heldBird.values)
+      ...?birdById(id)?.shiny.map((s) => s.photo),
   };
 
   /// The songs still resting: out of the pile until enough others have rung.

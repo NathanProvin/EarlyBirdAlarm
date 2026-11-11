@@ -56,13 +56,16 @@ XC_NC_LICENSE = re.compile(r"creativecommons\.org/licenses/(by-nc|by-nc-sa)/", r
 # Branch adding-tips (2026-11-03): the paid version can't use NC recordings, so the NC fallback is off
 # and species with no free xeno-canto or iNaturalist recording are dropped.
 ALLOW_NC = False
-# Card photos (2026-11-11: quality first, was 600 px at -q:v 4): 1200 px wide, never upscaled.
-PHOTO_WIDTH = 1200
+# Card photos (2026-11-11: quality first, was 600 px at -q:v 4): within 1200 x 900, never
+# upscaled. The card's photo box is landscape (~920 x 700 px full screen on a 1080p phone): a
+# taller portrait (up to 2,486 px measured) was ~3x the pixels shown.
+PHOTO_WIDTH, PHOTO_HEIGHT = 1200, 900
 
 
 def save_photo(src, out):
     # One frame: some camera JPEGs carry a second image (MPO) that ffmpeg reads as a video.
-    ffmpeg("-i", str(src), "-vf", f"scale='min({PHOTO_WIDTH},iw)':-2", "-frames:v", "1", "-q:v", "2", str(out))
+    fit = f"scale='min({PHOTO_WIDTH},iw)':'min({PHOTO_HEIGHT},ih)':force_original_aspect_ratio=decrease"
+    ffmpeg("-i", str(src), "-vf", fit, "-frames:v", "1", "-q:v", "2", str(out))
 
 
 def get(url, params=None, headers=None, binary=False):
@@ -894,7 +897,7 @@ _extras = None
 
 def full_size(url):
     """The original of a contact-sheet photo: iNaturalist "medium" (500 px) → "original" (up
-    to 2048 px); a Commons thumbnail → the uploaded file. save_photo scales it to PHOTO_WIDTH."""
+    to 2048 px); a Commons thumbnail → the uploaded file. save_photo fits it in PHOTO_WIDTH x PHOTO_HEIGHT."""
     if "/thumb/" in url:  # .../commons/thumb/a/a7/Name.jpg/960px-Name.jpg → upload host, a/a7/Name.jpg
         path = url.split("?")[0].split("/thumb/", 1)[1].rsplit("/", 1)[0]
         return "https://upload.wikimedia.org/wikipedia/commons/" + path
@@ -978,8 +981,8 @@ def main():
             continue
 
         # Photo: yours first, then Commons.
-        # The width is in the name: phones fetch a photo again when its size changes (1.1).
-        photo_out = OUT / "photos" / f"{bird_id}-w{PHOTO_WIDTH}.jpg"
+        # The size is in the name: phones fetch a photo again when it changes (1.1).
+        photo_out = OUT / "photos" / f"{bird_id}-{PHOTO_WIDTH}x{PHOTO_HEIGHT}.jpg"
         mine = MY_PHOTOS / f"{latin.replace(' ', '_')}.jpg"
         if mine.exists():
             save_photo(mine, photo_out)

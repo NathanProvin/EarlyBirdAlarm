@@ -27,6 +27,7 @@ Future<void> main() async {
   await Alarm.init();
   store = await Store.load();
   await initContent(store.region);
+  await store.loadHeld(); // before any draw: alarms' cards stay theirs
   // Catch up with the region in the background; also runs after each guess (see ring.dart).
   unawaited(store.sync());
   unawaited(store.healAlarms());
