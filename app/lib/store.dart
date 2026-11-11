@@ -344,6 +344,7 @@ class Store extends ChangeNotifier {
       heard: recent.toSet(), // the deck rotates past the birds just heard
       played: resting(monthFor(DateTime.now())),
       keep: scheduled,
+      owned: ownedPhotos,
     )) {
       await rescheduleAll();
       notifyListeners();
@@ -498,6 +499,13 @@ class Store extends ChangeNotifier {
     ).keys.fold(0, (n, b) => n + b.playable(difficulty).length);
     return min(playedCount, max(1, songs ~/ 2));
   }
+
+  /// The photo of each card owned (its variant or Shiny photo, else the catalog one):
+  /// downloaded once and kept, so the collection works offline.
+  Set<String> get ownedPhotos => {
+    for (final c in cards)
+      if (birdById(c.birdId) case final b?) b.photoOf(c.photo).photo,
+  };
 
   /// The songs still resting: out of the pile until enough others have rung.
   Set<String> resting(int? month) => played.take(_rest(month)).toSet();
@@ -659,6 +667,12 @@ class Store extends ChangeNotifier {
         : null;
     if (card != null) {
       await _prefs.setString('cards', jsonEncode([...cards, card]));
+      // Its own photo, fetched once now for the reveal (a few seconds at most; offline the
+      // catalog photo shows and the next sync fetches it).
+      if (card.photo case final p? when !localFile(p).existsSync()) {
+        await download(p)
+            .timeout(const Duration(seconds: 4), onTimeout: () => false);
+      }
     }
     await _prefs.setStringList(
       'heard',

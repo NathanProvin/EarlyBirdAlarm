@@ -1369,7 +1369,13 @@ class BirdPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final file = bird.photoOf(photo).photo;
+    var file = bird.photoOf(photo).photo;
+    // A card's own photo not on the phone yet (won offline): the catalog photo meanwhile.
+    if (file != bird.photo &&
+        phonePath(file) == null &&
+        phonePath(bird.photo) != null) {
+      file = bird.photo;
+    }
     final path = phonePath(file);
     final ImageProvider image = path == null
         ? NetworkImage('$baseUrl$file')

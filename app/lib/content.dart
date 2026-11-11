@@ -162,7 +162,8 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
 }
 
 /// Brings the phone up to date with [region] in the background: species list and seasons
-/// (re-fetched weekly, as the catalog is rebuilt), the song deck, then every photo.
+/// (re-fetched weekly, as the catalog is rebuilt), the song deck, the region's catalog
+/// photos, then the photos of the cards the player [owned] that are still missing.
 /// Best effort: whatever fails is fetched at the next call (app start, after each guess).
 /// Returns true when new region data arrived, so alarms should pick new birds.
 Future<bool> syncRegion(
@@ -172,6 +173,7 @@ Future<bool> syncRegion(
   Set<String> heard = const {},
   Set<String> played = const {},
   Set<String> keep = const {},
+  Set<String> owned = const {},
 }) async {
   final regionFile = localFile('regions/$region.json');
   // A catalog from before German and Spanish (2026-10-31) is refreshed at once, not
@@ -191,14 +193,16 @@ Future<bool> syncRegion(
       'regions.json',
     ); // region names (also fetched by the region screen)
     await initContent(region);
-    _dropOldPhotos();
   }
   // The pile first: alarms need its songs, while a missing photo streams from the web.
   // The region's photos come after (~70 MB at 1200 px on a first sync).
   await topUpDeck(month, difficulty, heard: heard, played: played);
+  // Then each owned card's photo once (a card won offline shows the catalog photo until
+  // then). Variant and Shiny photos are never fetched ahead (2026-11-11: all of a pile
+  // bird's photos came down, ~15 MB a day, though a card shows only one).
   final photos = [
-    for (final b in birds)
-      if (!localFile(b.photo).existsSync()) b.photo,
+    for (final p in {for (final b in birds) b.photo, ...owned})
+      if (!localFile(p).existsSync()) p,
   ];
   for (var i = 0; i < photos.length; i += 8) {
     await Future.wait(photos.skip(i).take(8).map(download));
@@ -207,21 +211,8 @@ Future<bool> syncRegion(
   final pile = {
     for (final (_, r) in deckPile(month, difficulty, played)) r.file,
   };
-  // The variant and Shiny photos of the birds that can ring next (any other card's photo
-  // streams from the web when it's missing): ~14 birds, not the whole region.
-  final extras = [
-    for (final b in birds)
-      if (b.recordings.any((r) => fresh(r, played)))
-        for (final p in [
-          ...b.variants.map((v) => v.photo),
-          ...b.shiny.map((v) => v.photo),
-        ])
-          if (!localFile(p).existsSync()) p,
-  ];
-  for (var i = 0; i < extras.length; i += 8) {
-    await Future.wait(extras.skip(i).take(8).map(download));
-  }
   await _cleanUp({...keep, ...pile});
+  _cleanPhotos({for (final b in birds) b.photo, ...owned});
   return stale;
 }
 
@@ -264,20 +255,16 @@ Future<void> topUpDeck(
   }
 }
 
-/// Deletes downloaded photos the catalog no longer lists: dropped species, and the 600 px
-/// photos of 1.0 (since 1.1 a photo's name carries its width, so a sharper one is fetched).
-void _dropOldPhotos() {
+/// Deletes every downloaded photo but those in [keep] (the region's catalog photos and the
+/// owned cards' photos): extras fetched ahead before 2026-11-11, other regions' birds the
+/// player doesn't own, dropped species, the 600 px photos of 1.0 (since 1.1 a photo's
+/// name carries its width). Space then grows only with the collection (~850 MB at most:
+/// every photo of the catalog).
+void _cleanPhotos(Set<String> keep) {
   final dir = Directory('${_root.path}/photos');
-  if (!dir.existsSync() || species.isEmpty) return;
-  final used = {
-    for (final b in species.values) ...[
-      b.photo,
-      for (final v in b.variants) v.photo,
-      for (final v in b.shiny) v.photo,
-    ],
-  };
+  if (!dir.existsSync() || keep.isEmpty) return;
   for (final f in dir.listSync().whereType<File>()) {
-    if (!used.contains('photos/${f.uri.pathSegments.last}')) f.deleteSync();
+    if (!keep.contains('photos/${f.uri.pathSegments.last}')) f.deleteSync();
   }
 }
 
