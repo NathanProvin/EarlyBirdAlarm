@@ -3,6 +3,7 @@ package com.nathanprovin.earlybird
 import android.app.NotificationManager
 import android.content.Intent
 import android.media.AudioAttributes
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
@@ -106,6 +107,14 @@ class MainActivity : FlutterActivity() {
                 }
             }
         // The app version for the Credits screen.
+        // Mobile data (a metered connection): the region's photos then come as they're shown,
+        // not ~70-90 MB at once.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/network")
+            .setMethodCallHandler { _, result ->
+                result.success(
+                    getSystemService(ConnectivityManager::class.java).isActiveNetworkMetered
+                )
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/version")
             .setMethodCallHandler { _, result ->
                 result.success(packageManager.getPackageInfo(packageName, 0).versionName)

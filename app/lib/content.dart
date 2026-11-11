@@ -200,9 +200,18 @@ Future<bool> syncRegion(
   await topUpDeck(month, difficulty, heard: heard, played: played);
   // Then each owned card's photo once (a card won offline shows the catalog photo until
   // then). Variant and Shiny photos are never fetched ahead (2026-11-11: all of a pile
-  // bird's photos came down, ~15 MB a day, though a card shows only one).
+  // bird's photos came down, ~15 MB a day, though a card shows only one). On mobile data
+  // only the pile's birds' catalog photos come: the rest of the region waits for Wi-Fi,
+  // or comes one by one as it's shown (keepPhoto).
+  final bulk = !await metered();
   final photos = [
-    for (final p in {for (final b in birds) b.photo, ...?wanted?.call()})
+    for (final p in {
+      if (bulk)
+        for (final b in birds) b.photo
+      else
+        for (final (b, _) in deckPile(month, difficulty, played)) b.photo,
+      ...?wanted?.call(),
+    })
       if (!localFile(p).existsSync()) p,
   ];
   for (var i = 0; i < photos.length; i += 8) {
@@ -297,6 +306,28 @@ List<(Bird, Recording)> deckPile(
         if (fresh(r, played, songs)) (b, r, songs[r.file]!),
   ]..sort((a, b) => a.$3.compareTo(b.$3));
   return [for (final (b, r, _) in cards) (b, r)];
+}
+
+const _network = MethodChannel('early_bird/network');
+
+/// True on mobile data (a metered connection; MainActivity.kt). False when unknown.
+Future<bool> metered() async {
+  try {
+    return await _network.invokeMethod<bool>('metered') ?? false;
+  } on Exception {
+    return false; // no Android channel (tests)
+  }
+}
+
+final _keeping = <String, Future<bool>>{};
+
+/// A region's catalog photo shown before it's on the phone (mobile data skips the bulk
+/// download): fetched once and kept, never streamed and then fetched again. True once
+/// fetched; false if it can't be (offline) or is already there.
+Future<bool> keepPhoto(String path) {
+  if (localFile(path).existsSync()) return Future.value(false);
+  return _keeping[path] ??= download(path)
+      .whenComplete(() => _keeping.remove(path));
 }
 
 /// Puts the downloaded song [path] under the pile, as if just downloaded.

@@ -1377,6 +1377,16 @@ class BirdPhoto extends StatelessWidget {
       file = bird.photo;
     }
     final path = phonePath(file);
+    // A catalog photo of the region not on the phone yet (mobile data): fetched once and
+    // kept, shown when it's there. Other birds (other regions) still stream.
+    if (path == null && file == bird.photo && birds.contains(bird)) {
+      return FutureBuilder<bool>(
+        future: keepPhoto(file),
+        builder: (context, done) => done.data == true
+            ? BirdPhoto(bird, photo: photo) // on the phone now
+            : const ColoredBox(color: unknownColor),
+      );
+    }
     final ImageProvider image = path == null
         ? NetworkImage('$baseUrl$file')
         : path.startsWith('assets/')
