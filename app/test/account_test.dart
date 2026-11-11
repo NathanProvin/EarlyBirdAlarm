@@ -82,4 +82,47 @@ void main() {
       expect(fresh.streak, 3);
     },
   );
+
+  test('a big collection goes up in chunks under the 1 MB limit, and comes back whole', () {
+    // A full card, as saved (stats, rarity, region, level, recording, photo): ~320 bytes.
+    Map<String, Object> full(int i) => {
+      'bird': 'erithacus_rubecula',
+      'stats': {
+        'weight': 18.2,
+        'wingspan': 21.0,
+        'length': 14.0,
+        'flight': 0.0,
+      },
+      'quality': 64,
+      'earned': DateTime(
+        2026,
+        1,
+        1,
+      ).add(Duration(minutes: i)).toIso8601String(),
+      'rarity': 'rare',
+      'region': 'N48E002',
+      'level': 3,
+      'recording': 'audio/erithacus_rubecula-1.m4a',
+      'photo': 'photos/erithacus_rubecula-v2.jpg',
+    };
+    final cards = jsonEncode([for (var i = 0; i < 4200; i++) full(i)]);
+    expect(
+      cards.length,
+      greaterThan(1048576), // 1 MB: one document could not hold it
+    );
+    final chunks = splitCards(cards);
+    expect(chunks.length, 5); // 4 × 1,000 + 200
+    for (final c in chunks) {
+      expect(utf8.encode(c).length, lessThan(400 * 1024));
+    }
+    expect(joinCards(chunks), cards);
+    expect(splitCards('[]'), isEmpty);
+    expect(joinCards(const []), '[]');
+    // Merging with an older backup keeps every card once.
+    final merged = mergeBackups(
+      {'cards': cards},
+      {'cards': joinCards(chunks.take(2).toList())},
+    );
+    expect((jsonDecode(merged['cards']! as String) as List).length, 4200);
+  });
 }

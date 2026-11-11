@@ -40,6 +40,12 @@ checks = [  # (what, status, expected)
     ("no account reads A's document", call("GET", f"{DB}/players/{a}")[0], 403),
     ("A reads another collection", call("GET", f"{DB}/codes/RedRobin", ta)[0], 403),
     ("A writes another collection", call("PATCH", f"{DB}/codes/RedRobin", ta, doc)[0], 403),
+    ("A writes its own card chunk", call("PATCH", f"{DB}/players/{a}/cards/0", ta, doc)[0], 200),
+    ("A lists its own card chunks", call("GET", f"{DB}/players/{a}/cards", ta)[0], 200),
+    ("B reads A's card chunk", call("GET", f"{DB}/players/{a}/cards/0", tb)[0], 403),
+    ("B writes A's card chunk", call("PATCH", f"{DB}/players/{a}/cards/1", tb, doc)[0], 403),
+    ("B lists A's card chunks", call("GET", f"{DB}/players/{a}/cards", tb)[0], 403),
+    ("A deletes its own card chunk", call("DELETE", f"{DB}/players/{a}/cards/0", ta)[0], 200),
     ("A deletes its own document", call("DELETE", f"{DB}/players/{a}", ta)[0], 200),
 ]
 for token in (ta, tb):  # the throwaway accounts go too

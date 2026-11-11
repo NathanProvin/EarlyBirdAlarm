@@ -5,6 +5,10 @@ service cloud.firestore {
     // A player reads and writes only their own document (the collection backup, Phase 1.1).
     match /players/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+      // Its cards, in chunks of 1,000 (a document stops at 1 MB).
+      match /cards/{chunk} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
     // Everything else stays closed; codes and redemptions get their rules with Phase 1.1.
   }

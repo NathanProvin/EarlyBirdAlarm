@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'cards.dart';
@@ -12,9 +13,16 @@ import 'firebase_options.dart';
 import 'store.dart';
 
 /// Cloud backup (roadmap Phase 1.1): a silent anonymous Firebase account, the collection
-/// mirrored to `players/{uid}` after each change, "Sign in with Google" to get it back on
-/// another phone. Never awaited and never on an alarm's path: offline or failing, the app
-/// works as before (Firestore queues the writes).
+/// mirrored to Firestore, "Sign in with Google" (or an email) to get it back on another
+/// phone. Never awaited and never on an alarm's path: offline or failing, the app works
+/// as before (Firestore queues the writes).
+///
+/// Layout (2026-11-11): `players/{uid}` holds everything but the cards, plus how many
+/// card chunks there are; `players/{uid}/cards/{n}` hold the cards, [chunkCards] each
+/// (~320 KB: a Firestore document stops at 1 MB, which one document for all reached
+/// after ~3,250 cards). Writes are batched: at most every [backupEvery], and when the
+/// app goes to the background; only the documents that changed are sent (the free plan
+/// allows 20,000 writes a day for all players).
 Future<void> signInQuietly(Store store) async {
   try {
     await Firebase.initializeApp(
@@ -24,8 +32,13 @@ Future<void> signInQuietly(Store store) async {
     if (auth.currentUser == null && !store.cloudOff) {
       await auth.signInAnonymously();
     }
-    store.addListener(() => _backup(store));
-    _backup(store);
+    store.addListener(() => _backupSoon(store));
+    // The binding keeps the listener: written when the app goes to the background.
+    AppLifecycleListener(
+      onPause: () => unawaited(_flush(store)),
+      onDetach: () => unawaited(_flush(store)),
+    );
+    unawaited(_flush(store));
   } on Exception catch (e) {
     debugPrint('account: $e');
   }
@@ -34,20 +47,132 @@ Future<void> signInQuietly(Store store) async {
 DocumentReference<Map<String, dynamic>> _doc(String uid) =>
     FirebaseFirestore.instance.collection('players').doc(uid);
 
-String? _sent; // the last collection written, to skip changes outside it (alarms, theme…)
+CollectionReference<Map<String, dynamic>> _chunks(String uid) =>
+    _doc(uid).collection('cards');
 
-void _backup(Store store) {
+/// Cards per chunk document: 1,000 × ~322 bytes measured ≈ 320 KB, a third of the limit.
+const chunkCards = 1000;
+
+/// The longest a collection change waits before it is written.
+const backupEvery = Duration(minutes: 5);
+
+/// The cards (a JSON list, as saved) cut into chunks of [chunkCards], oldest first.
+List<String> splitCards(String cards) {
+  final list = jsonDecode(cards) as List;
+  return [
+    for (var i = 0; i < list.length; i += chunkCards)
+      jsonEncode(list.sublist(i, min(i + chunkCards, list.length))),
+  ];
+}
+
+/// The chunks back as one JSON list of cards.
+String joinCards(List<String> chunks) =>
+    jsonEncode([for (final c in chunks) ...jsonDecode(c) as List]);
+
+// What was last written, to send only what changed (null / empty: write everything).
+String? _sentUid, _sentMain;
+var _sentChunks = <String>[];
+Timer? _timer;
+
+void _forget() {
+  _sentMain = null;
+  _sentChunks = [];
+}
+
+/// A collection change: written within [backupEvery] (a change outside the collection,
+/// alarms or theme, sends nothing: see [_flush]).
+void _backupSoon(Store store) {
+  if (_timer?.isActive ?? false) return;
+  _timer = Timer(backupEvery, () => unawaited(_flush(store)));
+}
+
+/// Writes the documents that changed since the last write, in one batch.
+Future<void> _flush(Store store) async {
+  _timer?.cancel();
   final user = FirebaseAuth.instance.currentUser;
   if (user == null || store.cloudOff) return;
-  final data = store.backup;
-  final json = '${user.uid} ${jsonEncode(data)}';
-  if (json == _sent) return;
-  _sent = json;
-  // shortcut: one document (1 MB ≈ 4,000 cards); split per card when a player gets near.
-  _doc(user.uid).set(data).catchError((Object e) {
+  if (user.uid != _sentUid) {
+    _sentUid = user.uid;
+    _forget();
+  }
+  final data = Map.of(store.backup);
+  final chunks = splitCards(data.remove('cards')! as String);
+  final main = {...data, 'chunks': chunks.length};
+  final mainJson = jsonEncode(main);
+  final batch = FirebaseFirestore.instance.batch();
+  var writes = 0;
+  // First write since the app started: how many chunks the cloud has is unknown, so the
+  // extra ones (a collection that shrank: a trade, a restore) are found and deleted.
+  if (_sentMain == null) {
+    try {
+      for (final c in (await _chunks(user.uid).get()).docs) {
+        if ((int.tryParse(c.id) ?? 0) >= chunks.length) {
+          batch.delete(c.reference);
+          writes++;
+        }
+      }
+    } on Exception catch (e) {
+      debugPrint('backup: $e'); // offline: the next launch tries again
+    }
+  }
+  if (mainJson != _sentMain) {
+    batch.set(
+      _doc(user.uid),
+      main,
+    ); // replaces a pre-chunk document's 'cards' too
+    writes++;
+  }
+  for (var i = 0; i < chunks.length; i++) {
+    if (i < _sentChunks.length && chunks[i] == _sentChunks[i]) continue;
+    batch.set(_chunks(user.uid).doc('$i'), {'cards': chunks[i]});
+    writes++;
+  }
+  for (var i = chunks.length; i < _sentChunks.length; i++) {
+    batch.delete(_chunks(user.uid).doc('$i')); // fewer cards after a trade
+    writes++;
+  }
+  if (writes == 0) return;
+  if (devTools) {
+    // Dev builds: what each batch sends, to check the chunks on a phone.
+    debugPrint(
+      'backup: $writes writes, ${chunks.length} chunks '
+      '(${[for (var i = 0; i < chunks.length; i++)
+        if (i >= _sentChunks.length || chunks[i] != _sentChunks[i]) i]} changed)',
+    );
+  }
+  _sentMain = mainJson;
+  _sentChunks = chunks;
+  try {
+    await batch.commit();
+  } on Exception catch (e) {
     debugPrint('backup: $e');
-    _sent = null;
-  });
+    _forget(); // everything is sent again next time
+  }
+}
+
+/// A player's backup in [Store.backup]'s shape, from the chunks or from a document
+/// written before them (its 'cards' field).
+Future<Map<String, Object?>> _readBackup(String uid) async {
+  final main = (await _doc(uid).get()).data();
+  if (main == null) return const {};
+  if (main['cards'] is String) return main;
+  final chunks = (await _chunks(uid).get()).docs
+    ..sort((a, b) => int.parse(a.id).compareTo(int.parse(b.id)));
+  return {
+    ...main,
+    'cards': joinCards([
+      for (final c in chunks.take(main['chunks'] as int? ?? 0))
+        c.data()['cards'] as String,
+    ]),
+  };
+}
+
+/// Deletes a player's backup, chunks first (the rules allow only its owner).
+Future<void> _deleteBackup(String uid) async {
+  for (final c in (await _chunks(uid).get()).docs) {
+    await c.reference.delete();
+  }
+  await _doc(uid).delete();
 }
 
 /// Two backups as one: every card of both (a card given away in a trade stays given),
@@ -107,7 +232,8 @@ Future<void> signInWithGoogle(Store store) async {
   if (anon != null && anon.isAnonymous) {
     try {
       await anon.linkWithCredential(cred);
-      store.cloudOff = false; // notifies: the listener backs up
+      store.cloudOff = false;
+      await _flush(store);
       return;
     } on FirebaseAuthException catch (e) {
       if (e.code != 'credential-already-in-use') rethrow;
@@ -152,18 +278,19 @@ Future<void> resetPassword(String email, String language) {
 Future<void> _signInTo(Store store, AuthCredential cred) async {
   final auth = FirebaseAuth.instance;
   final anon = auth.currentUser;
-  if (anon != null && anon.isAnonymous) await _doc(anon.uid).delete();
+  if (anon != null && anon.isAnonymous) await _deleteBackup(anon.uid);
   final User user;
   try {
     user = (await auth.signInWithCredential(cred)).user!;
   } on Exception {
-    _sent = null;
-    _backup(store);
+    _forget();
+    await _flush(store); // the anonymous backup written back
     rethrow;
   }
-  final remote = (await _doc(user.uid).get()).data() ?? const {};
+  final remote = await _readBackup(user.uid);
   await store.restore(mergeBackups(store.backup, remote));
   store.cloudOff = false;
+  await _flush(store); // the merged collection, at once
 }
 
 /// Deletes the cloud backup and the account (Play requirement). The cards stay on the
@@ -178,8 +305,10 @@ Future<void> deleteAccount(
   if (user == null) return;
   store.cloudOff = true; // no backup while deleting
   try {
-    await _doc(user.uid)
-        .delete(); // while signed in: the rules allow only the owner
+    _timer?.cancel();
+    await _deleteBackup(
+      user.uid,
+    ); // while signed in: the rules allow only the owner
     try {
       await user.delete();
     } on FirebaseAuthException catch (e) {
@@ -205,6 +334,7 @@ Future<void> deleteAccount(
 }
 
 void _resume(Store store) {
-  _sent = null;
-  store.cloudOff = false; // notifies: the listener writes the backup again
+  _forget();
+  store.cloudOff = false;
+  unawaited(_flush(store)); // the backup written back
 }
