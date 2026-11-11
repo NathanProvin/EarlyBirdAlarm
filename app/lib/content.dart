@@ -162,7 +162,7 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
 }
 
 /// Brings the phone up to date with [region] in the background: species list and seasons
-/// (re-fetched weekly, as the catalog is rebuilt), every photo, and the song deck.
+/// (re-fetched weekly, as the catalog is rebuilt), the song deck, then every photo.
 /// Best effort: whatever fails is fetched at the next call (app start, after each guess).
 /// Returns true when new region data arrived, so alarms should pick new birds.
 Future<bool> syncRegion(
@@ -193,6 +193,9 @@ Future<bool> syncRegion(
     await initContent(region);
     _dropOldPhotos();
   }
+  // The pile first: alarms need its songs, while a missing photo streams from the web.
+  // The region's photos come after (~70 MB at 1200 px on a first sync).
+  await topUpDeck(month, difficulty, heard: heard, played: played);
   final photos = [
     for (final b in birds)
       if (!localFile(b.photo).existsSync()) b.photo,
@@ -200,7 +203,6 @@ Future<bool> syncRegion(
   for (var i = 0; i < photos.length; i += 8) {
     await Future.wait(photos.skip(i).take(8).map(download));
   }
-  await topUpDeck(month, difficulty, heard: heard, played: played);
   // The pile's cards are never thrown away: each one waits for its turn to ring.
   final pile = {
     for (final (_, r) in deckPile(month, difficulty, played)) r.file,
