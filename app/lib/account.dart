@@ -99,13 +99,11 @@ Future<AuthCredential> _googleCredential() async {
 }
 
 /// "Sign in with Google". The first time, the anonymous account becomes the Google one
-/// (same uid, its backup stays). If this Google account already has a collection (another
-/// phone), the throwaway anonymous account is deleted and both collections are merged.
-/// Throws when cancelled or offline.
+/// (same uid, its backup stays); if this Google account already has a collection (another
+/// phone), both are merged. Throws when cancelled or offline.
 Future<void> signInWithGoogle(Store store) async {
   final cred = await _googleCredential();
-  final auth = FirebaseAuth.instance;
-  final anon = auth.currentUser;
+  final anon = FirebaseAuth.instance.currentUser;
   if (anon != null && anon.isAnonymous) {
     try {
       await anon.linkWithCredential(cred);
@@ -114,28 +112,99 @@ Future<void> signInWithGoogle(Store store) async {
     } on FirebaseAuthException catch (e) {
       if (e.code != 'credential-already-in-use') rethrow;
     }
-    await _doc(anon.uid).delete();
-    await anon.delete();
   }
-  final user = (await auth.signInWithCredential(cred)).user!;
+  await _signInTo(store, cred);
+}
+
+/// "Create account" with an email: the anonymous account becomes it (same uid, its backup
+/// stays). Throws FirebaseAuthException (email-already-in-use, weak-password, invalid-email…).
+// shortcut: the email is not verified; add sendEmailVerification if fake addresses matter.
+Future<void> createWithEmail(Store store, String email, String password) async {
+  final auth = FirebaseAuth.instance;
+  final anon = auth.currentUser;
+  if (anon != null && anon.isAnonymous) {
+    await anon.linkWithCredential(
+      EmailAuthProvider.credential(email: email, password: password),
+    );
+  } else {
+    await auth.createUserWithEmailAndPassword(email: email, password: password);
+  }
+  store.cloudOff = false;
+}
+
+/// "Sign in" with an existing email account: its collection merges with the phone's.
+Future<void> signInWithEmail(Store store, String email, String password) =>
+    _signInTo(
+      store,
+      EmailAuthProvider.credential(email: email, password: password),
+    );
+
+/// Firebase sends the reset link itself (in the app's language).
+Future<void> resetPassword(String email, String language) {
+  FirebaseAuth.instance.setLanguageCode(language);
+  return FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+}
+
+/// Signs in to an account that already exists and merges its backup with the phone's.
+/// The anonymous account's backup is deleted first and rewritten if the sign-in fails.
+// shortcut: the emptied anonymous account stays in Firebase Auth (no data); turn on
+// automatic clean-up of anonymous accounts if they pile up.
+Future<void> _signInTo(Store store, AuthCredential cred) async {
+  final auth = FirebaseAuth.instance;
+  final anon = auth.currentUser;
+  if (anon != null && anon.isAnonymous) await _doc(anon.uid).delete();
+  final User user;
+  try {
+    user = (await auth.signInWithCredential(cred)).user!;
+  } on Exception {
+    _sent = null;
+    _backup(store);
+    rethrow;
+  }
   final remote = (await _doc(user.uid).get()).data() ?? const {};
   await store.restore(mergeBackups(store.backup, remote));
   store.cloudOff = false;
 }
 
 /// Deletes the cloud backup and the account (Play requirement). The cards stay on the
-/// phone; no new account is made until the player signs in with Google again.
-Future<void> deleteAccount(Store store) async {
+/// phone; no new account is made until the player signs in again. An account signed in
+/// long ago signs in again first: Google, or its password ([askPassword]; null cancels).
+/// On cancel or failure the account stays and its backup is written back.
+Future<void> deleteAccount(
+  Store store,
+  Future<String?> Function() askPassword,
+) async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
-  store.cloudOff = true;
-  await _doc(user.uid).delete();
+  store.cloudOff = true; // no backup while deleting
   try {
-    await user.delete();
-  } on FirebaseAuthException catch (e) {
-    if (e.code != 'requires-recent-login') rethrow;
-    await user.reauthenticateWithCredential(await _googleCredential());
-    await user.delete();
+    await _doc(user.uid)
+        .delete(); // while signed in: the rules allow only the owner
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code != 'requires-recent-login') rethrow;
+      final email = user.email;
+      final AuthCredential cred;
+      if (email != null &&
+          user.providerData.any((p) => p.providerId == 'password')) {
+        final password = await askPassword();
+        if (password == null) return _resume(store);
+        cred = EmailAuthProvider.credential(email: email, password: password);
+      } else {
+        cred = await _googleCredential();
+      }
+      await user.reauthenticateWithCredential(cred);
+      await user.delete();
+    }
+  } on Exception {
+    _resume(store);
+    rethrow;
   }
   if (_googleReady != null) await GoogleSignIn.instance.signOut();
+}
+
+void _resume(Store store) {
+  _sent = null;
+  store.cloudOff = false; // notifies: the listener writes the backup again
 }

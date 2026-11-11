@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'account.dart';
 import 'settings.dart';
-import 'tips.dart';
 
-/// The top row of the Alarms and Training pages: support (tips) on the left, [center] in
+/// The top row of the Alarms and Training pages: the account on the left, [center] in
 /// the middle, Settings on the right.
 class PageHeader extends StatelessWidget {
   const PageHeader({required this.center, super.key});
@@ -21,13 +21,9 @@ class PageHeader extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: l.tipsTile,
-            // In the theme's accent, to be seen.
-            icon: Icon(
-              Icons.coffee_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            onPressed: () => open(const TipsScreen()),
+            tooltip: l.account,
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => open(const AccountScreen()),
           ),
           Expanded(
             child: Center(

@@ -660,19 +660,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get account => 'Konto';
 
   @override
-  String get accountSubtitle => 'Deine Sammlung sichern';
-
-  @override
   String get accountPitch =>
       'Melde dich mit Google an, um deine Sammlung auf jedem Handy zu behalten.';
 
   @override
   String get signInGoogle => 'Mit Google anmelden';
-
-  @override
-  String accountSignedIn(String email) {
-    return 'Angemeldet als $email. Deine Sammlung ist gesichert und kommt auf jedem Handy zurück, auf dem du dich anmeldest.';
-  }
 
   @override
   String get deleteAccount => 'Konto löschen';
@@ -687,4 +679,40 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get accountError =>
       'Etwas ist schiefgelaufen. Prüfe deine Verbindung und versuche es erneut.';
+
+  @override
+  String get orEmail => 'oder mit E-Mail';
+
+  @override
+  String get email => 'E-Mail';
+
+  @override
+  String get password => 'Passwort';
+
+  @override
+  String get signIn => 'Anmelden';
+
+  @override
+  String get createAccount => 'Konto erstellen';
+
+  @override
+  String get forgotPassword => 'Passwort vergessen?';
+
+  @override
+  String get resetSent => 'Link gesendet, schau in dein Postfach.';
+
+  @override
+  String get wrongPassword => 'E-Mail oder Passwort falsch.';
+
+  @override
+  String get emailInUse => 'Diese E-Mail hat schon ein Konto: melde dich an.';
+
+  @override
+  String get weakPassword => 'Passwort: mindestens 6 Zeichen.';
+
+  @override
+  String get invalidEmail => 'Prüfe die E-Mail-Adresse.';
+
+  @override
+  String get introAccountTitle => 'Behalte deine Sammlung';
 }

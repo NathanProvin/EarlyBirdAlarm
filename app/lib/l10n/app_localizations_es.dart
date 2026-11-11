@@ -657,19 +657,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get account => 'Cuenta';
 
   @override
-  String get accountSubtitle => 'Guarda tu colección';
-
-  @override
   String get accountPitch =>
       'Inicia sesión con Google para conservar tu colección en todos tus móviles.';
 
   @override
   String get signInGoogle => 'Iniciar sesión con Google';
-
-  @override
-  String accountSignedIn(String email) {
-    return 'Sesión iniciada como $email. Tu colección está guardada y vuelve en cualquier móvil donde inicies sesión.';
-  }
 
   @override
   String get deleteAccount => 'Eliminar cuenta';
@@ -684,4 +676,40 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get accountError =>
       'Algo salió mal. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get orEmail => 'o con un correo';
+
+  @override
+  String get email => 'Correo';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get signIn => 'Iniciar sesión';
+
+  @override
+  String get createAccount => 'Crear cuenta';
+
+  @override
+  String get forgotPassword => '¿Olvidaste la contraseña?';
+
+  @override
+  String get resetSent => 'Enlace enviado, revisa tu correo.';
+
+  @override
+  String get wrongPassword => 'Correo o contraseña incorrectos.';
+
+  @override
+  String get emailInUse => 'Este correo ya tiene cuenta: inicia sesión.';
+
+  @override
+  String get weakPassword => 'Contraseña: al menos 6 caracteres.';
+
+  @override
+  String get invalidEmail => 'Revisa la dirección de correo.';
+
+  @override
+  String get introAccountTitle => 'Conserva tu colección';
 }

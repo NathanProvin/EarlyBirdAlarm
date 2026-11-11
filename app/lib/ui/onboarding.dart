@@ -4,6 +4,7 @@ import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'account.dart';
 import 'bird_icon.dart';
 import 'booster.dart';
 import 'card.dart';
@@ -12,8 +13,8 @@ import 'theme.dart';
 import 'wake.dart';
 
 /// The introduction, shown once on first launch (and from Settings): what the app is,
-/// the region and the alarm permissions, the game options, the collection features, and
-/// a card to hold and tilt. Skip on the welcome page leads to the region and permissions
+/// the region and the alarm permissions, the game options, the collection features, an
+/// account for the backup, and a card to hold and tilt. Skip on the welcome page leads to the region and permissions
 /// (an alarm that can't show the quiz breaks the app); later, skip or finish marks it seen.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -23,7 +24,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pages = 6;
+  static const _pages = 7;
   final _pager = PageController();
   int _page = 0;
 
@@ -150,6 +151,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         title: l.introRarityTitle,
                         body: [Text(l.introRarity)],
+                      ),
+                      _Page(
+                        top: Icon(
+                          Icons.cloud_done_outlined,
+                          size: 96,
+                          color: scheme.primary,
+                        ),
+                        title: l.introAccountTitle,
+                        body: const [AccountPanel()],
                       ),
                       _Page(
                         top: _demo == null

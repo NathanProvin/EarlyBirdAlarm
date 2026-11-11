@@ -657,19 +657,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get account => 'Compte';
 
   @override
-  String get accountSubtitle => 'Sauvegarder votre collection';
-
-  @override
   String get accountPitch =>
       'Connectez-vous avec Google pour garder votre collection sur tous vos téléphones.';
 
   @override
   String get signInGoogle => 'Se connecter avec Google';
-
-  @override
-  String accountSignedIn(String email) {
-    return 'Connecté en tant que $email. Votre collection est sauvegardée et revient sur tout téléphone où vous vous connectez.';
-  }
 
   @override
   String get deleteAccount => 'Supprimer le compte';
@@ -684,4 +676,40 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get accountError =>
       'Un problème est survenu. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get orEmail => 'ou avec un e-mail';
+
+  @override
+  String get email => 'E-mail';
+
+  @override
+  String get password => 'Mot de passe';
+
+  @override
+  String get signIn => 'Se connecter';
+
+  @override
+  String get createAccount => 'Créer un compte';
+
+  @override
+  String get forgotPassword => 'Mot de passe oublié ?';
+
+  @override
+  String get resetSent => 'Lien envoyé, vérifiez votre boîte mail.';
+
+  @override
+  String get wrongPassword => 'E-mail ou mot de passe incorrect.';
+
+  @override
+  String get emailInUse => 'Cet e-mail a déjà un compte : connectez-vous.';
+
+  @override
+  String get weakPassword => 'Mot de passe : 6 caractères minimum.';
+
+  @override
+  String get invalidEmail => 'Vérifiez l\'adresse e-mail.';
+
+  @override
+  String get introAccountTitle => 'Gardez votre collection';
 }

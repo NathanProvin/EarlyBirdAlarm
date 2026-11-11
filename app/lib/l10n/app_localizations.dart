@@ -1290,12 +1290,6 @@ abstract class AppLocalizations {
   /// **'Account'**
   String get account;
 
-  /// No description provided for @accountSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Back up your collection'**
-  String get accountSubtitle;
-
   /// No description provided for @accountPitch.
   ///
   /// In en, this message translates to:
@@ -1307,12 +1301,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in with Google'**
   String get signInGoogle;
-
-  /// No description provided for @accountSignedIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Signed in as {email}. Your collection is backed up and comes back on any phone you sign in with.'**
-  String accountSignedIn(String email);
 
   /// No description provided for @deleteAccount.
   ///
@@ -1337,6 +1325,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Check your connection and try again.'**
   String get accountError;
+
+  /// No description provided for @orEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or with an email'**
+  String get orEmail;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get createAccount;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @resetSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset link sent, check your inbox.'**
+  String get resetSent;
+
+  /// No description provided for @wrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong email or password.'**
+  String get wrongPassword;
+
+  /// No description provided for @emailInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This email already has an account: sign in.'**
+  String get emailInUse;
+
+  /// No description provided for @weakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password: at least 6 characters.'**
+  String get weakPassword;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the email address.'**
+  String get invalidEmail;
+
+  /// No description provided for @introAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your collection'**
+  String get introAccountTitle;
 }
 
 class _AppLocalizationsDelegate

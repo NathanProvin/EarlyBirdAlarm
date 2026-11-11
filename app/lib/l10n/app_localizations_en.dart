@@ -655,19 +655,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get account => 'Account';
 
   @override
-  String get accountSubtitle => 'Back up your collection';
-
-  @override
   String get accountPitch =>
       'Sign in with Google to keep your collection on every phone.';
 
   @override
   String get signInGoogle => 'Sign in with Google';
-
-  @override
-  String accountSignedIn(String email) {
-    return 'Signed in as $email. Your collection is backed up and comes back on any phone you sign in with.';
-  }
 
   @override
   String get deleteAccount => 'Delete account';
@@ -682,4 +674,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountError =>
       'Something went wrong. Check your connection and try again.';
+
+  @override
+  String get orEmail => 'or with an email';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get createAccount => 'Create account';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get resetSent => 'Reset link sent, check your inbox.';
+
+  @override
+  String get wrongPassword => 'Wrong email or password.';
+
+  @override
+  String get emailInUse => 'This email already has an account: sign in.';
+
+  @override
+  String get weakPassword => 'Password: at least 6 characters.';
+
+  @override
+  String get invalidEmail => 'Check the email address.';
+
+  @override
+  String get introAccountTitle => 'Keep your collection';
 }
