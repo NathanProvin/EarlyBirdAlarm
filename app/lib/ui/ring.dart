@@ -373,7 +373,13 @@ class _RingScreenState extends State<RingScreen> {
                                       Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.style, size: 28),
+                                          Icon(
+                                            Icons.style,
+                                            size: 28,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .primary,
+                                          ),
                                           // Who recorded the song playing (CC BY);
                                           // the line is kept empty otherwise, so the
                                           // icon never moves.
@@ -389,11 +395,14 @@ class _RingScreenState extends State<RingScreen> {
                                           ),
                                         ],
                                       ),
-                                      const Align(
+                                      Align(
                                         alignment: Alignment.centerRight,
                                         child: Icon(
                                           Icons.arrow_forward,
                                           size: 28,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
                                         ),
                                       ),
                                     ],
