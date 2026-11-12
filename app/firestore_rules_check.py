@@ -11,12 +11,15 @@ from pathlib import Path
 
 cfg = json.loads((Path(__file__).parent / "android/app/google-services.json").read_text())
 KEY = cfg["client"][0]["api_key"][0]["current_key"]
+# The API key only accepts the Android app (Google Cloud restriction): the script calls as it.
+ANDROID = {"X-Android-Package": cfg["client"][0]["client_info"]["android_client_info"]["package_name"],
+           "X-Android-Cert": "2E82FA65627814738464095D7E54630403015B86"}  # a SHA-1 registered in Firebase
 DB = f"https://firestore.googleapis.com/v1/projects/{cfg['project_info']['project_id']}/databases/(default)/documents"
 
 
 def call(method, url, token=None, body=None):
     req = urllib.request.Request(url, method=method, data=json.dumps(body).encode() if body else None,
-                                 headers={"Content-Type": "application/json",
+                                 headers={"Content-Type": "application/json", **ANDROID,
                                           **({"Authorization": f"Bearer {token}"} if token else {})})
     try:
         with urllib.request.urlopen(req) as r:
