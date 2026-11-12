@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:early_bird/account.dart';
+import 'package:early_bird/birds.dart';
 import 'package:early_bird/store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -124,5 +126,17 @@ void main() {
       {'cards': joinCards(chunks.take(2).toList())},
     );
     expect((jsonDecode(merged['cards']! as String) as List).length, 4200);
+  });
+
+  test('the welcome card is Rare 50 / Epic 40 / Legendary 10 %', () {
+    final r = Random(1);
+    final n = <String, int>{};
+    for (var i = 0; i < 100000; i++) {
+      n.update(welcomeRarity(r), (v) => v + 1, ifAbsent: () => 1);
+    }
+    expect(n.keys.toSet(), {'rare', 'epic', 'legendary'});
+    expect(n['rare']! / 1000, closeTo(50, 1));
+    expect(n['epic']! / 1000, closeTo(40, 1));
+    expect(n['legendary']! / 1000, closeTo(10, 1));
   });
 }

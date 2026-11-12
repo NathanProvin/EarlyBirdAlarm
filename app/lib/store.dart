@@ -224,15 +224,64 @@ class Store extends ChangeNotifier {
       recording: bird.recordings.firstOrNull?.file,
       random: random,
     );
-    await _saveCards([...cards, card]);
-    await _prefs.setStringList('heard', [
-      for (final id in heard)
-        if (id != bird.id) id,
-    ]);
+    await _add(card);
     await _prefs.setStringList('seriesDone', [..._collected, _collectKey(s)]);
     notifyListeners();
     return card;
   }
+
+  /// Saves a card won outside a quiz (a series, a gift): its bird is no longer "heard".
+  Future<void> _add(CardData card) async {
+    await _saveCards([...cards, card]);
+    await _prefs.setStringList('heard', [
+      for (final id in heard)
+        if (id != card.birdId) id,
+    ]);
+    notifyListeners();
+  }
+
+  /// A gift card of [rarity] from the region (a code, the welcome card): 'shiny' gives one
+  /// of the region's Shiny birds, or a Legendary when it has none. Null before the region's
+  /// birds are known (the gift waits for the next launch).
+  Future<CardData?> gift(String rarity, [Random? random]) async {
+    random ??= Random();
+    final shinies = [
+      for (final b in birds)
+        if (b.shiny.isNotEmpty) b,
+    ];
+    final bird = rarity == 'shiny' && shinies.isNotEmpty
+        ? shinies[random.nextInt(shinies.length)]
+        : pickBird(
+            recent,
+            monthFor(DateTime.now()),
+            difficulty,
+            (_) => true,
+            random,
+          )?.$1;
+    if (bird == null) return null;
+    final card = rollCard(
+      bird,
+      region,
+      rarity: rarity, // rollCard turns 'shiny' into Legendary for a bird without one
+      recording: bird.recordings.firstOrNull?.file,
+      random: random,
+    );
+    await _add(card);
+    return card;
+  }
+
+  /// The friend whose invite link brought this install (their account id), read once from
+  /// the Play referrer (see account.dart); their welcome card is given while [welcomed] is false.
+  String? get invitedBy => _prefs.getString('invitedBy');
+  set invitedBy(String? uid) => uid == null
+      ? _prefs.remove('invitedBy')
+      : _prefs.setString('invitedBy', uid);
+  bool get welcomed => _prefs.getBool('welcomed') ?? false;
+  set welcomed(bool v) => _prefs.setBool('welcomed', v);
+
+  /// The Play referrer was read and the referral written (or there was none).
+  bool get referrerDone => _prefs.getBool('referrerDone') ?? false;
+  set referrerDone(bool v) => _prefs.setBool('referrerDone', v);
 
   /// Ids of the last birds heard, newest first.
   List<String> get recent => _prefs.getStringList('recent') ?? [];

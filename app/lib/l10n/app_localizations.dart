@@ -1415,6 +1415,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Melanistic'**
   String get melanistic;
+
+  /// No description provided for @inviteFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite friends'**
+  String get inviteFriends;
+
+  /// No description provided for @inviteText.
+  ///
+  /// In en, this message translates to:
+  /// **'I wake up to bird songs and collect their cards on Early Bird 🐦 Can you guess them? It\'s free: {link}'**
+  String inviteText(String link);
+
+  /// No description provided for @friendsJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No friend joined yet} =1{1 friend joined} other{{count} friends joined}}'**
+  String friendsJoined(int count);
+
+  /// No description provided for @enterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a code'**
+  String get enterCode;
+
+  /// No description provided for @redeem.
+  ///
+  /// In en, this message translates to:
+  /// **'Redeem'**
+  String get redeem;
+
+  /// No description provided for @codeUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'This code doesn\'t exist.'**
+  String get codeUnknown;
+
+  /// No description provided for @codeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This code has expired.'**
+  String get codeExpired;
+
+  /// No description provided for @codeUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'You already used this code.'**
+  String get codeUsed;
+
+  /// No description provided for @codeDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Code redeemed!'**
+  String get codeDone;
+
+  /// No description provided for @codeGift.
+  ///
+  /// In en, this message translates to:
+  /// **'A gift for you!'**
+  String get codeGift;
+
+  /// No description provided for @welcomeGift.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome! A gift from your friend'**
+  String get welcomeGift;
 }
 
 class _AppLocalizationsDelegate

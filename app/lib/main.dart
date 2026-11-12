@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:alarm/alarm.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'account.dart';
+import 'birds.dart';
 import 'content.dart';
 import 'l10n/app_localizations.dart';
 import 'purchases.dart';
@@ -16,6 +18,7 @@ import 'ui/header.dart';
 import 'ui/onboarding.dart';
 import 'ui/region.dart';
 import 'ui/ring.dart';
+import 'ui/series.dart';
 import 'ui/streak.dart';
 import 'ui/theme.dart';
 import 'ui/twitch.dart';
@@ -258,6 +261,22 @@ class _HomeScreenState extends State<HomeScreen> {
         await Navigator.of(
           context,
         ).push(MaterialPageRoute<void>(builder: (_) => const RegionScreen()));
+      }
+      // Installed through a friend's invite link: a welcome card from the region (needs
+      // the region's birds; else it waits for the next launch).
+      if (store.invitedBy != null && !store.welcomed && mounted) {
+        final card = await store.gift(welcomeRarity(Random()));
+        if (card != null && mounted) {
+          store.welcomed = true;
+          await Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => RewardScreen(
+                title: AppLocalizations.of(context).welcomeGift,
+                card: card,
+              ),
+            ),
+          );
+        }
       }
     });
     Alarm.ringing.listen((set) {

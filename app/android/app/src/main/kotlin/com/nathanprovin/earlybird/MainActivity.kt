@@ -12,6 +12,8 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
+import com.android.installreferrer.api.InstallReferrerClient
+import com.android.installreferrer.api.InstallReferrerStateListener
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -114,6 +116,27 @@ class MainActivity : FlutterActivity() {
                 result.success(
                     getSystemService(ConnectivityManager::class.java).isActiveNetworkMetered
                 )
+            }
+        // The Play referrer of this install (an invite link's `inviter=`), null if none.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/referrer")
+            .setMethodCallHandler { _, result ->
+                val client = InstallReferrerClient.newBuilder(this).build()
+                client.startConnection(object : InstallReferrerStateListener {
+                    override fun onInstallReferrerSetupFinished(code: Int) {
+                        val referrer = try {
+                            if (code == InstallReferrerClient.InstallReferrerResponse.OK) {
+                                client.installReferrer.installReferrer
+                            } else null
+                        } catch (e: Exception) {
+                            null
+                        }
+                        client.endConnection()
+                        result.success(referrer)
+                    }
+
+                    // Dart gives up after 10 s.
+                    override fun onInstallReferrerServiceDisconnected() {}
+                })
             }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/version")
             .setMethodCallHandler { _, result ->

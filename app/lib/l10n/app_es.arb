@@ -218,5 +218,16 @@
   "introAccountTitle": "Conserva tu colección",
   "shiny": "Shiny",
   "leucistic": "Leucístico",
-  "melanistic": "Melánico"
+  "melanistic": "Melánico",
+  "inviteFriends": "Invitar amigos",
+  "inviteText": "Me despierto con cantos de pájaros y colecciono sus cartas en Early Bird 🐦 ¿Sabrás reconocerlos? Es gratis: {link}",
+  "friendsJoined": "{count, plural, =0{Aún no se ha unido ningún amigo} =1{1 amigo se ha unido} other{{count} amigos se han unido}}",
+  "enterCode": "Introducir un código",
+  "redeem": "Canjear",
+  "codeUnknown": "Este código no existe.",
+  "codeExpired": "Este código ha caducado.",
+  "codeUsed": "Ya has usado este código.",
+  "codeDone": "¡Código canjeado!",
+  "codeGift": "¡Un regalo para ti!",
+  "welcomeGift": "¡Bienvenido! Un regalo de tu amigo"
 }

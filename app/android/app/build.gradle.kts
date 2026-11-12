@@ -68,3 +68,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Play Install Referrer: the inviter in an invite link (account.dart, 2026-11-12).
+    implementation("com.android.installreferrer:installreferrer:2.2")
+}

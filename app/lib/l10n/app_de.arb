@@ -218,5 +218,16 @@
   "introAccountTitle": "Behalte deine Sammlung",
   "shiny": "Shiny",
   "leucistic": "Leuzistisch",
-  "melanistic": "Melanistisch"
+  "melanistic": "Melanistisch",
+  "inviteFriends": "Freunde einladen",
+  "inviteText": "Ich wache mit Vogelgesang auf und sammle ihre Karten in Early Bird 🐦 Erkennst du sie? Kostenlos: {link}",
+  "friendsJoined": "{count, plural, =0{Noch keine Freunde dabei} =1{1 Freund ist dabei} other{{count} Freunde sind dabei}}",
+  "enterCode": "Code eingeben",
+  "redeem": "Einlösen",
+  "codeUnknown": "Diesen Code gibt es nicht.",
+  "codeExpired": "Dieser Code ist abgelaufen.",
+  "codeUsed": "Du hast diesen Code schon benutzt.",
+  "codeDone": "Code eingelöst!",
+  "codeGift": "Ein Geschenk für dich!",
+  "welcomeGift": "Willkommen! Ein Geschenk von deinem Freund"
 }

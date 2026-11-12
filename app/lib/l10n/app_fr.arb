@@ -218,5 +218,16 @@
   "introAccountTitle": "Gardez votre collection",
   "shiny": "Shiny",
   "leucistic": "Leucique",
-  "melanistic": "Mélanique"
+  "melanistic": "Mélanique",
+  "inviteFriends": "Inviter des amis",
+  "inviteText": "Je me réveille au chant des oiseaux et je collectionne leurs cartes sur Early Bird 🐦 Sauras-tu les reconnaître ? C’est gratuit : {link}",
+  "friendsJoined": "{count, plural, =0{Aucun ami inscrit pour l’instant} =1{1 ami a rejoint} other{{count} amis ont rejoint}}",
+  "enterCode": "Entrer un code",
+  "redeem": "Valider",
+  "codeUnknown": "Ce code n’existe pas.",
+  "codeExpired": "Ce code a expiré.",
+  "codeUsed": "Vous avez déjà utilisé ce code.",
+  "codeDone": "Code validé !",
+  "codeGift": "Un cadeau pour vous !",
+  "welcomeGift": "Bienvenue ! Un cadeau de la part de votre ami"
 }

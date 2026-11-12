@@ -14,6 +14,14 @@ const cardTiers = [...tiers, 'shiny'];
 // Shiny every 5-7 months, whatever the difficulty (France · Nord, November / May).
 const shinyOdds = 1 / 1250;
 
+/// The welcome card of a player invited by a friend (2026-11-12, user): Rare 50 %,
+/// Epic 40 %, Legendary 10 %.
+String welcomeRarity(Random random) => switch (random.nextInt(100)) {
+  < 50 => 'rare',
+  < 90 => 'epic',
+  _ => 'legendary',
+};
+
 /// Step 1 of a ring, the bird: how often a species rings, by how common it is this month
 /// in the region (scarce birds a little more often than the 16/8/4/2/1 of 3b; 2026-10-30),
 /// and which of those tiers each difficulty drafts from.

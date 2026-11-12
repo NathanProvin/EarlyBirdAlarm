@@ -5,9 +5,11 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'birds.dart';
 import 'cards.dart';
 import 'firebase_options.dart';
 import 'store.dart';
@@ -31,6 +33,9 @@ Future<void> signInQuietly(Store store) async {
     final auth = FirebaseAuth.instance;
     if (auth.currentUser == null && !store.cloudOff) {
       await auth.signInAnonymously();
+    }
+    if (auth.currentUser case final user?) {
+      unawaited(_readReferrer(store, user.uid));
     }
     store.addListener(() => _backupSoon(store));
     // The binding keeps the listener: written when the app goes to the background.
@@ -306,6 +311,11 @@ Future<void> deleteAccount(
   store.cloudOff = true; // no backup while deleting
   try {
     _timer?.cancel();
+    // Who invited this player goes too (the inviter's count drops by one).
+    await FirebaseFirestore.instance
+        .collection('referrals')
+        .doc(user.uid)
+        .delete();
     await _deleteBackup(
       user.uid,
     ); // while signed in: the rules allow only the owner
@@ -337,4 +347,103 @@ void _resume(Store store) {
   _forget();
   store.cloudOff = false;
   unawaited(_flush(store)); // the backup written back
+}
+
+const _referrer = MethodChannel('early_bird/referrer'); // MainActivity
+
+/// Invite links (2026-11-12): the Play link's referrer carries the inviter's account id
+/// (`inviter=`, see `playLink`), read from Google Play once: the friend's referral is
+/// written (the inviter counts it) and their welcome card waits for them (main.dart).
+/// Tried again at the next launch while the referral couldn't be written (offline).
+Future<void> _readReferrer(Store store, String uid) async {
+  if (store.referrerDone) return;
+  String? inviter;
+  try {
+    final referrer = await _referrer
+        .invokeMethod<String>('get')
+        .timeout(const Duration(seconds: 10));
+    inviter = Uri.splitQueryString(referrer ?? '')['inviter'];
+  } on Exception catch (e) {
+    debugPrint(
+      'referrer: $e',
+    ); // not installed from Play (dev builds): no invite
+  }
+  if (inviter == null || inviter == uid) {
+    store.referrerDone = true;
+    return;
+  }
+  store.invitedBy ??= inviter;
+  try {
+    await FirebaseFirestore.instance.collection('referrals').doc(uid).set({
+      'inviterUid': inviter,
+    });
+    store.referrerDone = true;
+  } on FirebaseException catch (e) {
+    // Already written (create-only): a write queued offline went through.
+    if (e.code == 'permission-denied') store.referrerDone = true;
+    debugPrint('referrer: $e');
+  }
+}
+
+/// How many friends installed the app through this player's invite links.
+Future<int> friendsJoined() async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+  if (uid == null) return 0;
+  final q = await FirebaseFirestore.instance
+      .collection('referrals')
+      .where('inviterUid', isEqualTo: uid)
+      .count()
+      .get();
+  return q.count ?? 0;
+}
+
+enum CodeError { unknown, expired, used, offline }
+
+class CodeException implements Exception {
+  const CodeException(this.error);
+  final CodeError error;
+}
+
+/// Redeems a code we handed out (2026-11-12): case-insensitive (stored in lower case),
+/// once per account, enforced by the rules with a create-only `redemptions/{uid}_{code}`.
+/// Its `reward` is a card tier ('shiny': a Shiny of the region, else a Legendary) or
+/// 'none'. Returns the card won (null for 'none'); throws [CodeException].
+Future<CardData?> redeemCode(Store store, String word) async {
+  final user = FirebaseAuth.instance.currentUser;
+  final id = word.trim().toLowerCase();
+  if (user == null) throw const CodeException(CodeError.offline);
+  if (id.isEmpty || id.contains('/')) {
+    throw const CodeException(CodeError.unknown);
+  }
+  final db = FirebaseFirestore.instance;
+  final Map<String, dynamic>? code;
+  try {
+    code =
+        (await db
+                .collection('codes')
+                .doc(id)
+                .get(const GetOptions(source: Source.server)))
+            .data();
+  } on FirebaseException {
+    throw const CodeException(CodeError.offline);
+  }
+  if (code == null || code['active'] != true) {
+    throw const CodeException(CodeError.unknown);
+  }
+  if (code['end'] case final Timestamp end
+      when end.toDate().isBefore(DateTime.now())) {
+    throw const CodeException(CodeError.expired);
+  }
+  try {
+    await db.collection('redemptions').doc('${user.uid}_$id').set({
+      'uid': user.uid,
+      'code': id,
+    });
+  } on FirebaseException catch (e) {
+    throw CodeException(
+      e.code == 'permission-denied' ? CodeError.used : CodeError.offline,
+    );
+  }
+  final reward = code['reward'] as String? ?? 'none';
+  return cardTiers.contains(reward) ? store.gift(reward) : null;
 }

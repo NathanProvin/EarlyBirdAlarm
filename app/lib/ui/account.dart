@@ -2,10 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../account.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'series.dart';
+import 'share.dart';
 
 /// The account page, opened from the person icon on the Alarms and Training headers.
 class AccountScreen extends StatelessWidget {
@@ -21,7 +24,16 @@ class AccountScreen extends StatelessWidget {
         24,
         24 + MediaQuery.paddingOf(context).bottom,
       ),
-      children: const [AccountPanel(canDelete: true)],
+      children: [
+        const AccountPanel(canDelete: true),
+        // Invites and codes need the (anonymous) account: none in widget tests.
+        if (Firebase.apps.isNotEmpty) ...const [
+          SizedBox(height: 32),
+          _Invite(),
+          SizedBox(height: 24),
+          _Code(),
+        ],
+      ],
     ),
   );
 }
@@ -241,6 +253,112 @@ class _AccountPanelState extends State<AccountPanel> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Invite friends (2026-11-12): a message with the Play link, which carries this
+/// player's account id so the friend's install counts here.
+class _Invite extends StatelessWidget {
+  const _Invite();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        FilledButton.icon(
+          icon: const Icon(Icons.share_outlined),
+          label: Text(l.inviteFriends),
+          onPressed: () => SharePlus.instance.share(
+            ShareParams(text: l.inviteText(playLink('invite'))),
+          ),
+        ),
+        const SizedBox(height: 8),
+        FutureBuilder<int>(
+          future: friendsJoined(),
+          builder: (context, snap) => Text(
+            snap.hasData ? l.friendsJoined(snap.data!) : '',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Enter a code we handed out: its card flips in (see redeemCode).
+class _Code extends StatefulWidget {
+  const _Code();
+
+  @override
+  State<_Code> createState() => _CodeState();
+}
+
+class _CodeState extends State<_Code> {
+  final _field = TextEditingController();
+  bool _busy = false;
+
+  @override
+  void dispose() {
+    _field.dispose();
+    super.dispose();
+  }
+
+  Future<void> _redeem() async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _busy = true);
+    try {
+      final card = await redeemCode(store, _field.text);
+      _field.clear();
+      if (card == null) {
+        messenger.showSnackBar(SnackBar(content: Text(l.codeDone)));
+      } else {
+        await navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => RewardScreen(title: l.codeGift, card: card),
+          ),
+        );
+      }
+    } on CodeException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(switch (e.error) {
+            CodeError.unknown => l.codeUnknown,
+            CodeError.expired => l.codeExpired,
+            CodeError.used => l.codeUsed,
+            CodeError.offline => l.accountError,
+          }),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _field,
+            textCapitalization: TextCapitalization.words,
+            autocorrect: false,
+            decoration: InputDecoration(labelText: l.enterCode),
+            onSubmitted: (_) => _busy ? null : _redeem(),
+          ),
+        ),
+        const SizedBox(width: 12),
+        FilledButton.tonal(
+          onPressed: _busy ? null : _redeem,
+          child: Text(l.redeem),
+        ),
+      ],
     );
   }
 }

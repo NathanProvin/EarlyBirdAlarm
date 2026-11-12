@@ -67,7 +67,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
     final l = AppLocalizations.of(context);
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _Reward(
+        builder: (_) => RewardScreen(
           title: s.series == null ? l.achievementUnlocked : l.seriesComplete,
           card: card,
         ),
@@ -377,8 +377,9 @@ class _Orbit extends CustomPainter {
 }
 
 /// The card collected for a series or an achievement, flipping in like a won card.
-class _Reward extends StatelessWidget {
-  const _Reward({required this.title, required this.card});
+/// A card won outside a quiz (a series, an achievement, a code, the welcome card) flips in.
+class RewardScreen extends StatelessWidget {
+  const RewardScreen({super.key, required this.title, required this.card});
   final String title;
   final CardData card;
 

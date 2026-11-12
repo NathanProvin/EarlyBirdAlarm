@@ -1,5 +1,7 @@
 import 'dart:ui' as ui;
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -12,11 +14,18 @@ import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
 
-/// The Play Store page; the referrer shows shared-card installs in the Play Console
-/// (Acquisition reports, utm_source=share).
-const playLink =
-    'https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird'
-    '&referrer=utm_source%3Dshare%26utm_medium%3Dcard';
+/// The Play Store page; the referrer shows shared installs in the Play Console
+/// (Acquisition reports, utm_source=share, utm_medium = card or invite) and carries the
+/// player's account id (`inviter=`), read by the friend's app at first launch (account.dart).
+String playLink(String medium) {
+  final uid = Firebase.apps.isEmpty
+      ? null
+      : FirebaseAuth.instance.currentUser?.uid;
+  final referrer =
+      'utm_source=share&utm_medium=$medium${uid == null ? '' : '&inviter=$uid'}';
+  return 'https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird'
+      '&referrer=${Uri.encodeComponent(referrer)}';
+}
 
 const _w = 1080.0,
     _h = 1350.0,
@@ -140,7 +149,11 @@ Future<void> shareCard(
   icon.dispose();
   image.dispose();
 
-  final message = l.shareText(bird.nameIn(l.localeName), tier, playLink);
+  final message = l.shareText(
+    bird.nameIn(l.localeName),
+    tier,
+    playLink('card'),
+  );
   await Clipboard.setData(ClipboardData(text: message));
   messenger?.showSnackBar(SnackBar(content: Text(l.shareCopied)));
   await SharePlus.instance.share(

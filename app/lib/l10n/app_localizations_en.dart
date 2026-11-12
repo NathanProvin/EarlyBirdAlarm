@@ -719,4 +719,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get melanistic => 'Melanistic';
+
+  @override
+  String get inviteFriends => 'Invite friends';
+
+  @override
+  String inviteText(String link) {
+    return 'I wake up to bird songs and collect their cards on Early Bird 🐦 Can you guess them? It\'s free: $link';
+  }
+
+  @override
+  String friendsJoined(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends joined',
+      one: '1 friend joined',
+      zero: 'No friend joined yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get enterCode => 'Enter a code';
+
+  @override
+  String get redeem => 'Redeem';
+
+  @override
+  String get codeUnknown => 'This code doesn\'t exist.';
+
+  @override
+  String get codeExpired => 'This code has expired.';
+
+  @override
+  String get codeUsed => 'You already used this code.';
+
+  @override
+  String get codeDone => 'Code redeemed!';
+
+  @override
+  String get codeGift => 'A gift for you!';
+
+  @override
+  String get welcomeGift => 'Welcome! A gift from your friend';
 }

@@ -2,14 +2,47 @@ rules_version = '2';
 // Deploy from app/:  firebase deploy --only firestore:rules --project earlybird-alarm
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+
     // A player reads and writes only their own document (the collection backup, Phase 1.1).
     match /players/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if signedIn() && request.auth.uid == uid;
       // Its cards, in chunks of 1,000 (a document stops at 1 MB).
       match /cards/{chunk} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read, write: if signedIn() && request.auth.uid == uid;
       }
     }
-    // Everything else stays closed; codes and redemptions get their rules with Phase 1.1.
+
+    // Codes we hand out (id = the word in lower case), {reward, active, end?}: made in the
+    // console only.
+    match /codes/{code} {
+      allow read: if signedIn();
+    }
+
+    // One per account and code ({uid}_{code}): create-only, so a code works once per account.
+    // Never deleted, else a player could redeem again.
+    match /redemptions/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'code'])
+        && request.resource.data.uid == request.auth.uid
+        && id == request.auth.uid + '_' + request.resource.data.code
+        && exists(/databases/$(database)/documents/codes/$(request.resource.data.code))
+        && get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.active == true
+        && request.time < get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.get('end', timestamp.value(4102444800000));
+    }
+
+    // Who invited whom (2026-11-12): written by the friend at first launch, read by the
+    // inviter to count friends. The friend can delete it (account deletion).
+    match /referrals/{friendUid} {
+      allow read: if signedIn()
+        && (request.auth.uid == friendUid || resource.data.inviterUid == request.auth.uid);
+      allow create: if signedIn() && request.auth.uid == friendUid
+        && request.resource.data.keys().hasOnly(['inviterUid'])
+        && request.resource.data.inviterUid is string
+        && request.resource.data.inviterUid != friendUid;
+      allow delete: if signedIn() && request.auth.uid == friendUid;
+    }
+    // Everything else stays closed.
   }
 }

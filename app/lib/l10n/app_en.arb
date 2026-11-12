@@ -268,5 +268,18 @@
   "introAccountTitle": "Keep your collection",
   "shiny": "Shiny",
   "leucistic": "Leucistic",
-  "melanistic": "Melanistic"
+  "melanistic": "Melanistic",
+  "inviteFriends": "Invite friends",
+  "inviteText": "I wake up to bird songs and collect their cards on Early Bird 🐦 Can you guess them? It's free: {link}",
+  "@inviteText": {"placeholders": {"link": {"type": "String"}}},
+  "friendsJoined": "{count, plural, =0{No friend joined yet} =1{1 friend joined} other{{count} friends joined}}",
+  "@friendsJoined": {"placeholders": {"count": {"type": "int"}}},
+  "enterCode": "Enter a code",
+  "redeem": "Redeem",
+  "codeUnknown": "This code doesn't exist.",
+  "codeExpired": "This code has expired.",
+  "codeUsed": "You already used this code.",
+  "codeDone": "Code redeemed!",
+  "codeGift": "A gift for you!",
+  "welcomeGift": "Welcome! A gift from your friend"
 }
