@@ -11,6 +11,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../birds.dart';
 import '../cards.dart';
+import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../store.dart';
@@ -61,14 +62,27 @@ class _RingScreenState extends State<RingScreen> {
         store.difficulty,
       );
   late final int _oldStreak = store.streak;
-  final _player = AudioPlayer(); // Twitch only: alarms play through the plugin
+  // The Twitch quiz's song, then the songs compared after a wrong guess (alarms ring
+  // through the plugin).
+  final _player = AudioPlayer();
   Bird? _tapped;
+
+  // After a wrong guess (2026-11-12, user): the choices stay on screen to compare their
+  // songs, for as long as the player likes; Next opens the reveal.
+  VoidCallback? _next; // set while comparing
+  Bird? _playing; // the bird whose song plays (or loads)
+  bool _loading = false;
 
   Timer? _buzzTimer, _vibrateTimer;
 
   @override
   void initState() {
     super.initState();
+    _player.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed && _next != null && mounted) {
+        setState(() => _playing = null);
+      }
+    });
     if (widget.training != null) {
       _player.setLoopMode(LoopMode.one);
       playRecording(_player, _rec!.file);
@@ -117,8 +131,55 @@ class _RingScreenState extends State<RingScreen> {
     null => _Mark.none,
     _ when b == _bird => _Mark.correct, // the answer is always shown
     final t when b == t => _Mark.wrong,
+    _ when _next != null => _Mark.none, // comparing: the others are back
     _ => _Mark.faded,
   };
+
+  /// The birds to compare after a wrong guess: the 4 choices, or with a typed guess
+  /// (Expert) the answer and the pick.
+  List<Bird> get _board => store.difficulty == Difficulty.expert
+      ? {_bird, ?_tapped}.toList()
+      : _choices;
+
+  /// The recording to compare for [b]: the one that rang for the answer; for the others
+  /// one of the same kind (song / call), from the phone when there is one (no data, works
+  /// offline), else streamed.
+  Recording? _songOf(Bird b) {
+    if (b == _bird && _rec != null) return _rec;
+    final playable = b.playable(store.difficulty);
+    final recs = playable.isEmpty ? b.recordings : playable;
+    if (recs.isEmpty) return null;
+    int score(Recording r) =>
+        (r.kind == _rec?.kind ? 2 : 0) + (onPhone(r) ? 1 : 0);
+    return recs.reduce((a, r) => score(r) > score(a) ? r : a);
+  }
+
+  /// Plays [b]'s song, or stops it if it's the one playing; one song at a time.
+  Future<void> _listen(Bird b) async {
+    if (_playing == b) {
+      setState(() => _playing = null);
+      return _player.stop();
+    }
+    final rec = _songOf(b);
+    if (rec == null) return;
+    unawaited(HapticFeedback.selectionClick());
+    setState(() {
+      _playing = b;
+      _loading = true;
+    });
+    await _player.setLoopMode(LoopMode.off);
+    final ok = await playRecording(_player, rec.file);
+    if (!mounted || _playing != b) return; // another bird was tapped meanwhile
+    setState(() {
+      _loading = false;
+      if (!ok) _playing = null;
+    });
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).songOffline)),
+      );
+    }
+  }
 
   Future<void> _guess(Bird bird) async {
     if (_tapped != null) return;
@@ -149,18 +210,24 @@ class _RingScreenState extends State<RingScreen> {
     unawaited(store.sync());
     await shown;
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => RevealScreen(
-          bird: _bird,
-          recording: _rec,
-          card: card,
-          firstOfSpecies: firstOfSpecies,
-          streakLost: !correct && _oldStreak > 0,
-          training: widget.training != null,
+    void reveal() {
+      unawaited(_player.stop());
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => RevealScreen(
+            bird: _bird,
+            recording: _rec,
+            card: card,
+            firstOfSpecies: firstOfSpecies,
+            streakLost: !correct && _oldStreak > 0,
+            training: widget.training != null,
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+    // Right: the card at once. Wrong: compare the songs first, as long as wanted.
+    correct ? reveal() : setState(() => _next = reveal);
   }
 
   Future<void> _snooze() async {
@@ -209,8 +276,52 @@ class _RingScreenState extends State<RingScreen> {
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
                 child: Column(
                   children: [
+                    if (_next != null) ...[
+                      Text(
+                        l.compareHint,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      for (var i = 0; i < _board.length; i += 2)
+                        Expanded(
+                          child: Row(
+                            children: [
+                              for (final bird in _board.skip(i).take(2))
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: _Choice(
+                                      bird: bird,
+                                      name: bird.nameIn(l.localeName),
+                                      mark: _markOf(bird),
+                                      onTap: () => _listen(bird),
+                                      play: _playing != bird
+                                          ? _Play.idle
+                                          : _loading
+                                          ? _Play.loading
+                                          : _Play.playing,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      // Who recorded the song playing (CC BY).
+                      if (_playing case final b? when _songOf(b) != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            '♪ ${_songOf(b)!.credit}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                            textAlign: TextAlign.center,
+                            maxLines: 2, // the licence must stay readable
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ]
                     // Expert: no choices, the name is typed.
-                    if (store.difficulty == Difficulty.expert)
+                    else if (store.difficulty == Difficulty.expert)
                       Expanded(
                         child: _TypedGuess(
                           answer: _bird,
@@ -243,7 +354,18 @@ class _RingScreenState extends State<RingScreen> {
                     SizedBox(
                       width: double.infinity,
                       height: 64,
-                      child: widget.training == null
+                      child: _next != null
+                          ? FilledButton.icon(
+                              onPressed: _next,
+                              icon: const Icon(Icons.arrow_forward, size: 28),
+                              label: Text(l.next),
+                              style: FilledButton.styleFrom(
+                                textStyle: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge,
+                              ),
+                            )
+                          : widget.training == null
                           ? FilledButton.tonalIcon(
                               onPressed: _snooze,
                               icon: const Icon(Icons.snooze, size: 28),
@@ -501,47 +623,94 @@ class _MarkBadge extends StatelessWidget {
 
 /// A choice: the photo, its name in a frosted box, and after the guess a green / red frame,
 /// a ✓ / ✕ badge and a pulse / shake; the other photos fade.
+/// A choice's song while comparing: null before (the quiz itself).
+enum _Play { idle, loading, playing }
+
 class _Choice extends StatelessWidget {
   const _Choice({
     required this.bird,
     required this.name,
     required this.mark,
     required this.onTap,
+    this.play,
   });
   final Bird bird;
   final String name;
   final _Mark mark;
   final VoidCallback onTap;
+  final _Play? play;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: name,
-    excludeSemantics: true,
-    child: _Marked(
-      mark: mark,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(radius),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(radius),
-              child: BirdPhoto(bird),
-            ),
-            Positioned(
-              left: 8,
-              right: 8,
-              bottom: 8,
-              child: Center(child: _GlassLabel(name)),
-            ),
-            Positioned(top: 8, right: 8, child: _MarkBadge(mark)),
-          ],
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
+    final play = this.play;
+    return Semantics(
+      button: true,
+      label: play == null ? name : '$name. ${l.play}',
+      excludeSemantics: true,
+      child: _Marked(
+        mark: mark,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(radius),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: BirdPhoto(bird),
+              ),
+              // The bird being heard: a ring in the accent around its photo.
+              if (play != null && play != _Play.idle)
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(radius),
+                    border: Border.all(color: scheme.primary, width: 4),
+                  ),
+                ),
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 8,
+                child: Center(child: _GlassLabel(name)),
+              ),
+              Positioned(top: 8, right: 8, child: _MarkBadge(mark)),
+              if (play != null)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: play == _Play.idle
+                          ? scheme.surface.withValues(alpha: 0.85)
+                          : scheme.primary,
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: play == _Play.loading
+                        ? CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: scheme.onPrimary,
+                          )
+                        : Icon(
+                            play == _Play.playing
+                                ? Icons.stop
+                                : Icons.play_arrow,
+                            color: play == _Play.playing
+                                ? scheme.onPrimary
+                                : scheme.onSurface,
+                          ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// The bird's name in a frosted-glass box over its photo.

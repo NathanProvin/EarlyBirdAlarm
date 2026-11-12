@@ -791,8 +791,10 @@ String? playableFile(Bird bird) =>
         ?.file;
 
 /// Plays a catalog recording from the start: from the phone, or streamed from the
-/// catalog if it's not there.
-Future<void> playRecording(AudioPlayer player, String file) async {
+/// catalog if it's not there (never saved: a file in audio/ would join the pile).
+/// False when it couldn't start: offline and not on the phone, or interrupted by
+/// another recording.
+Future<bool> playRecording(AudioPlayer player, String file) async {
   final path = phonePath(file);
   try {
     if (path == null) {
@@ -804,8 +806,9 @@ Future<void> playRecording(AudioPlayer player, String file) async {
     }
     await player.seek(Duration.zero);
     unawaited(player.play());
+    return true;
   } on Exception {
-    // Offline and not on the phone: nothing to play.
+    return false;
   }
 }
 

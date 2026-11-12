@@ -870,4 +870,11 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get compareHint => 'Touche un oiseau pour écouter son chant';
+
+  @override
+  String get songOffline =>
+      'Pas de connexion : ce chant n’est pas sur le téléphone';
 }

@@ -868,4 +868,10 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get compareHint => 'Tap a bird to hear its song';
+
+  @override
+  String get songOffline => 'No connection: this song isn\'t on the phone';
 }
