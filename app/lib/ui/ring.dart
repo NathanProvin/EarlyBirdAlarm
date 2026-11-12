@@ -229,6 +229,25 @@ class _RingScreenState extends State<RingScreen> {
     correct ? reveal() : setState(() => _next = reveal);
   }
 
+  /// The playing song's credit, in the accent, one line shrunk to fit; nothing else.
+  Widget? _credit(BuildContext context) {
+    final rec = switch (_playing) {
+      final b? => _songOf(b),
+      null => null,
+    };
+    if (rec == null) return null;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        '♪ ${rec.credit}',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   Future<void> _snooze() async {
     final alarm = widget.alarm!;
     if (_tapped != null) return;
@@ -346,7 +365,40 @@ class _RingScreenState extends State<RingScreen> {
                               style: button,
                               child: Semantics(
                                 label: l.next,
-                                child: const Icon(Icons.style, size: 32),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.style, size: 28),
+                                          // Who recorded the song playing (CC BY);
+                                          // the line is kept empty otherwise, so the
+                                          // icon never moves.
+                                          SizedBox(
+                                            height: 18,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 32,
+                                                  ),
+                                              child: _credit(context),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Icon(
+                                          Icons.arrow_forward,
+                                          size: 28,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             )
                           : widget.training == null
@@ -380,23 +432,6 @@ class _RingScreenState extends State<RingScreen> {
                 ),
               ),
             ),
-            // Who recorded the song playing (CC BY), in the accent along the bottom edge.
-            if (_playing case final b? when _songOf(b) != null)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.paddingOf(context).bottom,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown, // one line, the licence never cut
-                  child: Text(
-                    '♪ ${_songOf(b)!.credit}',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -715,11 +750,22 @@ class _Choice extends StatelessWidget {
                 bottom: 8,
                 child: Center(child: _GlassLabel(name)),
               ),
-              // Centred across, in the upper part of the photo.
+              // In the middle of the blurred band above the photo (catalog photos are
+              // mostly landscape, within 4:3), centred across.
               if (play != null)
-                Align(
-                  alignment: const Alignment(0, -0.45),
-                  child: _PlayBadge(play),
+                Positioned.fill(
+                  child: LayoutBuilder(
+                    builder: (context, box) {
+                      final band = (box.maxHeight - box.maxWidth * 3 / 4) / 2;
+                      return Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: max(8, band / 2 - 32)),
+                          child: _PlayBadge(play),
+                        ),
+                      );
+                    },
+                  ),
                 ),
             ],
           ),
