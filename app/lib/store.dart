@@ -231,8 +231,14 @@ class Store extends ChangeNotifier {
   }
 
   /// Saves a card won outside a quiz (a series, a gift): its bird is no longer "heard".
+  /// Its own photo (a variant, a Shiny) is waited for as at a quiz's reveal (4 s at most;
+  /// else the catalog photo shows until the next sync fetches it).
   Future<void> _add(CardData card) async {
     await _saveCards([...cards, card]);
+    if (card.photo case final p? when !localFile(p).existsSync()) {
+      await download(p)
+          .timeout(const Duration(seconds: 4), onTimeout: () => false);
+    }
     await _prefs.setStringList('heard', [
       for (final id in heard)
         if (id != card.birdId) id,

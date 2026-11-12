@@ -342,18 +342,17 @@ class _CodeState extends State<_Code> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return Row(
+    // Stacked: the theme's filled buttons are full width.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: TextField(
-            controller: _field,
-            textCapitalization: TextCapitalization.words,
-            autocorrect: false,
-            decoration: InputDecoration(labelText: l.enterCode),
-            onSubmitted: (_) => _busy ? null : _redeem(),
-          ),
+        TextField(
+          controller: _field,
+          autocorrect: false,
+          decoration: InputDecoration(labelText: l.enterCode),
+          onSubmitted: (_) => _busy ? null : _redeem(),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(height: 8),
         FilledButton.tonal(
           onPressed: _busy ? null : _redeem,
           child: Text(l.redeem),
