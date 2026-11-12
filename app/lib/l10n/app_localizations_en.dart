@@ -140,7 +140,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No connection. Connect to the internet to download your region\'s birds.';
 
   @override
-  String get comingSoon => 'Coming soon';
+  String get comingSoon => 'To be added';
 
   @override
   String get retry => 'Retry';
@@ -257,9 +257,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get legendaryHunter => 'Legendary hunter';
 
   @override
-  String get perfectWeek => 'Perfect week';
-
-  @override
   String get fullSet => 'Full set';
 
   @override
@@ -369,12 +366,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.';
 
   @override
-  String get fiveOfAKind => 'Five of a kind';
-
-  @override
-  String get dawnChorus => 'Dawn chorus';
-
-  @override
   String get globetrotter => 'Globetrotter';
 
   @override
@@ -384,43 +375,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get perfectSpecimen => 'Perfect specimen';
 
   @override
-  String get ironStreak => 'Iron streak';
+  String goalLegendaryHunter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Legendary cards',
+      one: '1 Legendary card',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get goalLegendaryHunter => '5 Legendary cards';
+  String goalFullSet(int count) {
+    return 'Cards of $count rarities (the 6th: Shiny)';
+  }
 
   @override
-  String get goalPerfectWeek => 'A 7-day wake-up streak';
+  String goalCollector(int count) {
+    return '$count cards';
+  }
 
   @override
-  String get goalFullSet => 'A card of each rarity';
+  String goalLocalExpert(int count) {
+    return '$count species of your region';
+  }
 
   @override
-  String get goalCollector => '100 cards';
+  String goalRareFinds(int count) {
+    return '$count cards Rare or better';
+  }
 
   @override
-  String get goalLocalExpert => '50 species of your region';
+  String goalGlobetrotter(int count) {
+    return 'Cards from $count regions';
+  }
 
   @override
-  String get goalRareFinds => '5 cards Rare or better';
+  String goalFullHouse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series completed',
+      one: '1 series completed',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get goalFiveOfAKind => '5 copies of one species';
-
-  @override
-  String get goalDawnChorus => '10 cards won before 7:00';
-
-  @override
-  String get goalGlobetrotter => 'Cards from 3 regions';
-
-  @override
-  String get goalFullHouse => '3 series completed';
-
-  @override
-  String get goalPerfectSpecimen => 'A card of 95 % quality or more';
-
-  @override
-  String get goalIronStreak => 'A 30-day wake-up streak';
+  String goalPerfectSpecimen(int count) {
+    return 'A card of $count % quality or more';
+  }
 
   @override
   String get seriesComplete => 'Series complete!';
@@ -763,4 +767,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get welcomeGift => 'Welcome! A gift from your friend';
+
+  @override
+  String get achievements => 'Achievements';
+
+  @override
+  String get twitcher => 'Twitcher';
+
+  @override
+  String get duplicates => 'Duplicates';
+
+  @override
+  String get epicFinds => 'Epic finds';
+
+  @override
+  String get sharpEar => 'Sharp ear';
+
+  @override
+  String get wakeUpStreak => 'Wake-up streak';
+
+  @override
+  String get earlyRiser => 'Early riser';
+
+  @override
+  String get dailyBirder => 'Daily birder';
+
+  @override
+  String get fidelity => 'Loyalty';
+
+  @override
+  String get trader => 'Trader';
+
+  @override
+  String get influencer => 'Influencer';
+
+  @override
+  String goalTwitcher(int count) {
+    return '$count species in all';
+  }
+
+  @override
+  String goalDuplicates(int count) {
+    return '$count copies of one species';
+  }
+
+  @override
+  String goalEpicFinds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cards Epic or better',
+      one: '1 card Epic or better',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalSharpEar(int count) {
+    return '$count right answers in a row';
+  }
+
+  @override
+  String goalWakeUpStreak(int count) {
+    return 'A $count-day wake-up streak';
+  }
+
+  @override
+  String goalEarlyRiser(int count) {
+    return '$count cards won before 7:00';
+  }
+
+  @override
+  String goalDailyBirder(int count) {
+    return 'Cards won on $count different days';
+  }
+
+  @override
+  String goalFidelity(int count) {
+    return 'Cards won in $count different months';
+  }
+
+  @override
+  String goalTrader(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cards traded away',
+      one: '1 card traded away',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalInfluencer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends joined through your link',
+      one: '1 friend joined through your link',
+    );
+    return '$_temp0';
+  }
 }

@@ -549,50 +549,53 @@ void main() {
     expect((allSeries[1].group, allSeries[1].reward), ('families', 'rare'));
     SharedPreferences.setMockInitialValues({'streak': 8, 'twitchBonus': 1});
     final s = await Store.load();
-    final small = seriesStates(birds, s.cards, s.bestStreak);
-    expect(small.map((x) => x.id), [
-      'small',
-      legendaryHunter, // now always: 5 Legendary cards
-      perfectWeek,
-      fullSet,
-      collector,
-      localExpert,
-      rareFinds,
-      fiveOfAKind,
-      dawnChorus,
-      globetrotter,
-      fullHouse,
-      perfectSpecimen,
-      ironStreak,
-    ]);
+    final small = s.seriesNow;
+    expect(small.map((x) => x.id), ['small', ...achievementGoals.keys]);
     expect(small[0].total, 4);
     expect(small[0].group, 'habitats');
-    expect(small.last.group, 'achievements2');
+    expect(small.last.group, 'achievements3');
     expect(
       small[0].face!.id,
       'robin',
     ); // signature not in the region: first by number
-    final week = small.firstWhere((x) => x.id == perfectWeek);
-    expect(week.complete, isTrue); // an 8-day streak is a perfect week
-    expect(s.claimable(week), isTrue);
+    // An 8-day streak: Wake-up streak I (3 days) then II (7) collected in turn.
+    SeriesState streak() => s.seriesNow.firstWhere((x) => x.id == wakeUpStreak);
+    expect((streak().tier, streak().total, streak().reward), (0, 3, 'common'));
+    expect(s.claimable(streak()), isTrue);
+    expect((await s.claim(streak())).rarity, 'common');
+    expect((streak().tier, streak().total), (1, 7));
+    expect((await s.claim(streak())).rarity, 'uncommon');
+    expect((streak().tier, streak().total, streak().owned), (2, 30, 8));
+    expect(s.claimable(streak()), isFalse);
     for (final id in ['robin', 'redstart', 'tit', 'chaffinch']) {
       await s.answered(null, _b(id), null, true, '');
     }
-    final done = seriesStates(birds, s.cards, s.bestStreak).first;
+    final done = s.seriesNow.first;
     expect(s.claimable(done), isTrue);
     final card = await s.claim(done);
     expect(card.rarity, 'epic'); // the series' guaranteed reward
     expect(done.birds.map((b) => b.id), contains(card.birdId));
-    expect(s.cards.length, 5);
+    expect(s.cards.length, 7); // 2 tier cards, 4 answers, the series card
     expect(s.claimable(done), isFalse); // collected once
-    expect((await s.claim(week)).rarity, 'rare');
-    // Not anyClaimable: a random card may roll 95 % and complete Perfect specimen.
-    expect(s.claimable(week), isFalse);
     // A booster earned the old way is still used first.
     final start = s.twitchStart;
     await s.useTwitch();
     expect(s.twitchBonus, 0);
     expect(s.twitchStart, start);
+  });
+
+  test('achievements collected before the tiers count as their tiers', () {
+    expect(tiersDone(wakeUpStreak, {'perfect-week'}), 2);
+    expect(tiersDone(wakeUpStreak, {'perfect-week', 'iron-streak'}), 3);
+    expect(tiersDone(collector, {'collector', 'collector#4'}), 4);
+    expect(tiersDone(collector, {'collector#1', 'collector#2'}), 2);
+    expect(tiersDone(twitcher, {}), 0);
+    for (final (_, goals) in achievementGoals.values) {
+      expect(goals.length, 5);
+      for (var i = 1; i < 5; i++) {
+        expect(goals[i], greaterThan(goals[i - 1]));
+      }
+    }
   });
 
   test('a theme from an older version falls back to Phone', () async {

@@ -10,7 +10,7 @@ not in the catalog are skipped (listed when the step runs). In the app, a series
 least 3 of its birds live in the player's region; the badge photo is the signature bird, or the
 series' first bird of the region.
 
-A heading without `|` (`## Families`, `## Habitats`, `## Themes`) starts a group: one page in the
+A heading without `|` (`## Families`, `## Habitats`, `## Themes`, `## Voices`) starts a group: one page in the
 app. Game achievements (Legendary hunter, Perfect week, Full set…) are in the app's code, not here.
 
 ## Families
@@ -157,3 +157,45 @@ birds: Phylloscopus inornatus, Xema sabini, Tichodroma muraria, Luscinia svecica
   Strix nebulosa, Setophaga kirtlandii, Grus americana, Gymnogyps californianus,
   Pinicola enucleator, Setophaga cerulea, Picoides arcticus
 reward: legendary
+
+## Voices
+
+## virtuosos | Virtuosos | Virtuoses | Virtuosen | Virtuosos | Luscinia megarhynchos
+birds: Luscinia megarhynchos, Turdus philomelos, Sylvia atricapilla, Lullula arborea,
+  Troglodytes troglodytes, Luscinia luscinia, Turdus merula, Hylocichla mustelina,
+  Catharus guttatus, Melospiza melodia, Pheucticus ludovicianus, Catharus fuscescens
+reward: epic
+
+## mimics | Mimics | Imitateurs | Imitatoren | Imitadores | Mimus polyglottos
+birds: Sturnus vulgaris, Acrocephalus palustris, Hippolais icterina, Hippolais polyglotta,
+  Garrulus glandarius, Lanius collurio, Lanius excubitor, Mimus polyglottos,
+  Dumetella carolinensis, Toxostoma rufum, Toxostoma redivivum, Cyanocitta cristata
+reward: rare
+
+## nightvoices | Night voices | Voix de la nuit | Stimmen der Nacht | Voces de la noche | Caprimulgus europaeus
+birds: Caprimulgus europaeus, Caprimulgus ruficollis, Burhinus oedicnemus, Crex crex, Otus scops,
+  Locustella naevia, Acrocephalus scirpaceus, Nycticorax nycticorax, Antrostomus vociferus,
+  Antrostomus carolinensis, Chordeiles minor, Phalaenoptilus nuttallii, Gavia immer
+reward: epic
+
+## dawnchorus | Dawn chorus | Chœur de l'aube | Morgenchor | Coro del alba | Erithacus rubecula
+birds: Erithacus rubecula, Turdus merula, Troglodytes troglodytes, Fringilla coelebs,
+  Phylloscopus collybita, Parus major, Turdus migratorius, Cardinalis cardinalis,
+  Zenaida macroura, Sialia sialis, Melospiza melodia, Thryothorus ludovicianus
+reward: uncommon
+
+## longflight | Long flight | Long-courriers | Langstreckenflieger | Larga distancia | Sterna paradisaea
+birds: Hirundo rustica, Sterna paradisaea, Ciconia ciconia, Apus apus, Cuculus canorus,
+  Oenanthe oenanthe, Limosa lapponica, Arenaria interpres, Archilochus colubris,
+  Setophaga striata, Pluvialis dominica, Chaetura pelagica, Dolichonyx oryzivorus,
+  Buteo swainsoni
+reward: rare
+
+## pelagic | Pelagic | Pélagiques | Hochseevögel | Pelágicas | Fratercula arctica
+birds: Fratercula arctica, Alle alle, Uria aalge, Uria lomvia, Cepphus grylle, Fulmarus glacialis,
+  Morus bassanus, Puffinus puffinus, Calonectris diomedea, Puffinus mauretanicus,
+  Oceanodroma leucorhoa, Oceanites oceanicus, Rissa tridactyla, Xema sabini,
+  Stercorarius parasiticus, Stercorarius longicaudus, Phalaropus lobatus, Cepphus columba,
+  Cerorhinca monocerata, Brachyramphus marmoratus, Puffinus tenuirostris,
+  Phoebastria immutabilis, Phoebastria nigripes, Fregata magnificens
+reward: epic

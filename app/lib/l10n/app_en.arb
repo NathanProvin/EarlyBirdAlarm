@@ -4,21 +4,9 @@
   "guessTheBird": "Guess the bird!",
   "snooze": "Snooze",
   "snoozeMinutes": "Snooze {minutes} min",
-  "@snoozeMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
+  "@snoozeMinutes": {"placeholders": {"minutes": {"type": "int"}}},
   "streak": "Streak: {count}",
-  "@streak": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "@streak": {"placeholders": {"count": {"type": "int"}}},
   "once": "Once",
   "label": "Label",
   "save": "Save",
@@ -52,36 +40,18 @@
   "flightDistance": "Flight",
   "share": "Share",
   "progress": "{owned} / {total} cards",
-  "@progress": {
-    "placeholders": {
-      "owned": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
+  "@progress": {"placeholders": {"owned": {"type": "int"}, "total": {"type": "int"}}},
   "useMyLocation": "Use my location",
   "searchRegion": "Search a country or region",
   "offline": "No connection. Connect to the internet to download your region's birds.",
-  "comingSoon": "Coming soon",
+  "comingSoon": "To be added",
   "retry": "Retry",
   "nearCell": "Around {lat} {lon}",
   "locationDenied": "Location not available. Search your region or tap it on the map.",
   "song": "song",
   "call": "call",
   "alarmCall": "alarm call",
-  "@nearCell": {
-    "placeholders": {
-      "lat": {
-        "type": "String"
-      },
-      "lon": {
-        "type": "String"
-      }
-    }
-  },
+  "@nearCell": {"placeholders": {"lat": {"type": "String"}, "lon": {"type": "String"}}},
   "seasonalBirds": "Seasonal birds",
   "credits": "Credits",
   "creditsBody": "Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo's author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org and iNaturalist recordings (CC0, CC BY, CC BY-SA); each recordist and license are on the card (ⓘ). Backup alarm rooster: Kalvin Chan, iNaturalist (CC0).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.",
@@ -92,13 +62,7 @@
   "viewAll": "Collected",
   "viewRegion": "Region",
   "allRarities": "All rarities",
-  "@speciesCollected": {
-    "placeholders": {
-      "ordinal": {
-        "type": "String"
-      }
-    }
-  },
+  "@speciesCollected": {"placeholders": {"ordinal": {"type": "String"}}},
   "theme": "Theme",
   "resident": "Resident",
   "themeBlackbird": "Blackbird",
@@ -119,7 +83,6 @@
   "listenAgain": "Listen again",
   "series": "Series",
   "legendaryHunter": "Legendary hunter",
-  "perfectWeek": "Perfect week",
   "fullSet": "Full set",
   "collector": "Collector",
   "localExpert": "Local expert",
@@ -157,24 +120,17 @@
   "tradedOn": "Traded on {date}",
   "@tradedOn": {"placeholders": {"date": {"type": "String"}}},
   "tradeStartFailed": "Couldn't start looking for birders nearby. Check that Bluetooth is on.",
-  "fiveOfAKind": "Five of a kind",
-  "dawnChorus": "Dawn chorus",
   "globetrotter": "Globetrotter",
   "fullHouse": "Full house",
   "perfectSpecimen": "Perfect specimen",
-  "ironStreak": "Iron streak",
-  "goalLegendaryHunter": "5 Legendary cards",
-  "goalPerfectWeek": "A 7-day wake-up streak",
-  "goalFullSet": "A card of each rarity",
-  "goalCollector": "100 cards",
-  "goalLocalExpert": "50 species of your region",
-  "goalRareFinds": "5 cards Rare or better",
-  "goalFiveOfAKind": "5 copies of one species",
-  "goalDawnChorus": "10 cards won before 7:00",
-  "goalGlobetrotter": "Cards from 3 regions",
-  "goalFullHouse": "3 series completed",
-  "goalPerfectSpecimen": "A card of 95 % quality or more",
-  "goalIronStreak": "A 30-day wake-up streak",
+  "goalLegendaryHunter": "{count, plural, =1{1 Legendary card} other{{count} Legendary cards}}",
+  "goalFullSet": "Cards of {count} rarities (the 6th: Shiny)",
+  "goalCollector": "{count} cards",
+  "goalLocalExpert": "{count} species of your region",
+  "goalRareFinds": "{count} cards Rare or better",
+  "goalGlobetrotter": "Cards from {count} regions",
+  "goalFullHouse": "{count, plural, =1{1 series completed} other{{count} series completed}}",
+  "goalPerfectSpecimen": "A card of {count} % quality or more",
   "seriesComplete": "Series complete!",
   "achievementUnlocked": "Achievement unlocked!",
   "rewardRarity": "{rarity} reward",
@@ -281,5 +237,44 @@
   "codeUsed": "You already used this code.",
   "codeDone": "Code redeemed!",
   "codeGift": "A gift for you!",
-  "welcomeGift": "Welcome! A gift from your friend"
+  "welcomeGift": "Welcome! A gift from your friend",
+  "achievements": "Achievements",
+  "twitcher": "Twitcher",
+  "duplicates": "Duplicates",
+  "epicFinds": "Epic finds",
+  "sharpEar": "Sharp ear",
+  "wakeUpStreak": "Wake-up streak",
+  "earlyRiser": "Early riser",
+  "dailyBirder": "Daily birder",
+  "fidelity": "Loyalty",
+  "trader": "Trader",
+  "influencer": "Influencer",
+  "@goalCollector": {"placeholders": {"count": {"type": "int"}}},
+  "@goalLocalExpert": {"placeholders": {"count": {"type": "int"}}},
+  "goalTwitcher": "{count} species in all",
+  "@goalTwitcher": {"placeholders": {"count": {"type": "int"}}},
+  "goalDuplicates": "{count} copies of one species",
+  "@goalDuplicates": {"placeholders": {"count": {"type": "int"}}},
+  "@goalFullSet": {"placeholders": {"count": {"type": "int"}}},
+  "@goalPerfectSpecimen": {"placeholders": {"count": {"type": "int"}}},
+  "@goalRareFinds": {"placeholders": {"count": {"type": "int"}}},
+  "goalEpicFinds": "{count, plural, =1{1 card Epic or better} other{{count} cards Epic or better}}",
+  "@goalEpicFinds": {"placeholders": {"count": {"type": "int"}}},
+  "@goalLegendaryHunter": {"placeholders": {"count": {"type": "int"}}},
+  "goalSharpEar": "{count} right answers in a row",
+  "@goalSharpEar": {"placeholders": {"count": {"type": "int"}}},
+  "goalWakeUpStreak": "A {count}-day wake-up streak",
+  "@goalWakeUpStreak": {"placeholders": {"count": {"type": "int"}}},
+  "goalEarlyRiser": "{count} cards won before 7:00",
+  "@goalEarlyRiser": {"placeholders": {"count": {"type": "int"}}},
+  "goalDailyBirder": "Cards won on {count} different days",
+  "@goalDailyBirder": {"placeholders": {"count": {"type": "int"}}},
+  "goalFidelity": "Cards won in {count} different months",
+  "@goalFidelity": {"placeholders": {"count": {"type": "int"}}},
+  "@goalGlobetrotter": {"placeholders": {"count": {"type": "int"}}},
+  "@goalFullHouse": {"placeholders": {"count": {"type": "int"}}},
+  "goalTrader": "{count, plural, =1{1 card traded away} other{{count} cards traded away}}",
+  "@goalTrader": {"placeholders": {"count": {"type": "int"}}},
+  "goalInfluencer": "{count, plural, =1{1 friend joined through your link} other{{count} friends joined through your link}}",
+  "@goalInfluencer": {"placeholders": {"count": {"type": "int"}}}
 }

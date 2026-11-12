@@ -184,12 +184,19 @@ Future<bool> syncRegion(
       !regionFile.existsSync() ||
       beforeLanguages ||
       DateTime.now().difference(regionFile.lastModifiedSync()).inDays >= 7;
+  // Series (20 KB) daily, apart from the weekly catalog: a new series page reaches an
+  // updated app the next day, not up to a week later (optional: the bundled copy is the
+  // fallback).
+  final seriesFile = localFile('series.json');
+  if (!seriesFile.existsSync() ||
+      DateTime.now().difference(seriesFile.lastModifiedSync()).inDays >= 1) {
+    await download('series.json');
+  }
   if (stale) {
     if (!await download('species.json') ||
         !await download('regions/$region.json')) {
       return false;
     }
-    await download('series.json'); // optional: the bundled copy is the fallback
     await download(
       'regions.json',
     ); // region names (also fetched by the region screen)

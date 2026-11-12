@@ -351,7 +351,7 @@ abstract class AppLocalizations {
   /// No description provided for @comingSoon.
   ///
   /// In en, this message translates to:
-  /// **'Coming soon'**
+  /// **'To be added'**
   String get comingSoon;
 
   /// No description provided for @retry.
@@ -570,12 +570,6 @@ abstract class AppLocalizations {
   /// **'Legendary hunter'**
   String get legendaryHunter;
 
-  /// No description provided for @perfectWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'Perfect week'**
-  String get perfectWeek;
-
   /// No description provided for @fullSet.
   ///
   /// In en, this message translates to:
@@ -768,18 +762,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.'**
   String get tradeStartFailed;
 
-  /// No description provided for @fiveOfAKind.
-  ///
-  /// In en, this message translates to:
-  /// **'Five of a kind'**
-  String get fiveOfAKind;
-
-  /// No description provided for @dawnChorus.
-  ///
-  /// In en, this message translates to:
-  /// **'Dawn chorus'**
-  String get dawnChorus;
-
   /// No description provided for @globetrotter.
   ///
   /// In en, this message translates to:
@@ -798,83 +780,53 @@ abstract class AppLocalizations {
   /// **'Perfect specimen'**
   String get perfectSpecimen;
 
-  /// No description provided for @ironStreak.
-  ///
-  /// In en, this message translates to:
-  /// **'Iron streak'**
-  String get ironStreak;
-
   /// No description provided for @goalLegendaryHunter.
   ///
   /// In en, this message translates to:
-  /// **'5 Legendary cards'**
-  String get goalLegendaryHunter;
-
-  /// No description provided for @goalPerfectWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'A 7-day wake-up streak'**
-  String get goalPerfectWeek;
+  /// **'{count, plural, =1{1 Legendary card} other{{count} Legendary cards}}'**
+  String goalLegendaryHunter(int count);
 
   /// No description provided for @goalFullSet.
   ///
   /// In en, this message translates to:
-  /// **'A card of each rarity'**
-  String get goalFullSet;
+  /// **'Cards of {count} rarities (the 6th: Shiny)'**
+  String goalFullSet(int count);
 
   /// No description provided for @goalCollector.
   ///
   /// In en, this message translates to:
-  /// **'100 cards'**
-  String get goalCollector;
+  /// **'{count} cards'**
+  String goalCollector(int count);
 
   /// No description provided for @goalLocalExpert.
   ///
   /// In en, this message translates to:
-  /// **'50 species of your region'**
-  String get goalLocalExpert;
+  /// **'{count} species of your region'**
+  String goalLocalExpert(int count);
 
   /// No description provided for @goalRareFinds.
   ///
   /// In en, this message translates to:
-  /// **'5 cards Rare or better'**
-  String get goalRareFinds;
-
-  /// No description provided for @goalFiveOfAKind.
-  ///
-  /// In en, this message translates to:
-  /// **'5 copies of one species'**
-  String get goalFiveOfAKind;
-
-  /// No description provided for @goalDawnChorus.
-  ///
-  /// In en, this message translates to:
-  /// **'10 cards won before 7:00'**
-  String get goalDawnChorus;
+  /// **'{count} cards Rare or better'**
+  String goalRareFinds(int count);
 
   /// No description provided for @goalGlobetrotter.
   ///
   /// In en, this message translates to:
-  /// **'Cards from 3 regions'**
-  String get goalGlobetrotter;
+  /// **'Cards from {count} regions'**
+  String goalGlobetrotter(int count);
 
   /// No description provided for @goalFullHouse.
   ///
   /// In en, this message translates to:
-  /// **'3 series completed'**
-  String get goalFullHouse;
+  /// **'{count, plural, =1{1 series completed} other{{count} series completed}}'**
+  String goalFullHouse(int count);
 
   /// No description provided for @goalPerfectSpecimen.
   ///
   /// In en, this message translates to:
-  /// **'A card of 95 % quality or more'**
-  String get goalPerfectSpecimen;
-
-  /// No description provided for @goalIronStreak.
-  ///
-  /// In en, this message translates to:
-  /// **'A 30-day wake-up streak'**
-  String get goalIronStreak;
+  /// **'A card of {count} % quality or more'**
+  String goalPerfectSpecimen(int count);
 
   /// No description provided for @seriesComplete.
   ///
@@ -1481,6 +1433,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Welcome! A gift from your friend'**
   String get welcomeGift;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @twitcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Twitcher'**
+  String get twitcher;
+
+  /// No description provided for @duplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicates'**
+  String get duplicates;
+
+  /// No description provided for @epicFinds.
+  ///
+  /// In en, this message translates to:
+  /// **'Epic finds'**
+  String get epicFinds;
+
+  /// No description provided for @sharpEar.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharp ear'**
+  String get sharpEar;
+
+  /// No description provided for @wakeUpStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Wake-up streak'**
+  String get wakeUpStreak;
+
+  /// No description provided for @earlyRiser.
+  ///
+  /// In en, this message translates to:
+  /// **'Early riser'**
+  String get earlyRiser;
+
+  /// No description provided for @dailyBirder.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily birder'**
+  String get dailyBirder;
+
+  /// No description provided for @fidelity.
+  ///
+  /// In en, this message translates to:
+  /// **'Loyalty'**
+  String get fidelity;
+
+  /// No description provided for @trader.
+  ///
+  /// In en, this message translates to:
+  /// **'Trader'**
+  String get trader;
+
+  /// No description provided for @influencer.
+  ///
+  /// In en, this message translates to:
+  /// **'Influencer'**
+  String get influencer;
+
+  /// No description provided for @goalTwitcher.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} species in all'**
+  String goalTwitcher(int count);
+
+  /// No description provided for @goalDuplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} copies of one species'**
+  String goalDuplicates(int count);
+
+  /// No description provided for @goalEpicFinds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card Epic or better} other{{count} cards Epic or better}}'**
+  String goalEpicFinds(int count);
+
+  /// No description provided for @goalSharpEar.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} right answers in a row'**
+  String goalSharpEar(int count);
+
+  /// No description provided for @goalWakeUpStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'A {count}-day wake-up streak'**
+  String goalWakeUpStreak(int count);
+
+  /// No description provided for @goalEarlyRiser.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} cards won before 7:00'**
+  String goalEarlyRiser(int count);
+
+  /// No description provided for @goalDailyBirder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards won on {count} different days'**
+  String goalDailyBirder(int count);
+
+  /// No description provided for @goalFidelity.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards won in {count} different months'**
+  String goalFidelity(int count);
+
+  /// No description provided for @goalTrader.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card traded away} other{{count} cards traded away}}'**
+  String goalTrader(int count);
+
+  /// No description provided for @goalInfluencer.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 friend joined through your link} other{{count} friends joined through your link}}'**
+  String goalInfluencer(int count);
 }
 
 class _AppLocalizationsDelegate

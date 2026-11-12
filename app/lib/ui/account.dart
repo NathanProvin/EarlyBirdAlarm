@@ -277,7 +277,7 @@ class _Invite extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         FutureBuilder<int>(
-          future: friendsJoined(),
+          future: friendsJoined(store),
           builder: (context, snap) => Text(
             snap.hasData ? l.friendsJoined(snap.data!) : '',
             textAlign: TextAlign.center,

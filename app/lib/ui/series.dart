@@ -15,40 +15,55 @@ import 'theme.dart';
 
 String seriesName(AppLocalizations l, SeriesState s) =>
     s.series?.nameIn(l.localeName) ??
-    switch (s.id) {
-      legendaryHunter => l.legendaryHunter,
-      perfectWeek => l.perfectWeek,
+    '${switch (s.id) {
       collector => l.collector,
       localExpert => l.localExpert,
+      twitcher => l.twitcher,
+      duplicates => l.duplicates,
+      fullSet => l.fullSet,
+      perfectSpecimen => l.perfectSpecimen,
       rareFinds => l.rareFinds,
-      fiveOfAKind => l.fiveOfAKind,
-      dawnChorus => l.dawnChorus,
+      epicFinds => l.epicFinds,
+      legendaryHunter => l.legendaryHunter,
+      sharpEar => l.sharpEar,
+      wakeUpStreak => l.wakeUpStreak,
+      earlyRiser => l.earlyRiser,
+      dailyBirder => l.dailyBirder,
+      fidelity => l.fidelity,
       globetrotter => l.globetrotter,
       fullHouse => l.fullHouse,
-      perfectSpecimen => l.perfectSpecimen,
-      ironStreak => l.ironStreak,
-      _ => l.fullSet,
-    };
+      trader => l.trader,
+      _ => l.influencer,
+    }} ${const ['I', 'II', 'III', 'IV', 'V'][min(s.tier, 4)]}';
 
-/// What an achievement asks for (shown on a tap); null for a bird series.
-String? seriesGoal(AppLocalizations l, SeriesState s) => s.series != null
-    ? null
-    : switch (s.id) {
-        legendaryHunter => l.goalLegendaryHunter,
-        perfectWeek => l.goalPerfectWeek,
-        collector => l.goalCollector,
-        localExpert => l.goalLocalExpert,
-        rareFinds => l.goalRareFinds,
-        fiveOfAKind => l.goalFiveOfAKind,
-        dawnChorus => l.goalDawnChorus,
-        globetrotter => l.goalGlobetrotter,
-        fullHouse => l.goalFullHouse,
-        perfectSpecimen => l.goalPerfectSpecimen,
-        ironStreak => l.goalIronStreak,
-        _ => l.goalFullSet,
-      };
+/// What an achievement's current tier asks for (shown on a tap); null for a bird series.
+String? seriesGoal(AppLocalizations l, SeriesState s) {
+  if (s.series != null) return null;
+  final n = s.total;
+  return switch (s.id) {
+    collector => l.goalCollector(n),
+    localExpert => l.goalLocalExpert(n),
+    twitcher => l.goalTwitcher(n),
+    duplicates => l.goalDuplicates(n),
+    fullSet => l.goalFullSet(n),
+    perfectSpecimen => l.goalPerfectSpecimen(n),
+    rareFinds => l.goalRareFinds(n),
+    epicFinds => l.goalEpicFinds(n),
+    legendaryHunter => l.goalLegendaryHunter(n),
+    sharpEar => l.goalSharpEar(n),
+    wakeUpStreak => l.goalWakeUpStreak(n),
+    earlyRiser => l.goalEarlyRiser(n),
+    dailyBirder => l.goalDailyBirder(n),
+    fidelity => l.goalFidelity(n),
+    globetrotter => l.goalGlobetrotter(n),
+    fullHouse => l.goalFullHouse(n),
+    trader => l.goalTrader(n),
+    _ => l.goalInfluencer(n),
+  };
+}
 
-/// Series and achievements as badges, 2 columns × 3 rows per page; swipe for more.
+/// Achievements and series as badges, 2 columns × 3 rows per page; swipe for more.
+/// A half-width pill on top switches between the two (swipe it or tap it, 2026-11-12).
 class SeriesScreen extends StatefulWidget {
   const SeriesScreen({super.key});
 
@@ -58,6 +73,16 @@ class SeriesScreen extends StatefulWidget {
 
 class _SeriesScreenState extends State<SeriesScreen> {
   int _page = 0;
+  bool _series = false; // Achievements first
+
+  void _show(bool series) {
+    if (series == _series) return;
+    unawaited(HapticFeedback.selectionClick());
+    setState(() {
+      _series = series;
+      _page = 0;
+    });
+  }
 
   /// Collects a completed series or achievement: its guaranteed card flips in.
   Future<void> _collect(SeriesState s) async {
@@ -80,18 +105,19 @@ class _SeriesScreenState extends State<SeriesScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final states = seriesStates(
-      birds,
-      store.achievementCards,
-      store.bestAlarmStreak,
-    );
-    // One page per group (the families take two), 6 badges at most per page.
-    final pages = [
+    final states = store.seriesNow;
+    // One page per group (the families take two), 6 badges at most per page; null is
+    // an empty "to be added" badge, a page kept for later achievements.
+    final pages = <List<SeriesState?>>[
       for (final g in seriesGroups)
-        if (states.where((s) => s.group == g).toList() case final group)
-          for (var i = 0; i < group.length; i += 6)
-            group.skip(i).take(6).toList(),
+        if (g.startsWith('achievements') != _series)
+          if (states.where((s) => s.group == g).toList() case final group)
+            for (var i = 0; i < group.length; i += 6)
+              group.skip(i).take(6).toList(),
+      if (!_series) List.filled(6, null),
     ];
+    // The theme's accent for Achievements, its surface colour for Series.
+    final pillColor = _series ? scheme.secondaryContainer : scheme.primary;
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
       // Back within the thumb's reach, bottom right.
@@ -108,8 +134,44 @@ class _SeriesScreenState extends State<SeriesScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            Semantics(
+              button: true,
+              label: _series ? l.series : l.achievements,
+              hint: _series ? l.achievements : l.series,
+              excludeSemantics: true,
+              child: GestureDetector(
+                onTap: () => _show(!_series),
+                onHorizontalDragEnd: (d) {
+                  final v = d.primaryVelocity ?? 0;
+                  if (v.abs() > 100) _show(v < 0);
+                },
+                child: FractionallySizedBox(
+                  widthFactor: 0.5,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    height: 48,
+                    margin: const EdgeInsets.only(top: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: pillColor,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Text(
+                      _series ? l.series : l.achievements,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: _series
+                            ? scheme.onSecondaryContainer
+                            : scheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: PageView(
+                key: ValueKey(_series), // back to the first page on a switch
                 onPageChanged: (p) => setState(() => _page = p),
                 children: [
                   for (final page in pages)
@@ -125,20 +187,23 @@ class _SeriesScreenState extends State<SeriesScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
                           for (final s in page)
-                            _Badge(
-                              s,
-                              name: seriesName(l, s),
-                              claimable: store.claimable(s),
-                              onTap: store.claimable(s)
-                                  ? () => _collect(s)
-                                  : s.birds.isEmpty
-                                  ? null
-                                  : () => Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (_) => _SeriesCards(s),
+                            if (s == null)
+                              _Badge.soon(name: l.comingSoon)
+                            else
+                              _Badge(
+                                s,
+                                name: seriesName(l, s),
+                                claimable: store.claimable(s),
+                                onTap: store.claimable(s)
+                                    ? () => _collect(s)
+                                    : s.birds.isEmpty
+                                    ? null
+                                    : () => Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => _SeriesCards(s),
+                                        ),
                                       ),
-                                    ),
-                            ),
+                              ),
                         ],
                       ),
                     ),
@@ -177,12 +242,18 @@ class _SeriesScreenState extends State<SeriesScreen> {
 /// icon, an accent arc for the progress, a foil ring once complete.
 class _Badge extends StatelessWidget {
   const _Badge(
-    this.s, {
+    SeriesState this.s, {
     required this.name,
     this.claimable = false,
     this.onTap,
   });
-  final SeriesState s;
+
+  /// An empty badge on the page kept for later achievements.
+  const _Badge.soon({required this.name})
+    : s = null,
+      claimable = false,
+      onTap = null;
+  final SeriesState? s;
   final String name;
   final bool claimable; // complete, not collected yet: glows until tapped
   final VoidCallback? onTap;
@@ -191,20 +262,58 @@ class _Badge extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final s = this.s;
+    if (s == null) {
+      return Opacity(
+        opacity: 0.4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: FittedBox(
+                child: SizedBox.square(
+                  dimension: 112,
+                  child: CustomPaint(
+                    painter: _Ring(
+                      0,
+                      track: scheme.onSurface.withValues(alpha: 0.15),
+                      accent: scheme.primary,
+                    ),
+                    child: Icon(
+                      Icons.lock_outline,
+                      size: 40,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(name, style: text.titleSmall, textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
     final face = s.face;
     final icon = switch (s.id) {
-      legendaryHunter => Icons.auto_awesome,
-      perfectWeek => Icons.local_fire_department,
-      fullSet => Icons.style,
       collector => Icons.collections_bookmark,
       localExpert => Icons.place,
+      twitcher => Icons.travel_explore,
+      duplicates => Icons.content_copy,
+      fullSet => Icons.style,
+      perfectSpecimen => Icons.workspace_premium,
       rareFinds => Icons.diamond,
-      fiveOfAKind => Icons.filter_5,
-      dawnChorus => Icons.wb_twilight,
+      epicFinds => Icons.auto_awesome_outlined,
+      legendaryHunter => Icons.auto_awesome,
+      sharpEar => Icons.hearing,
+      wakeUpStreak => Icons.local_fire_department,
+      earlyRiser => Icons.wb_twilight,
+      dailyBirder => Icons.calendar_today,
+      fidelity => Icons.event_repeat,
       globetrotter => Icons.public,
       fullHouse => Icons.emoji_events,
-      perfectSpecimen => Icons.workspace_premium,
-      ironStreak => Icons.military_tech,
+      trader => Icons.swap_horiz,
+      influencer => Icons.campaign,
       _ => Icons.flutter_dash, // a series whose birds have no photo
     };
     final inner = face != null
@@ -236,7 +345,8 @@ class _Badge extends StatelessWidget {
         painter: _Ring(
           s.owned / s.total,
           track: scheme.onSurface.withValues(alpha: 0.15),
-          accent: scheme.primary,
+          // An achievement's ring takes its tier's rarity colour.
+          accent: s.series == null ? rarityColor[s.reward]! : scheme.primary,
         ),
         child: Padding(
           padding: const EdgeInsets.all(9),

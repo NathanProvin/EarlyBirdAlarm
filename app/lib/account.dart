@@ -36,6 +36,7 @@ Future<void> signInQuietly(Store store) async {
     }
     if (auth.currentUser case final user?) {
       unawaited(_readReferrer(store, user.uid));
+      unawaited(friendsJoined(store).catchError((_) => store.friends));
     }
     store.addListener(() => _backupSoon(store));
     // The binding keeps the listener: written when the app goes to the background.
@@ -385,16 +386,17 @@ Future<void> _readReferrer(Store store, String uid) async {
   }
 }
 
-/// How many friends installed the app through this player's invite links.
-Future<int> friendsJoined() async {
+/// How many friends installed the app through this player's invite links; kept in
+/// [Store.friends] for the Influencer achievement.
+Future<int> friendsJoined(Store store) async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
-  if (uid == null) return 0;
+  if (uid == null) return store.friends;
   final q = await FirebaseFirestore.instance
       .collection('referrals')
       .where('inviterUid', isEqualTo: uid)
       .count()
       .get();
-  return q.count ?? 0;
+  return store.friends = q.count ?? 0;
 }
 
 enum CodeError { unknown, expired, used, offline }

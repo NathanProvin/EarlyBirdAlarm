@@ -189,20 +189,37 @@ class Store extends ChangeNotifier {
     alarmStreak,
   );
 
-  /// Series and achievements already collected ("region:id" for series, the id for
-  /// achievements). Before 2026-10-31 completing one gave a Twitch booster at once; those
-  /// stay collected.
+  /// Series and achievements already collected ("region:id" for series, "id#n" for an
+  /// achievement's tier n; before the tiers, the achievement's id). Before 2026-10-31
+  /// completing one gave a Twitch booster at once; those stay collected.
   Set<String> get _collected => {...?_prefs.getStringList('seriesDone')};
   String _collectKey(SeriesState s) =>
-      s.series == null ? s.id : '$region:${s.id}';
+      s.series == null ? '${s.id}#${s.tier + 1}' : '$region:${s.id}';
+
+  /// Friends who joined through this player's invite link, as last counted online
+  /// (account.dart): the Influencer achievement works offline.
+  int get friends => _prefs.getInt('friends') ?? 0;
+  set friends(int n) {
+    if (n == friends) return;
+    _prefs.setInt('friends', n);
+    notifyListeners();
+  }
+
+  /// The region's series and the achievements, as they stand.
+  List<SeriesState> get seriesNow => seriesStates(birds, achievementCards, (
+    bestStreak: bestStreak,
+    bestAlarmStreak: bestAlarmStreak,
+    given: given.length,
+    friends: friends,
+    collected: _collected,
+  ));
 
   /// Completed and not collected yet: its badge glows until tapped.
   bool claimable(SeriesState s) =>
       s.complete && !_collected.contains(_collectKey(s));
 
   /// Anything to collect on the Series screen (a dot on its button).
-  bool get anyClaimable =>
-      seriesStates(birds, achievementCards, bestAlarmStreak).any(claimable);
+  bool get anyClaimable => seriesNow.any(claimable);
 
   /// Collects a completed series or achievement: a card of its guaranteed [SeriesState.reward]
   /// rarity, of one of the series' birds (an achievement: a bird drafted as for a ring).
