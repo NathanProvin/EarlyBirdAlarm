@@ -632,6 +632,8 @@ class _PlayBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
     final on = play != _Play.idle;
+    // The outline is painted over the circle (foregroundDecoration), so it takes no room
+    // from the icon: the triangle and the square sit at the exact centre.
     return ClipOval(
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
@@ -639,20 +641,29 @@ class _PlayBadge extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           width: 64,
           height: 64,
-          padding: const EdgeInsets.all(16),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black.withValues(alpha: 0.4),
+          ),
+          foregroundDecoration: BoxDecoration(
+            shape: BoxShape.circle,
             border: Border.all(
               color: on ? accent : Colors.white.withValues(alpha: 0.3),
               width: on ? 3 : 1.5,
             ),
           ),
           child: play == _Play.loading
-              ? CircularProgressIndicator(strokeWidth: 3, color: accent)
+              ? SizedBox.square(
+                  dimension: 30,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: accent,
+                  ),
+                )
               : Icon(
                   on ? Icons.stop : Icons.play_arrow,
-                  size: 32,
+                  size: 36,
                   color: on ? accent : Colors.white,
                 ),
         ),
@@ -704,7 +715,12 @@ class _Choice extends StatelessWidget {
                 bottom: 8,
                 child: Center(child: _GlassLabel(name)),
               ),
-              if (play != null) Center(child: _PlayBadge(play)),
+              // Centred across, in the upper part of the photo.
+              if (play != null)
+                Align(
+                  alignment: const Alignment(0, -0.45),
+                  child: _PlayBadge(play),
+                ),
             ],
           ),
         ),
