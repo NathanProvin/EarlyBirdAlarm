@@ -870,8 +870,5 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get compareHint => 'Tap a bird to hear its song';
-
-  @override
   String get songOffline => 'No connection: this song isn\'t on the phone';
 }

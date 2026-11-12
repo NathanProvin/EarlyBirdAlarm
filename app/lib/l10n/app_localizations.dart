@@ -1560,12 +1560,6 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 friend joined through your link} other{{count} friends joined through your link}}'**
   String goalInfluencer(int count);
 
-  /// No description provided for @compareHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tap a bird to hear its song'**
-  String get compareHint;
-
   /// No description provided for @songOffline.
   ///
   /// In en, this message translates to:

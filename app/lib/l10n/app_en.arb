@@ -277,6 +277,5 @@
   "@goalTrader": {"placeholders": {"count": {"type": "int"}}},
   "goalInfluencer": "{count, plural, =1{1 friend joined through your link} other{{count} friends joined through your link}}",
   "@goalInfluencer": {"placeholders": {"count": {"type": "int"}}},
-  "compareHint": "Tap a bird to hear its song",
   "songOffline": "No connection: this song isn't on the phone"
 }

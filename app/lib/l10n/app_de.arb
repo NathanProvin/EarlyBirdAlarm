@@ -243,6 +243,5 @@
   "goalFidelity": "Karten in {count} verschiedenen Monaten",
   "goalTrader": "{count, plural, =1{1 Karte getauscht} other{{count} Karten getauscht}}",
   "goalInfluencer": "{count, plural, =1{1 Freund über deinen Link} other{{count} Freunde über deinen Link}}",
-  "compareHint": "Tippe auf einen Vogel, um ihn zu hören",
   "songOffline": "Keine Verbindung: Dieser Gesang ist nicht auf dem Handy"
 }

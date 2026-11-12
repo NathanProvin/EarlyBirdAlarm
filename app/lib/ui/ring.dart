@@ -131,8 +131,7 @@ class _RingScreenState extends State<RingScreen> {
     null => _Mark.none,
     _ when b == _bird => _Mark.correct, // the answer is always shown
     final t when b == t => _Mark.wrong,
-    _ when _next != null => _Mark.none, // comparing: the others are back
-    _ => _Mark.faded,
+    _ => _Mark.faded, // greyed: still there to compare
   };
 
   /// The birds to compare after a wrong guess: the 4 choices, or with a typed guess
@@ -273,16 +272,16 @@ class _RingScreenState extends State<RingScreen> {
             ],
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                // Comparing: room under the button for the credit line.
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  8,
+                  12,
+                  _next != null ? 28 : 16,
+                ),
                 child: Column(
                   children: [
                     if (_next != null) ...[
-                      Text(
-                        l.compareHint,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
                       for (var i = 0; i < _board.length; i += 2)
                         Expanded(
                           child: Row(
@@ -294,7 +293,12 @@ class _RingScreenState extends State<RingScreen> {
                                     child: _Choice(
                                       bird: bird,
                                       name: bird.nameIn(l.localeName),
-                                      mark: _markOf(bird),
+                                      // The bird being heard is back in colour.
+                                      mark:
+                                          _playing == bird &&
+                                              _markOf(bird) == _Mark.faded
+                                          ? _Mark.none
+                                          : _markOf(bird),
                                       onTap: () => _listen(bird),
                                       play: _playing != bird
                                           ? _Play.idle
@@ -305,18 +309,6 @@ class _RingScreenState extends State<RingScreen> {
                                   ),
                                 ),
                             ],
-                          ),
-                        ),
-                      // Who recorded the song playing (CC BY).
-                      if (_playing case final b? when _songOf(b) != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            '♪ ${_songOf(b)!.credit}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                            textAlign: TextAlign.center,
-                            maxLines: 2, // the licence must stay readable
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                     ]
@@ -355,14 +347,10 @@ class _RingScreenState extends State<RingScreen> {
                       width: double.infinity,
                       height: 64,
                       child: _next != null
-                          ? FilledButton.icon(
-                              onPressed: _next,
-                              icon: const Icon(Icons.arrow_forward, size: 28),
-                              label: Text(l.next),
-                              style: FilledButton.styleFrom(
-                                textStyle: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge,
+                          ? Center(
+                              child: _RevealButton(
+                                onTap: _next!,
+                                label: l.next,
                               ),
                             )
                           : widget.training == null
@@ -396,6 +384,23 @@ class _RingScreenState extends State<RingScreen> {
                 ),
               ),
             ),
+            // Who recorded the song playing (CC BY), in the accent along the bottom edge.
+            if (_playing case final b? when _songOf(b) != null)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.paddingOf(context).bottom + 4,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown, // one line, the licence never cut
+                  child: Text(
+                    '♪ ${_songOf(b)!.credit}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -525,14 +530,7 @@ class _TypedGuessState extends State<_TypedGuess> {
                             : null,
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(20, 14, 12, 14),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(b.nameIn(l.localeName), style: big),
-                              ),
-                              _MarkBadge(_markOf(b)),
-                            ],
-                          ),
+                          child: Text(b.nameIn(l.localeName), style: big),
                         ),
                       ),
                     ),
@@ -562,67 +560,148 @@ class _Marked extends StatelessWidget {
       _Mark.picked => Theme.of(context).colorScheme.primary,
       _ => Colors.transparent,
     };
+    final grey = mark == _Mark.faded;
     return AnimatedOpacity(
-      opacity: mark == _Mark.faded ? 0.15 : 1,
+      opacity: grey ? 0.55 : 1,
       duration: const Duration(milliseconds: 300),
-      child: TweenAnimationBuilder<double>(
-        key: ValueKey(mark),
-        tween: Tween(begin: 0, end: 1),
-        duration: const Duration(milliseconds: 600),
-        builder: (_, t, child) => switch (mark) {
-          _Mark.correct => Transform.scale(
-            scale: 1 + 0.06 * sin(pi * t),
+      child: ColorFiltered(
+        colorFilter: ColorFilter.matrix(grey ? _greyscale : _identity),
+        child: TweenAnimationBuilder<double>(
+          key: ValueKey(mark),
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+          builder: (_, t, child) => switch (mark) {
+            _Mark.correct => Transform.scale(
+              scale: 1 + 0.06 * sin(pi * t),
+              child: child,
+            ),
+            _Mark.wrong => Transform.translate(
+              offset: Offset(12 * sin(t * pi * 6) * (1 - t), 0),
+              child: child,
+            ),
+            _ => child!,
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            foregroundDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(color: color, width: width),
+            ),
             child: child,
           ),
-          _Mark.wrong => Transform.translate(
-            offset: Offset(12 * sin(t * pi * 6) * (1 - t), 0),
-            child: child,
-          ),
-          _ => child!,
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          foregroundDecoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: color, width: width),
-          ),
-          child: child,
         ),
       ),
     );
   }
 }
 
-/// The ✓ / ✕ badge of a guess, popping in; nothing before.
-class _MarkBadge extends StatelessWidget {
-  const _MarkBadge(this.mark);
-  final _Mark mark;
+const _identity = <double>[
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+];
+const _greyscale = <double>[
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0.2126, 0.7152, 0.0722, 0, 0,
+  0, 0, 0, 1, 0,
+];
+
+/// A choice: the photo, its name in a frosted box, and after the guess a green / red frame
+/// and a pulse / shake; the other photos turn grey.
+/// After a wrong guess: the round card button that opens the reveal, a few faint sparks
+/// rising from its edge so it reads as the way on (2026-11-12, user).
+class _RevealButton extends StatefulWidget {
+  const _RevealButton({required this.onTap, required this.label});
+  final VoidCallback onTap;
+  final String label;
+
+  @override
+  State<_RevealButton> createState() => _RevealButtonState();
+}
+
+class _RevealButtonState extends State<_RevealButton>
+    with SingleTickerProviderStateMixin {
+  late final _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 3),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (mark != _Mark.correct && mark != _Mark.wrong) {
-      return const SizedBox.shrink();
-    }
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutBack,
-      builder: (_, s, child) => Transform.scale(scale: s, child: child),
-      child: CircleAvatar(
-        radius: 24,
-        backgroundColor: mark == _Mark.correct ? moss : brick,
-        child: Icon(
-          mark == _Mark.correct ? Icons.check : Icons.close,
-          color: paper,
-          size: 32,
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      label: widget.label,
+      excludeSemantics: true,
+      child: CustomPaint(
+        painter: _Sparks(_c, scheme.primary),
+        child: Material(
+          color: scheme.primary,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: widget.onTap,
+            child: SizedBox.square(
+              dimension: 64,
+              child: Icon(Icons.style, size: 32, color: scheme.onPrimary),
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// A choice: the photo, its name in a frosted box, and after the guess a green / red frame,
-/// a ✓ / ✕ badge and a pulse / shake; the other photos fade.
+/// Six tiny sparks leaving the button's edge, drifting out and fading, one after another.
+class _Sparks extends CustomPainter {
+  _Sparks(this.t, this.color) : super(repaint: t);
+  final Animation<double> t;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final r = size.width / 2;
+    for (var i = 0; i < 6; i++) {
+      final life = (t.value + i / 6) % 1; // 0 → 1 over 3 s, staggered
+      final a = -pi / 2 + (i - 2.5) * 0.55; // fanned over the top
+      final p = c + Offset(cos(a), sin(a)) * (r + 4 + 18 * life);
+      canvas.drawCircle(
+        p,
+        2 * (1 - life) + 0.5,
+        Paint()..color = color.withValues(alpha: 0.45 * sin(pi * life)),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Sparks old) => old.color != color;
+}
+
 /// A choice's song while comparing: null before (the quiz itself).
 enum _Play { idle, loading, playing }
 
@@ -675,7 +754,6 @@ class _Choice extends StatelessWidget {
                 bottom: 8,
                 child: Center(child: _GlassLabel(name)),
               ),
-              Positioned(top: 8, right: 8, child: _MarkBadge(mark)),
               if (play != null)
                 Positioned(
                   top: 8,
