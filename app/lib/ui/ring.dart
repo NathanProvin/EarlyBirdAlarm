@@ -272,13 +272,7 @@ class _RingScreenState extends State<RingScreen> {
             ],
             SafeArea(
               child: Padding(
-                // Comparing: room under the button for the credit line.
-                padding: EdgeInsets.fromLTRB(
-                  12,
-                  8,
-                  12,
-                  _next != null ? 28 : 16,
-                ),
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
                 child: Column(
                   children: [
                     if (_next != null) ...[
@@ -347,10 +341,12 @@ class _RingScreenState extends State<RingScreen> {
                       width: double.infinity,
                       height: 64,
                       child: _next != null
-                          ? Center(
-                              child: _RevealButton(
-                                onTap: _next!,
+                          ? FilledButton.tonal(
+                              onPressed: _next,
+                              style: button,
+                              child: Semantics(
                                 label: l.next,
+                                child: const Icon(Icons.style, size: 32),
                               ),
                             )
                           : widget.training == null
@@ -389,12 +385,12 @@ class _RingScreenState extends State<RingScreen> {
               Positioned(
                 left: 16,
                 right: 16,
-                bottom: MediaQuery.paddingOf(context).bottom + 4,
+                bottom: MediaQuery.paddingOf(context).bottom,
                 child: FittedBox(
                   fit: BoxFit.scaleDown, // one line, the licence never cut
                   child: Text(
                     '♪ ${_songOf(b)!.credit}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
                     ),
@@ -626,80 +622,43 @@ const _greyscale = <double>[
 
 /// A choice: the photo, its name in a frosted box, and after the guess a green / red frame
 /// and a pulse / shake; the other photos turn grey.
-/// After a wrong guess: the round card button that opens the reveal, a few faint sparks
-/// rising from its edge so it reads as the way on (2026-11-12, user).
-class _RevealButton extends StatefulWidget {
-  const _RevealButton({required this.onTap, required this.label});
-  final VoidCallback onTap;
-  final String label;
-
-  @override
-  State<_RevealButton> createState() => _RevealButtonState();
-}
-
-class _RevealButtonState extends State<_RevealButton>
-    with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 3),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
+/// The play badge in the middle of a photo while comparing: dark frosted glass; while its
+/// song plays, an outline and a square in the accent; a spinner while it loads.
+class _PlayBadge extends StatelessWidget {
+  const _PlayBadge(this.play);
+  final _Play play;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Semantics(
-      button: true,
-      label: widget.label,
-      excludeSemantics: true,
-      child: CustomPaint(
-        painter: _Sparks(_c, scheme.primary),
-        child: Material(
-          color: scheme.primary,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: widget.onTap,
-            child: SizedBox.square(
-              dimension: 64,
-              child: Icon(Icons.style, size: 32, color: scheme.onPrimary),
+    final accent = Theme.of(context).colorScheme.primary;
+    final on = play != _Play.idle;
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 64,
+          height: 64,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black.withValues(alpha: 0.4),
+            border: Border.all(
+              color: on ? accent : Colors.white.withValues(alpha: 0.3),
+              width: on ? 3 : 1.5,
             ),
           ),
+          child: play == _Play.loading
+              ? CircularProgressIndicator(strokeWidth: 3, color: accent)
+              : Icon(
+                  on ? Icons.stop : Icons.play_arrow,
+                  size: 32,
+                  color: on ? accent : Colors.white,
+                ),
         ),
       ),
     );
   }
-}
-
-/// Six tiny sparks leaving the button's edge, drifting out and fading, one after another.
-class _Sparks extends CustomPainter {
-  _Sparks(this.t, this.color) : super(repaint: t);
-  final Animation<double> t;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final r = size.width / 2;
-    for (var i = 0; i < 6; i++) {
-      final life = (t.value + i / 6) % 1; // 0 → 1 over 3 s, staggered
-      final a = -pi / 2 + (i - 2.5) * 0.55; // fanned over the top
-      final p = c + Offset(cos(a), sin(a)) * (r + 4 + 18 * life);
-      canvas.drawCircle(
-        p,
-        2 * (1 - life) + 0.5,
-        Paint()..color = color.withValues(alpha: 0.45 * sin(pi * life)),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_Sparks old) => old.color != color;
 }
 
 /// A choice's song while comparing: null before (the quiz itself).
@@ -721,7 +680,6 @@ class _Choice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final l = AppLocalizations.of(context);
     final play = this.play;
     return Semantics(
@@ -740,49 +698,13 @@ class _Choice extends StatelessWidget {
                 borderRadius: BorderRadius.circular(radius),
                 child: BirdPhoto(bird),
               ),
-              // The bird being heard: a ring in the accent around its photo.
-              if (play != null && play != _Play.idle)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(radius),
-                    border: Border.all(color: scheme.primary, width: 4),
-                  ),
-                ),
               Positioned(
                 left: 8,
                 right: 8,
                 bottom: 8,
                 child: Center(child: _GlassLabel(name)),
               ),
-              if (play != null)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: play == _Play.idle
-                          ? scheme.surface.withValues(alpha: 0.85)
-                          : scheme.primary,
-                    ),
-                    padding: const EdgeInsets.all(12),
-                    child: play == _Play.loading
-                        ? CircularProgressIndicator(
-                            strokeWidth: 3,
-                            color: scheme.onPrimary,
-                          )
-                        : Icon(
-                            play == _Play.playing
-                                ? Icons.stop
-                                : Icons.play_arrow,
-                            color: play == _Play.playing
-                                ? scheme.onPrimary
-                                : scheme.onSurface,
-                          ),
-                  ),
-                ),
+              if (play != null) Center(child: _PlayBadge(play)),
             ],
           ),
         ),
