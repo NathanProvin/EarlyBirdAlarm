@@ -116,8 +116,6 @@ class _SeriesScreenState extends State<SeriesScreen> {
               group.skip(i).take(6).toList(),
       if (!_series) List.filled(6, null),
     ];
-    // The theme's accent for Achievements, its surface colour for Series.
-    final pillColor = _series ? scheme.secondaryContainer : scheme.primary;
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
       // Back within the thumb's reach, bottom right.
@@ -134,40 +132,11 @@ class _SeriesScreenState extends State<SeriesScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Semantics(
-              button: true,
-              label: _series ? l.series : l.achievements,
-              hint: _series ? l.achievements : l.series,
-              excludeSemantics: true,
-              child: GestureDetector(
-                onTap: () => _show(!_series),
-                onHorizontalDragEnd: (d) {
-                  final v = d.primaryVelocity ?? 0;
-                  if (v.abs() > 100) _show(v < 0);
-                },
-                child: FractionallySizedBox(
-                  widthFactor: 0.5,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    height: 48,
-                    margin: const EdgeInsets.only(top: 4),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: pillColor,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Text(
-                      _series ? l.series : l.achievements,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: _series
-                            ? scheme.onSecondaryContainer
-                            : scheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            _ModeSwitch(
+              series: _series,
+              onChanged: _show,
+              left: l.achievements,
+              right: l.series,
             ),
             Expanded(
               child: PageView(
@@ -232,6 +201,109 @@ class _SeriesScreenState extends State<SeriesScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The Achievements | Series switch (2026-11-12, user): both names on a track, the
+/// chosen one on a thumb that slides across, so it reads as a switch, not a title. Tap a
+/// name, or drag across: the thumb follows the finger.
+class _ModeSwitch extends StatelessWidget {
+  const _ModeSwitch({
+    required this.series,
+    required this.onChanged,
+    required this.left,
+    required this.right,
+  });
+  final bool series;
+  final ValueChanged<bool> onChanged;
+  final String left, right;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    const slide = Duration(milliseconds: 250);
+    // The thumb's colour changes too: the accent for Achievements, ink for Series.
+    final thumb = series ? scheme.onSurface : scheme.primary;
+    final onThumb = series ? scheme.surface : scheme.onPrimary;
+    return FractionallySizedBox(
+      widthFactor: 0.7,
+      child: LayoutBuilder(
+        builder: (context, box) => GestureDetector(
+          onHorizontalDragUpdate: (d) =>
+              onChanged(d.localPosition.dx > box.maxWidth / 2),
+          child: Container(
+            height: 56, // each half a 48 dp target
+            margin: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: scheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AnimatedAlign(
+                  duration: slide,
+                  curve: Curves.easeOutCubic,
+                  alignment: series
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: 0.5,
+                    child: AnimatedContainer(
+                      duration: slide,
+                      decoration: BoxDecoration(
+                        color: thumb,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    for (final (side, label) in [(false, left), (true, right)])
+                      Expanded(
+                        child: Semantics(
+                          button: true,
+                          selected: series == side,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => onChanged(side),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: slide,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium!
+                                        .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: series == side
+                                              ? onThumb
+                                              : scheme.onSecondaryContainer
+                                                    .withValues(alpha: 0.7),
+                                        ),
+                                    child: Text(label),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

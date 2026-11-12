@@ -94,8 +94,8 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] (2026-11-11, published to R2: 1,292 species, 7,190 files, privacy + delete-account pages too) One full catalog rebuild for 4 + 5, published to R2
 
 ## Added 2026-11-12 (user), after 1.1 step 3, before Production
-- [x] (2026-11-12, seen on the S22) **Series / Achievements polish:** Achievements | Series pill (swipe or tap; accent / surface colour); 18 achievements × 5 tiers on 3 pages + a "To be added" page; Voices series page (Virtuosos, Mimics, Night voices, Dawn chorus, Long flight, Pelagic); series.json refreshed daily (see decisions.md)
-- [ ] **Drop balance** pass (targets per difficulty to set with the user; Medium / Expert simulations)
+- [x] (2026-11-12, seen on the S22) **Series / Achievements polish:** Achievements | Series segmented switch (both names on a track, a sliding thumb that follows the finger, tap a name); 18 achievements × 5 tiers on 3 pages + a "To be added" page; Voices series page (Virtuosos, Mimics, Night voices, Dawn chorus, Long flight, Pelagic); series.json refreshed daily (see decisions.md)
+- [x] (2026-11-12, user: **current drop rates kept**, achievement tier cards on top of them; the two left-aside risks stay aside) **Drop balance** pass
 - [ ] **Wrong birds' songs after a failed quiz** (go / no-go): the other quiz birds with a ▶ on the failed reveal, **streamed** with `playRecording` (never saved into `audio/`: every file there is a pile card), ▶ hidden offline when not on the phone; no pile change
 
 ## Drafting, balance and optimisation — DONE 2026-11-11
