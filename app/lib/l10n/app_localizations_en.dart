@@ -894,7 +894,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get renameTitle => 'Your @name';
 
   @override
-  String get nameRules => '3 to 20 letters, digits or _. Once a week.';
+  String get nameRules =>
+      '3 to 20 letters, digits or _, once a week. Be respectful: offensive names are removed.';
 
   @override
   String get nameLength => '3 to 20 characters.';
@@ -933,9 +934,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendAlready => 'Already your friend.';
-
-  @override
-  String get wantsToBeFriends => 'wants to be your friend';
 
   @override
   String get accept => 'Accept';

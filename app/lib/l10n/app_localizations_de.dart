@@ -901,7 +901,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get nameRules =>
-      '3 bis 20 Buchstaben, Ziffern oder _. Einmal pro Woche.';
+      '3 bis 20 Buchstaben, Ziffern oder _, einmal pro Woche. Bleib respektvoll: beleidigende Namen werden entfernt.';
 
   @override
   String get nameLength => '3 bis 20 Zeichen.';
@@ -940,9 +940,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get friendAlready => 'Schon dein Freund.';
-
-  @override
-  String get wantsToBeFriends => 'möchte dein Freund sein';
 
   @override
   String get accept => 'Annehmen';

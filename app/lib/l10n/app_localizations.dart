@@ -1611,7 +1611,7 @@ abstract class AppLocalizations {
   /// No description provided for @nameRules.
   ///
   /// In en, this message translates to:
-  /// **'3 to 20 letters, digits or _. Once a week.'**
+  /// **'3 to 20 letters, digits or _, once a week. Be respectful: offensive names are removed.'**
   String get nameRules;
 
   /// No description provided for @nameLength.
@@ -1685,12 +1685,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already your friend.'**
   String get friendAlready;
-
-  /// No description provided for @wantsToBeFriends.
-  ///
-  /// In en, this message translates to:
-  /// **'wants to be your friend'**
-  String get wantsToBeFriends;
 
   /// No description provided for @accept.
   ///

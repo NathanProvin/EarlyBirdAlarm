@@ -105,7 +105,7 @@ Video-game-style profile replacing the Account page (decisions.md "Profile page"
 - [x] (2026-11-13, S22) Hall of fame: 3 chosen cards
 - [x] (2026-11-13, S22) Friends: Add by @name → request → accept; friend profile (avatar, @name, hall of fame, Challenge / Trade "coming soon"); Remove, Block, Report
 - [x] (2026-11-13, S22) Invite link + Enter a code (moved below), **Account management kept whole** (sign-in, forgot password, delete account)
-- [ ] Privacy pages, Data safety, Play user-generated-content rules (report + block), strings × 4; S22 checks with two accounts
+- [x] (2026-11-13) Privacy pages (4 languages, published), Data safety + content-rating notes (`store-listing.md`), community rule in the rename dialog, Report / Block in app; friends flow checked on the S22 with a test account. **User:** banned-words review, Play Console answers with the release
 
 ## Drafting, balance and optimisation — DONE 2026-11-11
 Details and the reasoning: `drafting-design.md` (how a card is drafted, compromises, the review's risks and their status) and `decisions.md`.

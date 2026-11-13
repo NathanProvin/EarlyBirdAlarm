@@ -753,7 +753,6 @@ class _FriendsState extends State<Friends> {
                   contentPadding: EdgeInsets.zero,
                   leading: Avatar(p.avatar),
                   title: Text('@${p.name}'),
-                  subtitle: Text(l.wantsToBeFriends),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
