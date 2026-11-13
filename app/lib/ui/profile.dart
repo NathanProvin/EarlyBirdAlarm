@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../birds.dart';
@@ -12,6 +13,7 @@ import '../names.dart';
 import '../profile.dart';
 import 'card.dart';
 import 'collection.dart';
+import 'share.dart';
 import 'theme.dart';
 
 /// The profile page's pieces (2026-11-13): the avatar cropped from a card, the @name,
@@ -186,8 +188,6 @@ class _CropState extends State<_Crop> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(l.frameHint, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () {
@@ -487,55 +487,129 @@ class HallOfFame extends StatelessWidget {
   );
 }
 
-/// Three card slots in a row (the player's own, or a friend's to look at).
+/// Three cards held like a fan (the player's own, or a friend's to look at): the outer
+/// two tilted, the middle one raised on top. Drawn still: the Shiny and star animations
+/// repainted every frame and made the page stutter while scrolling (2026-11-13).
 class HallRow extends StatelessWidget {
   const HallRow({required this.cards, this.onTap, super.key});
   final List<CardData?> cards;
   final void Function(int slot)? onTap;
 
+  Widget _slot(BuildContext context, int i) {
+    final scheme = Theme.of(context).colorScheme;
+    final c = cards.elementAtOrNull(i);
+    final bird = c == null ? null : birdById(c.birdId);
+    if (c != null && bird != null) {
+      return CardTile(
+        bird: bird,
+        card: c,
+        heard: false,
+        onTap: onTap == null ? null : () => onTap!(i),
+      );
+    }
+    final tap = onTap;
+    if (tap == null) return const SizedBox.shrink();
+    return Semantics(
+      button: true,
+      label: AppLocalizations.of(context).chooseCard,
+      child: Material(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          onTap: () => tap(i),
+          borderRadius: BorderRadius.circular(radius),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(
+                color: scheme.onSurface.withValues(alpha: 0.25),
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              Icons.add,
+              size: 32,
+              color: scheme.onSurface.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final w = box.maxWidth, cw = w * 0.44, ch = cw / 0.72;
+      Widget card(int i, double x, double y, double angle) => Positioned(
+        left: x,
+        top: y,
+        width: cw,
+        height: ch,
+        child: Transform.rotate(
+          angle: angle,
+          alignment: Alignment.bottomCenter,
+          child: _slot(context, i),
+        ),
+      );
+      return RepaintBoundary(
+        child: TickerMode(
+          enabled: false,
+          child: SizedBox(
+            height: ch * 1.06,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                card(0, w * 0.02, ch * 0.06, -0.17),
+                card(2, w - cw - w * 0.02, ch * 0.06, 0.17),
+                card(1, (w - cw) / 2, 0, 0), // on top
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// The collection in three numbers under the hall of fame.
+class ProfileStats extends StatelessWidget {
+  const ProfileStats({required this.cards, super.key});
+  final List<CardData> cards;
+
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final stats = [
+      (cards.length, l.statCards),
+      ({for (final c in cards) c.birdId}.length, l.statSpecies),
+      ({for (final c in cards) ?c.region}.length, l.statRegions),
+    ];
     return Row(
       children: [
-        for (var i = 0; i < 3; i++) ...[
+        for (final (i, (n, label)) in stats.indexed) ...[
           if (i > 0) const SizedBox(width: 8),
           Expanded(
-            child: AspectRatio(
-              aspectRatio: 0.72,
-              child: switch ((cards.elementAtOrNull(i), onTap)) {
-                (final CardData c, _) when birdById(c.birdId) != null =>
-                  CardTile(
-                    bird: birdById(c.birdId)!,
-                    card: c,
-                    heard: false,
-                    onTap: onTap == null ? null : () => onTap!(i),
-                  ),
-                (_, final tap?) => Semantics(
-                  button: true,
-                  label: l.chooseCard,
-                  child: InkWell(
-                    onTap: () => tap(i),
-                    borderRadius: BorderRadius.circular(radius),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(radius),
-                        border: Border.all(
-                          color: scheme.onSurface.withValues(alpha: 0.25),
-                          width: 2,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.add,
-                        size: 32,
-                        color: scheme.onSurface.withValues(alpha: 0.5),
-                      ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: scheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(radius),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '$n',
+                    style: text.headlineSmall?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-                _ => const SizedBox.shrink(),
-              },
+                  Text(label, style: text.labelMedium),
+                ],
+              ),
             ),
           ),
         ],
@@ -619,6 +693,14 @@ class _FriendsState extends State<Friends> {
     }
   }
 
+  /// The invite message with the Play link carrying this player's account id.
+  void _invite() {
+    final l = AppLocalizations.of(context);
+    SharePlus.instance.share(
+      ShareParams(text: l.inviteText(playLink('invite'))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -630,10 +712,30 @@ class _FriendsState extends State<Friends> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            FilledButton.tonalIcon(
-              icon: const Icon(Icons.person_add_alt_1),
-              label: Text(l.addFriend),
-              onPressed: _add,
+            Row(
+              children: [
+                for (final (icon, label, onTap) in [
+                  (Icons.person_add_alt_1, l.addFriend, _add),
+                  (Icons.share_outlined, l.inviteFriends, _invite),
+                ]) ...[
+                  if (icon == Icons.share_outlined) const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      // The theme's buttons are full width: not side by side.
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 56),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      icon: Icon(icon),
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(label),
+                      ),
+                      onPressed: onTap,
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 8),
             if (data == null)
@@ -666,7 +768,7 @@ class _FriendsState extends State<Friends> {
                     ],
                   ),
                 ),
-              for (final p in data.friends)
+              for (final p in data.friends.take(3))
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Avatar(p.avatar),
@@ -675,6 +777,24 @@ class _FriendsState extends State<Friends> {
                   onTap: () async {
                     await Navigator.of(context).push(
                       MaterialPageRoute<void>(builder: (_) => FriendScreen(p)),
+                    );
+                    if (mounted) _reload();
+                  },
+                ),
+              if (data.friends.length > 3)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const SizedBox(
+                    width: 40,
+                    child: Icon(Icons.group_outlined),
+                  ),
+                  title: Text(l.seeAllFriends(data.friends.length)),
+                  trailing: Icon(Icons.chevron_right, color: scheme.primary),
+                  onTap: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => _AllFriends(data.friends),
+                      ),
                     );
                     if (mounted) _reload();
                   },
@@ -694,6 +814,39 @@ class _FriendsState extends State<Friends> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Every friend, from "See all".
+class _AllFriends extends StatelessWidget {
+  const _AllFriends(this.friends);
+  final List<PlayerProfile> friends;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l.friends)),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          0,
+          16,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
+        children: [
+          for (final p in friends)
+            ListTile(
+              leading: Avatar(p.avatar),
+              title: Text('@${p.name}'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute<void>(builder: (_) => FriendScreen(p))),
+            ),
+        ],
+      ),
     );
   }
 }

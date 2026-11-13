@@ -2,14 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../account.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'profile.dart';
 import 'series.dart';
-import 'share.dart';
 
 /// The profile page (2026-11-13), opened from the person icon on the Alarms and Training
 /// headers: who the player is (avatar, @name, the email small), their hall of fame, their
@@ -33,18 +31,20 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final online = Firebase.apps.isNotEmpty;
-    Widget section(String title, Widget child, {Key? key}) => Padding(
+    Widget section(String? title, Widget child, {Key? key}) => Padding(
       key: key,
-      padding: const EdgeInsets.only(top: 32),
+      padding: EdgeInsets.only(top: title == null ? 20 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
+          if (title != null) ...[
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+          ],
           child,
         ],
       ),
@@ -72,17 +72,20 @@ class _AccountScreenState extends State<AccountScreen> {
                   duration: const Duration(milliseconds: 400),
                 ),
               ),
-              section(l.hallOfFame, const HallOfFame()),
+              section(
+                null,
+                Column(
+                  children: [
+                    const HallOfFame(),
+                    const SizedBox(height: 20),
+                    ProfileStats(cards: store.cards),
+                  ],
+                ),
+              ),
               // Friends, invites and codes need the (anonymous) account: none in tests.
               if (online) ...[
-                section(
-                  l.friends,
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [Friends(), SizedBox(height: 16), _Invite()],
-                  ),
-                ),
-                section(l.codes, const _Code()),
+                section(l.friends, const Friends()),
+                section(l.bonusCodes, const _Code()),
               ],
               section(
                 l.account,
@@ -316,38 +319,6 @@ class _AccountPanelState extends State<AccountPanel> {
   }
 }
 
-/// Invite friends (2026-11-12): a message with the Play link, which carries this
-/// player's account id so the friend's install counts here.
-class _Invite extends StatelessWidget {
-  const _Invite();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        FilledButton.icon(
-          icon: const Icon(Icons.share_outlined),
-          label: Text(l.inviteFriends),
-          onPressed: () => SharePlus.instance.share(
-            ShareParams(text: l.inviteText(playLink('invite'))),
-          ),
-        ),
-        const SizedBox(height: 8),
-        FutureBuilder<int>(
-          future: friendsJoined(store),
-          builder: (context, snap) => Text(
-            // Only once some joined: the friend list already says "none yet".
-            (snap.data ?? 0) > 0 ? l.friendsJoined(snap.data!) : '',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 /// Enter a code we handed out: its card flips in (see redeemCode).
 class _Code extends StatefulWidget {
   const _Code();
@@ -402,20 +373,22 @@ class _CodeState extends State<_Code> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    // Stacked: the theme's filled buttons are full width.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
       children: [
-        TextField(
-          controller: _field,
-          autocorrect: false,
-          decoration: InputDecoration(labelText: l.enterCode),
-          onSubmitted: (_) => _busy ? null : _redeem(),
-        ),
-        const SizedBox(height: 8),
-        FilledButton.tonal(
+        IconButton.filledTonal(
+          tooltip: l.redeem,
+          iconSize: 28,
           onPressed: _busy ? null : _redeem,
-          child: Text(l.redeem),
+          icon: const Icon(Icons.check),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: TextField(
+            controller: _field,
+            autocorrect: false,
+            decoration: InputDecoration(labelText: l.enterCode),
+            onSubmitted: (_) => _busy ? null : _redeem(),
+          ),
         ),
       ],
     );

@@ -885,16 +885,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get friends => 'Freunde';
 
   @override
-  String get codes => 'Codes';
-
-  @override
   String get chooseCard => 'Karte wählen';
 
   @override
   String get frameAvatar => 'Bild zuschneiden';
-
-  @override
-  String get frameHint => 'Zum Zoomen zusammenziehen, zum Verschieben ziehen';
 
   @override
   String get changeAvatar => 'Bild ändern';
@@ -971,4 +965,21 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get challenge => 'Herausfordern';
+
+  @override
+  String get bonusCodes => 'Bonuscodes';
+
+  @override
+  String get statCards => 'Karten';
+
+  @override
+  String get statSpecies => 'Arten';
+
+  @override
+  String get statRegions => 'Regionen';
+
+  @override
+  String seeAllFriends(int count) {
+    return 'Alle anzeigen ($count)';
+  }
 }

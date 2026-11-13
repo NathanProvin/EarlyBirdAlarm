@@ -280,10 +280,8 @@
   "songOffline": "No connection: this song isn't on the phone",
   "hallOfFame": "Hall of fame",
   "friends": "Friends",
-  "codes": "Codes",
   "chooseCard": "Choose a card",
   "frameAvatar": "Frame your picture",
-  "frameHint": "Pinch to zoom, drag to move",
   "changeAvatar": "Change your picture",
   "signInToKeep": "Sign in to keep your collection",
   "renameTitle": "Your @name",
@@ -308,5 +306,11 @@
   "removeFriend": "Remove from friends",
   "blockPlayer": "Block",
   "reportPlayer": "Report",
-  "challenge": "Challenge"
+  "challenge": "Challenge",
+  "bonusCodes": "Bonus codes",
+  "statCards": "Cards",
+  "statSpecies": "Species",
+  "statRegions": "Regions",
+  "seeAllFriends": "See all ({count})",
+  "@seeAllFriends": {"placeholders": {"count": {"type": "int"}}}
 }

@@ -246,10 +246,8 @@
   "songOffline": "Sin conexión: este canto no está en el teléfono",
   "hallOfFame": "Salón de la fama",
   "friends": "Amigos",
-  "codes": "Códigos",
   "chooseCard": "Elegir una carta",
   "frameAvatar": "Encuadra tu foto",
-  "frameHint": "Pellizca para ampliar, arrastra para mover",
   "changeAvatar": "Cambiar foto",
   "signInToKeep": "Inicia sesión para conservar tu colección",
   "renameTitle": "Tu @nombre",
@@ -273,5 +271,10 @@
   "removeFriend": "Quitar de amigos",
   "blockPlayer": "Bloquear",
   "reportPlayer": "Denunciar",
-  "challenge": "Desafiar"
+  "challenge": "Desafiar",
+  "bonusCodes": "Códigos de bonificación",
+  "statCards": "Cartas",
+  "statSpecies": "Especies",
+  "statRegions": "Regiones",
+  "seeAllFriends": "Ver todos ({count})"
 }

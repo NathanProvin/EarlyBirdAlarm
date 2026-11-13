@@ -246,10 +246,8 @@
   "songOffline": "Pas de connexion : ce chant n’est pas sur le téléphone",
   "hallOfFame": "Panthéon",
   "friends": "Amis",
-  "codes": "Codes",
   "chooseCard": "Choisir une carte",
   "frameAvatar": "Cadre ta photo",
-  "frameHint": "Pince pour zoomer, glisse pour déplacer",
   "changeAvatar": "Changer de photo",
   "signInToKeep": "Connecte-toi pour garder ta collection",
   "renameTitle": "Ton @pseudo",
@@ -273,5 +271,10 @@
   "removeFriend": "Retirer des amis",
   "blockPlayer": "Bloquer",
   "reportPlayer": "Signaler",
-  "challenge": "Défier"
+  "challenge": "Défier",
+  "bonusCodes": "Codes bonus",
+  "statCards": "Cartes",
+  "statSpecies": "Espèces",
+  "statRegions": "Régions",
+  "seeAllFriends": "Voir tout ({count})"
 }

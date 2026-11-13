@@ -246,10 +246,8 @@
   "songOffline": "Keine Verbindung: Dieser Gesang ist nicht auf dem Handy",
   "hallOfFame": "Ruhmeshalle",
   "friends": "Freunde",
-  "codes": "Codes",
   "chooseCard": "Karte wählen",
   "frameAvatar": "Bild zuschneiden",
-  "frameHint": "Zum Zoomen zusammenziehen, zum Verschieben ziehen",
   "changeAvatar": "Bild ändern",
   "signInToKeep": "Melde dich an, um deine Sammlung zu behalten",
   "renameTitle": "Dein @Name",
@@ -273,5 +271,10 @@
   "removeFriend": "Aus Freunden entfernen",
   "blockPlayer": "Blockieren",
   "reportPlayer": "Melden",
-  "challenge": "Herausfordern"
+  "challenge": "Herausfordern",
+  "bonusCodes": "Bonuscodes",
+  "statCards": "Karten",
+  "statSpecies": "Arten",
+  "statRegions": "Regionen",
+  "seeAllFriends": "Alle anzeigen ({count})"
 }

@@ -1578,12 +1578,6 @@ abstract class AppLocalizations {
   /// **'Friends'**
   String get friends;
 
-  /// No description provided for @codes.
-  ///
-  /// In en, this message translates to:
-  /// **'Codes'**
-  String get codes;
-
   /// No description provided for @chooseCard.
   ///
   /// In en, this message translates to:
@@ -1595,12 +1589,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Frame your picture'**
   String get frameAvatar;
-
-  /// No description provided for @frameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Pinch to zoom, drag to move'**
-  String get frameHint;
 
   /// No description provided for @changeAvatar.
   ///
@@ -1745,6 +1733,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Challenge'**
   String get challenge;
+
+  /// No description provided for @bonusCodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus codes'**
+  String get bonusCodes;
+
+  /// No description provided for @statCards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get statCards;
+
+  /// No description provided for @statSpecies.
+  ///
+  /// In en, this message translates to:
+  /// **'Species'**
+  String get statSpecies;
+
+  /// No description provided for @statRegions.
+  ///
+  /// In en, this message translates to:
+  /// **'Regions'**
+  String get statRegions;
+
+  /// No description provided for @seeAllFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'See all ({count})'**
+  String seeAllFriends(int count);
 }
 
 class _AppLocalizationsDelegate
