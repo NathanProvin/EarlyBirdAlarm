@@ -100,11 +100,11 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 
 ## Profile page revamp — added 2026-11-13 (user), before Production
 Video-game-style profile replacing the Account page (decisions.md "Profile page"):
-- [ ] Rules + data layer: `usernames/{name}`, `profiles/{uid}`, `friendRequests/{to}_{from}`, `friends/{uid}/list/{friendUid}`; rules check; deletion / sign-in merge clean them
-- [ ] Identity header: avatar cropped round from one of the player's cards, unique **@name** (automatic bird-style name, editable), email small and discreet
-- [ ] Hall of fame: 3 chosen cards
-- [ ] Friends: Add by @name → request → accept; friend profile (avatar, @name, hall of fame, Challenge / Trade "coming soon"); Remove, Block, Report
-- [ ] Invite link + Enter a code (moved below), **Account management kept whole** (sign-in, forgot password, delete account)
+- [x] (2026-11-13, S22) Rules + data layer: `usernames/{name}`, `profiles/{uid}`, `friendRequests/{to}_{from}`, `friends/{uid}/list/{friendUid}`; rules check; deletion / sign-in merge clean them
+- [x] (2026-11-13, S22) Identity header: avatar cropped round from one of the player's cards, unique **@name** (automatic bird-style name, editable), email small and discreet
+- [x] (2026-11-13, S22) Hall of fame: 3 chosen cards
+- [x] (2026-11-13, S22) Friends: Add by @name → request → accept; friend profile (avatar, @name, hall of fame, Challenge / Trade "coming soon"); Remove, Block, Report
+- [x] (2026-11-13, S22) Invite link + Enter a code (moved below), **Account management kept whole** (sign-in, forgot password, delete account)
 - [ ] Privacy pages, Data safety, Play user-generated-content rules (report + block), strings × 4; S22 checks with two accounts
 
 ## Drafting, balance and optimisation — DONE 2026-11-11

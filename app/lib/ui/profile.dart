@@ -637,7 +637,9 @@ class _FriendsState extends State<Friends> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await job();
-    } on Exception {
+    } catch (e) {
+      // Any failure, not only Exceptions: a silent one left a request pending.
+      debugPrint('friends: $e');
       messenger.showSnackBar(SnackBar(content: Text(l.accountError)));
     }
     if (mounted) _reload();
@@ -911,13 +913,11 @@ class FriendScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: text.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 24),
-          Text(
-            l.hallOfFame,
-            style: text.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          HallRow(cards: friend.hall),
+          // Their hall of fame as a fan, untitled like the player's own; none: nothing.
+          if (friend.hall.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            HallRow(cards: friend.hall),
+          ],
           const SizedBox(height: 24),
           // To come: shown so players know (2026-11-13, user).
           for (final (icon, label) in [

@@ -210,8 +210,8 @@ Future<({List<PlayerProfile> requests, List<PlayerProfile> friends})> social(
 Future<void> accept(String from) async {
   final uid = _uid!;
   await (_db.batch()
-        ..set(_friends(uid).doc(from), {})
-        ..set(_friends(from).doc(uid), {})
+        ..set(_friends(uid).doc(from), <String, dynamic>{})
+        ..set(_friends(from).doc(uid), <String, dynamic>{})
         ..delete(_request(uid, from)))
       .commit();
 }
