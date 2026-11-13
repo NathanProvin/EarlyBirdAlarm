@@ -20,21 +20,21 @@ NameProblem? nameProblem(String name) {
 /// e.g. RedRobin4821 (the player can change it once for free).
 String autoName(Iterable<Bird> pool, [Random? random]) {
   random ??= Random();
-  final names =
-      [
-            for (final b in pool)
-              b.name
-                  .split(RegExp(r'[^A-Za-z]+'))
-                  .where((w) => w.isNotEmpty)
-                  .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
-                  .join(),
-          ]
-          .map(
-            (n) => n.substring(0, min(n.length, 16)),
-          ) // + 4 digits: 20 at most
-          .where((n) => n.length >= 3 && nameProblem(n) == null) // Dickcissel…
-          .toList();
-  final bird = names.isEmpty ? 'Bird' : names[random.nextInt(names.length)];
+  final camel = [
+    for (final b in pool)
+      b.name
+          .split(RegExp(r'[^A-Za-z]+'))
+          .where((w) => w.isNotEmpty)
+          .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+          .join(),
+  ];
+  bool ok(String n) => n.length >= 3 && nameProblem(n) == null; // Dickcissel…
+  // Names that fit whole (16 + 4 digits = 20) first: "SpottedFlycatche" reads badly.
+  final whole = camel.where((n) => n.length <= 16 && ok(n)).toList();
+  final from = whole.isNotEmpty
+      ? whole
+      : camel.map((n) => n.substring(0, min(n.length, 16))).where(ok).toList();
+  final bird = from.isEmpty ? 'Bird' : from[random.nextInt(from.length)];
   final digits = random.nextInt(10000).toString().padLeft(4, '0');
   return '$bird$digits';
 }

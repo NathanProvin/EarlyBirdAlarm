@@ -25,7 +25,12 @@ void main() {
     'an automatic name is a bird without spaces and 4 digits, never banned',
     () {
       final r = Random(3);
-      final pool = [_bird('European Robin'), _bird('Dickcissel')];
+      // A banned word and a name too long to fit whole are left out.
+      final pool = [
+        _bird('European Robin'),
+        _bird('Dickcissel'),
+        _bird('Spotted Flycatcher'),
+      ];
       for (var i = 0; i < 50; i++) {
         final name = autoName(pool, r);
         expect(name, matches(RegExp(r'^EuropeanRobin\d{4}$')));

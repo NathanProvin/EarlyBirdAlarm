@@ -294,13 +294,16 @@ class ProfileHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Shrinks to fit on one line: a 20-character name is shown whole.
                 Flexible(
-                  child: Text(
-                    '@${store.username ?? '…'}',
-                    style: text.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '@${store.username ?? '…'}',
+                      style: text.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -476,10 +479,12 @@ class HallOfFame extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final cards = hallCards(store);
-    return HallRow(cards: cards, onTap: (i) => _choose(context, i));
-  }
+  // Listens itself: placed as a const widget, a parent's rebuild skips it.
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: store,
+    builder: (context, _) =>
+        HallRow(cards: hallCards(store), onTap: (i) => _choose(context, i)),
+  );
 }
 
 /// Three card slots in a row (the player's own, or a friend's to look at).

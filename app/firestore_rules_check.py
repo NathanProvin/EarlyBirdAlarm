@@ -109,6 +109,15 @@ checks += [
     ("B asks A as A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(a, b))[0], 403),
     ("B asks A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(b, a))[0], 200),
     ("A reads the request", call("GET", f"{DB}/friendRequests/{a}_{b}", ta)[0], 200),
+    ("A lists the requests it got", call("POST", f"{DB}:runQuery", ta, {"structuredQuery": {
+        "from": [{"collectionId": "friendRequests"}],
+        "where": {"fieldFilter": {"field": {"fieldPath": "to"}, "op": "EQUAL", "value": {"stringValue": a}}}}})[0], 200),
+    ("B lists the requests it sent", call("POST", f"{DB}:runQuery", tb, {"structuredQuery": {
+        "from": [{"collectionId": "friendRequests"}],
+        "where": {"fieldFilter": {"field": {"fieldPath": "from"}, "op": "EQUAL", "value": {"stringValue": b}}}}})[0], 200),
+    ("B lists A's requests", call("POST", f"{DB}:runQuery", tb, {"structuredQuery": {
+        "from": [{"collectionId": "friendRequests"}],
+        "where": {"fieldFilter": {"field": {"fieldPath": "to"}, "op": "EQUAL", "value": {"stringValue": a}}}}})[0], 403),
     ("B befriends A alone", call("PATCH", f"{DB}/friends/{b}/list/{a}", tb, empty)[0], 403),
     ("B adds itself to A", call("PATCH", f"{DB}/friends/{a}/list/{b}", tb, empty)[0], 403),
     ("A accepts: its side", call("PATCH", f"{DB}/friends/{a}/list/{b}", ta, empty)[0], 200),

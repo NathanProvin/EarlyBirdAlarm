@@ -68,8 +68,10 @@ service cloud.firestore {
 
     // A friend request, {to}_{from}: sent by `from`, seen and removed by either player.
     match /friendRequests/{id} {
+      // Two plain comparisons (not `in [...]`): a query filtered on `to` or `from` can
+      // only be allowed when the rule is provable from that filter.
       allow read, delete: if signedIn()
-        && request.auth.uid in [resource.data.from, resource.data.to];
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['from', 'to', 'at'])
         && request.resource.data.from == request.auth.uid
