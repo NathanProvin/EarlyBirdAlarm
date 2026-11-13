@@ -669,49 +669,49 @@ abstract class AppLocalizations {
   /// No description provided for @youGive.
   ///
   /// In en, this message translates to:
-  /// **'You give'**
+  /// **'Give'**
   String get youGive;
 
   /// No description provided for @youGet.
   ///
   /// In en, this message translates to:
-  /// **'You get'**
+  /// **'Receive'**
   String get youGet;
 
   /// No description provided for @nothingYet.
   ///
   /// In en, this message translates to:
-  /// **'Nothing yet'**
+  /// **'Empty'**
   String get nothingYet;
 
   /// No description provided for @addCards.
   ///
   /// In en, this message translates to:
-  /// **'Add cards'**
+  /// **'Add'**
   String get addCards;
 
   /// No description provided for @validate.
   ///
   /// In en, this message translates to:
-  /// **'Validate'**
+  /// **'Agree'**
   String get validate;
 
   /// No description provided for @youValidated.
   ///
   /// In en, this message translates to:
-  /// **'You validated'**
+  /// **'Agreed'**
   String get youValidated;
 
   /// No description provided for @theyValidated.
   ///
   /// In en, this message translates to:
-  /// **'They validated'**
+  /// **'They agreed'**
   String get theyValidated;
 
   /// No description provided for @waitingForThem.
   ///
   /// In en, this message translates to:
-  /// **'Waiting for the other birder'**
+  /// **'Waiting validation'**
   String get waitingForThem;
 
   /// No description provided for @tradeDone.
@@ -723,7 +723,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeCancelled.
   ///
   /// In en, this message translates to:
-  /// **'Trade cancelled: nothing changed.'**
+  /// **'Trade cancelled.'**
   String get tradeCancelled;
 
   /// No description provided for @updateToTrade.
@@ -735,7 +735,7 @@ abstract class AppLocalizations {
   /// No description provided for @tradeInvalid.
   ///
   /// In en, this message translates to:
-  /// **'These cards can\'t be accepted. Trade cancelled.'**
+  /// **'Invalid cards. Trade cancelled.'**
   String get tradeInvalid;
 
   /// No description provided for @openSettings.
@@ -1731,19 +1731,19 @@ abstract class AppLocalizations {
   /// No description provided for @tradeOpen.
   ///
   /// In en, this message translates to:
-  /// **'Trade in progress'**
+  /// **'In progress'**
   String get tradeOpen;
 
   /// No description provided for @tradeBothOffer.
   ///
   /// In en, this message translates to:
-  /// **'Each of you offers at least one card.'**
+  /// **'1 card each minimum'**
   String get tradeBothOffer;
 
   /// No description provided for @cancelTrade.
   ///
   /// In en, this message translates to:
-  /// **'Cancel the trade'**
+  /// **'Cancel'**
   String get cancelTrade;
 }
 

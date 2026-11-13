@@ -235,23 +235,15 @@ class _TradeScreenState extends State<TradeScreen> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(l.tradeBothOffer, textAlign: TextAlign.center),
           ),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          children: [
-            if (t.iValidated)
-              Chip(
-                avatar: const Icon(Icons.check, size: 18),
-                label: Text(l.youValidated),
-              ),
-            Chip(
-              avatar: Icon(
-                t.theyValidated ? Icons.check : Icons.hourglass_empty,
-                size: 18,
-              ),
-              label: Text(t.theyValidated ? l.theyValidated : l.waitingForThem),
+        // The button says whether I agreed; the chip says whether they did.
+        Center(
+          child: Chip(
+            avatar: Icon(
+              t.theyValidated ? Icons.check : Icons.hourglass_empty,
+              size: 18,
             ),
-          ],
+            label: Text(t.theyValidated ? l.theyValidated : l.waitingForThem),
+          ),
         ),
         const SizedBox(height: 12),
         FilledButton(

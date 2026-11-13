@@ -314,42 +314,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cancel => 'Cancelar';
 
   @override
-  String get youGive => 'Das';
+  String get youGive => 'Dar';
 
   @override
-  String get youGet => 'Recibes';
+  String get youGet => 'Recibir';
 
   @override
-  String get nothingYet => 'Nada todavía';
+  String get nothingYet => 'Vacío';
 
   @override
-  String get addCards => 'Añadir cartas';
+  String get addCards => 'Añadir';
 
   @override
-  String get validate => 'Confirmar';
+  String get validate => 'Aceptar';
 
   @override
-  String get youValidated => 'Has confirmado';
+  String get youValidated => 'Aceptado';
 
   @override
-  String get theyValidated => 'La otra persona ha confirmado';
+  String get theyValidated => 'Ya aceptó';
 
   @override
-  String get waitingForThem => 'Esperando a la otra persona';
+  String get waitingForThem => 'Esperando';
 
   @override
   String get tradeDone => '¡Intercambio hecho!';
 
   @override
-  String get tradeCancelled => 'Intercambio cancelado: no ha cambiado nada.';
+  String get tradeCancelled => 'Intercambio cancelado.';
 
   @override
   String get updateToTrade =>
       'Actualiza la app para intercambiar con esta persona.';
 
   @override
-  String get tradeInvalid =>
-      'Estas cartas no se pueden aceptar. Intercambio cancelado.';
+  String get tradeInvalid => 'Cartas no válidas. Intercambio cancelado.';
 
   @override
   String get openSettings => 'Ajustes';
@@ -955,11 +954,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tradeWith => 'Intercambiar con…';
 
   @override
-  String get tradeOpen => 'Intercambio en curso';
+  String get tradeOpen => 'En curso';
 
   @override
-  String get tradeBothOffer => 'Cada uno ofrece al menos una carta.';
+  String get tradeBothOffer => 'Mínimo 1 carta cada uno';
 
   @override
-  String get cancelTrade => 'Cancelar el intercambio';
+  String get cancelTrade => 'Cancelar';
 }

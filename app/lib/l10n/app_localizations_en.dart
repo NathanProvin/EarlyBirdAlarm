@@ -314,40 +314,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get youGive => 'You give';
+  String get youGive => 'Give';
 
   @override
-  String get youGet => 'You get';
+  String get youGet => 'Receive';
 
   @override
-  String get nothingYet => 'Nothing yet';
+  String get nothingYet => 'Empty';
 
   @override
-  String get addCards => 'Add cards';
+  String get addCards => 'Add';
 
   @override
-  String get validate => 'Validate';
+  String get validate => 'Agree';
 
   @override
-  String get youValidated => 'You validated';
+  String get youValidated => 'Agreed';
 
   @override
-  String get theyValidated => 'They validated';
+  String get theyValidated => 'They agreed';
 
   @override
-  String get waitingForThem => 'Waiting for the other birder';
+  String get waitingForThem => 'Waiting validation';
 
   @override
   String get tradeDone => 'Trade done!';
 
   @override
-  String get tradeCancelled => 'Trade cancelled: nothing changed.';
+  String get tradeCancelled => 'Trade cancelled.';
 
   @override
   String get updateToTrade => 'Update the app to trade with this birder.';
 
   @override
-  String get tradeInvalid => 'These cards can\'t be accepted. Trade cancelled.';
+  String get tradeInvalid => 'Invalid cards. Trade cancelled.';
 
   @override
   String get openSettings => 'Settings';
@@ -953,11 +953,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeWith => 'Trade with…';
 
   @override
-  String get tradeOpen => 'Trade in progress';
+  String get tradeOpen => 'In progress';
 
   @override
-  String get tradeBothOffer => 'Each of you offers at least one card.';
+  String get tradeBothOffer => '1 card each minimum';
 
   @override
-  String get cancelTrade => 'Cancel the trade';
+  String get cancelTrade => 'Cancel';
 }

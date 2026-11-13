@@ -314,42 +314,41 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cancel => 'Abbrechen';
 
   @override
-  String get youGive => 'Du gibst';
+  String get youGive => 'Geben';
 
   @override
-  String get youGet => 'Du bekommst';
+  String get youGet => 'Erhalten';
 
   @override
-  String get nothingYet => 'Noch nichts';
+  String get nothingYet => 'Leer';
 
   @override
-  String get addCards => 'Karten hinzufügen';
+  String get addCards => 'Hinzufügen';
 
   @override
-  String get validate => 'Bestätigen';
+  String get validate => 'Zustimmen';
 
   @override
-  String get youValidated => 'Du hast bestätigt';
+  String get youValidated => 'Zugestimmt';
 
   @override
-  String get theyValidated => 'Die andere Person hat bestätigt';
+  String get theyValidated => 'Zustimmung erhalten';
 
   @override
-  String get waitingForThem => 'Warte auf die andere Person';
+  String get waitingForThem => 'Warte auf Zustimmung';
 
   @override
   String get tradeDone => 'Tausch abgeschlossen!';
 
   @override
-  String get tradeCancelled => 'Tausch abgebrochen: nichts hat sich geändert.';
+  String get tradeCancelled => 'Tausch abgebrochen.';
 
   @override
   String get updateToTrade =>
       'Aktualisiere die App, um mit dieser Person zu tauschen.';
 
   @override
-  String get tradeInvalid =>
-      'Diese Karten können nicht angenommen werden. Tausch abgebrochen.';
+  String get tradeInvalid => 'Ungültige Karten. Tausch abgebrochen.';
 
   @override
   String get openSettings => 'Einstellungen';
@@ -960,11 +959,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tradeWith => 'Tauschen mit…';
 
   @override
-  String get tradeOpen => 'Tausch läuft';
+  String get tradeOpen => 'Läuft';
 
   @override
-  String get tradeBothOffer => 'Jeder bietet mindestens eine Karte an.';
+  String get tradeBothOffer => 'Mindestens 1 Karte pro Person';
 
   @override
-  String get cancelTrade => 'Tausch abbrechen';
+  String get cancelTrade => 'Abbrechen';
 }

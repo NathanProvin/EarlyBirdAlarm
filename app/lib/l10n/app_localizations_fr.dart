@@ -314,42 +314,41 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cancel => 'Annuler';
 
   @override
-  String get youGive => 'Vous donnez';
+  String get youGive => 'Donner';
 
   @override
-  String get youGet => 'Vous recevez';
+  String get youGet => 'Recevoir';
 
   @override
-  String get nothingYet => 'Rien pour l\'instant';
+  String get nothingYet => 'Vide';
 
   @override
-  String get addCards => 'Ajouter des cartes';
+  String get addCards => 'Ajouter';
 
   @override
-  String get validate => 'Valider';
+  String get validate => 'Accepter';
 
   @override
-  String get youValidated => 'Vous avez validé';
+  String get youValidated => 'Accepté';
 
   @override
-  String get theyValidated => 'L\'autre a validé';
+  String get theyValidated => 'Accord reçu';
 
   @override
-  String get waitingForThem => 'En attente de l\'autre ornithologue';
+  String get waitingForThem => 'En attente';
 
   @override
   String get tradeDone => 'Échange conclu !';
 
   @override
-  String get tradeCancelled => 'Échange annulé : rien n\'a changé.';
+  String get tradeCancelled => 'Échange annulé.';
 
   @override
   String get updateToTrade =>
       'Mettez l\'application à jour pour échanger avec cet ornithologue.';
 
   @override
-  String get tradeInvalid =>
-      'Ces cartes ne peuvent pas être acceptées. Échange annulé.';
+  String get tradeInvalid => 'Cartes invalides. Échange annulé.';
 
   @override
   String get openSettings => 'Réglages';
@@ -957,11 +956,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tradeWith => 'Échanger avec…';
 
   @override
-  String get tradeOpen => 'Échange en cours';
+  String get tradeOpen => 'En cours';
 
   @override
-  String get tradeBothOffer => 'Chacun propose au moins une carte.';
+  String get tradeBothOffer => '1 carte chacun minimum';
 
   @override
-  String get cancelTrade => 'Annuler l’échange';
+  String get cancelTrade => 'Annuler';
 }

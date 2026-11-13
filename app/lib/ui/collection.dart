@@ -47,9 +47,9 @@ class CollectionScreen extends StatefulWidget {
 }
 
 class _CollectionScreenState extends State<CollectionScreen> {
-  String?
-  _view; // null: the default, the current region (every copy without one)
-  _Sort _sort = _Sort.number;
+  // Opens on Collected by rarity (user, 2026-11-13); null is the current region.
+  String? _view = _all;
+  _Sort _sort = _Sort.rarity;
   String? _tier; // rarity filter, null = all
   final _fetching = <String>{}; // other regions' bird lists being downloaded
 

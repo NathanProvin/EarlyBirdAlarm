@@ -1108,7 +1108,7 @@ void main() {
     },
   );
 
-  testWidgets('collection: region view first, world view, sort by name', (
+  testWidgets('collection: Collected first, region view, sort by name, world', (
     tester,
   ) async {
     // The store set by the onboarding test above (it can be set only once).
@@ -1133,12 +1133,16 @@ void main() {
       for (final t in tester.widgetList<CardTile>(find.byType(CardTile)))
         t.bird.id,
     ];
-    // The default view: the region's birds, in card-number order.
-    expect(
-      find.textContaining('°N'),
-      findsOneWidget,
-    ); // the pill: the region's name
-    expect(ids(), [for (final b in birds) b.id]);
+    // The default view: every copy collected (user, 2026-11-13).
+    expect(find.text('Collected'), findsOneWidget);
+    // The region's birds, picked in the drop-down, which closes the sheet.
+    await tester.tap(find.byTooltip('Choose the view'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('°N').last);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('°N'), findsOneWidget); // the pill
     // One sheet for view, sort and filter: sort by name.
     await tester.tap(find.byTooltip('Choose the view'));
     await tester.pumpAndSettle();

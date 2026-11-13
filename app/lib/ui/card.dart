@@ -208,6 +208,9 @@ class BirdCardView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                       child: Row(
+                        // The loose middle leaves space unused: spread it so the
+                        // quality stays at the right edge.
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
                             child: Text(
