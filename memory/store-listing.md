@@ -51,7 +51,7 @@ COLLECT
 
 SHOW OFF AND TRADE
 • Pulled a Legendary? Share the card with your friends
-• Trade cards face to face: two phones side by side, over Bluetooth. No account, no server
+• Trade cards with your friends, wherever they are
 • Missing an owl? Your friend might have one, trade it for a crow!
 
 TRAIN YOUR EAR
@@ -88,7 +88,7 @@ COLLECTER
 
 ÉCHANGER
 • Une Légendaire ? Partage-la avec tes amis
-• Échange des cartes en personne, téléphone contre téléphone, par Bluetooth. Pas de compte, pas de serveur
+• Échange des cartes avec tes amis, où qu’ils soient
 • Il te manque une chouette ? Échange-la contre une corneille !
 
 S'ENTRAÎNER
@@ -124,7 +124,7 @@ SAMMELN
 
 ZEIGEN UND TAUSCHEN
 • Eine Legendäre gezogen? Teile die Karte mit deinen Freunden
-• Tausche Karten von Angesicht zu Angesicht: zwei Telefone nebeneinander, per Bluetooth. Kein Konto, kein Server
+• Tausche Karten mit deinen Freunden, wo immer sie sind
 • Dir fehlt eine Eule? Vielleicht hat dein Freund eine: Tausch sie gegen eine Krähe!
 
 TRAINIERE DEIN GEHÖR
@@ -160,7 +160,7 @@ COLECCIONA
 
 PRESUME E INTERCAMBIA
 • ¿Te ha salido una Legendaria? Comparte la carta con tus amigos
-• Intercambia cartas en persona: dos teléfonos juntos, por Bluetooth. Sin cuenta, sin servidor
+• Intercambia cartas con tus amigos, estén donde estén
 • ¿Te falta un búho? Quizá tu amigo tenga uno: ¡cámbiaselo por un cuervo!
 
 ENTRENA EL OÍDO
@@ -189,10 +189,10 @@ Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté 
   - **Profile and friends (2026-11-13):** a public **@name** chosen by the player (user-generated), a profile (the name, a cropped catalog photo reference, 3 cards) readable by other signed-in players, friend requests and friendships. Data safety: **App activity → Other user-generated content** (the @name) — collected, App functionality, not shared (other players seeing it is the feature, not a transfer to a third party); the friend links fall under **User IDs** (already listed). Deleted with the account.
   - **Content rating (IARC questionnaire):** answer **Yes** to "users can interact or exchange content" (names visible to other players; no chat, no free text beyond the 20-character @name). Moderation: in-app Block and Report (email), banned-words filter, offensive names removed by hand from the Firebase console.
   - Processed by Google Firebase as our service provider (not "sharing" under Play's definition).
-  - **Location** (approximate and precise): used only on the device — to pick the bird region ("Use my location"), and because Android requires it for the Bluetooth search of face-to-face trading. Never transmitted → not collected.
-  - **Face-to-face trading:** cards go directly from one phone to the other (Google Nearby Connections); nothing goes to a server → not shared.
+  - **Location** (approximate): used only on the device, to pick the bird region ("Use my location"). Never transmitted → not collected. (Precise location went with face-to-face trading, 2026-11-13.)
+  - **Trades with friends (2026-11-13, replacing face-to-face trading):** a trade and the cards offered are stored in Firestore, readable by the two friends only, deleted when done, cancelled or after 7 days. Same categories (User IDs, In-app actions); not shared.
   - No analytics, no advertising ID, no crash reporting.
-- **Is data encrypted in transit?** Yes (HTTPS to Cloudflare and Firebase; Nearby Connections encrypts its connections).
+- **Is data encrypted in transit?** Yes (HTTPS to Cloudflare and Firebase).
 - **Can users request deletion?** Yes: in the app (person icon on Alarms / Training → Delete account) and from the web page **https://cdn.earlybirdalarm.app/delete-account.html** (the URL Play asks for in "Data deletion").
 
 ## Permission declarations
@@ -205,13 +205,9 @@ The app's core function is an **alarm clock**: users set alarms that must ring a
 ### Foreground service (media playback)
 Plays the alarm's bird recording while the alarm rings, until the user answers or snoozes.
 
-### Location (`ACCESS_COARSE_LOCATION`, `ACCESS_FINE_LOCATION`) — foreground only
+### Location (`ACCESS_COARSE_LOCATION`) — foreground only
 - Coarse: optional, only when the user taps "Use my location", to choose the bird region; processed on the device.
-- Fine: only while the Trade screen is open — Google Nearby Connections requires precise location for its Bluetooth discovery. The position itself is never read or sent.
 - No background location → no location declaration form is needed.
-
-### Bluetooth and nearby devices (`BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`, `NEARBY_WIFI_DEVICES`)
-Asked only when the user opens Trade: to find and connect to the other player's phone for a face-to-face card trade.
 
 ## Content rating (IARC questionnaire)
 No violence, sexual content, profanity or gambling (no purchases; boosters are free and timed). **User interaction:** answer "yes" to users exchanging content — players can trade in-game cards face to face with a nearby phone; there is no chat, no free text, no user profile and no online interaction. Card sharing is an image sent via the system share sheet. Expected rating: Everyone / PEGI 3 (possibly with an "Users interact" notice).

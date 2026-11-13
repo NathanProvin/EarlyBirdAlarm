@@ -98,8 +98,11 @@ service cloud.firestore {
     // the trade can only be deleted after both phones applied the swap.
     match /trades/{id} {
       function swapping(d) { return d.aOk != null && d.aOk == d.bOk; }
+      // By the id too: a trade that doesn't exist (yet, or any more) can be read by its two
+      // players (checking before opening one; the live view after a cancel).
       allow read: if signedIn()
-        && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid);
+        && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid
+          || request.auth.uid in id.split('_'));
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['a', 'b', 'aCards', 'bCards', 'aOk', 'bOk', 'aDone', 'bDone', 'created'])
         && request.resource.data.a < request.resource.data.b

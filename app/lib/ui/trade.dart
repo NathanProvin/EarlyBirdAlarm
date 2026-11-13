@@ -180,7 +180,10 @@ class _TradeScreenState extends State<TradeScreen> {
           null => StreamBuilder<RemoteTrade?>(
             stream: _trade,
             builder: (context, snap) {
-              if (snap.hasError) return _message(l.accountError);
+              // An error once the trade was there: it was deleted meanwhile.
+              if (snap.hasError) {
+                return _message(_seen ? l.tradeCancelled : l.accountError);
+              }
               if (snap.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }

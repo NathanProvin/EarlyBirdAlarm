@@ -107,6 +107,10 @@ Video-game-style profile replacing the Account page (decisions.md "Profile page"
 - [x] (2026-11-13, S22) Invite link + Enter a code (moved below), **Account management kept whole** (sign-in, forgot password, delete account)
 - [x] (2026-11-13) Privacy pages (4 languages, published), Data safety + content-rating notes (`store-listing.md`), community rule in the rename dialog, Report / Block in app; friends flow checked on the S22 with a test account. **User:** banned-words review, Play Console answers with the release
 
+## Remote trades with friends — DONE 2026-11-13 (user), replacing face-to-face trading
+- [x] Trades at a distance between friends, iPhone ↔ Android (Firestore `trades/{a}_{b}`): two ways in (Collection ⇄ → friend picker; Échanger on a friend's profile), each side builds its own offer (both must offer), validates the same offers, the swap applies on each phone (reveal); cancel; 7-day expiry; locked cards; dot on the profile icon. Rules checked; S22 with a test account: receive, give, validate, live swap, cancel, open a new trade; the user's collection restored after
+- [x] Face-to-face trading over Nearby removed (git tag `face-to-face-trade`), with `nearby_connections` and the Bluetooth / nearby-devices / precise-location permissions; privacy pages × 4 and `store-listing.md` updated
+
 ## Drafting, balance and optimisation — DONE 2026-11-11
 Details and the reasoning: `drafting-design.md` (how a card is drafted, compromises, the review's risks and their status) and `decisions.md`.
 - [x] **Odds fitted to play time** (16 cards a day: 1 alarm + 3 Training sessions of 5): Hard an Epic every ~3 days and a Legendary every ~2 weeks, Expert ~2 days / ~1 week, Easy a tiny Legendary (~1 in 6,000); half the Legendary odds for a species already owned as Legendary; Shiny 1 / 1250. Measured with 1,000-card simulations on the S22 (France · Nord Hard and Easy, San Francisco Hard): within the model; odds differ by region (California ~2.5× more Legendaries), kept
@@ -133,7 +137,7 @@ Details and the reasoning: `drafting-design.md` (how a card is drafted, compromi
 ### iOS (Iteration 5)
 - [ ] AlarmKit (iOS 26+): Apple's alarm screen with a system Stop button, so the guess happens after opening the app — check custom-sound support first
 - [ ] Sign in with Apple (required next to Google), StoreKit products, cross-platform collections through Firebase
-- [ ] **QR-code trading** (Android ↔ iPhone; Nearby is Android-only): phones scan each other's screen for offer, counter-offer, confirmation; `qr_flutter` + `mobile_scanner`, same `TradeSession` messages, ~3–4 days
+- [x] ~~QR-code trading~~ — dropped 2026-11-13: remote trades with friends work between Android and iPhone: phones scan each other's screen for offer, counter-offer, confirmation; `qr_flutter` + `mobile_scanner`, same `TradeSession` messages, ~3–4 days
 - [ ] $99 / year, a Mac or a cloud Mac build (Codemagic), a real iPhone for alarm tests
 
 ### Marketplace (when ~1,000+ daily players)
