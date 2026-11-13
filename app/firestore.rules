@@ -43,6 +43,52 @@ service cloud.firestore {
         && request.resource.data.inviterUid != friendUid;
       allow delete: if signedIn() && request.auth.uid == friendUid;
     }
+
+    // Profile page (2026-11-13). A unique @name: one document per name in lower case,
+    // {uid}; taken if it exists. A rename creates the new one and deletes the old one.
+    match /usernames/{name} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && name.matches('^[a-z0-9_]{3,20}$')
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // What other players see: the @name (one the owner holds), the avatar, the hall of
+    // fame. Catalog content plus the chosen name only.
+    match /profiles/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'avatar', 'hall'])
+        && request.resource.data.name is string
+        && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.name.lower())).data.uid == uid;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // A friend request, {to}_{from}: sent by `from`, seen and removed by either player.
+    match /friendRequests/{id} {
+      allow read, delete: if signedIn()
+        && request.auth.uid in [resource.data.from, resource.data.to];
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['from', 'to', 'at'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && id == request.resource.data.to + '_' + request.auth.uid;
+    }
+
+    // Friends: an entry on each side, written together by the player who accepts, while
+    // the request still exists; either friend can remove both.
+    match /friends/{uid}/list/{other} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.resource.data.keys().size() == 0 && (
+        (request.auth.uid == uid
+          && exists(/databases/$(database)/documents/friendRequests/$(uid + '_' + other)))
+        || (request.auth.uid == other
+          && exists(/databases/$(database)/documents/friendRequests/$(other + '_' + uid))));
+      allow delete: if signedIn() && request.auth.uid in [uid, other];
+    }
     // Everything else stays closed.
   }
 }

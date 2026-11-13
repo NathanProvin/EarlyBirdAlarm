@@ -84,6 +84,45 @@ checks = [  # (what, status, expected)
     ("A deletes its own card chunk", call("DELETE", f"{DB}/players/{a}/cards/0", ta)[0], 200),
     ("A deletes its own document", call("DELETE", f"{DB}/players/{a}", ta)[0], 200),
 ]
+# Profile page (2026-11-13): names, profiles, friend requests, friends.
+na, nb = f"rc{a[:8].lower()}", f"rc{b[:8].lower()}"
+def profile(name):
+    return {"fields": {"name": {"stringValue": name}, "avatar": {"mapValue": {"fields": {}}},
+                       "hall": {"arrayValue": {}}}}
+def request(frm, to):
+    return {"fields": {"from": {"stringValue": frm}, "to": {"stringValue": to},
+                       "at": {"timestampValue": "2026-11-13T00:00:00Z"}}}
+empty = {"fields": {}}
+checks += [
+    ("A takes a name", call("PATCH", f"{DB}/usernames/{na}", ta, fields(uid=a))[0], 200),
+    ("B takes A's name", call("PATCH", f"{DB}/usernames/{na}", tb, fields(uid=b))[0], 403),
+    ("B takes a name for A", call("PATCH", f"{DB}/usernames/{nb}x", tb, fields(uid=a))[0], 403),
+    ("A takes an invalid name", call("PATCH", f"{DB}/usernames/ab", ta, fields(uid=a))[0], 403),
+    ("B takes a name", call("PATCH", f"{DB}/usernames/{nb}", tb, fields(uid=b))[0], 200),
+    ("A shows its name", call("PATCH", f"{DB}/profiles/{a}", ta, profile(na.upper()))[0], 200),
+    ("A shows B's name", call("PATCH", f"{DB}/profiles/{a}", ta, profile(nb))[0], 403),
+    ("B writes A's profile", call("PATCH", f"{DB}/profiles/{a}", tb, profile(nb))[0], 403),
+    ("B shows its name", call("PATCH", f"{DB}/profiles/{b}", tb, profile(nb))[0], 200),
+    ("B reads A's profile", call("GET", f"{DB}/profiles/{a}", tb)[0], 200),
+    ("no account reads A's profile", call("GET", f"{DB}/profiles/{a}")[0], 403),
+    ("B frees A's name", call("DELETE", f"{DB}/usernames/{na}", tb)[0], 403),
+    ("B asks A as A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(a, b))[0], 403),
+    ("B asks A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(b, a))[0], 200),
+    ("A reads the request", call("GET", f"{DB}/friendRequests/{a}_{b}", ta)[0], 200),
+    ("B befriends A alone", call("PATCH", f"{DB}/friends/{b}/list/{a}", tb, empty)[0], 403),
+    ("B adds itself to A", call("PATCH", f"{DB}/friends/{a}/list/{b}", tb, empty)[0], 403),
+    ("A accepts: its side", call("PATCH", f"{DB}/friends/{a}/list/{b}", ta, empty)[0], 200),
+    ("A accepts: B's side", call("PATCH", f"{DB}/friends/{b}/list/{a}", ta, empty)[0], 200),
+    ("A deletes the request", call("DELETE", f"{DB}/friendRequests/{a}_{b}", ta)[0], 200),
+    ("B reads its friends", call("GET", f"{DB}/friends/{b}/list", tb)[0], 200),
+    ("A reads B's friends", call("GET", f"{DB}/friends/{b}/list", ta)[0], 403),
+    ("B removes A: A's side", call("DELETE", f"{DB}/friends/{a}/list/{b}", tb)[0], 200),
+    ("B removes A: its side", call("DELETE", f"{DB}/friends/{b}/list/{a}", tb)[0], 200),
+    ("A deletes its profile", call("DELETE", f"{DB}/profiles/{a}", ta)[0], 200),
+    ("A frees its name", call("DELETE", f"{DB}/usernames/{na}", ta)[0], 200),
+]
+call("DELETE", f"{DB}/profiles/{b}", tb)
+call("DELETE", f"{DB}/usernames/{nb}", tb)
 for token in (ta, tb):  # the throwaway accounts go too
     call("POST", f"https://identitytoolkit.googleapis.com/v1/accounts:delete?key={KEY}", body={"idToken": token})
 for what, status, expected in checks:
