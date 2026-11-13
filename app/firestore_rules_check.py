@@ -93,6 +93,21 @@ def request(frm, to):
     return {"fields": {"from": {"stringValue": frm}, "to": {"stringValue": to},
                        "at": {"timestampValue": "2026-11-13T00:00:00Z"}}}
 empty = {"fields": {}}
+lo, hi = sorted([a, b])
+tlo, thi = (ta, tb) if lo == a else (tb, ta)
+tid = f"{DB}/trades/{lo}_{hi}"
+def trade(**over):
+    f = {"a": {"stringValue": lo}, "b": {"stringValue": hi},
+         "aCards": {"arrayValue": {}}, "bCards": {"arrayValue": {}},
+         "aOk": {"nullValue": None}, "bOk": {"nullValue": None},
+         "aDone": {"booleanValue": False}, "bDone": {"booleanValue": False},
+         "created": {"timestampValue": "2026-11-13T00:00:00Z"}}
+    f.update(over)
+    return {"fields": f}
+card = {"arrayValue": {"values": [{"mapValue": {"fields": {"bird": {"stringValue": "x"}}}}]}}
+def put(token, body, *fields):
+    mask = "&".join(f"updateMask.fieldPaths={x}" for x in fields)
+    return call("PATCH", f"{tid}?{mask}", token, body)[0]
 checks += [
     ("A takes a name", call("PATCH", f"{DB}/usernames/{na}", ta, fields(uid=a))[0], 200),
     ("B takes A's name", call("PATCH", f"{DB}/usernames/{na}", tb, fields(uid=b))[0], 403),
@@ -106,6 +121,7 @@ checks += [
     ("B reads A's profile", call("GET", f"{DB}/profiles/{a}", tb)[0], 200),
     ("no account reads A's profile", call("GET", f"{DB}/profiles/{a}")[0], 403),
     ("B frees A's name", call("DELETE", f"{DB}/usernames/{na}", tb)[0], 403),
+    ("trade with a stranger", call("PATCH", tid, tlo, trade())[0], 403),
     ("B asks A as A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(a, b))[0], 403),
     ("B asks A", call("PATCH", f"{DB}/friendRequests/{a}_{b}", tb, request(b, a))[0], 200),
     ("A reads the request", call("GET", f"{DB}/friendRequests/{a}_{b}", ta)[0], 200),
@@ -125,6 +141,18 @@ checks += [
     ("A deletes the request", call("DELETE", f"{DB}/friendRequests/{a}_{b}", ta)[0], 200),
     ("B reads its friends", call("GET", f"{DB}/friends/{b}/list", tb)[0], 200),
     ("A reads B's friends", call("GET", f"{DB}/friends/{b}/list", ta)[0], 403),
+    ("lo opens a trade", call("PATCH", tid, tlo, trade())[0], 200),
+    ("hi offers a card", put(thi, trade(bCards=card), "bCards"), 200),
+    ("hi touches lo's offer", put(thi, trade(aCards=card), "aCards"), 403),
+    ("lo changes the date", put(tlo, trade(created={"timestampValue": "2020-01-01T00:00:00Z"}), "created"), 403),
+    ("lo offers a card", put(tlo, trade(aCards=card), "aCards"), 200),
+    ("lo validates", put(tlo, trade(aOk={"stringValue": "h1"}), "aOk"), 200),
+    ("hi validates the same", put(thi, trade(bOk={"stringValue": "h1"}), "bOk"), 200),
+    ("lo changes its offer after both", put(tlo, trade(aCards={"arrayValue": {}}), "aCards"), 403),
+    ("hi cancels a swap in progress", call("DELETE", tid, thi)[0], 403),
+    ("lo applied", put(tlo, trade(aDone={"booleanValue": True}), "aDone"), 200),
+    ("hi applied", put(thi, trade(bDone={"booleanValue": True}), "bDone"), 200),
+    ("hi deletes the finished trade", call("DELETE", tid, thi)[0], 200),
     ("B removes A: A's side", call("DELETE", f"{DB}/friends/{a}/list/{b}", tb)[0], 200),
     ("B removes A: its side", call("DELETE", f"{DB}/friends/{b}/list/{a}", tb)[0], 200),
     ("A deletes its profile", call("DELETE", f"{DB}/profiles/{a}", ta)[0], 200),

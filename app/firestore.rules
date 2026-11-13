@@ -91,6 +91,39 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/friendRequests/$(other + '_' + uid))));
       allow delete: if signedIn() && request.auth.uid in [uid, other];
     }
+
+    // Remote trades between friends (2026-11-13), one per pair: trades/{a}_{b}, the two
+    // uids sorted. Each side writes only its own offer, validation (the hash of both
+    // offers) and done flag. Once both validated the same hash, the offers are frozen and
+    // the trade can only be deleted after both phones applied the swap.
+    match /trades/{id} {
+      function swapping(d) { return d.aOk != null && d.aOk == d.bOk; }
+      allow read: if signedIn()
+        && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['a', 'b', 'aCards', 'bCards', 'aOk', 'bOk', 'aDone', 'bDone', 'created'])
+        && request.resource.data.a < request.resource.data.b
+        && id == request.resource.data.a + '_' + request.resource.data.b
+        && request.auth.uid in [request.resource.data.a, request.resource.data.b]
+        && exists(/databases/$(database)/documents/friends/$(request.resource.data.a)/list/$(request.resource.data.b))
+        && request.resource.data.aCards.size() == 0 && request.resource.data.bCards.size() == 0
+        && request.resource.data.aOk == null && request.resource.data.bOk == null
+        && request.resource.data.aDone == false && request.resource.data.bDone == false;
+      allow update: if signedIn()
+        && request.resource.data.a == resource.data.a
+        && request.resource.data.b == resource.data.b
+        && request.resource.data.created == resource.data.created
+        && request.resource.data.aCards.size() <= 10 && request.resource.data.bCards.size() <= 10
+        && ((request.auth.uid == resource.data.a
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['aCards', 'aOk', 'aDone']))
+          || (request.auth.uid == resource.data.b
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bCards', 'bOk', 'bDone'])))
+        && (!swapping(resource.data)
+          || !request.resource.data.diff(resource.data).affectedKeys().hasAny(['aCards', 'bCards', 'aOk', 'bOk']));
+      allow delete: if signedIn()
+        && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid)
+        && (!swapping(resource.data) || (resource.data.aDone && resource.data.bDone));
+    }
     // Everything else stays closed.
   }
 }
