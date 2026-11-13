@@ -338,7 +338,8 @@ class _Invite extends StatelessWidget {
         FutureBuilder<int>(
           future: friendsJoined(store),
           builder: (context, snap) => Text(
-            (snap.data ?? 0) > 0 ? l.friendsJoined(snap.data!) : '' // the friend list already says "none yet",
+            // Only once some joined: the friend list already says "none yet".
+            (snap.data ?? 0) > 0 ? l.friendsJoined(snap.data!) : '',
             textAlign: TextAlign.center,
           ),
         ),
