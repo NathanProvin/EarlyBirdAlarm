@@ -106,10 +106,8 @@
   "tradeCancelled": "Échange annulé : rien n'a changé.",
   "updateToTrade": "Mettez l'application à jour pour échanger avec cet ornithologue.",
   "tradeInvalid": "Ces cartes ne peuvent pas être acceptées. Échange annulé.",
-  "tradePermissions": "L'échange a besoin du Bluetooth, des appareils à proximité et de la position précise (elle ne quitte jamais votre téléphone). Autorisez-les dans les réglages de l'application.",
   "openSettings": "Réglages",
   "tradedOn": "Échangée le {date}",
-  "tradeStartFailed": "Impossible de chercher les ornithologues à proximité. Vérifiez que le Bluetooth est activé.",
   "globetrotter": "Globe-trotter",
   "fullHouse": "Carton plein",
   "perfectSpecimen": "Spécimen parfait",
@@ -125,10 +123,6 @@
   "achievementUnlocked": "Succès débloqué !",
   "rewardRarity": "Récompense : {rarity}",
   "tapToCollect": "Touchez pour récupérer",
-  "tradeLocationOff": "Activez la localisation pour trouver les ornithologues à proximité. Votre position n'est jamais utilisée ni envoyée.",
-  "tradeNeedsLocation": "L'échange a besoin de l'autorisation de localisation (Android l'exige pour chercher en Bluetooth ; votre position n'est jamais utilisée). Autorisez-la dans les réglages de l'application.",
-  "tradeNeedsPrecise": "L'échange a besoin de la position précise : dans les réglages de l'application, sous Localisation, activez « Utiliser la position exacte ».",
-  "tradeNeedsBluetooth": "L'échange a besoin des autorisations Bluetooth et appareils à proximité. Autorisez-les dans les réglages de l'application.",
   "searchCollection": "Chercher dans la collection",
   "noSpeciesFound": "Aucune espèce trouvée",
   "introWelcome": "Vous n'arrivez pas à progresser dans l'apprentissage des chants d'oiseaux ? Chaque matin, réveillez-vous avec un nouvel oiseau : devinez-le, gagnez sa carte, et apprenez son chant.",
@@ -275,5 +269,9 @@
   "statCards": "Cartes",
   "statSpecies": "Espèces",
   "statRegions": "Régions",
-  "seeAllFriends": "Voir tout ({count})"
+  "seeAllFriends": "Voir tout ({count})",
+  "tradeWith": "Échanger avec…",
+  "tradeOpen": "Échange en cours",
+  "tradeBothOffer": "Chacun propose au moins une carte.",
+  "cancelTrade": "Annuler l’échange"
 }

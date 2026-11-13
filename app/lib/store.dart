@@ -330,6 +330,20 @@ class Store extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remote trades already applied on this phone ("id|hash"): a swap is applied once.
+  Set<String> get tradesApplied => {...?_prefs.getStringList('tradesApplied')};
+  set tradesApplied(Set<String> keys) =>
+      _prefs.setStringList('tradesApplied', keys.toList());
+
+  /// A remote trade waits for this player: a dot on the profile icon (remote_trade.dart).
+  bool get tradeWaiting => _tradeWaiting;
+  bool _tradeWaiting = false;
+  set tradeWaiting(bool v) {
+    if (v == _tradeWaiting) return;
+    _tradeWaiting = v;
+    notifyListeners();
+  }
+
   /// Players whose friend requests are hidden (kept in the backup).
   Set<String> get blocked => {...?_prefs.getStringList('blocked')};
   set blocked(Set<String> uids) {

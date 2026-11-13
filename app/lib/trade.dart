@@ -1,30 +1,26 @@
 import 'birds.dart';
 import 'cards.dart';
 
-/// Face-to-face trades (decided 2026-10-31): two phones connect directly, each side
-/// offers cards, and the swap happens only once both have validated exactly what is
-/// shown. No server: the transport (Nearby Connections, see ui/trade.dart) only carries
-/// the JSON messages of [TradeSession].
-const tradeProtocol =
-    1; // bumped when the messages change: older apps refuse to trade
+/// Trades with friends at a distance (2026-11-13; they replace the face-to-face trades
+/// over Nearby, Android-only: recoverable from the git tag `face-to-face-trade`). One
+/// trade per pair of friends in Firestore (remote_trade.dart, firestore.rules): each side
+/// builds its own offer, validates both offers as they are (their hash), and once both
+/// validated the same hash each phone applies the swap.
 const maxTradeCards = 10; // per side
 
-/// Why a trade ended without a swap.
-enum TradeError { version, invalid, cancelled }
+/// A trade not completed within this is cancelled (its cards unlocked).
+const tradeExpiry = Duration(days: 7);
 
-/// The two bird names both phones show while pairing, from Nearby's pairing token (the
-/// same string on both): if the two birders see the same names, they're connected to
-/// each other. [birds] must be the same sorted list on both phones (the bundled birds).
-(String, String) pairingBirds(String token, List<String> birds) {
-  var h = 17;
-  for (final c in token.codeUnits) {
-    h = (h * 31 + c) & 0x7fffffff;
-  }
-  final n = birds.length;
-  final i = h % n;
-  var j = (h ~/ n) % (n - 1);
-  if (j >= i) j++;
-  return (birds[i], birds[j]);
+/// The trade document of two players: their uids sorted, so both find the same one.
+String tradeId(String me, String friend) =>
+    me.compareTo(friend) < 0 ? '${me}_$friend' : '${friend}_$me';
+
+/// Both offers in one canonical string, the same on both phones: what a validation
+/// refers to.
+String offersHash(List<CardData> mine, List<CardData> theirs) {
+  String keys(List<CardData> cards) =>
+      (cards.map((c) => c.key).toList()..sort()).join(',');
+  return ([keys(mine), keys(theirs)]..sort()).join('|');
 }
 
 /// A card offered by the other phone, or null if it can't be genuine: unknown bird or
@@ -64,104 +60,71 @@ CardData? checkCard(Object? json) {
   }
 }
 
-/// One trade between this phone and the other. Messages, as JSON maps:
-/// `hello{v}` (protocol version), `offer{cards}` (the full offer, after each change),
-/// `ok{hash}` (validates both offers as they are), `commit{hash}` (both validations seen).
-/// The swap is applied when this phone has sent its commit and received the other's.
-class TradeSession {
-  TradeSession({required this.send, required this.onChange});
+/// A trade as this player sees it, from its Firestore document `d` (see firestore.rules):
+/// `a` and `b` the two uids, `aCards` / `bCards` the offers, `aOk` / `bOk` the hash each
+/// validated, `aDone` / `bDone` whether each phone applied the swap.
+class RemoteTrade {
+  RemoteTrade(this.id, Map<String, dynamic> d, String me)
+    : _me = d['a'] == me ? 'a' : 'b',
+      _them = d['a'] == me ? 'b' : 'a',
+      friend = (d['a'] == me ? d['b'] : d['a']) as String,
+      created = d['created'] is DateTime ? d['created'] as DateTime : null,
+      _d = d;
+  final String id, friend;
+  final DateTime? created; // null until the server stamped it
+  final String _me, _them;
+  final Map<String, dynamic> _d;
 
-  final void Function(Map<String, Object?> message) send;
-  final void Function() onChange;
+  List<CardData> _cards(String side, {bool check = false}) => [
+    for (final j in _d['${side}Cards'] as List? ?? const [])
+      ?(check
+          ? checkCard(j)
+          : CardData.fromJson((j as Map).cast<String, dynamic>())),
+  ];
 
-  List<CardData> mine = [], theirs = [];
-  bool iValidated = false, theyValidated = false;
-  bool _committed = false, _theyCommitted = false;
-  bool done = false; // the swap happened: apply mine → theirs once
-  TradeError? error;
+  /// This player's offer, as they wrote it.
+  List<CardData> get mine => _cards(_me);
 
-  bool get ended => done || error != null;
+  /// The friend's offer, each card checked (a forged one is left out: see [forged]).
+  List<CardData> get theirs => _cards(_them, check: true);
 
-  /// Both offers in one canonical string, the same on both phones: what a validation
-  /// refers to.
-  String get hash {
-    String keys(List<CardData> cards) =>
-        (cards.map((c) => c.key).toList()..sort()).join(',');
-    return ([keys(mine), keys(theirs)]..sort()).join('|');
-  }
+  /// The friend's offer holds a card that can't be genuine: the trade must be cancelled.
+  bool get forged =>
+      theirs.length != (_d['${_them}Cards'] as List? ?? const []).length;
 
-  bool get canValidate =>
-      !ended && !iValidated && (mine.isNotEmpty || theirs.isNotEmpty);
+  String get hash => offersHash(mine, theirs);
+  String? get myOk => _d['${_me}Ok'] as String?;
+  String? get theirOk => _d['${_them}Ok'] as String?;
+  bool get myDone => _d['${_me}Done'] == true;
+  bool get theirDone => _d['${_them}Done'] == true;
 
-  void start() => send({'t': 'hello', 'v': tradeProtocol});
+  /// Each side must offer at least one card (user, 2026-11-13).
+  bool get bothOffer => mine.isNotEmpty && theirs.isNotEmpty;
 
-  void offer(List<CardData> cards) {
-    if (ended || _committed) return;
-    mine = cards.take(maxTradeCards).toList();
-    iValidated = theyValidated = false;
-    send({
-      't': 'offer',
-      'cards': [for (final c in mine) c.toJson()],
-    });
-    onChange();
-  }
+  /// Both validated these very offers: the swap is on, the offers frozen.
+  bool get swapping =>
+      !forged && myOk != null && myOk == theirOk && myOk == hash;
 
-  void validate() {
-    if (!canValidate) return;
-    iValidated = true;
-    send({'t': 'ok', 'hash': hash});
-    _maybeCommit();
-    onChange();
-  }
+  bool get iValidated => myOk == hash;
+  bool get theyValidated => theirOk == hash;
+  bool get canValidate => !forged && bothOffer && !iValidated && !swapping;
 
-  /// Ends the trade without a swap (the other side left or misbehaved).
-  void cancel([TradeError why = TradeError.cancelled]) {
-    if (ended) return;
-    error = why;
-    onChange();
-  }
+  /// Not completed within [tradeExpiry] (a swap in progress never expires).
+  bool expired(DateTime now) =>
+      !swapping && created != null && now.difference(created!) > tradeExpiry;
 
-  void receive(Map<String, Object?> m) {
-    if (ended) return;
-    switch (m['t']) {
-      case 'hello':
-        if (m['v'] != tradeProtocol) return cancel(TradeError.version);
-      case 'offer':
-        // shortcut: an offer arriving after this phone committed means the two phones
-        // crossed messages; cancel rather than guess (nothing applied yet, see commit).
-        if (_committed) return cancel();
-        final raw = m['cards'];
-        if (raw is! List || raw.length > maxTradeCards) {
-          return cancel(TradeError.invalid);
-        }
-        final cards = raw.map(checkCard).toList();
-        if (cards.contains(null)) return cancel(TradeError.invalid);
-        theirs = cards.cast<CardData>();
-        iValidated = theyValidated = false;
-      case 'ok':
-        theyValidated = m['hash'] == hash;
-        _maybeCommit();
-      case 'commit':
-        if (m['hash'] != hash) return cancel();
-        _theyCommitted = true;
-        _maybeApply();
-      default:
-        return cancel(TradeError.invalid);
-    }
-    onChange();
-  }
-
-  void _maybeCommit() {
-    if (iValidated && theyValidated && !_committed) {
-      _committed = true;
-      send({'t': 'commit', 'hash': hash});
-      _maybeApply();
-    }
-  }
-
-  // shortcut: if the link drops between the two commits, one phone may swap and the
-  // other not; a journal of unfinished trades would fix it, only if testing shows it.
-  void _maybeApply() {
-    if (_committed && _theyCommitted) done = true;
-  }
+  /// Waiting for this player: the swap to apply here, or the friend validated, or the
+  /// friend offered cards while this side has none yet.
+  bool get needsMe =>
+      (swapping && !myDone) ||
+      (!swapping && theyValidated && !iValidated) ||
+      (theirs.isNotEmpty && mine.isEmpty);
 }
+
+/// This player's cards offered in their open trades, except [except]: locked, they can't
+/// go in another trade until theirs ends.
+Set<String> lockedCards(Iterable<RemoteTrade> trades, {String? except}) => {
+  for (final t in trades)
+    if (t.id != except && !t.myDone)
+      for (final c in t.mine) c.key,
+};

@@ -726,7 +726,7 @@ void main() {
     }
   });
 
-  group('face-to-face trade', () {
+  group('trade', () {
     CardData card(String bird, {int quality = 50, double weight = 20}) =>
         CardData(
           birdId: bird,
@@ -736,66 +736,97 @@ void main() {
           rarity: 'rare',
         );
 
-    // Two phones wired to each other; messages go through JSON as on the air.
-    (TradeSession, TradeSession) pair() {
-      late TradeSession a, b;
-      Map<String, Object?> air(Map<String, Object?> m) =>
-          jsonDecode(jsonEncode(m)) as Map<String, Object?>;
-      a = TradeSession(send: (m) => b.receive(air(m)), onChange: () {});
-      b = TradeSession(send: (m) => a.receive(air(m)), onChange: () {});
-      a.start();
-      b.start();
-      return (a, b);
-    }
+    // A trade document between u1 (side a) and u2, as Firestore holds it.
+    Map<String, dynamic> doc({
+      List<CardData> a = const [],
+      List<CardData> b = const [],
+      String? aOk,
+      String? bOk,
+      bool aDone = false,
+      DateTime? created,
+    }) => {
+      'a': 'u1',
+      'b': 'u2',
+      'aCards': [for (final c in a) c.toJson()],
+      'bCards': [for (final c in b) c.toJson()],
+      'aOk': aOk,
+      'bOk': bOk,
+      'aDone': aDone,
+      'bDone': false,
+      'created': created ?? DateTime.now(),
+    };
 
-    test('swaps only once both validated what is shown', () {
-      final (a, b) = pair();
-      a.offer([card('robin')]);
-      b.offer([card('heron'), card('dove')]);
-      expect(b.theirs.single.birdId, 'robin');
-      a.validate();
-      expect(a.done || b.done, isFalse);
-      b.offer([card('heron')]); // a change clears both validations
-      expect(a.iValidated || b.theyValidated, isFalse);
-      b.validate();
-      expect(a.done, isFalse);
-      a.validate();
-      expect(a.done && b.done, isTrue);
-      expect(a.theirs.single.birdId, 'heron');
-      expect(b.theirs.single.birdId, 'robin');
-      a.offer([]); // nothing changes after the swap
-      expect(b.theirs.single.birdId, 'robin');
+    test('a remote trade swaps only once both validated the same offers', () {
+      final robin = card('robin'), heron = card('heron');
+      var t = RemoteTrade('u1_u2', doc(a: [robin]), 'u1');
+      expect(t.canValidate, isFalse); // each side must offer a card
+      expect(t.mine.single.birdId, 'robin');
+      t = RemoteTrade('u1_u2', doc(a: [robin], b: [heron]), 'u1');
+      expect(t.canValidate, isTrue);
+      final h = t.hash;
+      // u1 validated: u2 sees the trade waiting for them.
+      final friend = RemoteTrade(
+        'u1_u2',
+        doc(a: [robin], b: [heron], aOk: h),
+        'u2',
+      );
+      expect(friend.hash, h); // the same on both phones
+      expect(friend.theyValidated && friend.needsMe, isTrue);
+      expect(friend.swapping, isFalse);
+      t = RemoteTrade(
+        'u1_u2',
+        doc(a: [robin], b: [heron], aOk: h, bOk: h),
+        'u1',
+      );
+      expect(t.swapping, isTrue);
+      expect(t.needsMe, isTrue); // to apply here
+      // u2 changed its offer after validating: the old hash no longer matches.
+      t = RemoteTrade(
+        'u1_u2',
+        doc(a: [robin], b: [heron, card('dove')], aOk: h, bOk: h),
+        'u1',
+      );
+      expect(t.swapping || t.iValidated, isFalse);
     });
 
-    test('a different app version refuses to trade', () {
-      late TradeSession a;
-      a = TradeSession(send: (_) {}, onChange: () {});
-      a.receive({'t': 'hello', 'v': tradeProtocol + 1});
-      expect(a.error, TradeError.version);
-    });
-
-    test('forged cards are refused', () {
+    test('forged cards are refused and block the trade', () {
       expect(checkCard(card('robin').toJson()), isNotNull);
       expect(checkCard(card('nobody').toJson()), isNull); // unknown bird
       expect(checkCard(card('robin', quality: 150).toJson()), isNull);
       expect(checkCard(card('robin', weight: 99).toJson()), isNull); // 20 ± 3×2
       expect(checkCard({'bird': 'robin'}), isNull); // malformed
-      final b = TradeSession(send: (_) {}, onChange: () {});
-      b.receive({
-        't': 'offer',
-        'cards': [card('robin', quality: 150).toJson()],
-      });
-      expect(b.error, TradeError.invalid);
+      final bad = card('robin', quality: 150);
+      final t = RemoteTrade(
+        'u1_u2',
+        doc(a: [card('heron')], b: [bad], aOk: 'x', bOk: 'x'),
+        'u1',
+      );
+      expect(t.forged, isTrue);
+      expect(t.swapping || t.canValidate, isFalse);
     });
 
-    test('pairing names: same token, same birds; two different birds', () {
-      const list = ['a', 'b', 'c', 'd', 'e'];
-      expect(pairingBirds('X7Q2', list), pairingBirds('X7Q2', list));
-      for (final t in ['A', 'BB', 'C3PO', '1234']) {
-        final (x, y) = pairingBirds(t, list);
-        expect(x, isNot(y));
-      }
-    });
+    test(
+      'trades expire after 7 days, never during a swap; offered cards lock',
+      () {
+        final robin = card('robin'), heron = card('heron');
+        final old = DateTime.now().subtract(const Duration(days: 8));
+        final t = RemoteTrade('u1_u2', doc(a: [robin], created: old), 'u1');
+        expect(t.expired(DateTime.now()), isTrue);
+        final h = offersHash([robin], [heron]);
+        final s = RemoteTrade(
+          'u1_u2',
+          doc(a: [robin], b: [heron], aOk: h, bOk: h, created: old),
+          'u1',
+        );
+        expect(s.expired(DateTime.now()), isFalse);
+        expect(lockedCards([t]), {robin.key});
+        expect(lockedCards([t], except: 'u1_u2'), isEmpty);
+        final done = RemoteTrade('u1_u2', doc(a: [robin], aDone: true), 'u1');
+        expect(lockedCards([done]), isEmpty);
+        expect(tradeId('u2', 'u1'), tradeId('u1', 'u2'));
+        expect(offersHash([robin], [heron]), offersHash([heron], [robin]));
+      },
+    );
 
     test('given cards leave the collection but still count', () async {
       SharedPreferences.setMockInitialValues({});

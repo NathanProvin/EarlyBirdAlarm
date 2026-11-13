@@ -350,20 +350,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tradeInvalid => 'These cards can\'t be accepted. Trade cancelled.';
 
   @override
-  String get tradePermissions =>
-      'Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app\'s settings.';
-
-  @override
   String get openSettings => 'Settings';
 
   @override
   String tradedOn(String date) {
     return 'Traded on $date';
   }
-
-  @override
-  String get tradeStartFailed =>
-      'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.';
 
   @override
   String get globetrotter => 'Globetrotter';
@@ -439,22 +431,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Tap to collect';
-
-  @override
-  String get tradeLocationOff =>
-      'Turn on Location to find birders nearby. Your position is never used or sent.';
-
-  @override
-  String get tradeNeedsLocation =>
-      'Trading needs the location permission (Android requires it for Bluetooth searches; your position is never used). Allow it in the app\'s settings.';
-
-  @override
-  String get tradeNeedsPrecise =>
-      'Trading needs precise location: in the app\'s settings, under Location, turn on \"Use precise location\".';
-
-  @override
-  String get tradeNeedsBluetooth =>
-      'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.';
 
   @override
   String get searchCollection => 'Search your collection';
@@ -972,4 +948,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String seeAllFriends(int count) {
     return 'See all ($count)';
   }
+
+  @override
+  String get tradeWith => 'Trade with…';
+
+  @override
+  String get tradeOpen => 'Trade in progress';
+
+  @override
+  String get tradeBothOffer => 'Each of you offers at least one card.';
+
+  @override
+  String get cancelTrade => 'Cancel the trade';
 }

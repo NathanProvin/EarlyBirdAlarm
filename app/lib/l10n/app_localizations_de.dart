@@ -352,20 +352,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Diese Karten können nicht angenommen werden. Tausch abgebrochen.';
 
   @override
-  String get tradePermissions =>
-      'Zum Tauschen braucht die App Bluetooth, Geräte in der Nähe und den genauen Standort (er verlässt nie dein Telefon). Erlaube sie in den App-Einstellungen.';
-
-  @override
   String get openSettings => 'Einstellungen';
 
   @override
   String tradedOn(String date) {
     return 'Getauscht am $date';
   }
-
-  @override
-  String get tradeStartFailed =>
-      'Die Suche nach Vogelbeobachtern in der Nähe konnte nicht starten. Ist Bluetooth an?';
 
   @override
   String get globetrotter => 'Globetrotter';
@@ -441,22 +433,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Tippen zum Abholen';
-
-  @override
-  String get tradeLocationOff =>
-      'Schalte den Standort ein, um Vogelbeobachter in der Nähe zu finden. Deine Position wird weder verwendet noch gesendet.';
-
-  @override
-  String get tradeNeedsLocation =>
-      'Zum Tauschen braucht die App die Standortberechtigung (Android verlangt sie für die Bluetooth-Suche; deine Position wird nie verwendet). Erlaube sie in den App-Einstellungen.';
-
-  @override
-  String get tradeNeedsPrecise =>
-      'Zum Tauschen braucht die App den genauen Standort: Aktiviere in den App-Einstellungen unter Standort „Genauen Standort verwenden“.';
-
-  @override
-  String get tradeNeedsBluetooth =>
-      'Zum Tauschen braucht die App die Berechtigungen für Bluetooth und Geräte in der Nähe. Erlaube sie in den App-Einstellungen.';
 
   @override
   String get searchCollection => 'Sammlung durchsuchen';
@@ -979,4 +955,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String seeAllFriends(int count) {
     return 'Alle anzeigen ($count)';
   }
+
+  @override
+  String get tradeWith => 'Tauschen mit…';
+
+  @override
+  String get tradeOpen => 'Tausch läuft';
+
+  @override
+  String get tradeBothOffer => 'Jeder bietet mindestens eine Karte an.';
+
+  @override
+  String get cancelTrade => 'Tausch abbrechen';
 }

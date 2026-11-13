@@ -352,20 +352,12 @@ class AppLocalizationsFr extends AppLocalizations {
       'Ces cartes ne peuvent pas être acceptées. Échange annulé.';
 
   @override
-  String get tradePermissions =>
-      'L\'échange a besoin du Bluetooth, des appareils à proximité et de la position précise (elle ne quitte jamais votre téléphone). Autorisez-les dans les réglages de l\'application.';
-
-  @override
   String get openSettings => 'Réglages';
 
   @override
   String tradedOn(String date) {
     return 'Échangée le $date';
   }
-
-  @override
-  String get tradeStartFailed =>
-      'Impossible de chercher les ornithologues à proximité. Vérifiez que le Bluetooth est activé.';
 
   @override
   String get globetrotter => 'Globe-trotter';
@@ -441,22 +433,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Touchez pour récupérer';
-
-  @override
-  String get tradeLocationOff =>
-      'Activez la localisation pour trouver les ornithologues à proximité. Votre position n\'est jamais utilisée ni envoyée.';
-
-  @override
-  String get tradeNeedsLocation =>
-      'L\'échange a besoin de l\'autorisation de localisation (Android l\'exige pour chercher en Bluetooth ; votre position n\'est jamais utilisée). Autorisez-la dans les réglages de l\'application.';
-
-  @override
-  String get tradeNeedsPrecise =>
-      'L\'échange a besoin de la position précise : dans les réglages de l\'application, sous Localisation, activez « Utiliser la position exacte ».';
-
-  @override
-  String get tradeNeedsBluetooth =>
-      'L\'échange a besoin des autorisations Bluetooth et appareils à proximité. Autorisez-les dans les réglages de l\'application.';
 
   @override
   String get searchCollection => 'Chercher dans la collection';
@@ -976,4 +952,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String seeAllFriends(int count) {
     return 'Voir tout ($count)';
   }
+
+  @override
+  String get tradeWith => 'Échanger avec…';
+
+  @override
+  String get tradeOpen => 'Échange en cours';
+
+  @override
+  String get tradeBothOffer => 'Chacun propose au moins une carte.';
+
+  @override
+  String get cancelTrade => 'Annuler l’échange';
 }

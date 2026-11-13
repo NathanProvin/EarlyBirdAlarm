@@ -15,6 +15,7 @@ import 'card.dart';
 import 'collection.dart';
 import 'share.dart';
 import 'theme.dart';
+import 'trade.dart';
 
 /// The profile page's pieces (2026-11-13): the avatar cropped from a card, the @name,
 /// the hall of fame, friends. Laid out by AccountScreen (account.dart).
@@ -918,18 +919,20 @@ class FriendScreen extends StatelessWidget {
             HallRow(cards: friend.hall),
           ],
           const SizedBox(height: 24),
-          // To come: shown so players know (2026-11-13, user).
-          for (final (icon, label) in [
-            (Icons.sports_esports_outlined, l.challenge),
-            (Icons.swap_horiz, l.trade),
-          ]) ...[
-            FilledButton.tonalIcon(
-              onPressed: null,
-              icon: Icon(icon),
-              label: Text('$label · ${l.comingSoon}'),
+          FilledButton.icon(
+            icon: const Icon(Icons.swap_horiz),
+            label: Text(l.trade),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => TradeScreen(friend)),
             ),
-            const SizedBox(height: 8),
-          ],
+          ),
+          const SizedBox(height: 8),
+          // To come: shown so players know (2026-11-13, user).
+          FilledButton.tonalIcon(
+            onPressed: null,
+            icon: const Icon(Icons.sports_esports_outlined),
+            label: Text('${l.challenge} · ${l.comingSoon}'),
+          ),
         ],
       ),
     );

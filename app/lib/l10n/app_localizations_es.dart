@@ -352,20 +352,12 @@ class AppLocalizationsEs extends AppLocalizations {
       'Estas cartas no se pueden aceptar. Intercambio cancelado.';
 
   @override
-  String get tradePermissions =>
-      'Para intercambiar, la app necesita el Bluetooth, los dispositivos cercanos y la ubicación precisa (nunca sale de tu teléfono). Permítelos en los ajustes de la app.';
-
-  @override
   String get openSettings => 'Ajustes';
 
   @override
   String tradedOn(String date) {
     return 'Intercambiada el $date';
   }
-
-  @override
-  String get tradeStartFailed =>
-      'No se pudo empezar a buscar pajareros cerca. ¿Está activado el Bluetooth?';
 
   @override
   String get globetrotter => 'Trotamundos';
@@ -441,22 +433,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tapToCollect => 'Toca para recoger';
-
-  @override
-  String get tradeLocationOff =>
-      'Activa la ubicación para encontrar pajareros cerca. Tu posición nunca se usa ni se envía.';
-
-  @override
-  String get tradeNeedsLocation =>
-      'Para intercambiar, la app necesita el permiso de ubicación (Android lo exige para buscar por Bluetooth; tu posición nunca se usa). Permítelo en los ajustes de la app.';
-
-  @override
-  String get tradeNeedsPrecise =>
-      'Para intercambiar, la app necesita la ubicación precisa: en los ajustes de la app, en Ubicación, activa «Usar ubicación precisa».';
-
-  @override
-  String get tradeNeedsBluetooth =>
-      'Para intercambiar, la app necesita los permisos de Bluetooth y dispositivos cercanos. Permítelos en los ajustes de la app.';
 
   @override
   String get searchCollection => 'Buscar en tu colección';
@@ -974,4 +950,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String seeAllFriends(int count) {
     return 'Ver todos ($count)';
   }
+
+  @override
+  String get tradeWith => 'Intercambiar con…';
+
+  @override
+  String get tradeOpen => 'Intercambio en curso';
+
+  @override
+  String get tradeBothOffer => 'Cada uno ofrece al menos una carta.';
+
+  @override
+  String get cancelTrade => 'Cancelar el intercambio';
 }

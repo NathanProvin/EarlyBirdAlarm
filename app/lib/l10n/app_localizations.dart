@@ -738,12 +738,6 @@ abstract class AppLocalizations {
   /// **'These cards can\'t be accepted. Trade cancelled.'**
   String get tradeInvalid;
 
-  /// No description provided for @tradePermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app\'s settings.'**
-  String get tradePermissions;
-
   /// No description provided for @openSettings.
   ///
   /// In en, this message translates to:
@@ -755,12 +749,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Traded on {date}'**
   String tradedOn(String date);
-
-  /// No description provided for @tradeStartFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t start looking for birders nearby. Check that Bluetooth is on.'**
-  String get tradeStartFailed;
 
   /// No description provided for @globetrotter.
   ///
@@ -851,30 +839,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to collect'**
   String get tapToCollect;
-
-  /// No description provided for @tradeLocationOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Turn on Location to find birders nearby. Your position is never used or sent.'**
-  String get tradeLocationOff;
-
-  /// No description provided for @tradeNeedsLocation.
-  ///
-  /// In en, this message translates to:
-  /// **'Trading needs the location permission (Android requires it for Bluetooth searches; your position is never used). Allow it in the app\'s settings.'**
-  String get tradeNeedsLocation;
-
-  /// No description provided for @tradeNeedsPrecise.
-  ///
-  /// In en, this message translates to:
-  /// **'Trading needs precise location: in the app\'s settings, under Location, turn on \"Use precise location\".'**
-  String get tradeNeedsPrecise;
-
-  /// No description provided for @tradeNeedsBluetooth.
-  ///
-  /// In en, this message translates to:
-  /// **'Trading needs the Bluetooth and nearby devices permissions. Allow them in the app\'s settings.'**
-  String get tradeNeedsBluetooth;
 
   /// No description provided for @searchCollection.
   ///
@@ -1757,6 +1721,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See all ({count})'**
   String seeAllFriends(int count);
+
+  /// No description provided for @tradeWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade with…'**
+  String get tradeWith;
+
+  /// No description provided for @tradeOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade in progress'**
+  String get tradeOpen;
+
+  /// No description provided for @tradeBothOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Each of you offers at least one card.'**
+  String get tradeBothOffer;
+
+  /// No description provided for @cancelTrade.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel the trade'**
+  String get cancelTrade;
 }
 
 class _AppLocalizationsDelegate

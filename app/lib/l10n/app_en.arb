@@ -115,11 +115,9 @@
   "tradeCancelled": "Trade cancelled: nothing changed.",
   "updateToTrade": "Update the app to trade with this birder.",
   "tradeInvalid": "These cards can't be accepted. Trade cancelled.",
-  "tradePermissions": "Trading needs Bluetooth, nearby devices and precise location (it never leaves your phone). Allow them in the app's settings.",
   "openSettings": "Settings",
   "tradedOn": "Traded on {date}",
   "@tradedOn": {"placeholders": {"date": {"type": "String"}}},
-  "tradeStartFailed": "Couldn't start looking for birders nearby. Check that Bluetooth is on.",
   "globetrotter": "Globetrotter",
   "fullHouse": "Full house",
   "perfectSpecimen": "Perfect specimen",
@@ -136,10 +134,6 @@
   "rewardRarity": "{rarity} reward",
   "tapToCollect": "Tap to collect",
   "@rewardRarity": {"placeholders": {"rarity": {"type": "String"}}},
-  "tradeLocationOff": "Turn on Location to find birders nearby. Your position is never used or sent.",
-  "tradeNeedsLocation": "Trading needs the location permission (Android requires it for Bluetooth searches; your position is never used). Allow it in the app's settings.",
-  "tradeNeedsPrecise": "Trading needs precise location: in the app's settings, under Location, turn on \"Use precise location\".",
-  "tradeNeedsBluetooth": "Trading needs the Bluetooth and nearby devices permissions. Allow them in the app's settings.",
   "searchCollection": "Search your collection",
   "noSpeciesFound": "No species found",
   "introWelcome": "Tired of not progressing at learning bird songs? Every morning, wake up to a new bird: guess it right, win its card, and learn its song.",
@@ -311,5 +305,9 @@
   "statSpecies": "Species",
   "statRegions": "Regions",
   "seeAllFriends": "See all ({count})",
-  "@seeAllFriends": {"placeholders": {"count": {"type": "int"}}}
+  "@seeAllFriends": {"placeholders": {"count": {"type": "int"}}},
+  "tradeWith": "Trade with…",
+  "tradeOpen": "Trade in progress",
+  "tradeBothOffer": "Each of you offers at least one card.",
+  "cancelTrade": "Cancel the trade"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../main.dart';
 import 'account.dart';
 import 'settings.dart';
 
@@ -20,10 +21,17 @@ class PageHeader extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          IconButton(
-            tooltip: l.account,
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => open(const AccountScreen()),
+          // A dot while a remote trade waits for the player (remote_trade.dart).
+          ListenableBuilder(
+            listenable: store,
+            builder: (context, _) => IconButton(
+              tooltip: l.account,
+              icon: Badge(
+                isLabelVisible: store.tradeWaiting,
+                child: const Icon(Icons.person_outline),
+              ),
+              onPressed: () => open(const AccountScreen()),
+            ),
           ),
           Expanded(
             child: Center(

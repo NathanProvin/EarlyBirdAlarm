@@ -106,10 +106,8 @@
   "tradeCancelled": "Tausch abgebrochen: nichts hat sich geändert.",
   "updateToTrade": "Aktualisiere die App, um mit dieser Person zu tauschen.",
   "tradeInvalid": "Diese Karten können nicht angenommen werden. Tausch abgebrochen.",
-  "tradePermissions": "Zum Tauschen braucht die App Bluetooth, Geräte in der Nähe und den genauen Standort (er verlässt nie dein Telefon). Erlaube sie in den App-Einstellungen.",
   "openSettings": "Einstellungen",
   "tradedOn": "Getauscht am {date}",
-  "tradeStartFailed": "Die Suche nach Vogelbeobachtern in der Nähe konnte nicht starten. Ist Bluetooth an?",
   "globetrotter": "Globetrotter",
   "fullHouse": "Volles Haus",
   "perfectSpecimen": "Perfektes Exemplar",
@@ -125,10 +123,6 @@
   "achievementUnlocked": "Erfolg freigeschaltet!",
   "rewardRarity": "Belohnung: {rarity}",
   "tapToCollect": "Tippen zum Abholen",
-  "tradeLocationOff": "Schalte den Standort ein, um Vogelbeobachter in der Nähe zu finden. Deine Position wird weder verwendet noch gesendet.",
-  "tradeNeedsLocation": "Zum Tauschen braucht die App die Standortberechtigung (Android verlangt sie für die Bluetooth-Suche; deine Position wird nie verwendet). Erlaube sie in den App-Einstellungen.",
-  "tradeNeedsPrecise": "Zum Tauschen braucht die App den genauen Standort: Aktiviere in den App-Einstellungen unter Standort „Genauen Standort verwenden“.",
-  "tradeNeedsBluetooth": "Zum Tauschen braucht die App die Berechtigungen für Bluetooth und Geräte in der Nähe. Erlaube sie in den App-Einstellungen.",
   "searchCollection": "Sammlung durchsuchen",
   "noSpeciesFound": "Keine Art gefunden",
   "introWelcome": "Kommst du beim Lernen von Vogelstimmen nicht voran? Wach jeden Morgen mit einem neuen Vogel auf: Errate ihn, gewinne seine Karte und lerne seinen Gesang.",
@@ -275,5 +269,9 @@
   "statCards": "Karten",
   "statSpecies": "Arten",
   "statRegions": "Regionen",
-  "seeAllFriends": "Alle anzeigen ({count})"
+  "seeAllFriends": "Alle anzeigen ({count})",
+  "tradeWith": "Tauschen mit…",
+  "tradeOpen": "Tausch läuft",
+  "tradeBothOffer": "Jeder bietet mindestens eine Karte an.",
+  "cancelTrade": "Tausch abbrechen"
 }

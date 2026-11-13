@@ -1,448 +1,300 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:nearby_connections/nearby_connections.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../birds.dart';
 import '../cards.dart';
-import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../profile.dart';
+import '../remote_trade.dart';
 import '../trade.dart';
+import 'account.dart';
 import 'card.dart';
 import 'collection.dart';
+import 'profile.dart';
 import 'theme.dart';
 
-const _service = 'com.nathanprovin.earlybird.trade';
+/// Trading with friends at a distance (2026-11-13): the Collection's ⇄ opens this friend
+/// picker, then the trade screen with the friend chosen (also reached from a friend's
+/// profile). Face-to-face trades over Nearby were removed (git tag `face-to-face-trade`).
+class FriendPickerScreen extends StatelessWidget {
+  const FriendPickerScreen({super.key});
 
-enum _Step { searching, pairing, trading, done, failed }
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l.tradeWith)),
+      body: FutureBuilder(
+        future: Future.wait([social(store), myTrades()]),
+        builder: (context, snap) {
+          if (snap.hasError) return Center(child: Text(l.accountError));
+          final data = snap.data;
+          if (data == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final friends =
+              (data[0]
+                      as ({
+                        List<PlayerProfile> requests,
+                        List<PlayerProfile> friends,
+                      }))
+                  .friends;
+          final open = {for (final t in data[1] as List<RemoteTrade>) t.friend};
+          if (friends.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(l.noFriendsYet, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  FilledButton.tonalIcon(
+                    icon: const Icon(Icons.person_add_alt_1),
+                    label: Text(l.addFriend),
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AccountScreen(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          return ListView(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              8,
+              16,
+              16 + MediaQuery.paddingOf(context).bottom,
+            ),
+            children: [
+              for (final f in friends)
+                ListTile(
+                  leading: Avatar(f.avatar),
+                  title: Text('@${f.name}'),
+                  subtitle: open.contains(f.uid) ? Text(l.tradeOpen) : null,
+                  trailing: const Icon(Icons.swap_horiz),
+                  onTap: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute<void>(builder: (_) => TradeScreen(f)),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
 
-/// Face-to-face trade (see lib/trade.dart): both birders open this screen, the phones
-/// find each other over Bluetooth / Wi-Fi (Nearby Connections), both check the same two
-/// bird names, build their offers and validate.
+/// The trade with [friend], live: each side's offer, the validations, Validate and
+/// Cancel; once both validated, the swap is applied and the cards received flip in.
 class TradeScreen extends StatefulWidget {
-  const TradeScreen({super.key});
+  const TradeScreen(this.friend, {super.key});
+  final PlayerProfile friend;
 
   @override
   State<TradeScreen> createState() => _TradeScreenState();
 }
 
 class _TradeScreenState extends State<TradeScreen> {
-  final _nearby = Nearby();
-  // A random name for this session only: no account, nothing about the user.
-  final _me = Random().nextInt(1 << 31).toRadixString(36);
-  _Step _step = _Step.searching;
-  String? _endpoint; // the other phone, once found
-  (String, String)? _code; // the two bird names both phones show
-  bool _accepted = false;
-  TradeSession? _session;
-  String? _failure, _detail; // what went wrong, and Nearby's own error if any
-  // The settings page that fixes it (app permissions, or the phone's Location switch);
-  // coming back from it retries.
-  Future<bool> Function()? _fix;
-  bool _retried = false; // a location error is retried once after asking again
-  List<CardData> _received = [];
-  late final _lifecycle = AppLifecycleListener(
-    onResume: () {
-      if (_step == _Step.failed && _fix != null) _restart();
-    },
-  );
+  late final Stream<RemoteTrade?> _trade = watchTrade(widget.friend.uid);
+  Set<String> _locked = const {}; // cards offered in other trades
+  List<CardData>? _received; // the swap applied here: its reveal
+  bool _seen = false; // the trade existed (so its end means cancelled)
+  bool _applying = false;
 
   @override
   void initState() {
     super.initState();
-    _lifecycle; // starts listening
-    _start();
+    myTrades().then((all) {
+      if (!mounted) return;
+      final here = all.where((t) => t.friend == widget.friend.uid).firstOrNull;
+      setState(() => _locked = lockedCards(all, except: here?.id));
+    }, onError: (Object _) {});
   }
 
   @override
   void dispose() {
-    _lifecycle.dispose();
-    unawaited(_stop());
+    unawaited(sweepTrades(store)); // the profile dot, up to date
     super.dispose();
   }
 
-  void _restart() {
-    setState(() {
-      _step = _Step.searching;
-      _failure = _detail = null;
-      _fix = null;
-      _accepted = false;
-      _endpoint = null;
-      _session = null;
-    });
-    _start();
-  }
-
-  Future<void> _stop() async {
-    try {
-      await _nearby.stopDiscovery();
-      await _nearby.stopAdvertising();
-      await _nearby.stopAllEndpoints();
-    } on PlatformException {
-      // already stopped
-    }
-  }
-
-  Future<void> _start() async {
-    // A search left over from an earlier attempt would refuse to start again.
-    await _stop();
-    if (!mounted) return;
+  Future<void> _run(Future<void> Function() job) async {
     final l = AppLocalizations.of(context);
-    // Nearby's Bluetooth search needs the phone's Location switched on: with it off, older
-    // Android versions refuse with "8034: MISSING_PERMISSION_ACCESS_COARSE_LOCATION" even
-    // though the permission is granted (seen on a friend's phone, 2026-11-01).
-    if (!await Geolocator.isLocationServiceEnabled()) {
-      return _fail(l.tradeLocationOff, fix: Geolocator.openLocationSettings);
-    }
-    // Granted at once on Android versions that don't have them. Nearby also needs
-    // precise location (it never leaves the phone).
-    final statuses = await [
-      Permission.bluetoothScan,
-      Permission.bluetoothAdvertise,
-      Permission.bluetoothConnect,
-      Permission.nearbyWifiDevices,
-      Permission.locationWhenInUse,
-    ].request();
-    if (!mounted) return;
-    if (statuses[Permission.locationWhenInUse]?.isGranted != true) {
-      return _fail(l.tradeNeedsLocation, fix: openAppSettings);
-    }
-    if (statuses.values.any((s) => !s.isGranted)) {
-      return _fail(l.tradeNeedsBluetooth, fix: openAppSettings);
-    }
-    // Android 12+: "approximate" only is not enough (error 8036).
-    if (await Geolocator.getLocationAccuracy() ==
-        LocationAccuracyStatus.reduced) {
-      return _fail(l.tradeNeedsPrecise, fix: openAppSettings);
-    }
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      // Both phones advertise and discover; the one with the smaller name asks to connect.
-      final ok =
-          await _nearby.startAdvertising(
-            _me,
-            Strategy.P2P_POINT_TO_POINT,
-            onConnectionInitiated: _initiated,
-            onConnectionResult: _result,
-            onDisconnected: (_) => _fail(l.tradeCancelled),
-            serviceId: _service,
-          ) &&
-          await _nearby.startDiscovery(
-            _me,
-            Strategy.P2P_POINT_TO_POINT,
-            onEndpointFound: (id, name, _) {
-              if (_endpoint != null || _me.compareTo(name) >= 0) return;
-              _endpoint = id;
-              _nearby.requestConnection(
-                _me,
-                id,
-                onConnectionInitiated: _initiated,
-                onConnectionResult: _result,
-                onDisconnected: (_) => _fail(l.tradeCancelled),
-              );
-            },
-            onEndpointLost: (_) {},
-            serviceId: _service,
-          );
-      if (!ok) _fail(l.tradeStartFailed);
-    } on PlatformException catch (e) {
+      await job();
+    } catch (e) {
       debugPrint('trade: $e');
-      // e.g. "8036: MISSING_PERMISSION_ACCESS_FINE_LOCATION" when only approximate
-      // location was allowed.
-      if ('${e.message}'.contains('PERMISSION')) {
-        // Ask for location once more and retry before sending the user to Settings.
-        if (!_retried) {
-          _retried = true;
-          await Permission.locationWhenInUse.request();
-          return _start();
-        }
-        return _fail(
-          l.tradePermissions,
-          fix: openAppSettings,
-          detail: e.message,
-        );
-      }
-      _fail(l.tradeStartFailed, detail: e.message);
+      messenger.showSnackBar(SnackBar(content: Text(l.accountError)));
     }
   }
 
-  void _initiated(String id, ConnectionInfo info) {
-    if (!mounted || _step != _Step.searching) return;
-    final (a, b) = pairingBirds(info.authenticationToken, bundledBirds);
-    final locale = AppLocalizations.of(context).localeName;
-    String name(String bird) => birdById(bird)?.nameIn(locale) ?? bird;
-    setState(() {
-      _endpoint = id;
-      _code = (name(a), name(b));
-      _step = _Step.pairing;
-    });
-  }
-
-  Future<void> _accept() async {
-    setState(() => _accepted = true);
-    await _nearby.acceptConnection(
-      _endpoint!,
-      onPayLoadRecieved: (_, payload) {
-        try {
-          _session?.receive(
-            jsonDecode(utf8.decode(payload.bytes!)) as Map<String, Object?>,
-          );
-        } on Object {
-          _session?.cancel(TradeError.invalid);
-        }
-      },
-    );
-  }
-
-  void _result(String id, Status status) {
-    if (!mounted) return;
-    if (status != Status.CONNECTED) {
-      return _fail(AppLocalizations.of(context).tradeCancelled);
-    }
-    unawaited(_nearby.stopDiscovery());
-    unawaited(_nearby.stopAdvertising());
-    final session = TradeSession(
-      send: (m) => _nearby.sendBytesPayload(
-        id,
-        Uint8List.fromList(utf8.encode(jsonEncode(m))),
-      ),
-      onChange: _changed,
-    );
-    setState(() {
-      _session = session;
-      _step = _Step.trading;
-    });
-    session.start();
-  }
-
-  Future<void> _changed() async {
-    final s = _session!;
-    if (!mounted) return;
-    final l = AppLocalizations.of(context);
-    if (s.done && _step == _Step.trading) {
-      _received = s.theirs;
-      await store.trade(s.mine, s.theirs);
-      if (!mounted) return;
-      setState(() => _step = _Step.done);
-      unawaited(_nearby.stopAllEndpoints());
-    } else if (s.error != null) {
-      _fail(switch (s.error!) {
-        TradeError.version => l.updateToTrade,
-        TradeError.invalid => l.tradeInvalid,
-        TradeError.cancelled => l.tradeCancelled,
-      });
-    } else {
-      setState(() {});
-    }
-  }
-
-  void _fail(String message, {Future<bool> Function()? fix, String? detail}) {
-    if (!mounted || _step == _Step.done || _step == _Step.failed) return;
-    setState(() {
-      _failure = message;
-      _detail = detail;
-      _fix = fix;
-      _step = _Step.failed;
-    });
-    unawaited(_stop());
-  }
-
-  Future<void> _pick() async {
-    final s = _session!;
+  Future<void> _pick(RemoteTrade t) async {
     final picked = await showModalBottomSheet<List<CardData>>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _Picker(initial: s.mine),
+      builder: (_) => _Picker(initial: t.mine, locked: _locked),
     );
-    if (picked != null) s.offer(picked);
+    if (picked != null) await _run(() => setOffer(t, picked));
+  }
+
+  void _apply(RemoteTrade t) {
+    if (_applying) return;
+    _applying = true;
+    applyTrade(store, t).then((cards) {
+      if (mounted) {
+        unawaited(HapticFeedback.mediumImpact());
+        setState(() => _received = cards);
+      }
+    }, onError: (Object e) => debugPrint('trade: $e'));
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(l.trade)),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Avatar(widget.friend.avatar, size: 36),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                '@${widget.friend.name}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
-        child: switch (_step) {
-          _Step.searching => _Centered(
-            children: [
-              _Pulse(color: scheme.primary),
-              const SizedBox(height: 32),
-              Text(
-                l.lookingForBirder,
-                style: text.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l.lookingHint,
-                style: text.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          _Step.pairing => _Centered(
-            children: [
-              Text(
-                l.checkCode,
-                style: text.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              for (final name in [_code!.$1, _code!.$2])
-                Text(
-                  name,
-                  style: text.headlineMedium?.copyWith(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              const SizedBox(height: 32),
-              if (_accepted)
-                Text(l.waitingForThem, style: text.bodyMedium)
-              else ...[
-                FilledButton(onPressed: _accept, child: Text(l.itMatches)),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(l.cancel),
-                ),
-              ],
-            ],
-          ),
-          _Step.trading => _trading(l, text, scheme),
-          _Step.done => _done(l, text),
-          _Step.failed => _Centered(
-            children: [
-              Text(
-                _failure!,
-                style: text.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              if (_detail case final d?) ...[
-                const SizedBox(height: 8),
-                Text(d, style: text.bodySmall, textAlign: TextAlign.center),
-              ],
-              const SizedBox(height: 24),
-              if (_fix case final fix?) ...[
-                FilledButton(onPressed: fix, child: Text(l.openSettings)),
-                const SizedBox(height: 8),
-              ],
-              FilledButton.tonal(onPressed: _restart, child: Text(l.retry)),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l.done),
-              ),
-            ],
+        child: switch (_received) {
+          final cards? => _done(l, text, cards),
+          null => StreamBuilder<RemoteTrade?>(
+            stream: _trade,
+            builder: (context, snap) {
+              if (snap.hasError) return _message(l.accountError);
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final t = snap.data;
+              if (t == null) {
+                return _message(_seen ? l.tradeCancelled : l.accountError);
+              }
+              _seen = true;
+              if (t.forged) return _message(l.tradeInvalid);
+              if (t.swapping) {
+                _apply(t);
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _trading(l, text, t);
+            },
           ),
         },
       ),
     );
   }
 
-  Widget _trading(AppLocalizations l, TextTheme text, ColorScheme scheme) {
-    final s = _session!;
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(l.youGive, style: text.titleMedium),
-          const SizedBox(height: 8),
-          _Offer(
-            cards: s.mine,
-            empty: l.nothingYet,
-            onAdd: s.ended ? null : _pick,
-            addLabel: l.addCards,
-          ),
-          const SizedBox(height: 24),
-          Text(l.youGet, style: text.titleMedium),
-          const SizedBox(height: 8),
-          _Offer(cards: s.theirs, empty: l.nothingYet),
-          const Spacer(),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            children: [
-              if (s.iValidated)
-                Chip(
-                  avatar: const Icon(Icons.check, size: 18),
-                  label: Text(l.youValidated),
-                ),
-              Chip(
-                avatar: Icon(
-                  s.theyValidated ? Icons.check : Icons.hourglass_empty,
-                  size: 18,
-                ),
-                label: Text(
-                  s.theyValidated ? l.theyValidated : l.waitingForThem,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: s.canValidate ? s.validate : null,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(56),
-            ),
-            child: Text(s.iValidated ? l.youValidated : l.validate),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _done(AppLocalizations l, TextTheme text) => Column(
-    children: [
-      const SizedBox(height: 8),
-      Text(l.tradeDone, style: text.titleLarge),
-      Expanded(
-        // The received cards flip in one by one, like a booster.
-        child: PageView(
-          children: [
-            for (final c in _received)
-              if (birdById(c.birdId) case final b?)
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: CardDetail(bird: b, card: c, flipIn: true),
-                ),
-          ],
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
-          child: Text(l.done),
-        ),
-      ),
-    ],
-  );
-}
-
-class _Centered extends StatelessWidget {
-  const _Centered({required this.children});
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => Center(
+  Widget _message(String m) => Center(
     child: Padding(
       padding: const EdgeInsets.all(32),
-      child: Column(mainAxisSize: MainAxisSize.min, children: children),
+      child: Text(m, textAlign: TextAlign.center),
     ),
   );
+
+  Widget _trading(AppLocalizations l, TextTheme text, RemoteTrade t) => Padding(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l.youGive, style: text.titleMedium),
+        const SizedBox(height: 8),
+        _Offer(
+          cards: t.mine,
+          empty: l.nothingYet,
+          onAdd: () => _pick(t),
+          addLabel: l.addCards,
+        ),
+        const SizedBox(height: 24),
+        Text(l.youGet, style: text.titleMedium),
+        const SizedBox(height: 8),
+        _Offer(cards: t.theirs, empty: l.nothingYet),
+        const Spacer(),
+        if (!t.bothOffer)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(l.tradeBothOffer, textAlign: TextAlign.center),
+          ),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          children: [
+            if (t.iValidated)
+              Chip(
+                avatar: const Icon(Icons.check, size: 18),
+                label: Text(l.youValidated),
+              ),
+            Chip(
+              avatar: Icon(
+                t.theyValidated ? Icons.check : Icons.hourglass_empty,
+                size: 18,
+              ),
+              label: Text(t.theyValidated ? l.theyValidated : l.waitingForThem),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: t.canValidate ? () => _run(() => validate(t)) : null,
+          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(56)),
+          child: Text(t.iValidated ? l.youValidated : l.validate),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
+          onPressed: () => _run(() => cancelTrade(t)),
+          child: Text(l.cancelTrade),
+        ),
+      ],
+    ),
+  );
+
+  Widget _done(AppLocalizations l, TextTheme text, List<CardData> cards) =>
+      Column(
+        children: [
+          const SizedBox(height: 8),
+          Text(l.tradeDone, style: text.titleLarge),
+          Expanded(
+            // The cards received flip in one by one, like a booster.
+            child: PageView(
+              children: [
+                for (final c in cards)
+                  if (birdById(c.birdId) case final b?)
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: CardDetail(bird: b, card: c, flipIn: true),
+                    ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(56),
+              ),
+              child: Text(l.done),
+            ),
+          ),
+        ],
+      );
 }
 
 /// One side's offer: small cards in a row, and an "add" tile for this phone's side.
@@ -507,8 +359,9 @@ class _Offer extends StatelessWidget {
 /// Choose the cards to give: the whole collection, duplicates first, up to
 /// [maxTradeCards].
 class _Picker extends StatefulWidget {
-  const _Picker({required this.initial});
+  const _Picker({required this.initial, this.locked = const {}});
   final List<CardData> initial;
+  final Set<String> locked; // offered in another trade: not available here
 
   @override
   State<_Picker> createState() => _PickerState();
@@ -527,7 +380,7 @@ class _PickerState extends State<_Picker> {
     final sorted =
         [
           for (final c in cards)
-            if (birdById(c.birdId) != null) c,
+            if (birdById(c.birdId) != null && !widget.locked.contains(c.key)) c,
         ]..sort((a, b) {
           final n = birdById(a.birdId)!.number - birdById(b.birdId)!.number;
           if (n != 0) return n;
@@ -604,54 +457,4 @@ class _PickerState extends State<_Picker> {
       ),
     );
   }
-}
-
-/// A soft pulse in the theme's accent while the phones look for each other.
-class _Pulse extends StatefulWidget {
-  const _Pulse({required this.color});
-  final Color color;
-
-  @override
-  State<_Pulse> createState() => _PulseState();
-}
-
-class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1800),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: 160,
-    child: AnimatedBuilder(
-      animation: _c,
-      builder: (_, _) => Stack(
-        alignment: Alignment.center,
-        children: [
-          for (final phase in [0.0, 0.5])
-            Builder(
-              builder: (_) {
-                final t = (_c.value + phase) % 1;
-                return Container(
-                  width: 40 + 120 * t,
-                  height: 40 + 120 * t,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: widget.color.withValues(alpha: 0.35 * (1 - t)),
-                  ),
-                );
-              },
-            ),
-          Icon(Icons.swap_horiz, size: 40, color: widget.color),
-        ],
-      ),
-    ),
-  );
 }

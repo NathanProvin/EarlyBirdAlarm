@@ -310,7 +310,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               ),
               round(
                 l.trade,
-                () => open(const TradeScreen()),
+                () => open(const FriendPickerScreen()),
                 const _Round(icon: Icons.swap_horiz),
               ),
               round(

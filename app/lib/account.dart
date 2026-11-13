@@ -13,6 +13,7 @@ import 'birds.dart';
 import 'cards.dart';
 import 'firebase_options.dart';
 import 'profile.dart';
+import 'remote_trade.dart';
 import 'store.dart';
 
 /// Cloud backup (roadmap Phase 1.1): a silent anonymous Firebase account, the collection
@@ -39,6 +40,7 @@ Future<void> signInQuietly(Store store) async {
       unawaited(_readReferrer(store, user.uid));
       unawaited(friendsJoined(store).catchError((_) => store.friends));
       unawaited(ensureProfile(store));
+      unawaited(sweepTrades(store));
     }
     store.addListener(() => _backupSoon(store));
     // The binding keeps the listener: written when the app goes to the background.
