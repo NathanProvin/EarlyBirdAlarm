@@ -98,6 +98,15 @@ Updates during the closed test don't reset the clock. Testers' emails go into th
 - [x] (2026-11-12, user: **current drop rates kept**, achievement tier cards on top of them; the two left-aside risks stay aside) **Drop balance** pass
 - [x] (2026-11-12, S22 Training: Garrot streamed and playing within 2 s, Fuligule from the phone, Next → heard card) **Compare the songs after a wrong guess:** the quiz's 4 photos stay as a board (✓ answer, ✕ pick, the others back to full), tap a photo = its song (badge ▶ / spinner / ■, accent border), one at a time, recordist credit strip (CC BY), no time limit: **Next** opens the reveal; alarms and Training; Expert: answer + pick. Songs from the phone when there, else **streamed** (never saved: a file in `audio/` would join the pile), same kind as the quiz's; "no connection" message offline. Not covered by a widget test (no audio plugin in tests)
 
+## Profile page revamp — added 2026-11-13 (user), before Production
+Video-game-style profile replacing the Account page (decisions.md "Profile page"):
+- [ ] Rules + data layer: `usernames/{name}`, `profiles/{uid}`, `friendRequests/{to}_{from}`, `friends/{uid}/list/{friendUid}`; rules check; deletion / sign-in merge clean them
+- [ ] Identity header: avatar cropped round from one of the player's cards, unique **@name** (automatic bird-style name, editable), email small and discreet
+- [ ] Hall of fame: 3 chosen cards
+- [ ] Friends: Add by @name → request → accept; friend profile (avatar, @name, hall of fame, Challenge / Trade "coming soon"); Remove, Block, Report
+- [ ] Invite link + Enter a code (moved below), **Account management kept whole** (sign-in, forgot password, delete account)
+- [ ] Privacy pages, Data safety, Play user-generated-content rules (report + block), strings × 4; S22 checks with two accounts
+
 ## Drafting, balance and optimisation — DONE 2026-11-11
 Details and the reasoning: `drafting-design.md` (how a card is drafted, compromises, the review's risks and their status) and `decisions.md`.
 - [x] **Odds fitted to play time** (16 cards a day: 1 alarm + 3 Training sessions of 5): Hard an Epic every ~3 days and a Legendary every ~2 weeks, Expert ~2 days / ~1 week, Easy a tiny Legendary (~1 in 6,000); half the Legendary odds for a species already owned as Legendary; Shiny 1 / 1250. Measured with 1,000-card simulations on the S22 (France · Nord Hard and Easy, San Francisco Hard): within the model; odds differ by region (California ~2.5× more Legendaries), kept
