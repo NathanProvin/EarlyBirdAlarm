@@ -120,7 +120,7 @@ class BirdCardView extends StatelessWidget {
                     Positioned(
                       left: 8,
                       top: 8,
-                      child: FamilyBadge(bird.family),
+                      child: FamilyBadge(bird.family, color: frame),
                     ),
                   ],
                 ),
