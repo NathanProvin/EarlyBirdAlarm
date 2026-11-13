@@ -871,4 +871,96 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get songOffline => 'No connection: this song isn\'t on the phone';
+
+  @override
+  String get hallOfFame => 'Hall of fame';
+
+  @override
+  String get friends => 'Friends';
+
+  @override
+  String get codes => 'Codes';
+
+  @override
+  String get chooseCard => 'Choose a card';
+
+  @override
+  String get frameAvatar => 'Frame your picture';
+
+  @override
+  String get frameHint => 'Pinch to zoom, drag to move';
+
+  @override
+  String get changeAvatar => 'Change your picture';
+
+  @override
+  String get signInToKeep => 'Sign in to keep your collection';
+
+  @override
+  String get renameTitle => 'Your @name';
+
+  @override
+  String get nameRules => '3 to 20 letters, digits or _. Once a week.';
+
+  @override
+  String get nameLength => '3 to 20 characters.';
+
+  @override
+  String get nameCharacters => 'Letters, digits and _ only.';
+
+  @override
+  String get nameBanned => 'This name isn\'t allowed.';
+
+  @override
+  String get nameTaken => 'This name is taken.';
+
+  @override
+  String renameTooSoon(String date) {
+    return 'Next change possible on $date.';
+  }
+
+  @override
+  String get addFriend => 'Add a friend';
+
+  @override
+  String get friendNameHint => 'their name';
+
+  @override
+  String get sendRequest => 'Send';
+
+  @override
+  String get requestSent => 'Request sent!';
+
+  @override
+  String get friendNotFound => 'No player with this name.';
+
+  @override
+  String get friendSelf => 'That\'s you!';
+
+  @override
+  String get friendAlready => 'Already your friend.';
+
+  @override
+  String get wantsToBeFriends => 'wants to be your friend';
+
+  @override
+  String get accept => 'Accept';
+
+  @override
+  String get decline => 'Decline';
+
+  @override
+  String get noFriendsYet => 'No friends yet: add one by their @name.';
+
+  @override
+  String get removeFriend => 'Remove from friends';
+
+  @override
+  String get blockPlayer => 'Block';
+
+  @override
+  String get reportPlayer => 'Report';
+
+  @override
+  String get challenge => 'Challenge';
 }

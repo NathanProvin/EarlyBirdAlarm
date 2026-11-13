@@ -877,4 +877,98 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get songOffline =>
       'Keine Verbindung: Dieser Gesang ist nicht auf dem Handy';
+
+  @override
+  String get hallOfFame => 'Ruhmeshalle';
+
+  @override
+  String get friends => 'Freunde';
+
+  @override
+  String get codes => 'Codes';
+
+  @override
+  String get chooseCard => 'Karte wählen';
+
+  @override
+  String get frameAvatar => 'Bild zuschneiden';
+
+  @override
+  String get frameHint => 'Zum Zoomen zusammenziehen, zum Verschieben ziehen';
+
+  @override
+  String get changeAvatar => 'Bild ändern';
+
+  @override
+  String get signInToKeep => 'Melde dich an, um deine Sammlung zu behalten';
+
+  @override
+  String get renameTitle => 'Dein @Name';
+
+  @override
+  String get nameRules =>
+      '3 bis 20 Buchstaben, Ziffern oder _. Einmal pro Woche.';
+
+  @override
+  String get nameLength => '3 bis 20 Zeichen.';
+
+  @override
+  String get nameCharacters => 'Nur Buchstaben, Ziffern und _.';
+
+  @override
+  String get nameBanned => 'Dieser Name ist nicht erlaubt.';
+
+  @override
+  String get nameTaken => 'Dieser Name ist vergeben.';
+
+  @override
+  String renameTooSoon(String date) {
+    return 'Nächste Änderung am $date möglich.';
+  }
+
+  @override
+  String get addFriend => 'Freund hinzufügen';
+
+  @override
+  String get friendNameHint => 'sein Name';
+
+  @override
+  String get sendRequest => 'Senden';
+
+  @override
+  String get requestSent => 'Anfrage gesendet!';
+
+  @override
+  String get friendNotFound => 'Kein Spieler mit diesem Namen.';
+
+  @override
+  String get friendSelf => 'Das bist du!';
+
+  @override
+  String get friendAlready => 'Schon dein Freund.';
+
+  @override
+  String get wantsToBeFriends => 'möchte dein Freund sein';
+
+  @override
+  String get accept => 'Annehmen';
+
+  @override
+  String get decline => 'Ablehnen';
+
+  @override
+  String get noFriendsYet =>
+      'Noch keine Freunde: füge einen mit seinem @Namen hinzu.';
+
+  @override
+  String get removeFriend => 'Aus Freunden entfernen';
+
+  @override
+  String get blockPlayer => 'Blockieren';
+
+  @override
+  String get reportPlayer => 'Melden';
+
+  @override
+  String get challenge => 'Herausfordern';
 }

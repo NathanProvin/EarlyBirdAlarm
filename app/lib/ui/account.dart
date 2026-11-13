@@ -7,35 +7,94 @@ import 'package:share_plus/share_plus.dart';
 import '../account.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'profile.dart';
 import 'series.dart';
 import 'share.dart';
 
-/// The account page, opened from the person icon on the Alarms and Training headers.
-class AccountScreen extends StatelessWidget {
+/// The profile page (2026-11-13), opened from the person icon on the Alarms and Training
+/// headers: who the player is (avatar, @name, the email small), their hall of fame, their
+/// friends, the invite link, codes, and the account management kept whole.
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(AppLocalizations.of(context).account)),
-    body: ListView(
-      padding: EdgeInsets.fromLTRB(
-        24,
-        12,
-        24,
-        24 + MediaQuery.paddingOf(context).bottom,
-      ),
-      children: [
-        const AccountPanel(canDelete: true),
-        // Invites and codes need the (anonymous) account: none in widget tests.
-        if (Firebase.apps.isNotEmpty) ...const [
-          SizedBox(height: 32),
-          _Invite(),
-          SizedBox(height: 24),
-          _Code(),
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  final _account = GlobalKey(); // the account management section, for "sign in"
+
+  // No Firebase in widget tests (or if it failed to start): shown signed out.
+  final Stream<User?> _user = Firebase.apps.isEmpty
+      ? Stream.value(null)
+      : FirebaseAuth.instance.userChanges();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final online = Firebase.apps.isNotEmpty;
+    Widget section(String title, Widget child, {Key? key}) => Padding(
+      key: key,
+      padding: const EdgeInsets.only(top: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          child,
         ],
-      ],
-    ),
-  );
+      ),
+    );
+    return Scaffold(
+      appBar: AppBar(title: Text(l.account)),
+      body: StreamBuilder<User?>(
+        stream: _user,
+        builder: (context, snap) => ListenableBuilder(
+          listenable: store,
+          builder: (context, _) => ListView(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              8,
+              24,
+              24 + MediaQuery.paddingOf(context).bottom,
+            ),
+            children: [
+              ProfileHeader(
+                email: snap.data?.isAnonymous == false
+                    ? snap.data?.email
+                    : null,
+                onSignIn: () => Scrollable.ensureVisible(
+                  _account.currentContext!,
+                  duration: const Duration(milliseconds: 400),
+                ),
+              ),
+              section(l.hallOfFame, const HallOfFame()),
+              // Friends, invites and codes need the (anonymous) account: none in tests.
+              if (online) ...[
+                section(
+                  l.friends,
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [Friends(), SizedBox(height: 16), _Invite()],
+                  ),
+                ),
+                section(l.codes, const _Code()),
+              ],
+              section(
+                l.account,
+                const AccountPanel(canDelete: true),
+                key: _account,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Signed in: the email with a cloud ✓ (and Delete account on the account page).

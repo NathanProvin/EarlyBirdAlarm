@@ -1565,6 +1565,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No connection: this song isn\'t on the phone'**
   String get songOffline;
+
+  /// No description provided for @hallOfFame.
+  ///
+  /// In en, this message translates to:
+  /// **'Hall of fame'**
+  String get hallOfFame;
+
+  /// No description provided for @friends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get friends;
+
+  /// No description provided for @codes.
+  ///
+  /// In en, this message translates to:
+  /// **'Codes'**
+  String get codes;
+
+  /// No description provided for @chooseCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a card'**
+  String get chooseCard;
+
+  /// No description provided for @frameAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Frame your picture'**
+  String get frameAvatar;
+
+  /// No description provided for @frameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to zoom, drag to move'**
+  String get frameHint;
+
+  /// No description provided for @changeAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Change your picture'**
+  String get changeAvatar;
+
+  /// No description provided for @signInToKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to keep your collection'**
+  String get signInToKeep;
+
+  /// No description provided for @renameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your @name'**
+  String get renameTitle;
+
+  /// No description provided for @nameRules.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 20 letters, digits or _. Once a week.'**
+  String get nameRules;
+
+  /// No description provided for @nameLength.
+  ///
+  /// In en, this message translates to:
+  /// **'3 to 20 characters.'**
+  String get nameLength;
+
+  /// No description provided for @nameCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'Letters, digits and _ only.'**
+  String get nameCharacters;
+
+  /// No description provided for @nameBanned.
+  ///
+  /// In en, this message translates to:
+  /// **'This name isn\'t allowed.'**
+  String get nameBanned;
+
+  /// No description provided for @nameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This name is taken.'**
+  String get nameTaken;
+
+  /// No description provided for @renameTooSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Next change possible on {date}.'**
+  String renameTooSoon(String date);
+
+  /// No description provided for @addFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a friend'**
+  String get addFriend;
+
+  /// No description provided for @friendNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'their name'**
+  String get friendNameHint;
+
+  /// No description provided for @sendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get sendRequest;
+
+  /// No description provided for @requestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent!'**
+  String get requestSent;
+
+  /// No description provided for @friendNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No player with this name.'**
+  String get friendNotFound;
+
+  /// No description provided for @friendSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s you!'**
+  String get friendSelf;
+
+  /// No description provided for @friendAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'Already your friend.'**
+  String get friendAlready;
+
+  /// No description provided for @wantsToBeFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'wants to be your friend'**
+  String get wantsToBeFriends;
+
+  /// No description provided for @accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get accept;
+
+  /// No description provided for @decline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get decline;
+
+  /// No description provided for @noFriendsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet: add one by their @name.'**
+  String get noFriendsYet;
+
+  /// No description provided for @removeFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from friends'**
+  String get removeFriend;
+
+  /// No description provided for @blockPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockPlayer;
+
+  /// No description provided for @reportPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get reportPlayer;
+
+  /// No description provided for @challenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge'**
+  String get challenge;
 }
 
 class _AppLocalizationsDelegate

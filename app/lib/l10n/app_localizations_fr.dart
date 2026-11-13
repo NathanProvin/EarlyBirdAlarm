@@ -874,4 +874,98 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get songOffline =>
       'Pas de connexion : ce chant n’est pas sur le téléphone';
+
+  @override
+  String get hallOfFame => 'Panthéon';
+
+  @override
+  String get friends => 'Amis';
+
+  @override
+  String get codes => 'Codes';
+
+  @override
+  String get chooseCard => 'Choisir une carte';
+
+  @override
+  String get frameAvatar => 'Cadre ta photo';
+
+  @override
+  String get frameHint => 'Pince pour zoomer, glisse pour déplacer';
+
+  @override
+  String get changeAvatar => 'Changer de photo';
+
+  @override
+  String get signInToKeep => 'Connecte-toi pour garder ta collection';
+
+  @override
+  String get renameTitle => 'Ton @pseudo';
+
+  @override
+  String get nameRules =>
+      '3 à 20 lettres, chiffres ou _. Une fois par semaine.';
+
+  @override
+  String get nameLength => 'De 3 à 20 caractères.';
+
+  @override
+  String get nameCharacters => 'Lettres, chiffres et _ seulement.';
+
+  @override
+  String get nameBanned => 'Ce pseudo n’est pas autorisé.';
+
+  @override
+  String get nameTaken => 'Ce pseudo est déjà pris.';
+
+  @override
+  String renameTooSoon(String date) {
+    return 'Prochain changement possible le $date.';
+  }
+
+  @override
+  String get addFriend => 'Ajouter un ami';
+
+  @override
+  String get friendNameHint => 'son pseudo';
+
+  @override
+  String get sendRequest => 'Envoyer';
+
+  @override
+  String get requestSent => 'Demande envoyée !';
+
+  @override
+  String get friendNotFound => 'Aucun joueur avec ce pseudo.';
+
+  @override
+  String get friendSelf => 'C’est toi !';
+
+  @override
+  String get friendAlready => 'Déjà ton ami.';
+
+  @override
+  String get wantsToBeFriends => 'veut être ton ami';
+
+  @override
+  String get accept => 'Accepter';
+
+  @override
+  String get decline => 'Refuser';
+
+  @override
+  String get noFriendsYet =>
+      'Pas encore d’amis : ajoutes-en un avec son @pseudo.';
+
+  @override
+  String get removeFriend => 'Retirer des amis';
+
+  @override
+  String get blockPlayer => 'Bloquer';
+
+  @override
+  String get reportPlayer => 'Signaler';
+
+  @override
+  String get challenge => 'Défier';
 }
