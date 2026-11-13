@@ -362,7 +362,17 @@ class _RingScreenState extends State<RingScreen> {
                       child: _next != null
                           ? FilledButton.tonal(
                               onPressed: _next,
-                              style: button,
+                              // Outlined in the accent so it pops (user, 2026-11-13).
+                              style: button.copyWith(
+                                side: WidgetStatePropertyAll(
+                                  BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
                               child: Semantics(
                                 label: l.next,
                                 child: SizedBox(
