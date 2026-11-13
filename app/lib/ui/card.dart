@@ -12,6 +12,7 @@ import '../birds.dart';
 import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
+import 'family_icon.dart';
 import 'shiny.dart';
 import 'theme.dart';
 
@@ -114,6 +115,12 @@ class BirdCardView extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(radius - 8),
                       child: BirdPhoto(bird, photo: card?.photo),
+                    ),
+                    // The bird's group (family_icon.dart).
+                    Positioned(
+                      left: 8,
+                      top: 8,
+                      child: FamilyBadge(bird.family),
                     ),
                   ],
                 ),

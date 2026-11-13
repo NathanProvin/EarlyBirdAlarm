@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:early_bird/ui/family_icon.dart';
 import 'package:early_bird/birds.dart';
 import 'package:early_bird/cards.dart';
 import 'package:early_bird/content.dart';
@@ -1192,6 +1193,19 @@ void main() {
       find.byType(OutlinedButton),
     )) {
       expect(b.onPressed, isNull);
+    }
+  });
+
+  test('every catalog family has a bird group icon', () {
+    final f = File('../pipeline/site/v1/species.json');
+    if (!f.existsSync()) return; // the full catalog lives next to the app
+    final families = {
+      for (final b in jsonDecode(f.readAsStringSync()) as List)
+        b['family'] as String,
+    };
+    expect(families.where((x) => familyGroup(x) == null), isEmpty);
+    for (final g in familyGroups.keys) {
+      expect(groupPath(g).getBounds().isEmpty, isFalse, reason: g);
     }
   });
 }
