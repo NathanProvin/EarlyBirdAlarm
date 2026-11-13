@@ -293,6 +293,50 @@ class Store extends ChangeNotifier {
     return card;
   }
 
+  /// The profile page (2026-11-13), cached so it shows offline; `profiles/{uid}` in
+  /// Firestore is the copy other players read (profile.dart).
+  String? get username => _prefs.getString('username');
+  set username(String? n) {
+    n == null ? _prefs.remove('username') : _prefs.setString('username', n);
+    notifyListeners();
+  }
+
+  /// When the @name was last chosen by the player (null: still the automatic one).
+  DateTime? get renamedAt => switch (_prefs.getInt('renamedAt')) {
+    final ms? => DateTime.fromMillisecondsSinceEpoch(ms),
+    null => null,
+  };
+  set renamedAt(DateTime? t) => t == null
+      ? _prefs.remove('renamedAt')
+      : _prefs.setInt('renamedAt', t.millisecondsSinceEpoch);
+
+  /// The profile picture: a card's bird and photo, its rarity (the ring's colour) and the
+  /// round crop (zoom, then the offset as a share of the circle's size).
+  Map<String, dynamic>? get avatar => switch (_prefs.getString('avatar')) {
+    final j? => jsonDecode(j) as Map<String, dynamic>,
+    null => null,
+  };
+  set avatar(Map<String, dynamic>? a) {
+    a == null
+        ? _prefs.remove('avatar')
+        : _prefs.setString('avatar', jsonEncode(a));
+    notifyListeners();
+  }
+
+  /// The 3 cards of the hall of fame (card keys; "" for an empty slot).
+  List<String> get hall => _prefs.getStringList('hall') ?? const ['', '', ''];
+  set hall(List<String> keys) {
+    _prefs.setStringList('hall', keys);
+    notifyListeners();
+  }
+
+  /// Players whose friend requests are hidden (kept in the backup).
+  Set<String> get blocked => {...?_prefs.getStringList('blocked')};
+  set blocked(Set<String> uids) {
+    _prefs.setStringList('blocked', uids.toList());
+    notifyListeners();
+  }
+
   /// The friend whose invite link brought this install (their account id), read once from
   /// the Play referrer (see account.dart); their welcome card is given while [welcomed] is false.
   String? get invitedBy => _prefs.getString('invitedBy');
@@ -810,6 +854,7 @@ class Store extends ChangeNotifier {
     'alarmStreak': alarmStreak,
     'bestAlarmStreak': bestAlarmStreak,
     'twitchBonus': twitchBonus,
+    'blocked': blocked.toList(),
   };
 
   /// Replaces the collection with [b] (a merged [backup]).
@@ -817,8 +862,8 @@ class Store extends ChangeNotifier {
     await _prefs.setString('cards', b['cards'] as String);
     await _prefs.setString('given', b['given'] as String);
     _cards = _given = _achievement = null; // decoded again at the next read
-    for (final k in ['heard', 'seriesDone']) {
-      await _prefs.setStringList(k, (b[k] as List).cast<String>());
+    for (final k in ['heard', 'seriesDone', 'blocked']) {
+      await _prefs.setStringList(k, (b[k] as List? ?? const []).cast<String>());
     }
     for (final k in [
       'streak',

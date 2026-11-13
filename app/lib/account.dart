@@ -12,6 +12,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'birds.dart';
 import 'cards.dart';
 import 'firebase_options.dart';
+import 'profile.dart';
 import 'store.dart';
 
 /// Cloud backup (roadmap Phase 1.1): a silent anonymous Firebase account, the collection
@@ -37,6 +38,7 @@ Future<void> signInQuietly(Store store) async {
     if (auth.currentUser case final user?) {
       unawaited(_readReferrer(store, user.uid));
       unawaited(friendsJoined(store).catchError((_) => store.friends));
+      unawaited(ensureProfile(store));
     }
     store.addListener(() => _backupSoon(store));
     // The binding keeps the listener: written when the app goes to the background.
@@ -209,6 +211,7 @@ Map<String, Object?> mergeBackups(
     'given': jsonEncode(given.values.toList()),
     'heard': union('heard').difference(won).toList(),
     'seriesDone': union('seriesDone').toList(),
+    'blocked': union('blocked').toList(),
     for (final k in [
       'streak',
       'bestStreak',
@@ -284,7 +287,17 @@ Future<void> resetPassword(String email, String language) {
 Future<void> _signInTo(Store store, AuthCredential cred) async {
   final auth = FirebaseAuth.instance;
   final anon = auth.currentUser;
-  if (anon != null && anon.isAnonymous) await _deleteBackup(anon.uid);
+  if (anon != null && anon.isAnonymous) {
+    // The anonymous account's @name and profile go: the account signed in keeps its own.
+    // shortcut: its friends aren't carried over; merge them if anonymous players befriend.
+    try {
+      await deleteSocial(anon.uid, store.username);
+    } on Exception catch (e) {
+      debugPrint('profile: $e');
+    }
+    store.username = null;
+    await _deleteBackup(anon.uid);
+  }
   final User user;
   try {
     user = (await auth.signInWithCredential(cred)).user!;
@@ -297,6 +310,7 @@ Future<void> _signInTo(Store store, AuthCredential cred) async {
   await store.restore(mergeBackups(store.backup, remote));
   store.cloudOff = false;
   await _flush(store); // the merged collection, at once
+  await ensureProfile(store); // the account's own profile, or a new name
 }
 
 /// Deletes the cloud backup and the account (Play requirement). The cards stay on the
@@ -312,11 +326,13 @@ Future<void> deleteAccount(
   store.cloudOff = true; // no backup while deleting
   try {
     _timer?.cancel();
-    // Who invited this player goes too (the inviter's count drops by one).
+    // Who invited this player goes too (the inviter's count drops by one), and their
+    // profile, @name and friendships.
     await FirebaseFirestore.instance
         .collection('referrals')
         .doc(user.uid)
         .delete();
+    await deleteSocial(user.uid, store.username);
     await _deleteBackup(
       user.uid,
     ); // while signed in: the rules allow only the owner
@@ -341,6 +357,7 @@ Future<void> deleteAccount(
     _resume(store);
     rethrow;
   }
+  store.username = null; // the profile and @name are gone with the account
   if (_googleReady != null) await GoogleSignIn.instance.signOut();
 }
 
@@ -348,6 +365,9 @@ void _resume(Store store) {
   _forget();
   store.cloudOff = false;
   unawaited(_flush(store)); // the backup written back
+  // The profile may already be deleted: read again, or a new automatic @name.
+  store.username = null;
+  unawaited(ensureProfile(store));
 }
 
 const _referrer = MethodChannel('early_bird/referrer'); // MainActivity
