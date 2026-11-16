@@ -160,7 +160,7 @@ class Recording {
   final bool nc; // non-commercial license: replace before any monetization
 }
 
-/// Languages of the catalog's names (pipeline LANGS); EN and FR always present.
+/// Languages of the catalog's names (pipeline LANGS); EN always present.
 const catalogLangs = ['en', 'fr', 'de', 'es'];
 
 /// The name in [locale]'s language from a catalog entry's `en` / `fr` / `de` / `es`
@@ -210,7 +210,7 @@ class Bird {
 
   final String id, latin, name, order, family, photo, photoCredit;
   final Map<String, String> names; // language -> common name (see localName)
-  /// Extra photos (catalog 1.1), best first: the best one goes to Legendary cards.
+  /// Extra photos (catalog 1.1), each as likely as the catalog photo on a card (drawPhoto).
   final List<({String photo, String credit})> variants;
 
   /// Leucistic / melanistic photos for Shiny cards (picked by hand).

@@ -63,6 +63,14 @@ reward: uncommon
 family: Turdidae
 reward: rare
 
+## parrots | Parrots & cockatoos | Perroquets et cacatoès | Papageien & Kakadus | Loros y cacatúas | Cacatua galerita
+order: Psittaciformes
+reward: epic
+
+## honeyeaters | Honeyeaters | Méliphages | Honigfresser | Mieleros | Anthochaera carunculata
+family: Meliphagidae
+reward: rare
+
 ## Habitats
 
 ## woods | Deep woods | Forêt profonde | Tiefer Wald | Bosque profundo | Dryocopus martius
@@ -156,6 +164,11 @@ birds: Phylloscopus inornatus, Xema sabini, Tichodroma muraria, Luscinia svecica
   Remiz pendulinus, Gypaetus barbatus, Ficedula parva, Calidris pugnax,
   Strix nebulosa, Setophaga kirtlandii, Grus americana, Gymnogyps californianus,
   Pinicola enucleator, Setophaga cerulea, Picoides arcticus
+reward: legendary
+
+## flightless | Flightless | Cloués au sol | Flugunfähig | Sin vuelo | Apteryx mantelli
+family: Spheniscidae, Apterygidae, Dromaiidae, Casuariidae
+birds: Strigops habroptilus, Porphyrio hochstetteri, Gallirallus australis
 reward: legendary
 
 ## Voices

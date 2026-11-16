@@ -12,7 +12,7 @@ Iterative: each step ends with something that runs on a real Android device and 
 Updates during the closed test don't reset its clock. Testers' emails stay in the Play Console, never in the repo.
 - [x] Version **1.1.0+4**, signed release bundle (no DEV_TOOLS), README rewritten (2026-11-13)
 - [ ] **User:** banned-words review in `app/lib/names.dart` (`bannedNames`)
-- [ ] Upload to **internal testing** first, install from Play: Google sign-in (Play signing SHA-1), invite link → referrer → welcome card, a test purchase (license tester set), in-app review prompt
+- [x] Upload to **internal testing** first, install from Play: Google sign-in (Play signing SHA-1), invite link → referrer → welcome card, a test purchase (license tester set), in-app review prompt (checked by the user on the S22, 2026-11-13; the S22 now runs the Play build, so a debug `adb install -r` fails on the signature until it's uninstalled)
 - [ ] Then the same bundle to the **closed testing** track, release notes in 4 languages
 - [ ] Play Console: store listing (trading bullet changed: "Trade cards with your friends, wherever they are", 4 languages, `store-listing.md`); Data safety for accounts + data deletion URL `https://cdn.earlybirdalarm.app/delete-account.html` (done 2026-11-13 per the user, check); Bluetooth / precise-location declarations gone; **full-screen intent** declaration (alarm clock); product `twitch_plus` titled "Early Bird Plus"
 - [ ] Upgrade check: a real S22 1.0.0+3 prefs export in `upgrade_test.dart` (needs the user's OK for adb); the user's collection exported before switching the S22 to the Play build (different signature = another app; the cloud backup now covers it after a Google sign-in)

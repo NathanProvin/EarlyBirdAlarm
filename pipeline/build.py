@@ -1,4 +1,4 @@
-"""Builds the Early Bird content for every region of Europe and North America.
+"""Builds the Early Bird content for every region of Europe, North America, Australia and New Zealand.
 
 Run from the repo root:  py pipeline/build.py            (all regions)
                          py pipeline/build.py N48E002,FR (a few regions, for testing)
@@ -40,9 +40,15 @@ AVONET_URL = "https://ndownloader.figshare.com/files/34480856"  # Tobias et al. 
 
 ROOT = Path(__file__).resolve().parent
 CACHE = ROOT / "cache"
-OUT = ROOT / "site" / "v1"
+# EB_OUT: a test build's own folder, so it never touches the live catalog or numbers.json
+# (a build deletes files its species don't use).
+OUT = Path(os.environ["EB_OUT"]) if os.environ.get("EB_OUT") else ROOT / "site" / "v1"
 MY_PHOTOS = ROOT / "my_photos"
-NUMBERS = ROOT / "numbers.json"  # permanent card numbers, see add_card_data
+NUMBERS = OUT / "numbers.json" if os.environ.get("EB_OUT") else ROOT / "numbers.json"  # permanent card numbers, see add_card_data
+# Permanent bird ids {GBIF key: id}: saved cards point at the id, so a GBIF rename (Sylvia ->
+# Curruca) must not change it (2026-11-16). The first build fills it with today's ids (GBIF
+# answers are in the HTTP cache, so the same names as the 1.1 catalog).
+IDS = OUT / "ids.json" if os.environ.get("EB_OUT") else ROOT / "ids.json"
 FFMPEG = ROOT.parent / ".tools" / "ffmpeg" / "bin" / "ffmpeg.exe"
 UA = "EarlyBirdAlarm-pipeline/0.1 (https://github.com/NathanProvin/EarlyBirdAlarm)"
 
@@ -68,7 +74,7 @@ def save_photo(src, out):
     ffmpeg("-i", str(src), "-vf", fit, "-frames:v", "1", "-q:v", "2", str(out))
 
 
-def get(url, params=None, headers=None, binary=False):
+def get(url, params=None, headers=None, binary=False, tries=8):
     """GET with a disk cache keyed by the full URL (the xeno-canto key is left out of the key)."""
     if params:
         url += "?" + urllib.parse.urlencode(params, doseq=True)  # lists = repeated params
@@ -76,7 +82,7 @@ def get(url, params=None, headers=None, binary=False):
     path = CACHE / "http" / hashlib.sha1(cache_key.encode()).hexdigest()
     if not path.exists():
         req = urllib.request.Request(url, headers={"User-Agent": UA, **(headers or {})})
-        for attempt in range(8):
+        for attempt in range(tries):
             try:
                 with urllib.request.urlopen(req, timeout=60) as r:
                     data = r.read()
@@ -84,7 +90,7 @@ def get(url, params=None, headers=None, binary=False):
                     raise RuntimeError(data[:200])  # e.g. "search too busy": retry, never cache it
                 break
             except Exception as e:  # network hiccup or rate limit: back off, then give up
-                if attempt == 7:
+                if attempt == tries - 1:
                     raise RuntimeError(f"GET failed: {cache_key}") from e
                 time.sleep(15 * (attempt + 1))  # ~7 min in total: rides out short API outages
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -127,33 +133,49 @@ WINGSPAN_RE = [re.compile(r"wing\s?-?span[^.;]{0,40}?" + NUM, re.I),
                re.compile(NUM + r"[^.;]{0,25}?wing\s?-?span", re.I)]
 LENGTH_RE = [re.compile(NUM + r"[^.;]{0,25}?\b(?:long|in length|in total length)\b", re.I),
              re.compile(r"\b(?:length|measures|measuring)\b[^.;]{0,30}?" + NUM, re.I)]
-PART = re.compile(r"wing|tail|bill|beak|tarsus|leg|egg|feather|crest", re.I)
+PART = re.compile(r"wing(?!\s?-?span)|tail|bill|beak|tarsus|leg|toe|claw|egg|feather|crest", re.I)
+IMPERIAL = re.compile(r"\s*\(\d[^()]*?\b(?:in|ft|lb|oz)\)")  # "(15.5–17.5 in)": its dot would end the match
 
 
-def find_size(text, patterns, exclude_parts):
-    """(mean cm, sd cm or None) from the first matching "13–14 cm" style phrase."""
+def find_size(text, patterns, exclude_parts, ok=lambda cm: True):
+    """(mean cm, sd cm or None) from the first matching "13–14 cm" style phrase whose mean is ok."""
     for p in patterns:
         for m in p.finditer(text):
-            context = text[max(0, m.start() - 20):m.end()]
+            # 20 characters before, and the two words after ("5–8 cm long orange-red beak")
+            context = text[max(0, m.start() - 20):m.end()] + re.match(r"(?:\s+[\w-]+){0,2}", text[m.end():])[0]
             if exclude_parts and PART.search(context):
                 continue  # "wing length 7 cm" is not the body length
             lo, hi, unit = float(m[1]), float(m[2] or m[1]), m[3]
             scale = {"mm": 0.1, "cm": 1, "m": 100}[unit]
-            if hi < lo:
+            if hi < lo or not ok((lo + hi) / 2 * scale):
                 continue
             return (lo + hi) / 2 * scale, ((hi - lo) / 4 * scale) or None  # a range ≈ ±2 sd
     return None
 
+assert find_size(IMPERIAL.sub("", "The toe and claw total 15 cm (6 in) in length. Emus range in length from 139 to 164 cm"),
+                 LENGTH_RE, True)[0] == 151.5
+assert find_size("easily recognized by the 5–8 cm long orange-red beak", LENGTH_RE, True) is None
+assert find_size("has a body length of 34 to 58 cm and a wingspan from 74 to 120 cm", LENGTH_RE, True)[0] == 46
+assert find_size(IMPERIAL.sub("", "Adults range from 40–45 cm (15.5–17.5 in) in length."), LENGTH_RE, True)[0] == 42.5
 
-def wikipedia_sizes(title):
+
+def plausible_length(mass):
+    """Body length check from mass (g): length ≈ 4.5 × ∛mass cm, ×0.5–2.5 for herons and tails.
+    Rules out the egg, tail, prey or track lengths an article mentions before the bird's own."""
+    return lambda cm: 5 <= cm <= 200 and (not mass or 0.5 <= cm / (4.5 * mass ** (1 / 3)) <= 2.5)
+
+
+assert find_size("eggs average 5.1 cm in length. The grebe is 40–50 cm long", LENGTH_RE, True,
+                 plausible_length(1000))[0] == 45
+
+
+def wikipedia_sizes(title, mass=None):
     """(wingspan, length) from the English Wikipedia article, each (mean cm, sd) or None."""
     r = get("https://en.wikipedia.org/w/api.php", {
         "action": "query", "format": "json", "prop": "extracts", "explaintext": 1,
         "redirects": 1, "titles": title})
-    text = next(iter(r["query"]["pages"].values())).get("extract", "")
-    span, length = find_size(text, WINGSPAN_RE, False), find_size(text, LENGTH_RE, True)
-    if length and not 5 <= length[0] <= 200:
-        length = None
+    text = IMPERIAL.sub("", next(iter(r["query"]["pages"].values())).get("extract", ""))
+    span, length = find_size(text, WINGSPAN_RE, False), find_size(text, LENGTH_RE, True, plausible_length(mass))
     if span and (not 8 <= span[0] <= 350 or (length and span[0] < 0.9 * length[0])):
         span = None
     return span, length
@@ -244,11 +266,14 @@ COUNTRIES = {
     "RO": ("Romania", "Roumanie", "Rumänien", "Rumanía"), "RS": ("Serbia", "Serbie", "Serbien", "Serbia"), "SE": ("Sweden", "Suède", "Schweden", "Suecia"),
     "SI": ("Slovenia", "Slovénie", "Slowenien", "Eslovenia"), "SK": ("Slovakia", "Slovaquie", "Slowakei", "Eslovaquia"), "UA": ("Ukraine", "Ukraine", "Ukraine", "Ucrania"),
     "XK": ("Kosovo", "Kosovo", "Kosovo", "Kosovo"),
+    "NZ": ("New Zealand", "Nouvelle-Zélande", "Neuseeland", "Nueva Zelanda"),
 }
-MAINLAND = {"ES": ((35, 44), (-10, 5)), "PT": ((36, 43), (-10, -6))}  # no Canaries / Azores / Madeira
-# Bioregions of large countries: id -> (names in LANGS order, GBIF filter). US/Canada by GADM state ids.
+MAINLAND = {"ES": ((35, 44), (-10, 5)), "PT": ((36, 43), (-10, -6)),  # no Canaries / Azores / Madeira
+            "NZ": ((-48, -34), (166, 179))}  # no Chatham, Kermadec or subantarctic islands
+# Bioregions of large countries: id -> (names in LANGS order, GBIF filter). US/Canada/Australia by GADM state ids.
 US = lambda *n: {"gadmGid": [f"USA.{i}_1" for i in n]}
 CA = lambda *n: {"gadmGid": [f"CAN.{i}_1" for i in n]}
+AU = lambda *n: {"gadmGid": [f"AUS.{i}_1" for i in n]}
 BIOREGIONS = {
     "US-NE": (("USA — Northeast", "États-Unis — Nord-Est", "USA — Nordosten", "EE. UU. — Noreste"), US(7, 8, 9, 20, 21, 22, 30, 31, 33, 39, 40, 46, 47, 49)),
     "US-SE": (("USA — Southeast", "États-Unis — Sud-Est", "USA — Südosten", "EE. UU. — Sudeste"), US(1, 4, 10, 11, 18, 19, 25, 34, 41, 43)),
@@ -263,6 +288,14 @@ BIOREGIONS = {
     "CA-PR": (("Canada — Prairies", "Canada — Prairies", "Kanada — Prärien", "Canadá — Praderas"), CA(1, 3, 12)),
     "CA-BN": (("Canada — British Columbia & North", "Canada — Colombie-Britannique et Nord", "Kanada — British Columbia & Norden", "Canadá — Columbia Británica y Norte"), CA(2, 6, 8, 13)),
     "RU-EU": (("European Russia", "Russie d'Europe", "Europäisches Russland", "Rusia europea"), {"country": "RU", "decimalLongitude": "19,60"}),
+    # Australia (1.2): GADM 2 ACT and 4 Jervis Bay go with NSW; 1 Ashmore and 3 Coral Sea (reefs) are left out.
+    "AU-NSW": (("Australia — New South Wales", "Australie — Nouvelle-Galles du Sud", "Australien — New South Wales", "Australia — Nueva Gales del Sur"), AU(2, 4, 5)),
+    "AU-VIC": (("Australia — Victoria", "Australie — Victoria", "Australien — Victoria", "Australia — Victoria"), AU(10)),
+    "AU-QLD": (("Australia — Queensland", "Australie — Queensland", "Australien — Queensland", "Australia — Queensland"), AU(7)),
+    "AU-SA": (("Australia — South Australia", "Australie — Australie-Méridionale", "Australien — South Australia", "Australia — Australia Meridional"), AU(8)),
+    "AU-WA": (("Australia — Western Australia", "Australie — Australie-Occidentale", "Australien — Western Australia", "Australia — Australia Occidental"), AU(11)),
+    "AU-NT": (("Australia — Northern Territory", "Australie — Territoire du Nord", "Australien — Northern Territory", "Australia — Territorio del Norte"), AU(6)),
+    "AU-TAS": (("Australia — Tasmania", "Australie — Tasmanie", "Australien — Tasmanien", "Australia — Tasmania"), AU(9)),
 }
 # Countries without a bird list of their own yet: listed as "coming soon" (their GPS cells work).
 PLANNED = {
@@ -274,8 +307,19 @@ PLANNED = {
     "SJ": ("Svalbard", "Svalbard", "Spitzbergen", "Svalbard"), "GL": ("Greenland", "Groenland", "Grönland", "Groenlandia"), "MX": ("Mexico", "Mexique", "Mexiko", "México"),
     "CU": ("Cuba", "Cuba", "Kuba", "Cuba"), "BS": ("Bahamas", "Bahamas", "Bahamas", "Bahamas"),
 }
-# 2°×2° cells for GPS: Europe and the US + Canada.
-CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52))]
+# 2°×2° cells for GPS: Europe, the US + Canada, Australia, New Zealand (1.2).
+CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52)), ((-44, -10), (112, 154)), ((-48, -34), (166, 180))]
+
+
+def continent(rid):
+    """"eu", "na" or "oc" of a region id (cell, country or bioregion); the app's continentOf mirrors it."""
+    if rid.startswith(("US-", "CA-")) or (rid[0] in "NS" and "W" in rid[3:]):
+        return "na"
+    return "oc" if rid.startswith(("AU-", "NZ")) or (rid[0] == "S" and rid[3] == "E") else "eu"
+
+
+assert [continent(r) for r in ("N48E002", "FR", "N40W074", "US-NE", "S34E150", "AU-NSW", "NZ", "S46E168")] \
+    == ["eu", "eu", "na", "na", "oc", "oc", "oc", "oc"]
 
 
 def cell_id(lat, lon):
@@ -342,7 +386,7 @@ def cell_names(cells):
     def region_of(cell_filter):
         base = {"classKey": 212, "limit": 0, "occurrenceStatus": "PRESENT", **cell_filter}
         country = top(base, "country")
-        if country in ("US", "CA"):
+        if country in ("US", "CA", "AU"):
             return state_region.get(top(base, "gadmLevel1Gid"))
         return "RU-EU" if country == "RU" else country if country in names else None
 
@@ -382,6 +426,7 @@ def presence(region_filter):
 # Hohe Tauern park database is 16,655 of Austria's 18,395 Bearded Vulture records, which gave it
 # level 1 in Austria South-West). Presence still uses every dataset.
 EBIRD = "4fa7b334-ce0d-4e88-aaae-2e0c138d049e"
+XC_DATASET = "b1047888-ae52-4179-9dd5-5448ea342a24"  # xeno-canto on GBIF
 EBIRD_MIN = 5000  # eBird records in the region that month; fewer: all data, as before
 
 
@@ -450,6 +495,22 @@ def gbif_name(key, lang):
     r = get(f"https://api.gbif.org/v1/species/{key}/vernacularNames", {"limit": 200})
     names = [n["vernacularName"].strip() for n in r["results"] if n.get("language") == lang]
     return cap(max(names, key=lambda n: sum(m.lower() == n.lower() for m in names))) if names else None
+
+
+def synonyms(key):
+    """GBIF's species-rank synonyms of a key: its newer names when GBIF's accepted one is a name
+    nobody else uses (American Goshawk: Falco atricapillus, synonym Astur atricapillus)."""
+    r = get(f"https://api.gbif.org/v1/species/{key}/synonyms", {"limit": 50})
+    return list(dict.fromkeys(x["canonicalName"] for x in r.get("results", [])
+                              if x.get("rank") == "SPECIES" and x.get("canonicalName")))
+
+
+def inat_species(latin):
+    """(current name, English name) of the iNaturalist species this exact name means, or None."""
+    t = get("https://api.inaturalist.org/v1/taxa", {"q": latin, "rank": "species", "per_page": 10})
+    time.sleep(1)  # iNaturalist asks for ~1 request a second
+    return next(((x["name"], x.get("preferred_common_name")) for x in t.get("results", [])
+                 if (x.get("matched_term") or "").lower() == latin.lower()), None)
 
 
 def cap(s):
@@ -531,6 +592,7 @@ def xc_recordings(latin, key, n, pinned=None, en=None, nc=False):
     return picked
 
 
+# Fixed (user, 2026-11-16): every source, xeno-canto, iNaturalist, GBIF and Commons, keeps 5 s.
 # Shortest usable recording, xeno-canto and iNaturalist (2026-11-03, user's choice; 10 s before):
 # brings back species whose only free clips are short (Mandarin Duck, Montagu's Harrier, Ruff,
 # Hawk Owl…); they loop while ringing. Longer recordings still come first.
@@ -627,6 +689,80 @@ def xc_search(latin, key, licenses, allowed, pinned=None, en=None):
     return recs
 
 
+def download_clip(url, name, users, user, prefix, **rec):
+    """A downloaded clip as a pick (like inat_recordings), or None if too short or the recordist is taken."""
+    if user in users:
+        return None
+    src = CACHE / "files" / name
+    if not src.exists():
+        try:
+            src.write_bytes(get(url, binary=True, tries=2))
+        except RuntimeError:  # a dead link in an archive (Berlin's moved files): skip it
+            print(f"    ! dead link {url}")
+            return None
+    if (secs := seconds_of(src)) < MIN_SECONDS:
+        return None
+    users.add(user)
+    return {"src": src, "seconds": int(secs), "rec": user, "prefix": prefix, **rec}
+
+
+def gbif_sounds(key, n):
+    """Up to n sounds of GBIF records of this species key (synonyms resolved by GBIF), from any
+    dataset, each with its own free licence (a dataset's licence isn't its files': the Borror Lab
+    and Berlin archive files are copyrighted or NC). Local first; kind from the record's text."""
+    r = get("https://api.gbif.org/v1/occurrence/search",
+            {"taxonKey": key, "mediaType": "Sound", "limit": 300})
+    obs = [o for o in r.get("results", []) if o.get("datasetKey") != XC_DATASET]  # xeno-canto: its own API
+    local = lambda o: any(a <= (o.get("decimalLatitude") or 999) <= b and c <= (o.get("decimalLongitude") or 999) <= d
+                          for (a, b), (c, d) in CELL_AREAS)
+    picked, users = [], set()
+    for o in sorted(obs, key=lambda o: not local(o)):
+        for m in o.get("media", []):
+            lic = m.get("license") or ""
+            if len(picked) >= n or m.get("type") != "Sound" or not m.get("identifier") or not XC_OK_LICENSE.search(lic):
+                continue
+            text = " ".join(filter(None, [o.get("behavior"), m.get("description"), m.get("title")]))
+            if SKIP_TYPES.search(text):
+                continue
+            who = m.get("creator") or m.get("rightsHolder") or o.get("recordedBy") or "?"
+            ref = f"GBIF {o['key']}"
+            if rec := download_clip(m["identifier"], f"gbif-{o['key']}-{len(picked)}.audio", users, who, "g",
+                                    id=o["key"], ref=ref, file=m["identifier"], kind=kind(text), lic=lic, local=local(o)):
+                picked.append(rec)
+    return picked
+
+
+COMMONS_LIC = {"cc0": "", "public domain": ""}  # else "CC BY(-SA) x.y" → its URL, for the credit
+
+
+def commons_audio(latin, n):
+    """Up to n free audio files on Wikimedia Commons mentioning the Latin name (the NZ Department
+    of Conservation recordings…). Not by English name: "Rock Wren" is also an American bird."""
+    r = get("https://commons.wikimedia.org/w/api.php", {
+        "action": "query", "format": "json", "list": "search", "srnamespace": 6,
+        "srsearch": f'"{latin}" filetype:audio', "srlimit": 20})
+    titles = [h["title"] for h in r.get("query", {}).get("search", []) if not SKIP_TYPES.search(h["title"])]
+    picked, users = [], set()
+    for t in titles:
+        if len(picked) >= n:
+            break
+        info = (next(iter(get("https://commons.wikimedia.org/w/api.php", {
+            "action": "query", "format": "json", "prop": "imageinfo", "titles": t, "iiprop": "url|extmetadata",
+            "iiextmetadatafilter": "LicenseShortName|Artist"})["query"]["pages"].values())).get("imageinfo") or [{}])[0]
+        meta = info.get("extmetadata", {})
+        short = meta.get("LicenseShortName", {}).get("value", "").strip()
+        m = re.fullmatch(r"CC BY(-SA)? (\d\.\d)", short, re.I)
+        if not info.get("url") or not (m or short.lower() in COMMONS_LIC):
+            continue
+        lic = f"creativecommons.org/licenses/by{(m[1] or '').lower()}/{m[2]}/" if m else ""
+        who = html.unescape(re.sub(r"<[^>]+>", "", meta.get("Artist", {}).get("value", ""))).strip() or "Wikimedia Commons"
+        if rec := download_clip(info["url"], "commons-" + hashlib.sha1(t.encode()).hexdigest()[:12] + ".audio",
+                                users, who, "w", id=t, ref="Wikimedia Commons", file=info["url"],
+                                kind=kind(t.replace("-", " ")), lic=lic, **({"licName": "Public domain"} if short.lower() == "public domain" else {})):
+            picked.append(rec)
+    return picked
+
+
 def xc_pick(recs, n, pinned=None):
 
     def seconds(r):
@@ -641,7 +777,7 @@ def xc_pick(recs, n, pinned=None):
     # recordings of species already in the catalog don't change.
     usable = [r for r in good if r["seconds"] >= 10] or [r for r in good if r["seconds"] >= MIN_SECONDS]
     recs = [r for r in usable if not SKIP_TYPES.search(r.get("type", ""))]
-    def in_area(r):  # recorded in Europe or North America: the dialect our users hear
+    def in_area(r):  # recorded in one of our zones: the dialect our users hear
         try:
             lat, lon = float(r.get("lat")), float(r.get("lon") or r.get("lng"))
         except (TypeError, ValueError):
@@ -716,24 +852,24 @@ FALLBACK_PER_CONTINENT = 10
 
 
 def build_fallback():
-    """Bundle the commonest birds of Europe and of North America in the app, with one song each,
+    """Bundle the commonest birds of each continent (Europe, North America, Oceania) in the app, with one song each,
     so an alarm still rings with a real bird when the phone is offline."""
     species = {b["id"]: b for b in json.loads((OUT / "species.json").read_text(encoding="utf-8"))}
-    score = {"eu": {}, "na": {}}  # bird id -> regions where it's common
+    score = {"eu": {}, "na": {}, "oc": {}}  # bird id -> regions where it's common
     for f in (OUT / "regions").iterdir():
         rid = f.stem
-        continent = "na" if rid.startswith(("US-", "CA-")) or (rid[0] in "NS" and "W" in rid) else "eu"
+        cont = continent(rid)
         for bird, months in json.loads(f.read_text(encoding="utf-8")).items():
             if "common" in months.values():
-                score[continent][bird] = score[continent].get(bird, 0) + 1
+                score[cont][bird] = score[cont].get(bird, 0) + 1
     chosen, continent_of = [], {}  # the app keeps only the user's continent offline
     # Only birds with a free recording: the offline list ships inside the paid app.
     free = {bid for bid, b in species.items() if any(not r.get("nc") for r in b["recordings"])}
-    for continent in ("eu", "na"):
-        ranked = sorted(set(score[continent]) & free, key=lambda b: -score[continent][b])
+    for cont in score:
+        ranked = sorted(set(score[cont]) & free, key=lambda b: -score[cont][b])
         picks = [b for b in ranked if b not in chosen][:FALLBACK_PER_CONTINENT]
         chosen += picks
-        continent_of |= dict.fromkeys(picks, continent)
+        continent_of |= dict.fromkeys(picks, cont)
     for sub in ("audio", "photos"):
         (FALLBACK / sub).mkdir(parents=True, exist_ok=True)
         for f in (FALLBACK / sub).iterdir():
@@ -799,7 +935,8 @@ def build_series():
                     "signature": by_latin.get(s["signature"]), "birds": ids})
         print(f"    {s['id']}: {len(ids)} birds")
     write_json(OUT / "series.json", out)
-    write_json(FALLBACK / "series.json", out)
+    if not os.environ.get("EB_OUT"):  # a test build leaves the app's bundled copy alone
+        write_json(FALLBACK / "series.json", out)
 
 
 CONTACT_EMAIL = "nanodev009@gmail.com"  # public contact for the privacy policy (else the GitHub issues page)
@@ -922,6 +1059,7 @@ def main():
     xc_key_file = ROOT / "xc_key.txt"
     xc_key = xc_key_file.read_text().strip() if xc_key_file.exists() else None
     overrides = read_csv(ROOT / "overrides.csv")  # "Latin name" -> "xc=123" / "commons=File:x.jpg"
+    english = read_csv(ROOT / "names.csv")  # "Latin name" -> English name, where Wikidata and GBIF only give the Latin one
     my_credits = read_csv(MY_PHOTOS / "credits.csv")
 
     print("1/6 GBIF presence per region")
@@ -943,6 +1081,22 @@ def main():
     # GBIF renumbers some species (Junco hyemalis: 9362842 vs 2492010 on Wikidata): match those by name.
     unmatched = {(taxa[k].get("canonicalName") or taxa[k]["scientificName"]): k for k in keys if k not in wd}
     wd |= {unmatched[latin]: v for latin, v in wikidata(unmatched, by_latin=True).items()}
+    # Still no English name (none, or just the Latin one: Wikidata's Falco atricapillus item): try
+    # the key's GBIF synonyms; the one Wikidata or iNaturalist names becomes the bird's other name
+    # (recordings, photos). Not a name another key of ours has: that's a different bird.
+    taken = {taxa[k].get("canonicalName") for k in keys}
+    unnamed = lambda k: (wd.get(k, ({},))[0].get("en") or taxa[k].get("canonicalName")) == taxa[k].get("canonicalName")
+    syn = {k: [s for s in synonyms(k) if s not in taken] for k in keys if unnamed(k)}
+    by_syn = wikidata({s for v in syn.values() for s in v}, by_latin=True)
+    for k, names_ in syn.items():
+        if s := next((s for s in names_ if s in by_syn), None):
+            wd[k] = (*by_syn[s][:2], s)
+        else:  # not on Wikidata either (Astur atricapillus): iNaturalist's English name
+            for s in names_:
+                if (inat := inat_species(s)) and inat[1]:
+                    wd[k] = ({"en": inat[1]}, [], inat[0])
+                    break
+    ids = json.loads(IDS.read_text(encoding="utf-8")) if IDS.exists() else {}
 
     birds, dropped, seen, id_of = [], [], {}, {}  # id_of: GBIF key -> bird id
     tmp = CACHE / "files"
@@ -953,7 +1107,7 @@ def main():
     for key in sorted(keys, key=lambda k: -reach[k]):
         t = taxa[key]
         latin = t.get("canonicalName") or t["scientificName"]
-        bird_id = latin.lower().replace(" ", "_")
+        bird_id = ids.setdefault(str(key), latin.lower().replace(" ", "_"))
         names, images, wd_latin = wd.get(key, ({}, [], None))
         for g, code in zip(LANGS, ("eng", "fra", "deu", "spa")):  # gaps: GBIF's vernacular names
             if not names.get(g) or names[g].lower() == latin.lower():
@@ -962,7 +1116,7 @@ def main():
             names["es"] = spanish_case(names["es"])
         if names.get("de") and re.fullmatch(r"[A-Z][a-z]+ [a-z]+", names["de"]):
             names["de"] = None  # a Latin name ("Accipiter cooperi"): German names never look like that
-        en, fr = names["en"], names["fr"]
+        en = names["en"] = english.get(latin, names["en"])
         if en and en.lower() in seen:  # two GBIF names for one bird (e.g. Parus/Poecile montanus)
             id_of[key] = seen[en.lower()]["id"]
             continue
@@ -973,8 +1127,9 @@ def main():
         def drop(reason):
             dropped.append((latin, en, reason, reach[key]))
 
-        if not (en and fr) or latin.lower() in (en.lower(), fr.lower()):
-            drop("no EN/FR common name on Wikidata")
+        # English required, other languages optional (1.2): the app falls back to English.
+        if not en or latin.lower() == en.lower():
+            drop("no English common name on Wikidata or GBIF")
             continue
         if not t.get("order") or not t.get("family"):
             drop("no order/family on GBIF")
@@ -988,7 +1143,8 @@ def main():
             save_photo(mine, photo_out)
             photo_credit = f"Photo: {my_credits.get(mine.name, '© ' + MY_NAME)}"
         else:
-            found = next(filter(None, map(commons_photo, images)), None) or commons_search(latin)
+            found = (next(filter(None, map(commons_photo, images)), None) or commons_search(latin)
+                     or (wd_latin and wd_latin != latin and commons_search(wd_latin)))
             if not found:
                 drop("no photo with an allowed license")
                 continue
@@ -1006,16 +1162,24 @@ def main():
         n = RECORDINGS_PER_TIER[best_tier[key]]
         # xeno-canto may use a newer name than GBIF (Curruca vs Sylvia communis).
         other = wd_latin if wd_latin and wd_latin != latin else None
-        xc = lambda nc: (xc_recordings(latin, xc_key, n, pinned, nc=nc)
-                         or (other and xc_recordings(other, xc_key, n, nc=nc))
-                         or xc_recordings(latin, xc_key, n, en=en, nc=nc))
-        # Free xeno-canto, then free iNaturalist, then (main branch only) NC xeno-canto.
-        recs = (xc(False) or inat_recordings(latin, n) or (other and inat_recordings(other, n))
-                or (ALLOW_NC and xc(True)) or [])
+        # 2 spare candidates replace clips too faint or unconvertible (an epic bird has 1 clip:
+        # American Goshawk's was faint). Picks are greedy, so the first n stay the same.
+        m = n + 2
+        xc = lambda nc: (xc_recordings(latin, xc_key, m, pinned, nc=nc)
+                         or (other and xc_recordings(other, xc_key, m, nc=nc))
+                         or xc_recordings(latin, xc_key, m, en=en, nc=nc))
+        # Free xeno-canto, then free iNaturalist, then (main branch only) NC xeno-canto; then (1.2)
+        # GBIF sounds by species key, Commons audio.
+        # New sources only come after the old ones, so species already in the catalog keep their clips.
+        recs = (xc(False) or inat_recordings(latin, m) or (other and inat_recordings(other, m))
+                or (ALLOW_NC and xc(True))
+                or gbif_sounds(key, m) or commons_audio(latin, m) or (other and commons_audio(other, m)) or [])
         recordings = []
         for i, rec in enumerate(recs, 1):
+            if len(recordings) >= n:
+                break
             # iNaturalist clips get their own names: an old NC clip of the same bird is never reused.
-            name = f"{bird_id}-{'n' if 'src' in rec else ''}{i}.m4a"
+            name = f"{bird_id}-{rec.get('prefix', 'n' if 'src' in rec else '')}{i}.m4a"
             audio_out = OUT / "audio" / name
             # shortcut: delete site/v1/audio to re-encode after changing picks
             if not audio_out.exists() or audio_seconds(audio_out) < 3:  # a clip with no real sound
@@ -1047,7 +1211,7 @@ def main():
             recordings.append({
                 "file": f"audio/{name}", "kind": rec["kind"],
                 "credit": f"{rec['rec']} · {rec.get('ref', 'XC' + str(rec['id']))} · "
-                          f"{f'CC {lic[1].upper()} {lic[2]}' if lic else 'CC0'}",
+                          f"{f'CC {lic[1].upper()} {lic[2]}' if lic else rec.get('licName', 'CC0')}",
                 **({"nc": True} if rec.get("nc") else {}),
             })
         if not recordings:
@@ -1055,7 +1219,7 @@ def main():
             continue
         birds.append({
             "id": bird_id, "latin": latin,
-            # EN and FR always; DE / ES when known (the app falls back to English).
+            # EN always; FR / DE / ES when known (the app falls back to English).
             **{g: n for g, n in names.items() if n and n.lower() != latin.lower()},
             "order": t["order"], "family": t["family"],
             "recordings": recordings,
@@ -1068,6 +1232,8 @@ def main():
         id_of[key] = bird_id
         print(f"    + {latin}")
 
+    IDS.write_text(json.dumps(ids, ensure_ascii=False, indent=0) + "\n", encoding="utf-8")
+    assert len({b["id"] for b in birds}) == len(birds)  # no two kept birds share an id
     print("5/6 card stats")
     add_card_data(birds)
     files = set()
@@ -1140,8 +1306,8 @@ def add_card_data(birds):
     ratios = []
     for b in birds:
         names = [n for n in (b["latin"], b["_wd_latin"]) if n]
-        w_span, length = next((x for x in map(wikipedia_sizes, names) if any(x)), (None, None))
         m, cv = next((mass[n] for n in names if n in mass), (None, None))
+        w_span, length = next((x for x in (wikipedia_sizes(n, m) for n in names) if any(x)), (None, None))
         if not w_span and any(n in spans for n in names):
             w_span = (next(spans[n] for n in names if n in spans), None)
         if w_span and not w_span[1]:
@@ -1201,7 +1367,7 @@ def write_report(birds, dropped, regions, region_birds):
     lines += ["", f"## Dropped ({len(dropped)})", "", "| Latin | English | Reason | Regions |", "|---|---|---|---|"]
     for latin, en, reason, reach in sorted(dropped, key=lambda d: -d[3]):
         lines.append(f"| *{latin}* | {en or ''} | {reason} | {reach} |")
-    (ROOT / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (OUT / "report.md" if os.environ.get("EB_OUT") else ROOT / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
