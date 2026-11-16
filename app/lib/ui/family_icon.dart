@@ -9,31 +9,42 @@ import 'family_paths.dart';
 /// in a glass circle tinted with the rarity, at the top left of the card's photo.
 
 const familyGroups = <String, List<String>>{
-  'duck': ['Anatidae'],
+  'duck': ['Anatidae', 'Anseranatidae'],
   'gamebird': [
     'Phasianidae', 'Odontophoridae', 'Numididae', 'Cracidae', 'Tinamidae', //
-    'Turnicidae', 'Otididae',
+    'Turnicidae', 'Otididae', 'Megapodiidae',
   ],
   'diver': ['Gaviidae', 'Podicipedidae'],
   'pigeon': ['Columbidae', 'Pteroclididae'],
   'cuckoo': ['Cuculidae'],
-  'nightjar': ['Caprimulgidae', 'Nyctibiidae'],
+  'nightjar': [
+    'Caprimulgidae',
+    'Nyctibiidae',
+    'Aegothelidae',
+    'Podargidae',
+    'Steatornithidae',
+  ],
   'swift': ['Apodidae', 'Hirundinidae'],
   'hummingbird': ['Trochilidae'],
-  'rail': ['Rallidae'],
+  'rail': ['Rallidae', 'Heliornithidae'],
   'heron': [
     'Ardeidae', 'Ciconiidae', 'Threskiornithidae', 'Phoenicopteridae', //
-    'Gruidae', 'Aramidae',
+    'Gruidae', 'Aramidae', 'Eurypygidae', 'Scopidae',
   ],
   'shorebird': [
     'Scolopacidae', 'Charadriidae', 'Haematopodidae', 'Recurvirostridae', //
-    'Burhinidae', 'Glareolidae',
+    'Burhinidae',
+    'Glareolidae',
+    'Jacanidae',
+    'Rostratulidae',
+    'Pedionomidae',
+    'Dromadidae',
   ],
   'gull': ['Laridae', 'Stercorariidae'],
   'auk': ['Alcidae'],
   'seabird': [
     'Procellariidae', 'Diomedeidae', 'Hydrobatidae', 'Phaethontidae', //
-    'Fregatidae', 'Sulidae',
+    'Fregatidae', 'Sulidae', 'Pelecanoididae',
   ],
   'cormorant': ['Phalacrocoracidae', 'Anhingidae', 'Pelecanidae'],
   'raptor': ['Accipitridae', 'Cathartidae', 'Pandionidae'],
@@ -41,14 +52,42 @@ const familyGroups = <String, List<String>>{
   'owl': ['Strigidae', 'Tytonidae'],
   'kingfisher': [
     'Alcedinidae', 'Coraciidae', 'Meropidae', 'Momotidae', 'Upupidae', //
-    'Trogonidae', 'Ramphastidae',
+    'Trogonidae',
+    'Ramphastidae',
+    'Bucerotidae',
+    'Coliidae',
+    'Bucconidae',
+    'Galbulidae',
+    'Capitonidae',
+    'Semnornithidae',
   ],
-  'woodpecker': ['Picidae', 'Certhiidae', 'Furnariidae'],
-  'parrot': ['Psittacidae'],
-  'crow': ['Corvidae'],
+  'woodpecker': [
+    'Picidae',
+    'Certhiidae',
+    'Furnariidae',
+    'Climacteridae',
+    'Tichodromidae',
+  ],
+  'parrot': ['Psittacidae', 'Cacatuidae', 'Psittaculidae'],
+  'crow': [
+    'Corvidae',
+    'Cracticidae',
+    'Corcoracidae',
+    'Ptilonorhynchidae',
+    'Paradisaeidae',
+  ],
   'flycatcher': [
     'Tyrannidae', 'Cotingidae', 'Thamnophilidae', 'Bombycillidae', //
     'Ptilogonatidae',
+    'Pipridae',
+    'Formicariidae',
+    'Grallariidae',
+    'Conopophagidae',
+    'Rhinocryptidae',
+    'Sapayoaidae',
+    'Monarchidae',
+    'Rhipiduridae',
+    'Petroicidae',
   ],
   'shrike': [
     'Laniidae',
@@ -56,27 +95,58 @@ const familyGroups = <String, List<String>>{
     'Prionopidae',
     'Vireonidae',
     'Campephagidae',
+    'Artamidae',
+    'Pachycephalidae',
+    'Oreoicidae',
+    'Machaerirhynchidae',
+    'Dicruridae',
+    'Hypocoliidae',
   ],
   'tit': [
     'Paridae', 'Aegithalidae', 'Remizidae', 'Panuridae', 'Troglodytidae', //
-    'Sittidae', 'Cinclidae',
+    'Sittidae', 'Cinclidae', 'Maluridae', 'Acanthisittidae', 'Neosittidae',
   ],
   'warbler': [
     'Parulidae', 'Phylloscopidae', 'Sylviidae', 'Acrocephalidae', //
     'Locustellidae', 'Cettiidae', 'Cisticolidae', 'Regulidae', 'Polioptilidae',
     'Scotocercidae', 'Peucedramidae', 'Zosteropidae', 'Leiothrichidae',
-    'Pycnonotidae', 'Nectariniidae',
+    'Pycnonotidae',
+    'Nectariniidae',
+    'Meliphagidae',
+    'Acanthizidae',
+    'Pardalotidae',
+    'Dasyornithidae',
+    'Dicaeidae',
+    'Notiomystidae',
+    'Timaliidae',
+    'Pomatostomidae',
   ],
   'thrush': [
     'Turdidae', 'Muscicapidae', 'Mimidae', 'Sturnidae', 'Icteridae', //
     'Oriolidae',
+    'Pittidae',
+    'Psophodidae',
+    'Orthonychidae',
+    'Callaeatidae',
+    'Menuridae',
+    'Atrichornithidae',
+    'Donacobiidae',
   ],
   'finch': [
     'Fringillidae', 'Passerellidae', 'Passeridae', 'Emberizidae', //
     'Calcariidae', 'Cardinalidae', 'Thraupidae', 'Estrildidae', 'Ploceidae',
-    'Viduidae', 'Rhodinocichlidae', 'Prunellidae',
+    'Viduidae',
+    'Rhodinocichlidae',
+    'Prunellidae',
+    'Spindalidae',
+    'Mitrospingidae',
   ],
   'lark': ['Alaudidae', 'Motacillidae'],
+  'ratite': [
+    'Dromaiidae', 'Casuariidae', 'Struthionidae', 'Apterygidae', //
+    'Dinornithidae', 'Emeidae',
+  ],
+  'penguin': ['Spheniscidae'],
 };
 
 final _groupOf = {

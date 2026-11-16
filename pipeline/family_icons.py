@@ -35,6 +35,7 @@ SEARCH = {
     "tit": ["Paridae", "Troglodytidae", "Sittidae"], "warbler": ["Parulidae", "Sylviidae", "Phylloscopidae"],
     "thrush": ["Turdidae", "Sturnidae"], "finch": ["Fringillidae", "Cardinalidae"],
     "lark": ["Motacillidae", "Alaudidae"],
+    "ratite": ["Dromaiidae", "Casuariidae", "Struthionidae"], "penguin": ["Spheniscidae"],  # 1.2
 }
 
 PICKS = {  # group -> (uuid, crop or None, flip)
@@ -67,6 +68,8 @@ PICKS = {  # group -> (uuid, crop or None, flip)
     "thrush": ("ec11f62e-ed3e-49bb-bcff-4e47b281d378", None, True),  # Turdus merula
     "finch": ("6174bd27-8161-44c0-8629-293f3b618db3", None, True),  # Loxia curvirostra
     "lark": ("f4327bb3-76b9-4f60-b407-45e2c9ac602b", None, True),  # Motacilla alba
+    "ratite": ("bae88982-352f-43d0-b2ed-8d7661fa1d6f", None, False),  # Dromaius novaehollandiae
+    "penguin": ("21c50828-58d8-42df-9219-2c1b0fb57c99", None, False),  # Aptenodytes patagonicus
 }
 
 
