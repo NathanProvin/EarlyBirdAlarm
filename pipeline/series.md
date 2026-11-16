@@ -71,6 +71,30 @@ reward: epic
 family: Meliphagidae
 reward: rare
 
+## hummingbirds | Hummingbirds | Colibris | Kolibris | Colibríes | Archilochus colubris
+family: Trochilidae
+reward: epic
+
+## tanagers | Tanagers | Tangaras | Tangaren | Tangaras | Thraupis episcopus
+family: Thraupidae
+reward: rare
+
+## trogons | Trogons & motmots | Trogons et motmots | Trogone & Motmots | Trogones y momotos | Momotus lessonii
+family: Trogonidae, Momotidae
+reward: epic
+
+## toucans | Toucans & barbets | Toucans et barbus | Tukane & Bartvögel | Tucanes y barbudos | Ramphastos sulfuratus
+family: Ramphastidae, Semnornithidae, Capitonidae
+reward: epic
+
+## wheatears | Wheatears | Traquets | Steinschmätzer | Collalbas | Oenanthe oenanthe
+genus: Oenanthe
+reward: rare
+
+## larks | Larks | Alouettes | Lerchen | Alondras | Galerida cristata
+family: Alaudidae
+reward: rare
+
 ## Habitats
 
 ## woods | Deep woods | Forêt profonde | Tiefer Wald | Bosque profundo | Dryocopus martius
@@ -112,6 +136,22 @@ birds: Alauda arvensis, Perdix perdix, Coturnix coturnix, Emberiza calandra, Emb
   Vanellus vanellus, Falco tinnunculus, Circus pygargus, Tetrax tetrax, Sturnella magna,
   Dolichonyx oryzivorus, Falco sparverius, Charadrius vociferus
 reward: rare
+
+## desert | Desert life | Vie du désert | Leben in der Wüste | Vida en el desierto | Bucanetes githagineus
+family: Pteroclididae
+birds: Bucanetes githagineus, Cursorius cursor, Chlamydotis undulata, Alaemon alaudipes,
+  Ammomanes deserti, Ammomanes cinctura, Eremalauda dunni, Oenanthe leucopyga, Oenanthe deserti,
+  Passer simplex, Bubo ascalaphus, Corvus ruficollis, Onychognathus tristramii, Scotocerca inquieta,
+  Geococcyx californianus, Campylorhynchus brunneicapillus, Callipepla gambelii, Auriparus flaviceps,
+  Toxostoma lecontei, Phainopepla nitens
+reward: epic
+
+## rainforest | Rainforest | Forêt tropicale | Regenwald | Selva tropical | Pharomachrus mocinno
+birds: Pharomachrus mocinno, Ramphastos sulfuratus, Pteroglossus torquatus, Ara macao,
+  Momotus lessonii, Trogon massena, Manacus candei, Pipra mentalis, Formicarius analis,
+  Thamnophilus doliatus, Glyphorynchus spirurus, Psarocolius montezuma, Crax rubra, Tinamus major,
+  Pionus senilis, Cyanerpes cyaneus, Chlorophanes spiza, Stilpnia larvata
+reward: epic
 
 ## Themes
 
