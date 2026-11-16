@@ -309,5 +309,8 @@
   "tradeWith": "Trade with…",
   "tradeOpen": "In progress",
   "tradeBothOffer": "1 card each minimum",
-  "cancelTrade": "Cancel"
+  "cancelTrade": "Cancel",
+  "missingSpecies": "Missing species",
+  "cellCollected": "{have} / {total} collected · {missing} missing",
+  "@cellCollected": {"placeholders": {"have": {"type": "int"}, "total": {"type": "int"}, "missing": {"type": "int"}}}
 }

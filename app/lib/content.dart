@@ -47,7 +47,18 @@ bool downloaded(Recording r) => localFile(r.file).existsSync();
 /// "na", "eu" or "oc": the continent of [region] (a list id like US-NE / AU-NSW / MX, or a 2° cell
 /// like N42W072, America west of 30° W), or of the phone's [country] when no region is known yet.
 /// Mirrors continent() in pipeline/build.py; North Africa and the Middle East go with Europe.
-const _naCountries = {'US', 'CA', 'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA'};
+const _naCountries = {
+  'US',
+  'CA',
+  'MX',
+  'GT',
+  'BZ',
+  'SV',
+  'HN',
+  'NI',
+  'CR',
+  'PA',
+};
 String continentOf(String? region, String? country) {
   if (region == null) {
     return _naCountries.contains(country)
@@ -61,7 +72,9 @@ String continentOf(String? region, String? country) {
     final lon = int.parse(cell[3]!) * (cell[2] == 'E' ? 1 : -1);
     return lon < -30 ? 'na' : (cell[1] == 'S' ? 'oc' : 'eu');
   }
-  if (region.startsWith(RegExp('US-|CA-')) || _naCountries.contains(region)) return 'na';
+  if (region.startsWith(RegExp('US-|CA-')) || _naCountries.contains(region)) {
+    return 'na';
+  }
   return region.startsWith(RegExp('AU-|NZ')) ? 'oc' : 'eu';
 }
 
@@ -172,6 +185,22 @@ Future<List<Map<String, dynamic>>?> fetchRegions() async {
       j as Map<String, dynamic>,
   ];
 }
+
+/// The card numbers of each 2° cell's species (cells_species.json, catalog 1.2), for the
+/// missing-species map; the last copy offline, null without one.
+Future<Map<String, List<int>>?> fetchCellsSpecies() async {
+  final f = localFile('cells_species.json');
+  if (!await download('cells_species.json') && !f.existsSync()) return null;
+  return {
+    for (final e
+        in (jsonDecode(await f.readAsString()) as Map<String, dynamic>).entries)
+      e.key: (e.value as List).cast<int>(),
+  };
+}
+
+/// (collected, total) species of a cell, from its card [numbers] and the [collected] ones.
+(int, int) cellProgress(List<int> numbers, Set<int> collected) =>
+    (numbers.where(collected.contains).length, numbers.length);
 
 /// Brings the phone up to date with [region] in the background: species list and seasons
 /// (re-fetched weekly, as the catalog is rebuilt), the song deck, the region's catalog

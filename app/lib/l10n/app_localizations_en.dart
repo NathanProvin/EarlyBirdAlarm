@@ -960,4 +960,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelTrade => 'Cancel';
+
+  @override
+  String get missingSpecies => 'Missing species';
+
+  @override
+  String cellCollected(int have, int total, int missing) {
+    return '$have / $total collected · $missing missing';
+  }
 }

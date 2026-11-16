@@ -273,5 +273,7 @@
   "tradeWith": "Échanger avec…",
   "tradeOpen": "En cours",
   "tradeBothOffer": "1 carte chacun minimum",
-  "cancelTrade": "Annuler"
+  "cancelTrade": "Annuler",
+  "missingSpecies": "Espèces manquantes",
+  "cellCollected": "{have} / {total} collectées · {missing} manquantes"
 }

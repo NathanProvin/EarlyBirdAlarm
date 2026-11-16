@@ -1745,6 +1745,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancelTrade;
+
+  /// No description provided for @missingSpecies.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing species'**
+  String get missingSpecies;
+
+  /// No description provided for @cellCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'{have} / {total} collected · {missing} missing'**
+  String cellCollected(int have, int total, int missing);
 }
 
 class _AppLocalizationsDelegate

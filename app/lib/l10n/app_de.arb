@@ -273,5 +273,7 @@
   "tradeWith": "Tauschen mit…",
   "tradeOpen": "Läuft",
   "tradeBothOffer": "Mindestens 1 Karte pro Person",
-  "cancelTrade": "Abbrechen"
+  "cancelTrade": "Abbrechen",
+  "missingSpecies": "Fehlende Arten",
+  "cellCollected": "{have} / {total} gesammelt · {missing} fehlen"
 }

@@ -11,6 +11,7 @@ import '../birds.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import 'twitch.dart';
 
 /// Display name of a region id: its name from regions.json (a GPS cell: "France · North"), else "Around 48°N 2°E".
 String regionName(AppLocalizations l, String id) {
@@ -149,6 +150,8 @@ class _RegionScreenState extends State<RegionScreen>
   Size _viewport = Size.zero;
   Set<String> _cells = {};
   List<(Offset, Offset)> _edges = const [];
+  Map<String, (int, int)>?
+  _heat; // the missing-species map (Plus): cell -> (collected, total)
 
   @override
   void initState() {
@@ -267,10 +270,55 @@ class _RegionScreenState extends State<RegionScreen>
     _searchFocus.unfocus();
   }
 
+  /// The missing-species map: Plus toggles it, otherwise the Plus sheet opens.
+  Future<void> _toggleHeat() async {
+    if (!store.twitchPlus) {
+      unawaited(
+        showModalBottomSheet<void>(
+          context: context,
+          showDragHandle: true,
+          builder: (_) => const PlusSheet(),
+        ),
+      );
+      return;
+    }
+    if (_heat != null) return setState(() => _heat = null);
+    final l = AppLocalizations.of(context);
+    final cells = await fetchCellsSpecies();
+    if (!mounted) return;
+    if (cells == null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l.offline)));
+      return;
+    }
+    final collected = {
+      for (final c in store.cards)
+        if (birdById(c.birdId) case final b?) b.number,
+    };
+    setState(
+      () => _heat = {
+        for (final e in cells.entries) e.key: cellProgress(e.value, collected),
+      },
+    );
+  }
+
   void _tap(Offset p) {
     final (lat, lon) = unproject(p);
     final id = cellAt(lat, lon);
-    if (_cells.contains(id)) {
+    if (_heat?[id] case (final have, final total)) {
+      // The heatmap is on: a tap reads the cell, the pin stays.
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)
+                  .cellCollected(have, total, total - have),
+            ),
+          ),
+        );
+    } else if (_cells.contains(id)) {
       _drop(p, id);
     } else {
       ScaffoldMessenger.of(context)
@@ -400,6 +448,13 @@ class _RegionScreenState extends State<RegionScreen>
                                 ),
                               ),
                             ),
+                            if (_heat case final heat?)
+                              RepaintBoundary(
+                                child: CustomPaint(
+                                  size: _mapSize,
+                                  painter: _HeatPainter(heat),
+                                ),
+                              ),
                             CustomPaint(
                               size: _mapSize,
                               painter: _MarksPainter(
@@ -413,6 +468,17 @@ class _RegionScreenState extends State<RegionScreen>
                         ),
                       ),
                     ),
+                  ),
+                ),
+                // A radar that pulses until the map is on.
+                Positioned(
+                  left: 16,
+                  bottom: 96 + MediaQuery.paddingOf(context).bottom,
+                  child: PulseButton(
+                    icon: Icons.radar,
+                    label: l.missingSpecies,
+                    attract: _heat == null,
+                    onPressed: _toggleHeat,
                   ),
                 ),
                 Positioned(
@@ -571,6 +637,27 @@ class _MapPainter extends CustomPainter {
       old.edges.length != edges.length ||
       old.zoom != zoom ||
       old.border != border;
+}
+
+/// Each cell red → green by the share of its species collected.
+class _HeatPainter extends CustomPainter {
+  const _HeatPainter(this.heat);
+  final Map<String, (int, int)> heat;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final MapEntry(key: id, value: (have, total)) in heat.entries) {
+      if (total == 0 || _cellCenter(id) == null) continue;
+      final c = Color.lerp(Colors.red, Colors.green, have / total)!;
+      canvas.drawRect(
+        _cellRect(id),
+        Paint()..color = c.withValues(alpha: 0.55),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HeatPainter old) => old.heat != heat;
 }
 
 /// The pin (a plain map-pin icon in the accent, its tip on the spot) and the user's

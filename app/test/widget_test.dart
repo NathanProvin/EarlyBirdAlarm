@@ -704,6 +704,11 @@ void main() {
     expect(continentOf(null, 'AU'), 'oc');
   });
 
+  test('missing-species map: collected and total species of a cell', () {
+    expect(cellProgress([1, 5, 9, 12], {5, 12, 40}), (2, 4));
+    expect(cellProgress([], {1}), (0, 0));
+  });
+
   test('ordinals for "nth species collected"', () {
     expect(
       [1, 2, 3, 4, 11, 12, 13, 21, 22, 101, 112].map((n) => ordinal(n, 'en')),

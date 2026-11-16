@@ -128,12 +128,14 @@ class _TwitchScreenState extends State<TwitchScreen> {
         // empty, the moment it's worth it.
         if (!store.twitchPlus) ...[
           const SizedBox(height: 12),
-          _PlusButton(
+          PulseButton(
+            icon: Icons.bolt,
+            label: l.twitchPlus,
             attract: ready == 0,
             onPressed: () => showModalBottomSheet<void>(
               context: context,
               showDragHandle: true,
-              builder: (_) => const _PlusSheet(),
+              builder: (_) => const PlusSheet(),
             ),
           ),
         ],
@@ -144,18 +146,26 @@ class _TwitchScreenState extends State<TwitchScreen> {
   }
 }
 
-/// The Plus button: the bolt and the name, tonal. With [attract] (no booster left) it
-/// pulses every 2 s: a glow around it and its fill warming toward the accent.
-class _PlusButton extends StatefulWidget {
-  const _PlusButton({required this.attract, required this.onPressed});
+/// A tonal button with [icon] and [label] (the Plus button, the map's "Missing species").
+/// With [attract] it pulses every 2 s: a glow around it and its fill warming toward the accent.
+class PulseButton extends StatefulWidget {
+  const PulseButton({
+    required this.icon,
+    required this.label,
+    required this.attract,
+    required this.onPressed,
+    super.key,
+  });
+  final IconData icon;
+  final String label;
   final bool attract;
   final VoidCallback onPressed;
 
   @override
-  State<_PlusButton> createState() => _PlusButtonState();
+  State<PulseButton> createState() => _PulseButtonState();
 }
 
-class _PlusButtonState extends State<_PlusButton>
+class _PulseButtonState extends State<PulseButton>
     with SingleTickerProviderStateMixin {
   late final _pulse = AnimationController(
     vsync: this,
@@ -170,7 +180,6 @@ class _PlusButtonState extends State<_PlusButton>
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final on = widget.attract && !MediaQuery.disableAnimationsOf(context);
     if (on && !_pulse.isAnimating) _pulse.repeat();
@@ -210,8 +219,8 @@ class _PlusButtonState extends State<_PlusButton>
                 ),
               ),
               onPressed: widget.onPressed,
-              icon: Icon(Icons.bolt, color: scheme.primary),
-              label: Text(l.twitchPlus),
+              icon: Icon(widget.icon, color: scheme.primary),
+              label: Text(widget.label),
             ),
           );
         },
@@ -221,8 +230,8 @@ class _PlusButtonState extends State<_PlusButton>
 }
 
 /// Twitch Plus: what it does, Google Play's price, one tap to buy (bought once, kept for good).
-class _PlusSheet extends StatelessWidget {
-  const _PlusSheet();
+class PlusSheet extends StatelessWidget {
+  const PlusSheet({super.key});
 
   @override
   Widget build(BuildContext context) {

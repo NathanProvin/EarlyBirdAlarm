@@ -14,12 +14,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
 
-from build import CACHE, ROOT, NOT_A_PHOTO, OK_LICENSE, OUT, PHOTO_WIDTH, WORKERS, get, html
+from build import CACHE, IDS, ROOT, NOT_A_PHOTO, OK_LICENSE, OUT, PHOTO_WIDTH, WORKERS, get, html, synonyms
 
 MAX = 5
 # Off-topic iNaturalist photos (a bird on a kangaroo, a sign, a net), spotted on contact sheets:
 # one "file" per line (inat-<photo id>, or a Commons file name); the next candidate takes the place.
 REJECTS = ROOT / "photo_rejects.csv"
+KEY_OF = {i: k for k, i in json.loads(IDS.read_text(encoding="utf-8")).items()} if IDS.exists() else {}
 API = "https://commons.wikimedia.org/w/api.php"
 KINDS = [  # best first
     ("featured", 'incategory:"Featured_pictures_on_Wikimedia_Commons"'),
@@ -77,6 +78,11 @@ def variants(bird, old=()):
     """Up to MAX photos: old (the last run's picks, kept in place: photo files are numbered in this
     order and cards point at them), then Commons under both names, then iNaturalist."""
     taxon, alt = inat_taxon(bird["latin"])
+    # A GBIF name iNaturalist doesn't know (American Goshawk: Falco atricapillus): its GBIF synonyms.
+    for syn in synonyms(KEY_OF[bird["id"]]) if not taxon and bird["id"] in KEY_OF else ():
+        if (found := inat_taxon(syn))[0]:
+            taxon, alt = found
+            break
     # Commons may file the bird under its other name (Australian Magpie: Gymnorhina tibicen).
     names = [bird["latin"]] + ([alt] if alt and alt != bird["latin"] else [])
     found = [x for kind, query in KINDS for latin in names for x in commons_kind(latin, kind, query)]
