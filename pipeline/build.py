@@ -267,7 +267,19 @@ COUNTRIES = {
     "SI": ("Slovenia", "Slovénie", "Slowenien", "Eslovenia"), "SK": ("Slovakia", "Slovaquie", "Slowakei", "Eslovaquia"), "UA": ("Ukraine", "Ukraine", "Ukraine", "Ucrania"),
     "XK": ("Kosovo", "Kosovo", "Kosovo", "Kosovo"),
     "NZ": ("New Zealand", "Nouvelle-Zélande", "Neuseeland", "Nueva Zelanda"),
+    # 1.2: North Africa, Middle East, Mexico, Central America.
+    "MA": ("Morocco", "Maroc", "Marokko", "Marruecos"), "DZ": ("Algeria", "Algérie", "Algerien", "Argelia"), "TN": ("Tunisia", "Tunisie", "Tunesien", "Túnez"),
+    "LY": ("Libya", "Libye", "Libyen", "Libia"), "EG": ("Egypt", "Égypte", "Ägypten", "Egipto"), "TR": ("Turkey", "Turquie", "Türkei", "Turquía"),
+    "SY": ("Syria", "Syrie", "Syrien", "Siria"), "LB": ("Lebanon", "Liban", "Libanon", "Líbano"), "IL": ("Israel", "Israël", "Israel", "Israel"),
+    "PS": ("Palestine", "Palestine", "Palästina", "Palestina"), "JO": ("Jordan", "Jordanie", "Jordanien", "Jordania"), "IQ": ("Iraq", "Irak", "Irak", "Irak"),
+    "IR": ("Iran", "Iran", "Iran", "Irán"), "SA": ("Saudi Arabia", "Arabie saoudite", "Saudi-Arabien", "Arabia Saudí"),
+    "AE": ("United Arab Emirates", "Émirats arabes unis", "Vereinigte Arabische Emirate", "Emiratos Árabes Unidos"), "OM": ("Oman", "Oman", "Oman", "Omán"),
+    "QA": ("Qatar", "Qatar", "Katar", "Catar"), "KW": ("Kuwait", "Koweït", "Kuwait", "Kuwait"), "BH": ("Bahrain", "Bahreïn", "Bahrain", "Baréin"),
+    "YE": ("Yemen", "Yémen", "Jemen", "Yemen"), "MX": ("Mexico", "Mexique", "Mexiko", "México"), "GT": ("Guatemala", "Guatemala", "Guatemala", "Guatemala"),
+    "BZ": ("Belize", "Belize", "Belize", "Belice"), "SV": ("El Salvador", "Salvador", "El Salvador", "El Salvador"), "HN": ("Honduras", "Honduras", "Honduras", "Honduras"),
+    "NI": ("Nicaragua", "Nicaragua", "Nicaragua", "Nicaragua"), "CR": ("Costa Rica", "Costa Rica", "Costa Rica", "Costa Rica"), "PA": ("Panama", "Panama", "Panama", "Panamá"),
 }
+NA_COUNTRIES = {"MX", "GT", "BZ", "SV", "HN", "NI", "CR", "PA"}
 MAINLAND = {"ES": ((35, 44), (-10, 5)), "PT": ((36, 43), (-10, -6)),  # no Canaries / Azores / Madeira
             "NZ": ((-48, -34), (166, 179))}  # no Chatham, Kermadec or subantarctic islands
 # Bioregions of large countries: id -> (names in LANGS order, GBIF filter). US/Canada/Australia by GADM state ids.
@@ -299,27 +311,44 @@ BIOREGIONS = {
 }
 # Countries without a bird list of their own yet: listed as "coming soon" (their GPS cells work).
 PLANNED = {
-    "MA": ("Morocco", "Maroc", "Marokko", "Marruecos"), "DZ": ("Algeria", "Algérie", "Algerien", "Argelia"), "TN": ("Tunisia", "Tunisie", "Tunesien", "Túnez"),
-    "LY": ("Libya", "Libye", "Libyen", "Libia"), "EG": ("Egypt", "Égypte", "Ägypten", "Egipto"), "TR": ("Turkey", "Turquie", "Türkei", "Turquía"),
     "GE": ("Georgia", "Géorgie", "Georgien", "Georgia"), "AM": ("Armenia", "Arménie", "Armenien", "Armenia"), "AZ": ("Azerbaijan", "Azerbaïdjan", "Aserbaidschan", "Azerbaiyán"),
-    "SY": ("Syria", "Syrie", "Syrien", "Siria"), "LB": ("Lebanon", "Liban", "Libanon", "Líbano"), "IL": ("Israel", "Israël", "Israel", "Israel"),
-    "JO": ("Jordan", "Jordanie", "Jordanien", "Jordania"), "IQ": ("Iraq", "Irak", "Irak", "Irak"), "FO": ("Faroe Islands", "Îles Féroé", "Färöer", "Islas Feroe"),
-    "SJ": ("Svalbard", "Svalbard", "Spitzbergen", "Svalbard"), "GL": ("Greenland", "Groenland", "Grönland", "Groenlandia"), "MX": ("Mexico", "Mexique", "Mexiko", "México"),
+    "FO": ("Faroe Islands", "Îles Féroé", "Färöer", "Islas Feroe"),
+    "SJ": ("Svalbard", "Svalbard", "Spitzbergen", "Svalbard"), "GL": ("Greenland", "Groenland", "Grönland", "Groenlandia"),
     "CU": ("Cuba", "Cuba", "Kuba", "Cuba"), "BS": ("Bahamas", "Bahamas", "Bahamas", "Bahamas"),
 }
-# 2°×2° cells for GPS: Europe, the US + Canada, Australia, New Zealand (1.2).
-CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52)), ((-44, -10), (112, 154)), ((-48, -34), (166, 180))]
+# Names only, so the edge cells of the large 1.2 boxes are named after their own country (no list of their own).
+NEIGHBOURS = {
+    "EH": ("Western Sahara", "Sahara occidental", "Westsahara", "Sáhara Occidental"), "MR": ("Mauritania", "Mauritanie", "Mauretanien", "Mauritania"),
+    "ML": ("Mali", "Mali", "Mali", "Malí"), "NE": ("Niger", "Niger", "Niger", "Níger"), "TD": ("Chad", "Tchad", "Tschad", "Chad"),
+    "SD": ("Sudan", "Soudan", "Sudan", "Sudán"), "ER": ("Eritrea", "Érythrée", "Eritrea", "Eritrea"), "ET": ("Ethiopia", "Éthiopie", "Äthiopien", "Etiopía"),
+    "DJ": ("Djibouti", "Djibouti", "Dschibuti", "Yibuti"), "TM": ("Turkmenistan", "Turkménistan", "Turkmenistan", "Turkmenistán"),
+    "AF": ("Afghanistan", "Afghanistan", "Afghanistan", "Afganistán"), "PK": ("Pakistan", "Pakistan", "Pakistan", "Pakistán"),
+    "JM": ("Jamaica", "Jamaïque", "Jamaika", "Jamaica"), "KY": ("Cayman Islands", "Îles Caïmans", "Kaimaninseln", "Islas Caimán"),
+    "CO": ("Colombia", "Colombie", "Kolumbien", "Colombia"),
+}
+# 2°×2° cells for GPS: Europe, the US + Canada, Australia, New Zealand, and (1.2) generous boxes for
+# North Africa (to the Sahel's edge), Arabia + southern Iran, Turkey's east + Caucasus + northern Iran,
+# Mexico + Central America (to Panama, with Cuba's west). Boxes don't overlap.
+CELL_AREAS = [((34, 72), (-12, 42)), ((24, 72), (-170, -52)), ((-44, -10), (112, 154)), ((-48, -34), (166, 180)),
+              ((18, 34), (-18, 34)), ((12, 34), (34, 62)), ((34, 44), (42, 62)), ((6, 24), (-118, -76))]
 
 
 def continent(rid):
-    """"eu", "na" or "oc" of a region id (cell, country or bioregion); the app's continentOf mirrors it."""
-    if rid.startswith(("US-", "CA-")) or (rid[0] in "NS" and "W" in rid[3:]):
+    """"eu", "na" or "oc" of a region id (cell, country or bioregion); the app's continentOf mirrors it.
+    North Africa and the Middle East go with Europe (same birds: the Western Palearctic)."""
+    if len(rid) == 7 and rid[1:3].isdigit():  # a cell like N48E002: America is west of 30° W
+        lon = int(rid[4:7]) * (1 if rid[3] == "E" else -1)
+        return "na" if lon < -30 else "oc" if rid[0] == "S" else "eu"
+    if rid.startswith(("US-", "CA-")) or rid in NA_COUNTRIES:
         return "na"
-    return "oc" if rid.startswith(("AU-", "NZ")) or (rid[0] == "S" and rid[3] == "E") else "eu"
+    return "oc" if rid.startswith(("AU-", "NZ")) else "eu"
 
 
-assert [continent(r) for r in ("N48E002", "FR", "N40W074", "US-NE", "S34E150", "AU-NSW", "NZ", "S46E168")] \
-    == ["eu", "eu", "na", "na", "oc", "oc", "oc", "oc"]
+assert [continent(r) for r in ("N48E002", "FR", "N40W074", "US-NE", "S34E150", "AU-NSW", "NZ", "S46E168",
+                               "N52W010", "SE", "SV", "NI", "MX", "N08W080", "N30W010", "SA", "N24E046")] \
+    == ["eu", "eu", "na", "na", "oc", "oc", "oc", "oc", "eu", "eu", "na", "na", "na", "na", "eu", "eu", "eu"]
+assert not any(a0 < b1 and b0 < a1 and c0 < d1 and d0 < c1  # cell boxes never overlap
+               for i, ((a0, a1), (c0, c1)) in enumerate(CELL_AREAS) for (b0, b1), (d0, d1) in CELL_AREAS[i + 1:])
 
 
 def cell_id(lat, lon):
@@ -351,7 +380,7 @@ DIRECTIONS = {(1, 0): ("North", "Nord", "Norden", "Norte"), (-1, 0): ("South", "
               (-1, 1): ("South-East", "Sud-Est", "Südosten", "Sudeste"),
               (-1, -1): ("South-West", "Sud-Ouest", "Südwesten", "Suroeste"),
               (0, 0): ("Centre", "Centre", "Mitte", "Centro")}
-assert all(len(n) == len(LANGS) for n in [*COUNTRIES.values(), *PLANNED.values(), *DIRECTIONS.values()])
+assert all(len(n) == len(LANGS) for n in [*COUNTRIES.values(), *PLANNED.values(), *NEIGHBOURS.values(), *DIRECTIONS.values()])
 assert all(len(n) == len(LANGS) for n, _ in BIOREGIONS.values())
 
 
@@ -376,7 +405,7 @@ assert compass((47, 3), [(43, -1), (43, 7), (51, 3)]) == (0, 0)
 def cell_names(cells):
     """{cell id: {lang: name}} like "France · North-East": the country (or US / Canada
     bioregion) with most of the cell's bird records, and where the cell lies in it."""
-    names = {**COUNTRIES, **PLANNED} | {rid: n for rid, (n, _) in BIOREGIONS.items()}
+    names = {**COUNTRIES, **PLANNED, **NEIGHBOURS} | {rid: n for rid, (n, _) in BIOREGIONS.items()}
     state_region = {g: rid for rid, (_, f) in BIOREGIONS.items() for g in f.get("gadmGid", [])}
 
     def top(base, facet):
@@ -955,7 +984,7 @@ def publish():
     assert not missing, f"{len(missing)} catalog files missing (e.g. {missing[:3]}): finish the build first"
     shutil.rmtree(PAGES, ignore_errors=True)
     regions = [f"regions/{f.name}" for f in (OUT / "regions").iterdir()]
-    for f in [*files, "species.json", "regions.json", "series.json", *regions]:
+    for f in [*files, "species.json", "regions.json", "series.json", "cells_species.json", *regions]:
         (PAGES / "v1" / f).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(OUT / f, PAGES / "v1" / f)
     href, text = ((f"mailto:{CONTACT_EMAIL}", CONTACT_EMAIL) if CONTACT_EMAIL else
@@ -1195,7 +1224,8 @@ def main():
                            "-af", "silenceremove=start_periods=1:start_threshold=-45dB,"
                                   f"atrim=0:{length},asetpts=PTS-STARTPTS,"
                                   f"loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=out:st={length - 2}:d=2",
-                           "-ac", "1", "-ar", "44100", "-c:a", "aac", "-b:a", "48k", str(audio_out))
+                           "-ac", "1", "-ar", "44100", "-c:a", "aac", "-b:a", "48k",
+                           "-movflags", "+faststart", str(audio_out))  # index first: plays while streaming
                 except subprocess.CalledProcessError:
                     audio_out.unlink(missing_ok=True)
                     print(f"    ! {rec.get('ref', 'XC' + str(rec['id']))} ({latin}) could not be converted")
@@ -1269,6 +1299,10 @@ def main():
         f.unlink()
     for rid, rb in region_birds.items():
         write_json(OUT / "regions" / f"{rid}.json", rb)
+    # Missing-species heatmap (1.2, Plus): the card numbers of every grid cell's species.
+    number = {b["id"]: b["number"] for b in birds}
+    write_json(OUT / "cells_species.json", {rid: sorted(number[i] for i in region_birds[rid])
+                                            for rid, kind, _, _ in regions if kind == "cell"})
     named = cell_names([(r[0], r[3]) for r in regions if r[1] == "cell"])
     write_json(OUT / "regions.json", [{"id": rid, "kind": kind, **(named[rid] if kind == "cell" else names)}
                                       for rid, kind, names, _ in regions]

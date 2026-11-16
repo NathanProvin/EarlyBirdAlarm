@@ -692,6 +692,16 @@ void main() {
     expect(continentOf(null, 'US'), 'na');
     expect(continentOf(null, 'FR'), 'eu');
     expect(continentOf(null, null), 'eu');
+    expect(continentOf('N52W010', null), 'eu'); // Ireland: west, but Europe
+    expect(continentOf('S34E150', null), 'oc');
+    expect(continentOf('AU-NSW', null), 'oc');
+    expect(continentOf('NZ', null), 'oc');
+    expect(continentOf('NI', null), 'na'); // Nicaragua, not a cell
+    expect(continentOf('SV', null), 'na');
+    expect(continentOf('SE', null), 'eu');
+    expect(continentOf('N08W080', null), 'na');
+    expect(continentOf('N24E046', null), 'eu'); // Arabia
+    expect(continentOf(null, 'AU'), 'oc');
   });
 
   test('ordinals for "nth species collected"', () {

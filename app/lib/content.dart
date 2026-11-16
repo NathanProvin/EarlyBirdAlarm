@@ -44,14 +44,26 @@ bool onPhone(Recording r) => phonePath(r.file) != null;
 /// Downloaded for the region (the deck), as opposed to bundled with the app.
 bool downloaded(Recording r) => localFile(r.file).existsSync();
 
-/// "na" or "eu": the continent of [region] (a list id like US-NE / CA-ON, or a 2° cell
-/// like N42W072), or of the phone's [country] when no region is known yet.
-String continentOf(String? region, String? country) => region != null
-    ? (region.startsWith(RegExp('US-|CA-')) ||
-              (region.startsWith(RegExp('[NS]')) && region.contains('W'))
-          ? 'na'
-          : 'eu')
-    : (const {'US', 'CA', 'MX'}.contains(country) ? 'na' : 'eu');
+/// "na", "eu" or "oc": the continent of [region] (a list id like US-NE / AU-NSW / MX, or a 2° cell
+/// like N42W072, America west of 30° W), or of the phone's [country] when no region is known yet.
+/// Mirrors continent() in pipeline/build.py; North Africa and the Middle East go with Europe.
+const _naCountries = {'US', 'CA', 'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA'};
+String continentOf(String? region, String? country) {
+  if (region == null) {
+    return _naCountries.contains(country)
+        ? 'na'
+        : const {'AU', 'NZ'}.contains(country)
+        ? 'oc'
+        : 'eu';
+  }
+  final cell = RegExp(r'^([NS])\d\d([EW])(\d{3})$').firstMatch(region);
+  if (cell != null) {
+    final lon = int.parse(cell[3]!) * (cell[2] == 'E' ? 1 : -1);
+    return lon < -30 ? 'na' : (cell[1] == 'S' ? 'oc' : 'eu');
+  }
+  if (region.startsWith(RegExp('US-|CA-')) || _naCountries.contains(region)) return 'na';
+  return region.startsWith(RegExp('AU-|NZ')) ? 'oc' : 'eu';
+}
 
 /// Loads what is on the phone: the region's birds if downloaded, else the fallback birds.
 Future<void> initContent(String? region) async {
