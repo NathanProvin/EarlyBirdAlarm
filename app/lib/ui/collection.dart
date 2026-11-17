@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,19 +27,26 @@ String cardRarity(CardData c) =>
 /// The best copy of each owned bird, by bird id: the rarest, then the best quality.
 Map<String, CardData> bestCards(List<CardData> cards) {
   final best = <String, CardData>{};
-  int score(CardData c) => cardTiers.indexOf(cardRarity(c)) * 1000 + c.quality;
   for (final c in cards) {
-    if (best[c.birdId] case final b? when score(b) >= score(c)) continue;
+    if (best[c.birdId] case final b? when _score(b) >= _score(c)) continue;
     best[c.birdId] = c;
   }
   return best;
 }
 
 // Views: the current region (default; a region view is its displayed name), every copy,
-// the best copy of each species (shown as stacks), or every bird of the world.
-const _all = 'all', _species = 'species', _world = 'world';
+// the best copy of each species (shown as stacks), the species owned more than once, or
+// every bird of the world.
+const _all = 'all', _species = 'species', _duplicates = 'duplicates';
+const _world = 'world';
 
-enum _Sort { number, rarity, name }
+enum _Sort { number, rarity, name, newest, quality }
+
+/// Rarity, then quality: the best copy scores highest.
+int _score(CardData c) => cardTiers.indexOf(cardRarity(c)) * 1000 + c.quality;
+
+/// The Hero tag of a species' pile, flying from the grid to the opened pile.
+String _pileHero(Bird b) => 'pile-${b.id}';
 
 class CollectionScreen extends StatefulWidget {
   const CollectionScreen({super.key});
@@ -121,6 +130,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     (_Sort.number, l.sortNumber),
                     (_Sort.rarity, l.sortRarity),
                     (_Sort.name, l.sortName),
+                    (_Sort.newest, l.sortNewest),
+                    (_Sort.quality, l.sortQuality),
                   ])
                     ChoiceChip(
                       label: Text(label),
@@ -185,7 +196,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final others = groups.keys.where((n) => n != current).toList()
       ..sort((a, b) => wonIn[b]! - wonIn[a]!);
     var view = _view ?? current ?? _all;
-    if (!{_all, _species, _world, ...groups.keys}.contains(view)) {
+    if (!{_all, _species, _duplicates, _world, ...groups.keys}.contains(view)) {
       view =
           current ??
           _all; // that region is gone (e.g. its cards were the only link)
@@ -198,14 +209,28 @@ class _CollectionScreenState extends State<CollectionScreen> {
         a.$1.number.compareTo(b.$1.number);
     final plain = <String, String>{};
     String nameKey(Bird b) => plain[b.id] ??= plainText(b.nameIn(l.localeName));
-    final order = switch (_sort) {
-      _Sort.number => byNumber,
-      _Sort.rarity => (a, b) {
-        final t = rank(b) - rank(a);
-        return t != 0 ? t : byNumber(a, b);
-      },
-      _Sort.name => (a, b) => nameKey(a.$1).compareTo(nameKey(b.$1)),
-    };
+    final int Function((Bird, CardData?), (Bird, CardData?)) order =
+        switch (_sort) {
+          _Sort.number => byNumber,
+          _Sort.rarity => (a, b) {
+            final t = rank(b) - rank(a);
+            return t != 0 ? t : byNumber(a, b);
+          },
+          _Sort.name => (a, b) => nameKey(a.$1).compareTo(nameKey(b.$1)),
+          // Birds not won yet go last.
+          _Sort.newest =>
+            (a, b) =>
+                (b.$2?.earned.millisecondsSinceEpoch ?? 0) -
+                (a.$2?.earned.millisecondsSinceEpoch ?? 0),
+          _Sort.quality => (
+            a,
+            b,
+          ) => (b.$2?.quality ?? -1) - (a.$2?.quality ?? -1),
+        };
+    final copiesOf = <String, int>{};
+    for (final c in cards) {
+      copiesOf[c.birdId] = (copiesOf[c.birdId] ?? 0) + 1;
+    }
 
     // A region view's species: each region's whole list when known, else the species won there.
     Set<String> idsOf(String name) => {
@@ -226,6 +251,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ],
+      _duplicates => [
+        for (final c in best.values)
+          if (copiesOf[c.birdId]! > 1)
+            if (birdById(c.birdId) case final b?) (b, c as CardData?),
+      ],
       _world => [for (final b in species.values) (b, best[b.id])],
       final region => [
         for (final id in idsOf(region))
@@ -241,7 +271,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         if (e.$2 != null || heard.contains(e.$1.id)) e,
     ];
     // Region and world views' many "?" stay 3 per row; won cards are shown whole 2 per row.
-    final compact = view != _all && view != _species;
+    final compact = view != _all && view != _species && view != _duplicates;
     // "France (7/353)"; "USA — Northeast (2)" until that region's list has arrived.
     String regionLabel(String name) {
       final known = groups[name]!.every((r) => _birdsOf(r) != null);
@@ -254,6 +284,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final r in [?current]) r: regionLabel(r),
       _all: '${l.viewAll} (${cards.length})',
       _species: '${l.viewSpecies} (${best.length})',
+      // The spare copies: cards beyond one per species.
+      _duplicates: '${l.viewDuplicates} (${cards.length - best.length})',
       for (final r in others) r: regionLabel(r),
       _world:
           '${l.viewWorld} '
@@ -264,6 +296,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final r in [?current, ...others]) r: r,
       _all: l.viewAll,
       _species: l.viewSpecies,
+      _duplicates: l.viewDuplicates,
       _world: l.viewWorld,
     };
     Widget round(String tip, VoidCallback onTap, Widget child) => Tooltip(
@@ -349,24 +382,36 @@ class _CollectionScreenState extends State<CollectionScreen> {
             itemBuilder: (context, i) {
               final (b, c) = shown[i];
               final open = openable.indexOf(shown[i]);
+              final copies = view == _all ? 1 : copiesOf[b.id] ?? 0;
+              // Species and Duplicates: a pile opens into its copies.
+              final pile = !compact && copies > 1;
               return CardTile(
                 bird: b,
                 card: c,
-                copies: view == _all
-                    ? 1
-                    : cards.where((x) => x.birdId == b.id).length,
+                copies: copies,
                 heard: heard.contains(b.id),
                 compact: compact,
-                onTap: open < 0
+                heroTag: pile ? _pileHero(b) : null,
+                onTap: pile
+                    ? () {
+                        unawaited(HapticFeedback.selectionClick());
+                        Navigator.of(context).push(
+                          PageRouteBuilder<void>(
+                            transitionDuration: const Duration(
+                              milliseconds: 350,
+                            ),
+                            pageBuilder: (_, _, _) => _PileScreen(b),
+                            transitionsBuilder: (_, a, _, child) =>
+                                FadeTransition(opacity: a, child: child),
+                          ),
+                        );
+                      }
+                    : open < 0
                     ? null
                     : () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => CardPager(
-                            entries: openable,
-                            initial: open,
-                            // "Collected" shows every copy as its own card: no ×N.
-                            showCopies: view != _all,
-                          ),
+                          builder: (_) =>
+                              CardPager(entries: openable, initial: open),
                         ),
                       ),
               );
@@ -609,19 +654,12 @@ class _Round extends StatelessWidget {
 
 /// Full cards, swipe left/right between them.
 class CardPager extends StatelessWidget {
-  const CardPager({
-    required this.entries,
-    required this.initial,
-    this.showCopies = true,
-    super.key,
-  });
+  const CardPager({required this.entries, required this.initial, super.key});
   final List<(Bird, CardData?)> entries;
   final int initial;
-  final bool showCopies; // the ×N badge above the card
 
   @override
   Widget build(BuildContext context) {
-    final cards = store.cards;
     return Scaffold(
       appBar: AppBar(),
       body: PageView.builder(
@@ -629,7 +667,6 @@ class CardPager extends StatelessWidget {
         itemCount: entries.length,
         itemBuilder: (_, i) {
           final (bird, card) = entries[i];
-          final copies = cards.where((c) => c.birdId == bird.id).length;
           final l = AppLocalizations.of(context);
           final traded = card?.traded;
           return Padding(
@@ -643,26 +680,114 @@ class CardPager extends StatelessWidget {
             child: CardDetail(
               bird: bird,
               card: card,
-              header: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 12,
-                children: [
-                  if (showCopies && copies > 1)
-                    CopiesBadge(
-                      copies,
-                      large: true,
-                      color: card == null
-                          ? null
-                          : rarityColor[cardRarity(card)],
-                    ),
-                  if (traded != null)
-                    Text(
+              // No ×N here: it read as this copy's own count (user, 2026-11-17).
+              header: traded == null
+                  ? null
+                  : Text(
                       l.tradedOn(DateFormat.MMMd(l.localeName).format(traded)),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                ],
-              ),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// A species' pile opened (2026-11-17): every copy, best first. The top card flies in
+/// from the grid (Hero); the others are dealt from under it to their places.
+class _PileScreen extends StatefulWidget {
+  const _PileScreen(this.bird);
+  final Bird bird;
+
+  @override
+  State<_PileScreen> createState() => _PileScreenState();
+}
+
+class _PileScreenState extends State<_PileScreen>
+    with SingleTickerProviderStateMixin {
+  late final _deal = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1000),
+  )..forward();
+
+  @override
+  void dispose() {
+    _deal.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final bird = widget.bird;
+    final copies = [
+      for (final c in store.cards)
+        if (c.birdId == bird.id) c,
+    ]..sort((a, b) => _score(b) - _score(a));
+    final entries = [for (final c in copies) (bird, c as CardData?)];
+    const pad = 12.0, gap = 12.0;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${bird.nameIn(l.localeName)} ×${copies.length}'),
+      ),
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final w = (box.maxWidth - 2 * pad - gap) / 2, h = w / 0.68;
+          // From copy i's place back to the top card's.
+          Offset toTop(int i) =>
+              Offset(-(i % 2) * (w + gap), -(i ~/ 2) * (h + gap));
+          return GridView.builder(
+            padding: EdgeInsets.fromLTRB(
+              pad,
+              4,
+              pad,
+              pad + MediaQuery.paddingOf(context).bottom,
+            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.68,
+              mainAxisSpacing: gap,
+              crossAxisSpacing: gap,
+            ),
+            itemCount: copies.length,
+            itemBuilder: (context, i) {
+              final tile = CardTile(
+                bird: bird,
+                card: copies[i],
+                heard: false,
+                heroTag: i == 0 ? _pileHero(bird) : null,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => CardPager(entries: entries, initial: i),
+                  ),
+                ),
+              );
+              if (i == 0) return tile;
+              // Once the top card has landed, one card every 60 ms, tilted as in a pile.
+              final begin = min(0.25 + 0.06 * i, 0.65);
+              final t = CurvedAnimation(
+                parent: _deal,
+                curve: Interval(
+                  begin,
+                  begin + 0.35,
+                  curve: Curves.easeOutCubic,
+                ),
+              );
+              final tilt = (i.isOdd ? -1 : 1) * (0.04 + 0.02 * (i % 3));
+              return AnimatedBuilder(
+                animation: t,
+                builder: (_, child) => Transform.translate(
+                  offset: toTop(i) * (1 - t.value),
+                  child: Transform.rotate(
+                    angle: tilt * (1 - t.value),
+                    child: child,
+                  ),
+                ),
+                child: tile,
+              );
+            },
           );
         },
       ),

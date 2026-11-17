@@ -96,8 +96,9 @@ void _backupSoon(Store store) {
   _timer = Timer(backupEvery, () => unawaited(_flush(store)));
 }
 
-/// Writes the documents that changed since the last write, in one batch.
-Future<void> _flush(Store store) async {
+/// Writes the documents that changed since the last write, in one batch. [strict]: the
+/// write must reach the server within 15 s, else it throws (switching account).
+Future<void> _flush(Store store, {bool strict = false}) async {
   _timer?.cancel();
   final user = FirebaseAuth.instance.currentUser;
   if (user == null || store.cloudOff) return;
@@ -153,11 +154,53 @@ Future<void> _flush(Store store) async {
   _sentMain = mainJson;
   _sentChunks = chunks;
   try {
-    await batch.commit();
+    // Offline, a commit waits for the network: strict gives up instead.
+    await (strict
+        ? batch.commit().timeout(const Duration(seconds: 15))
+        : batch.commit());
   } on Exception catch (e) {
     debugPrint('backup: $e');
     _forget(); // everything is sent again next time
+    if (strict) rethrow;
   }
+}
+
+/// A friend's cards, from their backup's chunks (friends may read them, firestore.rules);
+/// empty if they have no backup.
+Future<List<CardData>> friendCards(String uid) async {
+  final docs = (await _chunks(uid).get()).docs
+    ..sort((a, b) => int.parse(a.id) - int.parse(b.id));
+  return [
+    for (final d in docs)
+      for (final j in jsonDecode(d['cards'] as String) as List)
+        CardData.fromJson(j as Map<String, dynamic>),
+  ];
+}
+
+/// Signs out to sign in to another account (2026-11-17; before, only deleting the account
+/// did). The whole collection is written to this account first and must reach the server
+/// (throws offline: nothing changes); then the phone's collection is cleared, so it isn't
+/// merged into the next account, and no anonymous account is made until a sign-in.
+Future<void> switchAccount(Store store) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null || user.isAnonymous) return;
+  _forget(); // every document written
+  await _flush(store, strict: true);
+  await FirebaseAuth.instance.signOut();
+  if (_googleReady != null) await GoogleSignIn.instance.signOut();
+  _forget();
+  store.cloudOff = true;
+  store.username = null; // the next account's profile is read at its sign-in
+  store.hall = const ['', '', ''];
+  await store.restore({
+    'cards': '[]',
+    'given': '[]',
+    'streak': 0,
+    'bestStreak': 0,
+    'alarmStreak': 0,
+    'bestAlarmStreak': 0,
+    'twitchBonus': 0,
+  });
 }
 
 /// A player's backup in [Store.backup]'s shape, from the chunks or from a document

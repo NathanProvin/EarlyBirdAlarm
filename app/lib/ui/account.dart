@@ -207,6 +207,28 @@ class _AccountPanelState extends State<AccountPanel> {
     }
   }
 
+  Future<void> _switch() async {
+    final l = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l.switchAccount),
+        content: Text(l.switchAccountBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l.switchAccount),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await _run(() => switchAccount(store));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -227,6 +249,12 @@ class _AccountPanelState extends State<AccountPanel> {
               ),
               if (widget.canDelete) ...[
                 const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.switch_account_outlined),
+                  label: Text(l.switchAccount),
+                  onPressed: _busy ? null : _switch,
+                ),
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: _busy ? null : _delete,
                   child: Text(l.deleteAccount),

@@ -462,6 +462,12 @@ abstract class AppLocalizations {
   /// **'Species'**
   String get viewSpecies;
 
+  /// No description provided for @viewDuplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicates'**
+  String get viewDuplicates;
+
   /// No description provided for @viewAll.
   ///
   /// In en, this message translates to:
@@ -1206,6 +1212,18 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get sortName;
 
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get sortNewest;
+
+  /// No description provided for @sortQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality %'**
+  String get sortQuality;
+
   /// No description provided for @coveredArea.
   ///
   /// In en, this message translates to:
@@ -1253,6 +1271,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete account'**
   String get deleteAccount;
+
+  /// No description provided for @switchAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch account'**
+  String get switchAccount;
+
+  /// No description provided for @switchAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your collection is saved to this account, then removed from this phone. Sign in to another account to load its collection; sign in here again to get yours back. Needs a connection.'**
+  String get switchAccountBody;
+
+  /// No description provided for @theirCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s collection'**
+  String theirCollection(String name);
 
   /// No description provided for @deleteAccountBody.
   ///

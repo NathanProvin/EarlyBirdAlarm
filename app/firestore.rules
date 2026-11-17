@@ -7,9 +7,12 @@ service cloud.firestore {
     // A player reads and writes only their own document (the collection backup, Phase 1.1).
     match /players/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
-      // Its cards, in chunks of 1,000 (a document stops at 1 MB).
+      // Its cards, in chunks of 1,000 (a document stops at 1 MB). Friends may read them
+      // to see the collection while trading (2026-11-17); the rest of the backup stays private.
       match /cards/{chunk} {
-        allow read, write: if signedIn() && request.auth.uid == uid;
+        allow read: if signedIn() && (request.auth.uid == uid
+          || exists(/databases/$(database)/documents/friends/$(uid)/list/$(request.auth.uid)));
+        allow write: if signedIn() && request.auth.uid == uid;
       }
     }
 

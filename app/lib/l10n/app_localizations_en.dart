@@ -234,6 +234,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewSpecies => 'Species';
 
   @override
+  String get viewDuplicates => 'Duplicates';
+
+  @override
   String get viewAll => 'Collected';
 
   @override
@@ -666,6 +669,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortName => 'Name';
 
   @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortQuality => 'Quality %';
+
+  @override
   String get coveredArea => 'Red: covered area';
 
   @override
@@ -689,6 +698,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccount => 'Delete account';
+
+  @override
+  String get switchAccount => 'Switch account';
+
+  @override
+  String get switchAccountBody =>
+      'Your collection is saved to this account, then removed from this phone. Sign in to another account to load its collection; sign in here again to get yours back. Needs a connection.';
+
+  @override
+  String theirCollection(String name) {
+    return '$name\'s collection';
+  }
 
   @override
   String get deleteAccountBody =>

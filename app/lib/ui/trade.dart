@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../account.dart';
 import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
@@ -229,6 +230,16 @@ class _TradeScreenState extends State<TradeScreen> {
         Text(l.youGet, style: text.titleMedium),
         const SizedBox(height: 8),
         _Offer(cards: t.theirs, empty: l.nothingYet),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.collections_bookmark_outlined),
+          label: Text(l.theirCollection('@${widget.friend.name}')),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => _FriendCollection(widget.friend),
+            ),
+          ),
+        ),
         const Spacer(),
         if (!t.bothOffer)
           Padding(
@@ -308,6 +319,10 @@ class _Offer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final entries = [
+      for (final c in cards)
+        if (birdById(c.birdId) case final b?) (b, c as CardData?),
+    ];
     return SizedBox(
       height: 132,
       child: ListView(
@@ -336,16 +351,173 @@ class _Offer extends StatelessWidget {
             Center(
               child: Text(empty, style: Theme.of(context).textTheme.bodyMedium),
             ),
-          for (final c in cards)
-            if (birdById(c.birdId) case final b?)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: SizedBox(
-                  width: 90,
-                  child: CardTile(bird: b, card: c, heard: false),
+          for (final (i, (b, c)) in entries.indexed)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: SizedBox(
+                width: 90,
+                // A tap shows the card whole: name, stats, quality.
+                child: CardTile(
+                  bird: b,
+                  card: c,
+                  heard: false,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => CardPager(entries: entries, initial: i),
+                    ),
+                  ),
                 ),
               ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+/// Cards as full small cards with their names (2026-11-17: photos alone didn't say which
+/// bird or how good), 2 per row, with a Collected / Duplicates switch (Duplicates: every
+/// copy but each species' best). [chosen] and [onTap]: picking; else a tap opens the card.
+class _CardGrid extends StatefulWidget {
+  const _CardGrid({required this.cards, this.chosen, this.onTap});
+  final List<CardData>
+  cards; // in display order, birds known to this phone only
+  final Set<String>? chosen;
+  final ValueChanged<CardData>? onTap;
+
+  @override
+  State<_CardGrid> createState() => _CardGridState();
+}
+
+class _CardGridState extends State<_CardGrid> {
+  bool _spares = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final best = {for (final c in bestCards(widget.cards).values) c.key};
+    final spares = [
+      for (final c in widget.cards)
+        if (!best.contains(c.key)) c,
+    ];
+    final shown = _spares ? spares : widget.cards;
+    final entries = [
+      for (final c in shown) (birdById(c.birdId)!, c as CardData?),
+    ];
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: SegmentedButton<bool>(
+            showSelectedIcon: false,
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text('${l.viewAll} (${widget.cards.length})'),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('${l.viewDuplicates} (${spares.length})'),
+              ),
+            ],
+            selected: {_spares},
+            onSelectionChanged: (s) => setState(() => _spares = s.single),
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.68,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+            ),
+            itemCount: shown.length,
+            itemBuilder: (context, i) {
+              final c = shown[i];
+              final on = widget.chosen?.contains(c.key) ?? false;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  CardTile(
+                    bird: entries[i].$1,
+                    card: c,
+                    heard: false,
+                    onTap: widget.onTap != null
+                        ? () => widget.onTap!(c)
+                        : () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) =>
+                                  CardPager(entries: entries, initial: i),
+                            ),
+                          ),
+                  ),
+                  if (on)
+                    IgnorePointer(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: scheme.primary.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(radius),
+                        ),
+                        child: Icon(
+                          Icons.check_circle,
+                          size: 48,
+                          color: scheme.onPrimary,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Cards sorted by card number, spare copies before each species' best; unknown birds
+/// (a catalog this phone hasn't got yet) left out.
+List<CardData> _byNumber(List<CardData> cards) {
+  final best = {for (final c in bestCards(cards).values) c.key};
+  return [
+    for (final c in cards)
+      if (birdById(c.birdId) != null) c,
+  ]..sort((a, b) {
+    final n = birdById(a.birdId)!.number - birdById(b.birdId)!.number;
+    if (n != 0) return n;
+    return (best.contains(a.key) ? 1 : 0) - (best.contains(b.key) ? 1 : 0);
+  });
+}
+
+/// The friend's collection, to see what to ask for (read-only; tap a card to see it whole).
+class _FriendCollection extends StatelessWidget {
+  const _FriendCollection(this.friend);
+  final PlayerProfile friend;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(l.theirCollection('@${friend.name}'))),
+      body: FutureBuilder(
+        future: friendCards(friend.uid),
+        builder: (context, snap) {
+          if (snap.hasError) return Center(child: Text(l.accountError));
+          final cards = snap.data;
+          if (cards == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Padding(
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom: MediaQuery.paddingOf(context).bottom,
+            ),
+            child: _CardGrid(cards: _byNumber(cards)),
+          );
+        },
       ),
     );
   }
@@ -368,71 +540,23 @@ class _PickerState extends State<_Picker> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    final cards = store.cards;
-    final best = {for (final c in bestCards(cards).values) c.key};
-    // By bird, then the spare copies before the best one.
-    final sorted =
-        [
-          for (final c in cards)
-            if (birdById(c.birdId) != null && !widget.locked.contains(c.key)) c,
-        ]..sort((a, b) {
-          final n = birdById(a.birdId)!.number - birdById(b.birdId)!.number;
-          if (n != 0) return n;
-          return (best.contains(a.key) ? 1 : 0) -
-              (best.contains(b.key) ? 1 : 0);
-        });
+    final sorted = _byNumber([
+      for (final c in store.cards)
+        if (!widget.locked.contains(c.key)) c,
+    ]);
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.75,
+      height: MediaQuery.sizeOf(context).height * 0.85,
       child: Column(
         children: [
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.68,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-              ),
-              itemCount: sorted.length,
-              itemBuilder: (_, i) {
-                final c = sorted[i];
-                final on = _chosen.contains(c.key);
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CardTile(
-                      bird: birdById(c.birdId)!,
-                      card: c,
-                      heard: false,
-                      compact: true,
-                      copies: cards.where((x) => x.birdId == c.birdId).length,
-                      onTap: () => setState(() {
-                        if (on) {
-                          _chosen.remove(c.key);
-                        } else if (_chosen.length < maxTradeCards) {
-                          _chosen.add(c.key);
-                        }
-                      }),
-                    ),
-                    if (on)
-                      IgnorePointer(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: scheme.primary.withValues(alpha: 0.35),
-                            borderRadius: BorderRadius.circular(radius - 6),
-                          ),
-                          child: Icon(
-                            Icons.check_circle,
-                            size: 36,
-                            color: scheme.onPrimary,
-                          ),
-                        ),
-                      ),
-                  ],
-                );
-              },
+            child: _CardGrid(
+              cards: sorted,
+              chosen: _chosen,
+              onTap: (c) => setState(() {
+                if (!_chosen.remove(c.key) && _chosen.length < maxTradeCards) {
+                  _chosen.add(c.key);
+                }
+              }),
             ),
           ),
           Padding(

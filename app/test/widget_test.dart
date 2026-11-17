@@ -1193,6 +1193,46 @@ void main() {
     store.region = null;
   });
 
+  testWidgets('collection: Duplicates view, a pile opens into its copies', (
+    tester,
+  ) async {
+    final saved = store.backup;
+    final robin = _b('robin');
+    await store.restore({
+      ...saved,
+      'cards': jsonEncode([
+        for (final r in ['common', 'rare', 'common'])
+          rollCard(robin, null, rarity: r),
+        rollCard(_b('heron'), null, rarity: 'epic'),
+      ]),
+    });
+    addTearDown(() => store.restore(saved));
+    species = {for (final b in birds) b.id: b};
+    tester.view.physicalSize = const Size(1080, 6000); // every copy built
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const Scaffold(body: CollectionScreen()),
+      ),
+    );
+    await tester.tap(find.byTooltip('Choose the view'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Duplicates (2)').last); // 4 cards, 2 species
+    await tester.pumpAndSettle();
+    expect(find.byType(CardTile), findsOneWidget); // the robin's pile only
+    await tester.tap(find.byType(CardTile));
+    await tester.pumpAndSettle(); // the Hero flight and the deal
+    expect(tester.takeException(), isNull);
+    final tiles = tester.widgetList<CardTile>(find.byType(CardTile)).toList();
+    expect(tiles.length, 3);
+    expect(tiles.first.card!.rarity, 'rare'); // best copy first
+  });
+
   testWidgets('tips: four tiles, unavailable without Google Play', (
     tester,
   ) async {

@@ -1209,10 +1209,12 @@ class CardTile extends StatelessWidget {
     this.copies = 1,
     this.compact = false,
     this.onTap,
+    this.heroTag,
     super.key,
   });
   final Bird bird;
   final CardData? card; // the copy shown, null if not won
+  final Object? heroTag; // a pile that opens: its top card flies (collection)
   final int copies;
   final bool heard;
   final bool compact; // 3 per row: just the photo in its rarity frame
@@ -1239,28 +1241,48 @@ class CardTile extends StatelessWidget {
             ? Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Duplicates as a pile: one or two cards peek out from behind.
-                  for (final angle in [-0.05, 0.035].take(copies - 1))
+                  // Duplicates as a pile: up to three cards fan out from behind,
+                  // tinted with the rarity so the pile reads at a glance.
+                  for (final (angle, dx) in [
+                    (-0.1, -5.0),
+                    (0.08, 5.0),
+                    (-0.045, -2.0),
+                  ].take(min(copies - 1, 3)))
                     Positioned.fill(
-                      child: Transform.rotate(
-                        angle: angle,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: paper,
-                            borderRadius: BorderRadius.circular(radius / 2),
-                            border: Border.all(
-                              color: Colors.black.withValues(alpha: 0.18),
+                      child: Transform.translate(
+                        offset: Offset(dx, 0),
+                        child: Transform.rotate(
+                          angle: angle,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Color.lerp(
+                                paper,
+                                rarityColor[card?.rarity ?? bird.rarity],
+                                0.35,
+                              ),
+                              borderRadius: BorderRadius.circular(radius / 2),
+                              border: Border.all(
+                                color: Colors.black.withValues(alpha: 0.35),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x33000000),
+                                  blurRadius: 4,
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  IgnorePointer(
-                    child: FittedBox(
-                      child: SizedBox(
-                        width: 340,
-                        height: 340 / 0.68,
-                        child: BirdCardView(bird: bird, card: card),
+                  _hero(
+                    IgnorePointer(
+                      child: FittedBox(
+                        child: SizedBox(
+                          width: 340,
+                          height: 340 / 0.68,
+                          child: BirdCardView(bird: bird, card: card),
+                        ),
                       ),
                     ),
                   ),
@@ -1302,6 +1324,9 @@ class CardTile extends StatelessWidget {
 }
 
 extension on CardTile {
+  Widget _hero(Widget child) =>
+      heroTag == null ? child : Hero(tag: heroTag!, child: child);
+
   /// The photo in its rarity frame (greyed out if only heard), with its number.
   Widget _photoTile(String number) => Container(
     padding: const EdgeInsets.all(4),
@@ -1369,32 +1394,34 @@ class _Badge extends StatelessWidget {
   );
 }
 
-/// "×3": how many copies of the card the player owns, in the theme's accent or [color]
-/// (the card's rarity, above a full-screen card); [large] above a full-screen card.
+/// "×3": how many copies of the card the player owns; [large] above a revealed card.
+/// Outlined in black to read over any photo; the grid's 20 % smaller (user, 2026-11-17).
 class CopiesBadge extends StatelessWidget {
-  const CopiesBadge(this.copies, {this.large = false, this.color, super.key});
+  const CopiesBadge(this.copies, {this.large = false, super.key});
   final int copies;
   final bool large;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final style = large ? text.headlineSmall : text.titleMedium;
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: large ? 14 : 8,
-        vertical: large ? 4 : 2,
+        horizontal: large ? 14 : 6.4,
+        vertical: large ? 4 : 1.6,
       ),
       decoration: BoxDecoration(
-        color: color ?? scheme.primary,
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: Colors.black),
       ),
       child: Text(
         '×$copies',
-        style: (large ? text.headlineSmall : text.titleMedium)?.copyWith(
-          color: color == null ? scheme.onPrimary : paper,
+        style: style?.copyWith(
+          color: scheme.onPrimary,
           fontWeight: FontWeight.bold,
+          fontSize: large ? null : (style.fontSize ?? 16) * 0.8,
         ),
       ),
     );
