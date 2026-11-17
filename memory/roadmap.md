@@ -6,7 +6,7 @@ Iterative: each step ends with something that runs on a real Android device and 
 - **Live:** 1.0.0+3 in **closed testing** on Google Play (14 active installs; reads the frozen GitHub Pages catalog).
 - **1.1.0+4 validated by the user on the S22 (2026-11-13)**, pushed to GitHub (`main`), signed bundle built: `app/build/app/outputs/bundle/release/app-release.aab`. Next: upload to the closed track (tutorial given 2026-11-13), then Production.
 - **1.1 contents:** cloud backup + accounts (anonymous, Google, email), profile (@name, avatar, hall of fame, stats), friends, invite links + welcome card, bonus codes (`OGBetaTester`), **remote trades** (face-to-face trading removed), card variants + Shiny, achievements in 5 tiers + Voices series, song comparison after a wrong guess, bird group icons, catalog on R2 (1,292 species), lock-screen fix and tester feedback (1.0.1, never shipped alone).
-- **Order:** 1.1.0 closed test → Production → **1.2 Australia / NZ + heatmap** → later (iOS, marketplace, region UI, more of the globe).
+- **Order:** 1.1.0 closed test → Production → **1.2 Australia / NZ, North Africa / Middle East, Mexico / Central America + heatmap** → later (iOS, marketplace, region UI, more of the globe).
 
 ## Release 1.1.0 → Production
 Updates during the closed test don't reset its clock. Testers' emails stay in the Play Console, never in the repo.
@@ -21,20 +21,23 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [ ] **14 consecutive days with ≥ 12 opted-in testers**, then **Apply for production**; staged rollout 20 % → 100 %
 - [ ] README: drop "in closed testing" once public; `svc power stayon usb` off on the S22
 
-## Phase 1.2 — Australia and New Zealand
-- [ ] Free-recording sweep on AU / NZ species (xeno-canto free + iNaturalist) before committing
-- [ ] Zone in `CELL_AREAS` (same 2° cells, southern seasons need nothing), region names, `PLANNED` update; offline birds for an "oc" continent
-- [ ] **Bird group icons for the new families** (the family test fails until each has a group; new groups via `pipeline/family_icons.py`); a "Flightless" series (emu, kiwi, penguins)
-- [ ] Overnight build, publish, phone check; store listing mentions Australia / NZ
-- [ ] **Missing-species heatmap** (tester request): a toggle on the region picker tints each cell by the species not collected yet; one pipeline file of each cell's species as card numbers (~0.1 MB gzip); tap a cell → "42 species missing here"
-- [ ] Catalog clips with `-movflags +faststart` (streaming starts one request sooner) at this full build
+## Phase 1.2 — Australia / NZ, North Africa / Middle East, Mexico / Central America + heatmap
+- [x] Free-recording sweeps: AU / NZ (`sweep_oc.md`), the four new zones (`sweep_mena_mxca.md`: common + uncommon 91–96 % covered; ~500 new species from Mexico / Central America, ~100 from North Africa / Middle East)
+- [x] Pipeline: English-only names, GBIF + Commons sounds, iNaturalist variant photos with a reject list, synonym names, frozen ids (seeded from 1.1), 2 spare clips, faststart clips, `cells_species.json`
+- [x] Zones: AU bioregions + NZ, country lists + wide cell boxes for the new zones; continents fixed and `oc` in the app
+- [x] Group icons for the new families (ratite, penguin + mappings); series for the new regions
+- [x] Missing-species heatmap (Plus) on the region map; the map opens on the phone's continent
+- [ ] **Full build** (running since 2026-11-16) → family-icon test on the real catalog, empty series pruned, Latin-only English names into `names.csv`
+- [ ] `variants.py` → photo review into `photo_rejects.csv` → quick rebuild
+- [ ] Phone check with a dev build (user's OK: the S22 runs the Play build): AU / MX / MENA regions, an alarm, a card and its icon, offline fallback, heatmap
+- [ ] README, store listing and "What's new" (4 languages, new regions + species count); version **1.2.0+5**; **publish the catalog only once 1.2 is live** (R2 is shared by every version)
 
 ## Later
 - **Challenges between friends** (the "coming soon" button on a friend's profile).
 - **Region UI:** rework the picker, names and collection views (the 2° grid stays).
 - **iOS:** AlarmKit (iOS 26+; check custom sounds), Sign in with Apple, StoreKit products; remote trades and backup already cross-platform. $99 / year, cloud Mac builds, a real iPhone.
 - **Marketplace** (~1,000+ daily players): server-signed pre-rolled cards (Blaze + Cloud Functions); first a bank (sell duplicates, buy a chosen card), then player listings with a fee; the currency never bought with or turned into money.
-- **More of the globe** (each: free-recording sweep, zone, offline birds, languages): Mexico + Central America, South Africa, Japan, India, Brazil.
+- **More of the globe** (each: free-recording sweep, zone, offline birds, languages): South Africa, Japan, India, Brazil.
 
 ## Backlog
 - [ ] Optional: the app picks up a moderated (removed) @name

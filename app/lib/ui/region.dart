@@ -190,12 +190,22 @@ class _RegionScreenState extends State<RegionScreen>
       _edges = outlineEdges(_cells);
     });
     if (r == null) return;
-    // Opens on the current region, else on the area the catalog covers.
+    // Opens on the current region, else on the covered cells of the phone's continent.
+    final continent = continentOf(
+      null,
+      WidgetsBinding.instance.platformDispatcher.locale.countryCode,
+    );
+    final home = [
+      for (final c in _cells)
+        if (continentOf(c, null) == continent) _cellRect(c),
+    ];
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focus(
-        _picked == null
-            ? Rect.fromPoints(project(72, -130), project(34, 42))
-            : _areaOf(_picked!),
+        _picked != null
+            ? _areaOf(_picked!)
+            : home.isEmpty
+            ? Offset.zero & _mapSize
+            : home.reduce((a, b) => a.expandToInclude(b)),
         animate: false,
       ),
     );
