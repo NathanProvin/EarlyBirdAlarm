@@ -24,6 +24,27 @@ import 'theme.dart';
 String cardRarity(CardData c) =>
     c.rarity ?? birdById(c.birdId)?.rarity ?? 'common';
 
+/// Spare copies (2026-11-17): a duplicate is the same bird, rarity and art; of each set
+/// of identical cards the best quality one is kept, the others are spares.
+List<CardData> spareCards(List<CardData> cards) {
+  final kept = <String, CardData>{};
+  final spares = <CardData>[];
+  for (final c in cards) {
+    final art = birdById(c.birdId)?.artOf(c.photo)?.$1 ?? c.photo;
+    final k = '${c.birdId}|${cardRarity(c)}|$art';
+    switch (kept[k]) {
+      case null:
+        kept[k] = c;
+      case final had when c.quality > had.quality:
+        spares.add(had);
+        kept[k] = c;
+      default:
+        spares.add(c);
+    }
+  }
+  return spares;
+}
+
 /// The best copy of each owned bird, by bird id: the rarest, then the best quality.
 Map<String, CardData> bestCards(List<CardData> cards) {
   final best = <String, CardData>{};
@@ -227,6 +248,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
             b,
           ) => (b.$2?.quality ?? -1) - (a.$2?.quality ?? -1),
         };
+    final spares = spareCards(cards);
+    final spareSpecies = {for (final c in spares) c.birdId};
     final copiesOf = <String, int>{};
     for (final c in cards) {
       copiesOf[c.birdId] = (copiesOf[c.birdId] ?? 0) + 1;
@@ -253,7 +276,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       ],
       _duplicates => [
         for (final c in best.values)
-          if (copiesOf[c.birdId]! > 1)
+          if (spareSpecies.contains(c.birdId))
             if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ],
       _world => [for (final b in species.values) (b, best[b.id])],
@@ -284,8 +307,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       for (final r in [?current]) r: regionLabel(r),
       _all: '${l.viewAll} (${cards.length})',
       _species: '${l.viewSpecies} (${best.length})',
-      // The spare copies: cards beyond one per species.
-      _duplicates: '${l.viewDuplicates} (${cards.length - best.length})',
+      _duplicates: '${l.viewDuplicates} (${spares.length})',
       for (final r in others) r: regionLabel(r),
       _world:
           '${l.viewWorld} '

@@ -116,6 +116,16 @@ class BirdCardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(radius - 8),
                       child: BirdPhoto(bird, photo: card?.photo),
                     ),
+                    // Which of the species' photos this card shows (none for a
+                    // single photo, a Shiny or a heard bird).
+                    if (card != null)
+                      if (bird.artOf(card.photo) case final art?
+                          when art.$2 > 1)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: ArtLabel(art, color: frame),
+                        ),
                     // Group, habitat and diet (family_icon.dart): the photo's
                     // bottom left half; a tap names each.
                     Positioned(

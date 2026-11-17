@@ -377,7 +377,7 @@ class _Offer extends StatelessWidget {
 
 /// Cards as full small cards with their names (2026-11-17: photos alone didn't say which
 /// bird or how good), 2 per row, with a Collected / Duplicates switch (Duplicates: every
-/// copy but each species' best). [chosen] and [onTap]: picking; else a tap opens the card.
+/// identical copy but the best: same bird, rarity and art). [chosen] and [onTap]: picking; else a tap opens the card.
 class _CardGrid extends StatefulWidget {
   const _CardGrid({required this.cards, this.chosen, this.onTap});
   final List<CardData>
@@ -396,10 +396,10 @@ class _CardGridState extends State<_CardGrid> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final best = {for (final c in bestCards(widget.cards).values) c.key};
+    final spare = {for (final c in spareCards(widget.cards)) c.key};
     final spares = [
       for (final c in widget.cards)
-        if (!best.contains(c.key)) c,
+        if (spare.contains(c.key)) c,
     ];
     final shown = _spares ? spares : widget.cards;
     final entries = [

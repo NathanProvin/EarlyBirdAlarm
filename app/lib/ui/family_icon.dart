@@ -273,27 +273,84 @@ class GlassBadge extends StatelessWidget {
     triggerMode: TooltipTriggerMode.tap,
     preferBelow: false,
     showDuration: const Duration(seconds: 3),
-    child: ClipOval(
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          width: 40,
-          height: 40,
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.35),
-            border: Border.all(
-              color: Color.lerp(
-                color,
-                Colors.white,
-                0.45,
-              )!.withValues(alpha: 0.8),
-              width: 1.5,
-            ),
+    child: _Glass(
+      color: color,
+      radius: 20,
+      child: Container(
+        width: 40,
+        height: 40,
+        padding: const EdgeInsets.all(5),
+        child: icon,
+      ),
+    ),
+  );
+}
+
+/// "Art 2/6" (2026-11-17): which of the species' photos the card shows, in italics at the
+/// stat names' size, on a rounded glass cartridge like the badges.
+class ArtLabel extends StatelessWidget {
+  const ArtLabel(this.art, {required this.color, super.key});
+  final (int, int) art;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium;
+    // A third smaller than the stat names, a serif italic, lighter glass (user, 2026-11-17).
+    return _Glass(
+      color: color,
+      radius: 8,
+      alpha: 0.18,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
+        child: Text(
+          'Art ${art.$1}/${art.$2}',
+          style: style?.copyWith(
+            color: Colors.white,
+            fontFamily: 'serif',
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w600,
+            fontSize: (style.fontSize ?? 14) * 0.67,
+            shadows: const [Shadow(color: Color(0x99000000), blurRadius: 2)],
           ),
-          child: icon,
         ),
+      ),
+    );
+  }
+}
+
+/// Frosted glass tinted with [color], with a light rim: the badges' and Art's cartridge.
+class _Glass extends StatelessWidget {
+  const _Glass({
+    required this.color,
+    required this.radius,
+    required this.child,
+    this.alpha = 0.35,
+  });
+  final Color color;
+  final double alpha; // the tint's opacity
+  final double radius;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(radius),
+    child: BackdropFilter(
+      filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          color: color.withValues(alpha: alpha),
+          border: Border.all(
+            color: Color.lerp(
+              color,
+              Colors.white,
+              0.45,
+            )!.withValues(alpha: 0.8),
+            width: 1.5,
+          ),
+        ),
+        child: child,
       ),
     ),
   );

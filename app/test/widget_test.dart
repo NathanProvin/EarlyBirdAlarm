@@ -1201,8 +1201,9 @@ void main() {
     await store.restore({
       ...saved,
       'cards': jsonEncode([
+        // Same bird, rarity and art: the second Common is a duplicate.
         for (final r in ['common', 'rare', 'common'])
-          rollCard(robin, null, rarity: r),
+          rollCard(robin, null, rarity: r, drawnPhoto: (path: robin.photo)),
         rollCard(_b('heron'), null, rarity: 'epic'),
       ]),
     });
@@ -1222,7 +1223,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Duplicates (2)').last); // 4 cards, 2 species
+    await tester.tap(find.text('Duplicates (1)').last); // one spare Common
     await tester.pumpAndSettle();
     expect(find.byType(CardTile), findsOneWidget); // the robin's pile only
     await tester.tap(find.byType(CardTile));
@@ -1231,6 +1232,24 @@ void main() {
     final tiles = tester.widgetList<CardTile>(find.byType(CardTile)).toList();
     expect(tiles.length, 3);
     expect(tiles.first.card!.rarity, 'rare'); // best copy first
+  });
+
+  test('art: photo place; duplicates share bird, rarity and art', () {
+    final robin = _b('robin');
+    final n = robin.variants.length + 1;
+    expect(robin.artOf(null), (1, n)); // older cards: the catalog photo
+    expect(robin.artOf(robin.photo), (1, n));
+    if (robin.variants.isNotEmpty) {
+      expect(robin.artOf(robin.variants.last.photo), (n, n));
+    }
+    CardData card(String rarity, String photo, int q) => CardData.fromJson({
+      ...rollCard(robin, null, rarity: rarity).toJson(),
+      'photo': photo,
+      'quality': q,
+    });
+    final low = card('common', robin.photo, 10);
+    final high = card('common', robin.photo, 90);
+    expect(spareCards([low, high, card('rare', robin.photo, 50)]), [low]);
   });
 
   testWidgets('tips: four tiles, unavailable without Google Play', (

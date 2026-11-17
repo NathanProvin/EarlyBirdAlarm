@@ -244,6 +244,13 @@ class Bird {
         orElse: () => (photo: this.photo, credit: photoCredit, kind: null),
       );
 
+  /// A card's art (2026-11-17): (x, n), x its photo's place among the species' n photos
+  /// (1 = the catalog photo, then the variants, whose order never changes); null for a
+  /// Shiny photo. Older cards and photos the catalog no longer has are Art 1.
+  (int, int)? artOf(String? photo) => shiny.any((s) => s.photo == photo)
+      ? null
+      : (variants.indexWhere((v) => v.photo == photo) + 2, variants.length + 1);
+
   /// How common the species is: its commonest tier of the year in the region. Cards
   /// have their own rarity (drawn when won); this one is for cards from before 2026-10-30.
   String get rarity => tierIn(null) ?? 'legendary';
