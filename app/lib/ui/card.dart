@@ -116,11 +116,40 @@ class BirdCardView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(radius - 8),
                       child: BirdPhoto(bird, photo: card?.photo),
                     ),
-                    // The bird's group (family_icon.dart).
+                    // Group, habitat and diet (family_icon.dart): the photo's
+                    // bottom left half; a tap names each.
                     Positioned(
                       left: 8,
-                      top: 8,
-                      child: FamilyBadge(bird.family, color: frame),
+                      bottom: 8,
+                      right: 8,
+                      child: Row(
+                        children: [
+                          for (final (icon, label) in [
+                            if (groupIcon(bird.family) case final icon?)
+                              (icon, '${l.familyLabel} · ${bird.family}'),
+                            if (habitatIcon(bird.habitat) case final icon?)
+                              (
+                                Icon(icon, color: Colors.white, size: 26),
+                                '${l.habitatLabel} · ${l.habitatName(traitKey(bird.habitat!))}',
+                              ),
+                            if (dietIcon(bird.diet) case final icon?)
+                              (
+                                Icon(icon, color: Colors.white, size: 26),
+                                '${l.dietLabel} · ${l.dietName(traitKey(bird.diet!))}',
+                              ),
+                          ])
+                            Flexible(
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: GlassBadge(
+                                  icon: icon,
+                                  label: label,
+                                  color: frame,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

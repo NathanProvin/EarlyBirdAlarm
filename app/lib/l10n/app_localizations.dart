@@ -276,6 +276,36 @@ abstract class AppLocalizations {
   /// **'Bird rarity'**
   String get birdRarity;
 
+  /// No description provided for @familyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Family'**
+  String get familyLabel;
+
+  /// No description provided for @habitatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Habitat'**
+  String get habitatLabel;
+
+  /// No description provided for @dietLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Diet'**
+  String get dietLabel;
+
+  /// AVONET value, lowercase with underscores
+  ///
+  /// In en, this message translates to:
+  /// **'{value, select, forest{Forest} woodland{Woodland} shrubland{Shrubland} grassland{Grassland} wetland{Wetland} riverine{Rivers} coastal{Coast} marine{Sea} desert{Desert} rock{Rocks} human_modified{Towns & farmland} other{{value}}}'**
+  String habitatName(String value);
+
+  /// AVONET value, lowercase with underscores
+  ///
+  /// In en, this message translates to:
+  /// **'{value, select, frugivore{Fruit} granivore{Seeds} nectarivore{Nectar} herbivore_aquatic{Water plants} herbivore_terrestrial{Plants} invertivore{Invertebrates} vertivore{Vertebrates} aquatic_predator{Fish & water prey} scavenger{Carrion} omnivore{Omnivore} other{{value}}}'**
+  String dietName(String value);
+
   /// No description provided for @wikipedia.
   ///
   /// In en, this message translates to:
@@ -513,7 +543,7 @@ abstract class AppLocalizations {
   /// No description provided for @hardInfo.
   ///
   /// In en, this message translates to:
-  /// **'Rarer birds, all vocalizations'**
+  /// **'All birds, all vocalizations'**
   String get hardInfo;
 
   /// No description provided for @seasonalInfo.

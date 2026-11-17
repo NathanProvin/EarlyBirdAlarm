@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'account.dart';
@@ -146,7 +147,10 @@ class _BottomBar extends StatelessWidget {
           label: label,
           excludeSemantics: true,
           child: InkWell(
-            onTap: () => onSelect(i),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onSelect(i);
+            },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

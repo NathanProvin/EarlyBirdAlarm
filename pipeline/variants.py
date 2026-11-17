@@ -9,7 +9,6 @@ import io
 import json
 import re
 import sys
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image
@@ -62,7 +61,6 @@ def details(titles):
 def inat_taxon(latin):
     """(iNaturalist taxon id, its current name) for this exact name, or (None, None)."""
     t = get("https://api.inaturalist.org/v1/taxa", {"q": latin, "rank": "species", "per_page": 10})
-    time.sleep(1)  # iNaturalist asks for ~1 request a second
     return next(((x["id"], x["name"]) for x in t.get("results", [])
                  if (x.get("matched_term") or "").lower() == latin.lower()), (None, None))
 
@@ -127,7 +125,6 @@ def inat_photos(taxon, n):
     obs = []
     for extra in ({"term_id": 17, "term_value_id": 18}, {"without_term_value_id": 19}):
         obs += get("https://api.inaturalist.org/v1/observations", query | extra).get("results", [])
-        time.sleep(1)
     obs.sort(key=lambda o: not o.get("faves_count"))
     out, users = [], set()
     for o in obs:

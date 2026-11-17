@@ -101,6 +101,52 @@ class AppLocalizationsEs extends AppLocalizations {
   String get birdRarity => 'Rareza';
 
   @override
+  String get familyLabel => 'Familia';
+
+  @override
+  String get habitatLabel => 'Hábitat';
+
+  @override
+  String get dietLabel => 'Dieta';
+
+  @override
+  String habitatName(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'forest': 'Bosque',
+      'woodland': 'Arbolado',
+      'shrubland': 'Matorral',
+      'grassland': 'Pradera',
+      'wetland': 'Humedal',
+      'riverine': 'Ríos',
+      'coastal': 'Costa',
+      'marine': 'Mar',
+      'desert': 'Desierto',
+      'rock': 'Rocas',
+      'human_modified': 'Ciudad y campo',
+      'other': '$value',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String dietName(String value) {
+    String _temp0 = intl.Intl.selectLogic(value, {
+      'frugivore': 'Frutas',
+      'granivore': 'Semillas',
+      'nectarivore': 'Néctar',
+      'herbivore_aquatic': 'Plantas acuáticas',
+      'herbivore_terrestrial': 'Plantas',
+      'invertivore': 'Invertebrados',
+      'vertivore': 'Vertebrados',
+      'aquatic_predator': 'Peces y presas acuáticas',
+      'scavenger': 'Carroña',
+      'omnivore': 'Omnívoro',
+      'other': '$value',
+    });
+    return '$_temp0';
+  }
+
+  @override
   String get wikipedia => 'Wikipedia';
 
   @override
@@ -227,7 +273,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mediumInfo => 'Aves menos comunes, cantos y reclamos';
 
   @override
-  String get hardInfo => 'Aves más raras, todos los sonidos';
+  String get hardInfo => 'Todas las aves, todos los sonidos';
 
   @override
   String get seasonalInfo => 'Solo las aves presentes este mes';

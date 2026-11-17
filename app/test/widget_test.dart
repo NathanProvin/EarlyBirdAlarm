@@ -159,6 +159,23 @@ void main() {
     expect(_b('robin').recordings.first.nc, isFalse);
   });
 
+  test('every AVONET habitat and diet has a badge icon', () {
+    for (final h in [
+      'Forest', 'Woodland', 'Shrubland', 'Grassland', 'Wetland', 'Riverine', //
+      'Coastal', 'Marine', 'Desert', 'Rock', 'Human Modified',
+    ]) {
+      expect(habitatIcon(h), isNotNull, reason: h);
+    }
+    for (final d in [
+      'Frugivore', 'Granivore', 'Nectarivore', 'Herbivore aquatic', //
+      'Herbivore terrestrial', 'Invertivore', 'Vertivore', 'Aquatic predator',
+      'Scavenger', 'Omnivore',
+    ]) {
+      expect(dietIcon(d), isNotNull, reason: d);
+    }
+    expect(habitatIcon(null), isNull);
+  });
+
   test('pool follows season and difficulty', () {
     Set<String> ids(int? m, Difficulty d) =>
         pool(m, d).keys.map((b) => b.id).toSet();
@@ -167,6 +184,7 @@ void main() {
     expect(ids(5, Difficulty.medium), containsAll(['redstart', 'heron']));
     expect(ids(5, Difficulty.medium), isNot(contains('flycatcher')));
     expect(ids(null, Difficulty.hard).length, _fake.length); // "All birds"
+    expect(ids(5, Difficulty.expert), ids(5, Difficulty.hard)); // every tier
     expect(
       pool(1, Difficulty.easy).length,
       _fake.length,

@@ -139,6 +139,7 @@ class _RingScreenState extends State<RingScreen> {
   List<Bird> get _board => store.difficulty == Difficulty.expert
       ? {_bird, ?_tapped}.toList()
       : _choices;
+  int get _perRow => _board.length <= 2 ? 1 : 2;
 
   /// The recording to compare for [b]: the one that rang for the answer; for the others
   /// one of the same kind (song / call), from the phone when there is one (no data, works
@@ -295,11 +296,12 @@ class _RingScreenState extends State<RingScreen> {
                 child: Column(
                   children: [
                     if (_next != null) ...[
-                      for (var i = 0; i < _board.length; i += 2)
+                      // Expert's answer and pick: one above the other, full width.
+                      for (var i = 0; i < _board.length; i += _perRow)
                         Expanded(
                           child: Row(
                             children: [
-                              for (final bird in _board.skip(i).take(2))
+                              for (final bird in _board.skip(i).take(_perRow))
                                 Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.all(6),

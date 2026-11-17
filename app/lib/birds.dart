@@ -180,6 +180,8 @@ class Bird {
       },
       order = j['order'] as String,
       family = j['family'] as String,
+      habitat = j['habitat'] as String?,
+      diet = j['diet'] as String?,
       photo = j['photo'] as String,
       photoCredit = j['photoCredit'] as String,
       variants = [
@@ -209,6 +211,10 @@ class Bird {
       };
 
   final String id, latin, name, order, family, photo, photoCredit;
+
+  /// AVONET's habitat ("Forest") and trophic niche ("Invertivore"); null in catalogs
+  /// before 1.2 or when AVONET lacks the species.
+  final String? habitat, diet;
   final Map<String, String> names; // language -> common name (see localName)
   /// Extra photos (catalog 1.1), each as likely as the catalog photo on a card (drawPhoto).
   final List<({String photo, String credit})> variants;

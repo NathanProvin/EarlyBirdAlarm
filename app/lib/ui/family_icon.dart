@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'family_paths.dart';
 
 /// Bird group icons (2026-11-13): each catalog family belongs to one group, drawn as a
 /// public-domain PhyloPic silhouette (pipeline/family_icons.py) on a 24×24 grid. Shown
-/// in a glass circle tinted with the rarity, at the top left of the card's photo.
+/// in a glass cartridge tinted with the rarity, at the bottom left of the card's photo,
+/// beside the habitat and diet badges (AVONET).
 
 const familyGroups = <String, List<String>>{
   'duck': ['Anatidae', 'Anseranatidae'],
@@ -213,38 +216,139 @@ class _GroupPainter extends CustomPainter {
       old.group != group || old.color != color;
 }
 
-/// The bird's group in a glass circle tinted with [color], the size of the card's play
-/// button (nothing for a family not mapped yet).
-class FamilyBadge extends StatelessWidget {
-  const FamilyBadge(this.family, {required this.color, super.key});
-  final String family;
+/// The bird's group silhouette, white on the 24×24 grid (nothing for an unmapped family).
+Widget? groupIcon(String family) => switch (familyGroup(family)) {
+  final g? => CustomPaint(painter: _GroupPainter(g, Colors.white)),
+  null => null,
+};
+
+const _habitatIcons = <String, IconData>{
+  'forest': Icons.forest,
+  'woodland': Icons.park,
+  'shrubland': Icons.eco,
+  'grassland': Icons.grass,
+  'wetland': Icons.water,
+  'riverine': Icons.waves,
+  'coastal': Icons.beach_access,
+  'marine': Icons.sailing,
+  'desert': Icons.wb_sunny,
+  'rock': Icons.landscape,
+  'human_modified': Icons.location_city,
+};
+const _dietIcons = <String, IconData>{
+  'frugivore': Icons.energy_savings_leaf,
+  'granivore': Icons.grain,
+  'nectarivore': Icons.local_florist,
+  'herbivore_aquatic': Icons.spa,
+  'herbivore_terrestrial': Icons.grass,
+  'invertivore': Icons.pest_control,
+  'vertivore': Icons.cruelty_free,
+  'aquatic_predator': Icons.set_meal,
+  'scavenger': Icons.recycling,
+  'omnivore': Icons.restaurant,
+};
+
+/// AVONET's word as a key: "Human Modified" -> human_modified.
+String traitKey(String avonet) => avonet.toLowerCase().replaceAll(' ', '_');
+
+IconData? habitatIcon(String? h) =>
+    h == null ? null : _habitatIcons[traitKey(h)];
+IconData? dietIcon(String? d) => d == null ? null : _dietIcons[traitKey(d)];
+
+/// A glass cartridge tinted with [color], the height of the card's play button: [icon]
+/// alone, and a tap slides out [label] ("Family · Turdidae") for 3 s.
+class GlassBadge extends StatefulWidget {
+  const GlassBadge({
+    required this.icon,
+    required this.label,
+    required this.color,
+    super.key,
+  });
+  final Widget icon;
+  final String label;
   final Color color;
 
   @override
+  State<GlassBadge> createState() => _GlassBadgeState();
+}
+
+class _GlassBadgeState extends State<GlassBadge> {
+  bool _open = false;
+  Timer? _close;
+
+  void _toggle() {
+    unawaited(HapticFeedback.selectionClick());
+    _close?.cancel();
+    setState(() => _open = !_open);
+    if (_open) {
+      _close = Timer(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _open = false);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _close?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final group = familyGroup(family);
-    if (group == null) return const SizedBox.shrink();
-    return ExcludeSemantics(
-      child: ClipOval(
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Container(
-            width: 40,
-            height: 40,
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.35),
-              border: Border.all(
-                color: Color.lerp(
-                  color,
-                  Colors.white,
-                  0.45,
-                )!.withValues(alpha: 0.8),
-                width: 1.5,
+    final color = widget.color;
+    return Semantics(
+      button: true,
+      label: widget.label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: _toggle,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              height: 40,
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: color.withValues(alpha: 0.35),
+                border: Border.all(
+                  color: Color.lerp(
+                    color,
+                    Colors.white,
+                    0.45,
+                  )!.withValues(alpha: 0.8),
+                  width: 1.5,
+                ),
+              ),
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox.square(dimension: 27, child: widget.icon),
+                    if (_open)
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 6, right: 6),
+                          child: Text(
+                            widget.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-            child: CustomPaint(painter: _GroupPainter(group, Colors.white)),
           ),
         ),
       ),

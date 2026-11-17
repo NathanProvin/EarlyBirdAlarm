@@ -28,7 +28,11 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Group icons for the new families (ratite, penguin + mappings); series for the new regions
 - [x] Missing-species heatmap (Plus) on the region map; the map opens on the phone's continent
 - [ ] **Full build** (running since 2026-11-16) → family-icon test on the real catalog, empty series pruned, Latin-only English names into `names.csv`
-- [ ] `variants.py` → photo review into `photo_rejects.csv` → quick rebuild
+- [ ] `variants.py` → photo review into `photo_rejects.csv` → quick rebuild (it also writes AVONET `habitat` / `diet` into `species.json`: the running build predates them)
+- [x] Card badges at the photo's bottom left: group, habitat, diet (AVONET), glass cartridges, a tap slides out "Family · Turdidae" for 3 s
+- [x] Expert mistake replay: answer and pick stacked (one per row); haptic tick on the 3 main tabs; Expert pool checked (every tier, as Hard)
+- [ ] **Art n/6** (user, 2026-11-17): "*Art x/n*", x = the card's photo number, n = the species' photo count (catalog + variants); italic, the stat names' font size; top right of the photo, a rounded glass cartridge like the group badge. Duplicates then count by bird + rarity + art; a species page shows "arts found". Check first that a saved card records its photo (older cards: catalog photo = Art 1)
+- [ ] Collection: filters and duplicates pass (brainstorm with the user first)
 - [ ] Phone check with a dev build (user's OK: the S22 runs the Play build): AU / MX / MENA regions, an alarm, a card and its icon, offline fallback, heatmap
 - [ ] README, store listing and "What's new" (4 languages, new regions + species count); version **1.2.0+5**; **publish the catalog only once 1.2 is live** (R2 is shared by every version)
 

@@ -20,6 +20,7 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import urllib.parse
 import urllib.request
@@ -74,6 +75,17 @@ def save_photo(src, out):
     ffmpeg("-i", str(src), "-vf", fit, "-frames:v", "1", "-q:v", "2", str(out))
 
 
+_inat_lock, _inat_last = threading.Lock(), [0.0]
+
+
+def inat_wait():
+    """iNaturalist asks for ~1 request a second: only real requests wait, cache hits don't
+    (2026-11-17: a 1 s sleep after every call cost a rebuild 1-2 h). Shared by all threads."""
+    with _inat_lock:
+        time.sleep(max(0.0, _inat_last[0] + 1 - time.monotonic()))
+        _inat_last[0] = time.monotonic()
+
+
 def get(url, params=None, headers=None, binary=False, tries=8):
     """GET with a disk cache keyed by the full URL (the xeno-canto key is left out of the key)."""
     if params:
@@ -81,6 +93,8 @@ def get(url, params=None, headers=None, binary=False, tries=8):
     cache_key = re.sub(r"key=[^&]+", "", url)
     path = CACHE / "http" / hashlib.sha1(cache_key.encode()).hexdigest()
     if not path.exists():
+        if "api.inaturalist.org" in url:
+            inat_wait()
         req = urllib.request.Request(url, headers={"User-Agent": UA, **(headers or {})})
         for attempt in range(tries):
             try:
@@ -215,6 +229,24 @@ def avonet():
                 mean = sum(w) / len(w)
                 cv = (sum((x - mean) ** 2 for x in w) / (len(w) - 1)) ** 0.5 / mean
             out[r[h.index(col)]] = (mass, cv)
+    cached.write_text(json.dumps(out))
+    return out
+
+
+def avonet_traits():
+    """{Latin name (eBird or BirdLife taxonomy): (habitat, trophic niche)}, AVONET's words
+    ("Forest", "Invertivore"); for the card's habitat and diet badges."""
+    cached = CACHE / "avonet" / "traits.json"
+    if cached.exists():
+        return {k: tuple(v) for k, v in json.loads(cached.read_text()).items()}
+    avonet()  # downloads the xlsx
+    out = {}
+    for sheet, col in (("AVONET2_eBird", "Species2"), ("AVONET1_BirdLife", "Species1")):
+        rows = read_xlsx(CACHE / "avonet" / "avonet.xlsx", sheet)
+        h = rows[0]
+        for r in rows[1:]:
+            t = tuple(None if r[h.index(c)] in ("NA", "") else r[h.index(c)] for c in ("Habitat", "Trophic.Niche"))
+            out.setdefault(r[h.index(col)], t)  # eBird first, as for mass
     cached.write_text(json.dumps(out))
     return out
 
@@ -537,7 +569,6 @@ def synonyms(key):
 def inat_species(latin):
     """(current name, English name) of the iNaturalist species this exact name means, or None."""
     t = get("https://api.inaturalist.org/v1/taxa", {"q": latin, "rank": "species", "per_page": 10})
-    time.sleep(1)  # iNaturalist asks for ~1 request a second
     return next(((x["name"], x.get("preferred_common_name")) for x in t.get("results", [])
                  if (x.get("matched_term") or "").lower() == latin.lower()), None)
 
@@ -664,7 +695,6 @@ def inat_recordings(latin, n):
     # (Puffinus griseus -> Ardenna grisea), while a name search alone would also bring back
     # neighbours (Larus cachinnans -> L. michahellis). Its subspecies come with it.
     t = get("https://api.inaturalist.org/v1/taxa", {"q": latin, "rank": "species", "per_page": 10})
-    time.sleep(1)  # iNaturalist asks for ~1 request a second (cached responses skip the API anyway)
     taxon = next((x["id"] for x in t.get("results", [])
                   if (x.get("matched_term") or "").lower() == latin.lower()), None)
     if not taxon:
@@ -672,7 +702,6 @@ def inat_recordings(latin, n):
     r = get("https://api.inaturalist.org/v1/observations",
             {"taxon_id": taxon, "sounds": "true", "quality_grade": "research",
              "sound_license": ",".join(INAT_LICENSES), "order_by": "votes", "per_page": 50})
-    time.sleep(1)
     obs = r.get("results", [])
 
     def in_area(o):
@@ -1333,7 +1362,7 @@ def assign_numbers(birds, path):
 
 def add_card_data(birds):
     """Card number (taxonomic order over all species) and stats [mean, sd]."""
-    mass = avonet()
+    mass, traits = avonet(), avonet_traits()
     spans = wikidata_wingspans([b["latin"] for b in birds] + [b["_wd_latin"] for b in birds if b["_wd_latin"]])
     with ThreadPoolExecutor(WORKERS) as pool:  # ~24 small GBIF count queries per bird; more trips rate limits
         km = dict(zip([b["id"] for b in birds], pool.map(lambda b: flight_km(b["_key"]), birds)))
@@ -1341,6 +1370,7 @@ def add_card_data(birds):
     for b in birds:
         names = [n for n in (b["latin"], b["_wd_latin"]) if n]
         m, cv = next((mass[n] for n in names if n in mass), (None, None))
+        b["habitat"], b["diet"] = next((traits[n] for n in names if n in traits), (None, None))
         w_span, length = next((x for x in (wikipedia_sizes(n, m) for n in names) if any(x)), (None, None))
         if not w_span and any(n in spans for n in names):
             w_span = (next(spans[n] for n in names if n in spans), None)
