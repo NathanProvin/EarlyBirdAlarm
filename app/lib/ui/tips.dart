@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../l10n/app_localizations.dart';
-import '../main.dart';
 import '../purchases.dart';
-import 'bird_icon.dart';
-import 'theme.dart';
 
 /// Settings → Buy me a coffee: four tips through Google Play, pure thanks (nothing in the game).
 class TipsScreen extends StatefulWidget {
@@ -17,45 +14,6 @@ class TipsScreen extends StatefulWidget {
 
 class _TipsScreenState extends State<TipsScreen> {
   final _products = products();
-
-  @override
-  void initState() {
-    super.initState();
-    onTip = _thanks;
-  }
-
-  @override
-  void dispose() {
-    if (onTip == _thanks) onTip = null;
-    super.dispose();
-  }
-
-  void _thanks() {
-    if (!mounted) return;
-    final l = AppLocalizations.of(context);
-    final bird = store.theme != 'system'
-        ? store.theme
-        : Theme.of(context).brightness == Brightness.dark
-        ? darkTheme
-        : lightTheme;
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: SizedBox.square(
-          dimension: 72,
-          child: CustomPaint(painter: BirdPainter.of(bird)),
-        ),
-        title: Text(l.thankYou),
-        content: Text(l.thankYouBody, textAlign: TextAlign.center),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(MaterialLocalizations.of(context).okButtonLabel),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

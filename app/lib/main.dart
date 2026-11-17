@@ -41,6 +41,7 @@ Future<void> main() async {
     ListenableBuilder(
       listenable: store,
       builder: (_, _) => MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Early Bird',
         theme: themeFor(store.theme == 'system' ? lightTheme : store.theme),
         darkTheme: themeFor(darkTheme),

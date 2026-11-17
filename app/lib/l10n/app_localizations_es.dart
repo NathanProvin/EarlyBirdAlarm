@@ -575,7 +575,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get thankYou => '¡Gracias!';
 
   @override
-  String get thankYouBody => 'Tu apoyo hace que Early Bird siga cantando.';
+  String get thankYouBody =>
+      'Cada café ayuda a un desarrollador en solitario a mantener Early Bird sin anuncios ni rastreadores, y a traerte nuevas aves y regiones. ¡Gracias por formar parte!';
+
+  @override
+  String get thankYouPlus =>
+      'Early Bird Plus es tuyo para siempre: un sobre por minuto y el mapa de especies que faltan. ¡Gracias por ayudar a que Early Bird siga sin anuncios y creciendo!';
 
   @override
   String get purchasesUnavailable =>

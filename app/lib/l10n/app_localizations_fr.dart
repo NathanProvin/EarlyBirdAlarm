@@ -576,7 +576,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get thankYou => 'Merci !';
 
   @override
-  String get thankYouBody => 'Votre soutien fait chanter Early Bird.';
+  String get thankYouBody =>
+      'Chaque café aide un dev solo à garder Early Bird sans pub ni traqueurs, et à vous apporter de nouveaux oiseaux et de nouvelles régions. Merci d\'en faire partie !';
+
+  @override
+  String get thankYouPlus =>
+      'Early Bird Plus est à vous pour de bon : un booster par minute et la carte des espèces manquantes. Merci d\'aider Early Bird à rester sans pub et à grandir !';
 
   @override
   String get purchasesUnavailable =>
@@ -705,7 +710,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get switchAccountBody =>
-      'Ta collection est sauvegardée sur ce compte, puis retirée de ce téléphone. Connecte-toi à un autre compte pour charger sa collection ; reconnecte-toi ici pour retrouver la tienne. Connexion requise.';
+      'Votre collection est sauvegardée sur ce compte, puis retirée de ce téléphone. Connectez-vous à un autre compte pour charger sa collection ; reconnectez-vous ici pour retrouver la vôtre. Connexion requise.';
 
   @override
   String theirCollection(String name) {

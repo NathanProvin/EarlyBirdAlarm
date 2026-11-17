@@ -1047,8 +1047,14 @@ abstract class AppLocalizations {
   /// No description provided for @thankYouBody.
   ///
   /// In en, this message translates to:
-  /// **'Your support keeps Early Bird singing.'**
+  /// **'Every coffee helps a solo dev keep Early Bird free of ads and trackers, and bring you new birds and regions. Thank you for being part of it!'**
   String get thankYouBody;
+
+  /// No description provided for @thankYouPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird Plus is yours for good: a booster every minute and the missing-species map. Thank you for helping Early Bird stay ad-free and keep growing!'**
+  String get thankYouPlus;
 
   /// No description provided for @purchasesUnavailable.
   ///
