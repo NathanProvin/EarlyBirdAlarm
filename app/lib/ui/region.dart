@@ -90,6 +90,86 @@ List<(Offset, Offset)> outlineEdges(Set<String> cells) => [
     ],
 ];
 
+/// [cells] plus the uncovered cells they enclose (the Black Sea, the Caspian…), so the
+/// outline follows only the covered area's outer edge (2026-11-19): a flood of the
+/// uncovered cells from the world's edge; whatever it can't reach is enclosed.
+@visibleForTesting
+Set<String> withEnclaves(Set<String> cells) {
+  String id(int la, int lo) => cellAt(la + 1.0, lo + 1.0);
+  final outside = <String>{};
+  final todo = <(int, int)>[
+    for (var lo = -180; lo < 180; lo += 2) ...[(-80, lo), (78, lo)],
+    for (var la = -80; la < 80; la += 2) ...[(la, -180), (la, 178)],
+  ];
+  while (todo.isNotEmpty) {
+    final (la, lo) = todo.removeLast();
+    if (la < -80 || la > 78 || lo < -180 || lo > 178) continue;
+    final c = id(la, lo);
+    if (cells.contains(c) || !outside.add(c)) continue;
+    todo.addAll([(la + 2, lo), (la - 2, lo), (la, lo + 2), (la, lo - 2)]);
+  }
+  return {
+    ...cells,
+    for (var la = -80; la < 80; la += 2)
+      for (var lo = -180; lo < 180; lo += 2)
+        if (!outside.contains(id(la, lo))) id(la, lo),
+  };
+}
+
+/// The outline [edges] chained into closed loops, corners rounded (three Chaikin passes)
+/// so the 2° steps read as one smooth line (2026-11-19).
+@visibleForTesting
+Path smoothOutline(List<(Offset, Offset)> edges) {
+  Offset key(Offset p) => Offset(
+    (p.dx * 100).roundToDouble() / 100,
+    (p.dy * 100).roundToDouble() / 100,
+  );
+  final links = <Offset, List<Offset>>{};
+  for (final (a, b) in edges) {
+    links.putIfAbsent(key(a), () => []).add(key(b));
+    links.putIfAbsent(key(b), () => []).add(key(a));
+  }
+  void unlink(Offset a, Offset b) {
+    links[a]?.remove(b);
+    if (links[a]?.isEmpty ?? false) links.remove(a);
+  }
+
+  final path = Path()..fillType = PathFillType.evenOdd;
+  while (links.isNotEmpty) {
+    final start = links.keys.first;
+    var loop = [start];
+    var cur = start;
+    while (links[cur]?.isNotEmpty ?? false) {
+      final n = links[cur]!.last;
+      unlink(cur, n);
+      unlink(n, cur);
+      if (n == start) break;
+      loop.add(n);
+      cur = n;
+    }
+    for (var i = 0; i < 3; i++) {
+      loop = [
+        for (var j = 0; j < loop.length; j++) ...[
+          Offset.lerp(loop[j], loop[(j + 1) % loop.length], 0.25)!,
+          Offset.lerp(loop[j], loop[(j + 1) % loop.length], 0.75)!,
+        ],
+      ];
+    }
+    path.addPolygon(loop, true);
+  }
+  return path;
+}
+
+/// A cell's colour on the missing-species map: red for the least collected cell, royal
+/// blue for the most, by its share of species collected rescaled between the two
+/// (2026-11-19: the raw share left every cell red, a few % each).
+@visibleForTesting
+Color heatColor(double share, double least, double most) => Color.lerp(
+  const Color(0xFFE53935),
+  const Color(0xFF4169E1),
+  most > least ? (share - least) / (most - least) : 1,
+)!;
+
 /// Land and borders of the offline map (assets/map/world.json, from pipeline/world_map.py).
 Future<(Path, Path)>? _worldPaths;
 Future<(Path, Path)> _loadWorld() async {
@@ -149,7 +229,7 @@ class _RegionScreenState extends State<RegionScreen>
   final _searchFocus = FocusNode();
   Size _viewport = Size.zero;
   Set<String> _cells = {};
-  List<(Offset, Offset)> _edges = const [];
+  Path _outline = Path(); // the covered area's smoothed outer edge
   Map<String, (int, int)>?
   _heat; // the missing-species map (Plus): cell -> (collected, total)
 
@@ -187,7 +267,7 @@ class _RegionScreenState extends State<RegionScreen>
         for (final x in r ?? const <Map<String, dynamic>>[])
           if (x['kind'] == 'cell') x['id'] as String,
       };
-      _edges = outlineEdges(_cells);
+      _outline = smoothOutline(outlineEdges(withEnclaves(_cells)));
     });
     if (r == null) return;
     // Opens on the current region, else on the covered cells of the phone's continent.
@@ -452,7 +532,7 @@ class _RegionScreenState extends State<RegionScreen>
                                 size: _mapSize,
                                 painter: _MapPainter(
                                   map,
-                                  _edges,
+                                  _outline,
                                   _zoom,
                                   border: scheme.outline.withValues(alpha: 0.5),
                                 ),
@@ -462,7 +542,7 @@ class _RegionScreenState extends State<RegionScreen>
                               RepaintBoundary(
                                 child: CustomPaint(
                                   size: _mapSize,
-                                  painter: _HeatPainter(heat),
+                                  painter: _HeatPainter(heat, _outline, map.$1),
                                 ),
                               ),
                             CustomPaint(
@@ -614,11 +694,11 @@ class _SearchBar extends StatelessWidget {
 /// Cream land, marine coasts (lake shores too), thinner borders and the red outline of
 /// the covered area. Widths are in screen pixels at the current [zoom].
 class _MapPainter extends CustomPainter {
-  _MapPainter(this.map, this.edges, this.zoom, {required this.border})
+  _MapPainter(this.map, this.outline, this.zoom, {required this.border})
     : super(repaint: zoom);
 
   final (Path, Path) map;
-  final List<(Offset, Offset)> edges;
+  final Path outline;
   final ValueListenable<double> zoom;
   final Color border;
 
@@ -632,42 +712,52 @@ class _MapPainter extends CustomPainter {
       ..strokeWidth = width * px;
     canvas.drawPath(map.$2, line(border, 0.6));
     canvas.drawPath(map.$1, line(_marine.withValues(alpha: 0.7), 1.2));
-    final outline = Path();
-    for (final (a, b) in edges) {
-      outline
-        ..moveTo(a.dx, a.dy)
-        ..lineTo(b.dx, b.dy);
-    }
     canvas.drawPath(outline, line(_red, 1.6));
   }
 
   @override
   bool shouldRepaint(_MapPainter old) =>
       old.map != map ||
-      old.edges.length != edges.length ||
+      old.outline != outline ||
       old.zoom != zoom ||
       old.border != border;
 }
 
-/// Each cell red → green by the share of its species collected.
+/// Each cell red → royal blue by its share of species collected ([heatColor]), softened
+/// into its neighbours and kept on land inside the covered area's outline.
 class _HeatPainter extends CustomPainter {
-  const _HeatPainter(this.heat);
+  const _HeatPainter(this.heat, this.outline, this.land);
   final Map<String, (int, int)> heat;
+  final Path outline;
+  final Path land;
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (final MapEntry(key: id, value: (have, total)) in heat.entries) {
-      if (total == 0 || _cellCenter(id) == null) continue;
-      final c = Color.lerp(Colors.red, Colors.green, have / total)!;
+    final shares = {
+      for (final MapEntry(key: id, value: (have, total)) in heat.entries)
+        if (total > 0 && _cellCenter(id) != null) id: have / total,
+    };
+    if (shares.isEmpty) return;
+    final least = shares.values.reduce(min), most = shares.values.reduce(max);
+    canvas
+      ..save()
+      ..clipPath(outline)
+      ..clipPath(land);
+    for (final MapEntry(key: id, value: share) in shares.entries) {
+      final cell = _cellRect(id);
       canvas.drawRect(
-        _cellRect(id),
-        Paint()..color = c.withValues(alpha: 0.55),
+        cell.inflate(cell.width * 0.15),
+        Paint()
+          ..color = heatColor(share, least, most).withValues(alpha: 0.55)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, cell.width * 0.3),
       );
     }
+    canvas.restore();
   }
 
   @override
-  bool shouldRepaint(_HeatPainter old) => old.heat != heat;
+  bool shouldRepaint(_HeatPainter old) =>
+      old.heat != heat || old.outline != outline || old.land != land;
 }
 
 /// The pin (a plain map-pin icon in the accent, its tip on the spot) and the user's

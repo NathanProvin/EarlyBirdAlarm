@@ -896,6 +896,25 @@ void main() {
     expect(outlineEdges({'N48E002', 'N50E002'}).length, 6);
   });
 
+  test('covered area outline: enclaves filled, loops smoothed', () {
+    final ring = {
+      for (final la in [46, 48, 50])
+        for (final lo in [2, 4, 6])
+          if (!(la == 48 && lo == 4)) cellAt(la + 1.0, lo + 1.0),
+    };
+    expect(withEnclaves(ring), contains('N48E004'));
+    expect(withEnclaves({'N48E002'}), {'N48E002'});
+    final b = smoothOutline(outlineEdges({'N48E002'})).getBounds();
+    expect(b.isEmpty, isFalse);
+    expect(_cellRectForTest('N48E002').contains(b.center), isTrue);
+  });
+
+  test('missing-species colours: red least collected, royal blue most', () {
+    expect(heatColor(0.02, 0.02, 0.1), const Color(0xFFE53935));
+    expect(heatColor(0.1, 0.02, 0.1), const Color(0xFF4169E1));
+    expect(heatColor(0.05, 0.05, 0.05), const Color(0xFF4169E1));
+  });
+
   test('collection search ignores case and accents', () {
     expect(plainText('Eider à duvet'), 'eider a duvet');
     expect(plainText('Ánsar común'), 'ansar comun');
@@ -1301,3 +1320,6 @@ void main() {
     }
   });
 }
+
+Rect _cellRectForTest(String id) =>
+    Rect.fromPoints(project(50, 2), project(48, 4)); // N48E002's corners
