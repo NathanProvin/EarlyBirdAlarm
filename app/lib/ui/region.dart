@@ -160,15 +160,35 @@ Path smoothOutline(List<(Offset, Offset)> edges) {
   return path;
 }
 
-/// A cell's colour on the missing-species map: red for the least collected cell, royal
-/// blue for the most, by its share of species collected rescaled between the two
-/// (2026-11-19: the raw share left every cell red, a few % each).
+/// The missing-species map's scale: marine blue at [t] 0, firebrick red at 1, through
+/// the whole spectrum between (cyan, green, yellow, orange) so neighbours stand apart.
+Color heatAt(double t) =>
+    HSVColor.fromAHSV(1, 212 * (1 - t), 0.85, 0.8).toColor();
+
+/// Where [missing] species sits on that scale, between the [fewest] and the [most]
+/// missing of all cells, on a log scale (2026-11-19: on a linear one a single cell
+/// missing far more, north Colombia, pushed every other cell to blue). None missing is
+/// always blue.
 @visibleForTesting
-Color heatColor(double share, double least, double most) => Color.lerp(
-  const Color(0xFFE53935),
-  const Color(0xFF4169E1),
-  most > least ? (share - least) / (most - least) : 1,
-)!;
+double heatPosition(num missing, int fewest, int most) {
+  if (missing <= 0) return 0;
+  if (most <= fewest) return 1;
+  final lo = log(1 + fewest), hi = log(1 + most);
+  return ((log(1 + missing) - lo) / (hi - lo)).clamp(0, 1);
+}
+
+/// The number of missing species at [t] on the scale (the legend's ticks).
+int missingAt(double t, int fewest, int most) =>
+    (exp(log(1 + fewest) + t * (log(1 + most) - log(1 + fewest))) - 1).round();
+
+/// The fewest and most missing species of the map's cells.
+(int, int)? missingRange(Map<String, (int, int)> heat) {
+  final n = [
+    for (final (have, total) in heat.values)
+      if (total > 0) total - have,
+  ];
+  return n.isEmpty ? null : (n.reduce(min), n.reduce(max));
+}
 
 /// Land and borders of the offline map (assets/map/world.json, from pipeline/world_map.py).
 Future<(Path, Path)>? _worldPaths;
@@ -560,6 +580,19 @@ class _RegionScreenState extends State<RegionScreen>
                     ),
                   ),
                 ),
+                // The scale, at the top while the map is on.
+                if (_heat case final heat?)
+                  if (missingRange(heat) case (final fewest, final most))
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      top: 12,
+                      child: _HeatLegend(
+                        title: l.missingSpecies,
+                        fewest: fewest,
+                        most: most,
+                      ),
+                    ),
                 // A radar that pulses until the map is on.
                 Positioned(
                   left: 16,
@@ -569,6 +602,7 @@ class _RegionScreenState extends State<RegionScreen>
                     label: l.missingSpecies,
                     attract: _heat == null,
                     onPressed: _toggleHeat,
+                    iconOnly: true,
                   ),
                 ),
                 Positioned(
@@ -723,8 +757,8 @@ class _MapPainter extends CustomPainter {
       old.border != border;
 }
 
-/// Each cell red → royal blue by its share of species collected ([heatColor]), softened
-/// into its neighbours and kept on land inside the covered area's outline.
+/// Each cell, solid, by its number of missing species ([heatPosition]), kept on land
+/// inside the covered area's outline.
 class _HeatPainter extends CustomPainter {
   const _HeatPainter(this.heat, this.outline, this.land);
   final Map<String, (int, int)> heat;
@@ -733,23 +767,23 @@ class _HeatPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final shares = {
+    final missing = {
       for (final MapEntry(key: id, value: (have, total)) in heat.entries)
-        if (total > 0 && _cellCenter(id) != null) id: have / total,
+        if (total > 0 && _cellCenter(id) != null) id: total - have,
     };
-    if (shares.isEmpty) return;
-    final least = shares.values.reduce(min), most = shares.values.reduce(max);
+    final range = missingRange(heat);
+    if (missing.isEmpty || range == null) return;
+    final (fewest, most) = range;
     canvas
       ..save()
       ..clipPath(outline)
       ..clipPath(land);
-    for (final MapEntry(key: id, value: share) in shares.entries) {
-      final cell = _cellRect(id);
+    for (final MapEntry(key: id, value: n) in missing.entries) {
       canvas.drawRect(
-        cell.inflate(cell.width * 0.15),
+        _cellRect(id),
         Paint()
-          ..color = heatColor(share, least, most).withValues(alpha: 0.55)
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, cell.width * 0.3),
+          ..color = heatAt(heatPosition(n, fewest, most))
+              .withValues(alpha: 0.8),
       );
     }
     canvas.restore();
@@ -758,6 +792,59 @@ class _HeatPainter extends CustomPainter {
   @override
   bool shouldRepaint(_HeatPainter old) =>
       old.heat != heat || old.outline != outline || old.land != land;
+}
+
+/// The missing-species map's legend: the scale as a bar, five ticks (log spaced: the
+/// numbers aren't evenly apart), from the fewest to the most missing.
+class _HeatLegend extends StatelessWidget {
+  const _HeatLegend({
+    required this.title,
+    required this.fewest,
+    required this.most,
+  });
+  final String title;
+  final int fewest;
+  final int most;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final small = Theme.of(context).textTheme.labelSmall;
+    const ticks = [0.0, 0.25, 0.5, 0.75, 1.0];
+    return Material(
+      elevation: 3,
+      color: scheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 6),
+            Container(
+              height: 10,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                gradient: LinearGradient(
+                  colors: [for (var i = 0; i <= 8; i++) heatAt(i / 8)],
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (final t in ticks)
+                  Text('${missingAt(t, fewest, most)}', style: small),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// The pin (a plain map-pin icon in the accent, its tip on the spot) and the user's

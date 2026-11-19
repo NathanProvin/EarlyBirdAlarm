@@ -154,12 +154,17 @@ class PulseButton extends StatefulWidget {
     required this.label,
     required this.attract,
     required this.onPressed,
+    this.iconOnly = false,
     super.key,
   });
   final IconData icon;
   final String label;
   final bool attract;
   final VoidCallback onPressed;
+
+  /// Only the icon beats (a little larger, a soft glow), not the whole button: the map's
+  /// radar (2026-11-19, the button's glow was too aggressive there).
+  final bool iconOnly;
 
   @override
   State<PulseButton> createState() => _PulseButtonState();
@@ -192,6 +197,27 @@ class _PulseButtonState extends State<PulseButton>
           // A beat in the first 30 % of each cycle, then rest.
           final t = (_pulse.value / 0.3).clamp(0.0, 1.0);
           final beat = sin(t * pi);
+          if (widget.iconOnly) {
+            return FilledButton.tonalIcon(
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+              onPressed: widget.onPressed,
+              icon: Transform.scale(
+                scale: 1 + 0.25 * beat,
+                child: Icon(
+                  widget.icon,
+                  color: scheme.primary,
+                  shadows: [
+                    if (beat > 0)
+                      Shadow(
+                        color: scheme.primary.withValues(alpha: 0.8 * beat),
+                        blurRadius: 8,
+                      ),
+                  ],
+                ),
+              ),
+              label: Text(widget.label),
+            );
+          }
           return DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(999),

@@ -909,10 +909,18 @@ void main() {
     expect(_cellRectForTest('N48E002').contains(b.center), isTrue);
   });
 
-  test('missing-species colours: red least collected, royal blue most', () {
-    expect(heatColor(0.02, 0.02, 0.1), const Color(0xFFE53935));
-    expect(heatColor(0.1, 0.02, 0.1), const Color(0xFF4169E1));
-    expect(heatColor(0.05, 0.05, 0.05), const Color(0xFF4169E1));
+  test('missing-species scale: log, blue none missing, red the most', () {
+    expect(heatPosition(0, 40, 900), 0); // none missing
+    expect(heatPosition(40, 40, 900), 0); // the fewest
+    expect(heatPosition(900, 40, 900), 1); // the most
+    // One far cell (900) doesn't squash the rest: 200 sits half way, not at 0.19.
+    expect(heatPosition(200, 40, 900), closeTo(0.52, 0.02));
+    expect(heatPosition(90, 90, 90), 1); // all alike, some missing
+    expect(HSVColor.fromColor(heatAt(0)).hue, closeTo(212, 1));
+    expect(HSVColor.fromColor(heatAt(1)).hue, closeTo(0, 1));
+    expect(missingAt(0, 40, 900), 40);
+    expect(missingAt(1, 40, 900), 900);
+    expect(missingRange({'a': (10, 50), 'b': (0, 30), 'c': (0, 0)}), (30, 40));
   });
 
   test('collection search ignores case and accents', () {
