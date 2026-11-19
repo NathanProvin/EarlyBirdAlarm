@@ -181,32 +181,54 @@ class SettingsScreen extends StatelessWidget {
             24 + MediaQuery.paddingOf(context).bottom,
           ),
           children: [
-            // First, where testers will see it (2026-11-10): the pitch and one button.
-            Card(
+            // First, where testers will see it (2026-11-10): the pitch and one button;
+            // outlined in the theme's accent with a soft glow so it pops (2026-11-19).
+            Container(
               margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(l.support, style: header),
-                    const SizedBox(height: 6),
-                    Text(l.supportShort),
-                    const SizedBox(height: 8),
-                    FilledButton.tonalIcon(
-                      // Lower than the theme's buttons: the themes row stays on screen.
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(40),
-                      ),
-                      icon: const Icon(Icons.coffee_outlined),
-                      label: Text(l.tipsTile),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const TipsScreen(),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.primary
+                        .withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Card(
+                margin: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(radius),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2.5,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(l.support, style: header),
+                      const SizedBox(height: 6),
+                      Text(l.supportShort),
+                      const SizedBox(height: 8),
+                      FilledButton.tonalIcon(
+                        // Lower than the theme's buttons: the themes row stays on screen.
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(40),
+                        ),
+                        icon: const Icon(Icons.coffee_outlined),
+                        label: Text(l.tipsTile),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const TipsScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

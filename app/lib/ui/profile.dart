@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../account.dart' show friendCards;
 import '../birds.dart';
 import '../cards.dart';
 import '../l10n/app_localizations.dart';
@@ -853,6 +854,31 @@ class _AllFriends extends StatelessWidget {
   }
 }
 
+/// A friend's Cards / Species / Regions, from their backup (nothing until it loads, or
+/// if it can't be read).
+class _FriendStats extends StatefulWidget {
+  const _FriendStats(this.uid);
+  final String uid;
+
+  @override
+  State<_FriendStats> createState() => _FriendStatsState();
+}
+
+class _FriendStatsState extends State<_FriendStats> {
+  late final _cards = friendCards(widget.uid);
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder(
+    future: _cards,
+    builder: (_, s) => s.hasData
+        ? Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: ProfileStats(cards: s.data!),
+          )
+        : const SizedBox.shrink(),
+  );
+}
+
 /// A friend's profile: their avatar, @name and hall of fame; Challenge and Trade to come;
 /// Remove, Block and Report in the menu.
 class FriendScreen extends StatelessWidget {
@@ -918,6 +944,7 @@ class FriendScreen extends StatelessWidget {
             const SizedBox(height: 24),
             HallRow(cards: friend.hall),
           ],
+          _FriendStats(friend.uid),
           const SizedBox(height: 24),
           FilledButton.icon(
             icon: const Icon(Icons.swap_horiz),

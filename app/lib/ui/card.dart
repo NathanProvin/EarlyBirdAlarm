@@ -126,38 +126,33 @@ class BirdCardView extends StatelessWidget {
                           top: 4,
                           child: ArtLabel(art, color: frame),
                         ),
-                    // Group, habitat and diet (family_icon.dart): the photo's
-                    // bottom left half; a tap names each.
-                    Positioned(
+                    // Group, habitat and diet (family_icon.dart), a tap names each:
+                    // down the photo's left side, top corner to bottom corner, evenly
+                    // spaced; a label slides out to the right (2026-11-19).
+                    Positioned.fill(
                       left: 8,
-                      bottom: 8,
+                      top: 8,
                       right: 8,
-                      child: Row(
+                      bottom: 8,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           for (final (icon, label) in [
                             if (groupIcon(bird.family) case final icon?)
                               (icon, '${l.familyLabel} · ${bird.family}'),
                             if (habitatIcon(bird.habitat) case final icon?)
                               (
-                                Icon(icon, color: Colors.white, size: 26),
+                                icon,
                                 '${l.habitatLabel} · ${l.habitatName(traitKey(bird.habitat!))}',
                               ),
                             if (dietIcon(bird.diet) case final icon?)
                               (
-                                Icon(icon, color: Colors.white, size: 26),
+                                icon,
                                 '${l.dietLabel} · ${l.dietName(traitKey(bird.diet!))}',
                               ),
                           ])
-                            Flexible(
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: GlassBadge(
-                                  icon: icon,
-                                  label: label,
-                                  color: frame,
-                                ),
-                              ),
-                            ),
+                            GlassBadge(icon: icon, label: label, color: frame),
                         ],
                       ),
                     ),

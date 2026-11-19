@@ -12,7 +12,11 @@ import 'series.dart';
 
 /// The catalog built by pipeline/build.py, on Cloudflare R2 behind our domain (decisions.md
 /// "Delivery"); 1.0.0+3 phones still read nathanprovin.github.io.
-const baseUrl = 'https://cdn.earlybirdalarm.app/v1/';
+// A dev build can read a local catalog: --dart-define=CATALOG_URL=http://localhost:8765/v1/
+const baseUrl = String.fromEnvironment(
+  'CATALOG_URL',
+  defaultValue: 'https://cdn.earlybirdalarm.app/v1/',
+);
 
 /// Songs kept on the phone for upcoming rings.
 const deckSize = 14;

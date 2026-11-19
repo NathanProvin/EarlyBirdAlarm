@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Dev only: a local catalog over http (CATALOG_URL, adb reverse). -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

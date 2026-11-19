@@ -10,6 +10,7 @@ import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../store.dart';
+import 'family_icon.dart';
 import 'card.dart';
 import 'collection.dart';
 import 'theme.dart';
@@ -81,6 +82,50 @@ class CreditsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const _DevDraw(),
+            const SizedBox(height: 16),
+            // Every habitat and diet badge with its name, to review the icons
+            // (family_icon.dart: _habitatIcons, _dietIcons, _traitPaths).
+            Text('Dev: badges', style: Theme.of(context).textTheme.labelLarge),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3A5A40),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final (icon, name) in [
+                    for (final k in habitatKeys)
+                      (habitatIcon(k)!, l.habitatName(k)),
+                    for (final k in dietKeys) (dietIcon(k)!, l.dietName(k)),
+                  ])
+                    SizedBox(
+                      width: 72,
+                      child: Column(
+                        children: [
+                          GlassBadge(
+                            icon: icon,
+                            label: name,
+                            color: rarityColor['rare']!,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ],
         ],
       ),
