@@ -35,8 +35,8 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Collection pass (user, 2026-11-17): Duplicates view (species owned more than once; count = spare cards), Newest and Quality % sorts, a fuller pile (3 rarity-tinted cards), a pile opens into its copies (top card flies, the others are dealt out), no ×N above a full card, grid ×N 20 % smaller with a black outline. Rejected: group / habitat / diet filters, Shiny / new toggles, region won in
 - [x] Switch account on the account page (collection saved to the account and required online, then the phone emptied). Trade: full cards with names, a Collected / Duplicates switch for my cards and the friend's, offers open whole on tap
 - [x] `firestore.rules` deployed 2026-11-17: friends read each other's card chunks (user OK)
-- [ ] Phone check with a dev build (user's OK: the S22 runs the Play build): AU / MX / MENA regions, an alarm, a card and its icon, offline fallback, heatmap
-- [ ] README, store listing and "What's new" (4 languages, new regions + species count); version **1.2.0+5**; **publish the catalog only once 1.2 is live** (R2 is shared by every version)
+- [x] Phone check with a dev build: Melbourne cell, 1,000 drawn cards, badges, heatmap (validated by the user, 2026-11-20)
+- [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+5**, signed bundle built (2026-11-20). Then: **publish the catalog only once 1.2 is live** (R2 is shared by every version)
 
 ## Later
 - **Challenges between friends** (the "coming soon" button on a friend's profile).

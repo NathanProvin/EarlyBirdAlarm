@@ -1,6 +1,6 @@
 # Early Bird Alarm — Google Play listing & declarations
 
-Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-03 (store title, descriptions rewritten for conversion); before: 2026-11-01
+Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-20 (1.2: species count and new areas, card badges and missing-species map bullets, What's new 1.2.0); 2026-11-03 (store title, descriptions rewritten for conversion); before: 2026-11-01
 (trading, series rewards, 4 languages, world map, search, onboarding).
 
 ## Basics
@@ -44,10 +44,12 @@ HOW IT WORKS
 In a few weeks you'll recognise the birds singing around you.
 
 COLLECT
-• 1,700+ species of Europe and North America with real vocalizations and real stats: weight, wingspan, length, migration distance
+• 2,600+ species from Europe, North America, Mexico and Central America, North Africa and the Middle East, Australia and New Zealand, with real vocalizations and real stats: weight, wingspan, length, migration distance
+• Every card shows the bird's group, habitat and diet, and which of its photos you found
 • 5 card rarities, from Common to Legendary
 • Series to complete and achievements, each rewarded with a card of guaranteed rarity
 • Twitch Zone: a free booster every 15 min to train your ear
+• Early Bird Plus: a map of the species you are still missing, cell by cell
 
 SHOW OFF AND TRADE
 • Pulled a Legendary? Share the card with your friends
@@ -81,10 +83,12 @@ FONCTIONNEMENT
 En quelques semaines, les chants des oiseaux de ta région n'auront plus de secrets pour toi.
 
 COLLECTER
-• Plus de 1 700 espèces d'Europe et d'Amérique du Nord, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• Plus de 2 600 espèces d'Europe, d'Amérique du Nord, du Mexique et d'Amérique centrale, d'Afrique du Nord et du Moyen-Orient, d'Australie et de Nouvelle-Zélande, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• Sur chaque carte : le groupe de l'oiseau, son habitat, son régime et la photo que tu as trouvée
 • 5 raretés de cartes, de Commune à Légendaire
 • Des séries à compléter et des succès, chacun récompensé par une carte de rareté garantie
 • Zone Cocheur : un booster gratuit toutes les 15 min pour t'entraîner
+• Early Bird Plus : la carte des espèces qui te manquent encore, case par case
 
 ÉCHANGER
 • Une Légendaire ? Partage-la avec tes amis
@@ -117,10 +121,12 @@ SO FUNKTIONIERT'S
 In ein paar Wochen erkennst du die Vögel, die um dich herum singen.
 
 SAMMELN
-• Über 1.700 Arten aus Europa und Nordamerika mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• Über 2.600 Arten aus Europa, Nordamerika, Mexiko und Mittelamerika, Nordafrika und dem Nahen Osten, Australien und Neuseeland mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• Auf jeder Karte: Vogelgruppe, Lebensraum, Nahrung und welches seiner Fotos du gefunden hast
 • 5 Kartenseltenheiten, von Häufig bis Legendär
 • Serien zum Vervollständigen und Erfolge, jeweils belohnt mit einer Karte garantierter Seltenheit
 • Twitcher-Zone: alle 15 Min. ein kostenloser Booster, um dein Gehör zu trainieren
+• Early Bird Plus: eine Karte der Arten, die dir noch fehlen, Feld für Feld
 
 ZEIGEN UND TAUSCHEN
 • Eine Legendäre gezogen? Teile die Karte mit deinen Freunden
@@ -153,10 +159,12 @@ CÓMO FUNCIONA
 En pocas semanas reconocerás las aves que cantan a tu alrededor.
 
 COLECCIONA
-• Más de 1.700 especies de Europa y Norteamérica con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• Más de 2.600 especies de Europa, Norteamérica, México y Centroamérica, el norte de África y Oriente Medio, Australia y Nueva Zelanda, con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• En cada carta: el grupo del ave, su hábitat, su dieta y cuál de sus fotos has encontrado
 • 5 rarezas de cartas, de Común a Legendaria
 • Series para completar y logros, cada uno con una carta de rareza garantizada
 • Zona Pajarera: un sobre gratis cada 15 min para entrenar el oído
+• Early Bird Plus: un mapa de las especies que aún te faltan, casilla a casilla
 
 PRESUME E INTERCAMBIA
 • ¿Te ha salido una Legendaria? Comparte la carta con tus amigos
@@ -178,6 +186,43 @@ GRATIS. SIN ANUNCIOS. SIN CUENTA. SIN RASTREO.
 En español, inglés, francés y alemán.
 
 Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
+
+## What's new — 1.2.0 (≤ 500 chars each)
+### EN
+New in 1.2
+• 3 new areas: Australia and New Zealand, North Africa and the Middle East, Mexico and Central America. 2,630 species in all
+• Missing-species map (Early Bird Plus): see where the birds you lack live
+• Card badges: group, habitat and diet. Up to 6 photos per species to find
+• Collection: Duplicates view, Newest and Quality sorts
+• Friends: their stats on their profile, trades with full cards
+• Switch account
+
+### FR
+Nouveau dans la 1.2
+• 3 nouvelles zones : Australie et Nouvelle-Zélande, Afrique du Nord et Moyen-Orient, Mexique et Amérique centrale. 2 630 espèces en tout
+• Carte des espèces manquantes (Early Bird Plus) : vois où vivent les oiseaux qui te manquent
+• Badges sur les cartes : groupe, habitat et régime. Jusqu'à 6 photos par espèce à trouver
+• Collection : vue Doublons, tris Récentes et Qualité
+• Amis : leurs stats sur leur profil, échanges avec les cartes entières
+• Changer de compte
+
+### DE
+Neu in 1.2
+• 3 neue Gebiete: Australien und Neuseeland, Nordafrika und Naher Osten, Mexiko und Mittelamerika. Insgesamt 2.630 Arten
+• Karte der fehlenden Arten (Early Bird Plus): sieh, wo die Vögel leben, die dir fehlen
+• Kartenabzeichen: Gruppe, Lebensraum und Nahrung. Bis zu 6 Fotos pro Art zu finden
+• Sammlung: Ansicht Doppelte, Sortierung nach Neueste und Qualität
+• Freunde: ihre Werte im Profil, Tausch mit ganzen Karten
+• Konto wechseln
+
+### ES
+Novedades de la 1.2
+• 3 zonas nuevas: Australia y Nueva Zelanda, norte de África y Oriente Medio, México y Centroamérica. 2.630 especies en total
+• Mapa de especies que faltan (Early Bird Plus): mira dónde viven las aves que te faltan
+• Insignias en las cartas: grupo, hábitat y dieta. Hasta 6 fotos por especie por encontrar
+• Colección: vista Duplicados, orden por Recientes y Calidad
+• Amigos: sus estadísticas en su perfil, intercambios con cartas enteras
+• Cambiar de cuenta
 
 ## Data safety form
 (Rewritten 2026-11-11 for the 1.1 accounts; before 1.1 the answer was "no data collected".)
@@ -218,8 +263,11 @@ No violence, sexual content, profanity or gambling (no purchases; boosters are f
 ## Licenses to mention (also in the app's Credits)
 GBIF.org (occurrences, only monthly counts used), Wikidata (CC0), Wikimedia Commons photos (per-photo licenses, credited on each card), xeno-canto recordings (CC0 / BY / BY-SA; a few BY-NC / BY-NC-SA, **to replace before any monetization**), AVONET (Tobias et al. 2022, CC BY 4.0), Wikipedia, Natural Earth (public domain).
 
-## Screenshots (phone, 1080 × 2340, `store/screenshots/`, English, Gull theme; 2026-11-01)
-Three only (the user's choice), also shown in the README:
-1. `1-quiz.png`: the alarm quiz, 4 bird photos with names (finches).
-2. `2-collection.png`: the collection grid (Legendary, Epic and Rare cards with the Bird rarity stars).
-3. `3-legendary.png`: a Legendary card full screen (Bar-tailed Godwit, ×2 pill, Share / Info / Wikipedia).
+## Screenshots (phone, 1080 × 2340, `store/screenshots/`, English, Gull theme; 2026-11-20 for 1.2)
+Taken on the S22 (dev build, test collection), status bar painted over with the app background. Also in the README:
+1. `1-quiz.png`: the quiz, 4 Australian birds (thornbills, gerygone, heathwren).
+2. `2-card.png`: a Rare Yellow Thornbill card, the habitat badge's label slid out ("Habitat · Shrubland"), Art 1/2.
+3. `3-collection.png`: the collection grid (a Shiny Leucistic chaffinch, Legendary cards with badges and Art).
+4. `4-map.png`: the missing-species map (Plus) over Iberia and North Africa, legend at the top.
+5. `5-booster.png`: Training, a pile of boosters, Plus badge.
+6. `6-alarms.png`: the alarms list (2026-11-04).

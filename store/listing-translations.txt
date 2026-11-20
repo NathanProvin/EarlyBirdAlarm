@@ -17,14 +17,16 @@ FONCTIONNEMENT
 En quelques semaines, les chants des oiseaux de ta région n'auront plus de secrets pour toi.
 
 COLLECTER
-• Plus de 1 700 espèces d'Europe et d'Amérique du Nord, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• Plus de 2 600 espèces d'Europe, d'Amérique du Nord, du Mexique et d'Amérique centrale, d'Afrique du Nord et du Moyen-Orient, d'Australie et de Nouvelle-Zélande, avec leurs vrais chants et cris et leurs vraies stats : poids, envergure, longueur, distance de migration
+• Sur chaque carte : le groupe de l'oiseau, son habitat, son régime et la photo que tu as trouvée
 • 5 raretés de cartes, de Commune à Légendaire
 • Des séries à compléter et des succès, chacun récompensé par une carte de rareté garantie
 • Zone Cocheur : un booster gratuit toutes les 15 min pour t'entraîner
+• Early Bird Plus : la carte des espèces qui te manquent encore, case par case
 
 ÉCHANGER
 • Une Légendaire ? Partage-la avec tes amis
-• Échange des cartes en personne, téléphone contre téléphone, par Bluetooth. Pas de compte, pas de serveur
+• Échange des cartes avec tes amis, où qu’ils soient
 • Il te manque une chouette ? Échange-la contre une corneille !
 
 S'ENTRAÎNER
@@ -42,6 +44,15 @@ GRATUIT. SANS PUB. SANS COMPTE. SANS PISTAGE.
 En français, anglais, allemand et espagnol.
 
 Pour les ornithos, les amoureux de la nature, les collectionneurs et tous ceux qui en ont assez de leur réveil habituel.
+
+What's new (1.2.0):
+Nouveau dans la 1.2
+• 3 nouvelles zones : Australie et Nouvelle-Zélande, Afrique du Nord et Moyen-Orient, Mexique et Amérique centrale. 2 630 espèces en tout
+• Carte des espèces manquantes (Early Bird Plus) : vois où vivent les oiseaux qui te manquent
+• Badges sur les cartes : groupe, habitat et régime. Jusqu'à 6 photos par espèce à trouver
+• Collection : vue Doublons, tris Récentes et Qualité
+• Amis : leurs stats sur leur profil, échanges avec les cartes entières
+• Changer de compte
 
 
 === German (de-DE) ===
@@ -62,14 +73,16 @@ SO FUNKTIONIERT'S
 In ein paar Wochen erkennst du die Vögel, die um dich herum singen.
 
 SAMMELN
-• Über 1.700 Arten aus Europa und Nordamerika mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• Über 2.600 Arten aus Europa, Nordamerika, Mexiko und Mittelamerika, Nordafrika und dem Nahen Osten, Australien und Neuseeland mit echten Stimmen und echten Werten: Gewicht, Spannweite, Länge, Zugstrecke
+• Auf jeder Karte: Vogelgruppe, Lebensraum, Nahrung und welches seiner Fotos du gefunden hast
 • 5 Kartenseltenheiten, von Häufig bis Legendär
 • Serien zum Vervollständigen und Erfolge, jeweils belohnt mit einer Karte garantierter Seltenheit
 • Twitcher-Zone: alle 15 Min. ein kostenloser Booster, um dein Gehör zu trainieren
+• Early Bird Plus: eine Karte der Arten, die dir noch fehlen, Feld für Feld
 
 ZEIGEN UND TAUSCHEN
 • Eine Legendäre gezogen? Teile die Karte mit deinen Freunden
-• Tausche Karten von Angesicht zu Angesicht: zwei Telefone nebeneinander, per Bluetooth. Kein Konto, kein Server
+• Tausche Karten mit deinen Freunden, wo immer sie sind
 • Dir fehlt eine Eule? Vielleicht hat dein Freund eine: Tausch sie gegen eine Krähe!
 
 TRAINIERE DEIN GEHÖR
@@ -87,6 +100,15 @@ KOSTENLOS. KEINE WERBUNG. KEIN KONTO. KEIN TRACKING.
 Auf Deutsch, Englisch, Französisch und Spanisch.
 
 Für Vogelbeobachter, Naturfreunde, Sammler und alle, die genug von ihrem langweiligen Wecker haben.
+
+What's new (1.2.0):
+Neu in 1.2
+• 3 neue Gebiete: Australien und Neuseeland, Nordafrika und Naher Osten, Mexiko und Mittelamerika. Insgesamt 2.630 Arten
+• Karte der fehlenden Arten (Early Bird Plus): sieh, wo die Vögel leben, die dir fehlen
+• Kartenabzeichen: Gruppe, Lebensraum und Nahrung. Bis zu 6 Fotos pro Art zu finden
+• Sammlung: Ansicht Doppelte, Sortierung nach Neueste und Qualität
+• Freunde: ihre Werte im Profil, Tausch mit ganzen Karten
+• Konto wechseln
 
 
 === Spanish (es-ES) ===
@@ -107,14 +129,16 @@ CÓMO FUNCIONA
 En pocas semanas reconocerás las aves que cantan a tu alrededor.
 
 COLECCIONA
-• Más de 1.700 especies de Europa y Norteamérica con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• Más de 2.600 especies de Europa, Norteamérica, México y Centroamérica, el norte de África y Oriente Medio, Australia y Nueva Zelanda, con cantos y reclamos reales y estadísticas reales: peso, envergadura, longitud, distancia de migración
+• En cada carta: el grupo del ave, su hábitat, su dieta y cuál de sus fotos has encontrado
 • 5 rarezas de cartas, de Común a Legendaria
 • Series para completar y logros, cada uno con una carta de rareza garantizada
 • Zona Pajarera: un sobre gratis cada 15 min para entrenar el oído
+• Early Bird Plus: un mapa de las especies que aún te faltan, casilla a casilla
 
 PRESUME E INTERCAMBIA
 • ¿Te ha salido una Legendaria? Comparte la carta con tus amigos
-• Intercambia cartas en persona: dos teléfonos juntos, por Bluetooth. Sin cuenta, sin servidor
+• Intercambia cartas con tus amigos, estén donde estén
 • ¿Te falta un búho? Quizá tu amigo tenga uno: ¡cámbiaselo por un cuervo!
 
 ENTRENA EL OÍDO
@@ -132,3 +156,12 @@ GRATIS. SIN ANUNCIOS. SIN CUENTA. SIN RASTREO.
 En español, inglés, francés y alemán.
 
 Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
+
+What's new (1.2.0):
+Novedades de la 1.2
+• 3 zonas nuevas: Australia y Nueva Zelanda, norte de África y Oriente Medio, México y Centroamérica. 2.630 especies en total
+• Mapa de especies que faltan (Early Bird Plus): mira dónde viven las aves que te faltan
+• Insignias en las cartas: grupo, hábitat y dieta. Hasta 6 fotos por especie por encontrar
+• Colección: vista Duplicados, orden por Recientes y Calidad
+• Amigos: sus estadísticas en su perfil, intercambios con cartas enteras
+• Cambiar de cuenta

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Android · version 1.1.0 · in closed testing on
+  Android · version 1.2.0 · in closed testing on
   <a href="https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird">Google Play</a>
 </p>
 
@@ -20,24 +20,49 @@ around you, in season**. To stop the alarm, you guess which bird is singing. Gue
 you win its trading card. Guess wrong and you can listen to all four birds side by side
 before moving on. Little by little, you learn the songs of your region.
 
-Free, no ads, no trackers. English, French, German and Spanish.
+**2,630 species** on five areas: Europe, North America, Mexico and Central America, North Africa
+and the Middle East, Australia and New Zealand. Free, no ads, no trackers. English, French,
+German and Spanish.
+
+### New in 1.2
+
+- **Three new areas:** Australia and New Zealand (seven Australian bioregions, the two main New
+  Zealand islands), North Africa and the Middle East, Mexico and Central America. The catalog
+  grows from 1,292 to 2,630 species, with emus, lyrebirds, kiwis, kookaburras, kōkako,
+  motmots, toucans and wheatears.
+- **Missing-species map** (Early Bird Plus): a radar button on the region map colours every
+  cell by the number of species you still lack there, from marine blue (none) to firebrick red
+  (the most), on a log scale with a legend. Tap a cell for "58 / 100 collected · 42 missing".
+- **Card badges:** three glass badges down the photo's left side give the bird's group,
+  habitat (forest, wetland, desert, towns…) and diet (insects, fruit, fish, nectar…). Tap one
+  to slide out its name.
+- **Art n/6:** up to six reviewed photos per species; a card says which one it shows, and a
+  duplicate is now the same bird, rarity *and* photo.
+- **Collection:** a Duplicates view, Newest and Quality % sorts, fuller piles that open into
+  their copies.
+- **Friends:** a friend's profile shows their Cards / Species / Regions; trades show full
+  cards, with a Collected / Duplicates switch for both collections.
+- **Switch account** from the account page (your collection is saved online first).
 
 ## Screenshots
 
 <p align="center">
   <img src="store/screenshots/1-quiz.png" alt="The alarm quiz: four photos, guess the bird" width="180">
-  <img src="store/screenshots/2-collection.png" alt="The collection" width="180">
-  <img src="store/screenshots/3-legendary.png" alt="A Legendary card, full screen" width="180">
-  <img src="store/screenshots/4-booster.png" alt="Training: a pile of boosters" width="180">
-  <img src="store/screenshots/5-alarms.png" alt="The alarms" width="180">
+  <img src="store/screenshots/2-card.png" alt="A card with its group, habitat and diet badges and its Art number" width="180">
+  <img src="store/screenshots/3-collection.png" alt="The collection" width="180">
+  <img src="store/screenshots/4-map.png" alt="The missing-species map: Iberia and North Africa, coloured by species still missing" width="180">
+  <img src="store/screenshots/5-booster.png" alt="Training: a pile of boosters" width="180">
+  <img src="store/screenshots/6-alarms.png" alt="The alarms" width="180">
 </p>
 
 ## Features
 
 **The alarm**
-- **Local, seasonal birds:** 1,292 species across Europe and North America, from free
-  recordings (xeno-canto, iNaturalist). Pick your region on an offline world map, or use your
-  position (it never leaves the phone).
+- **Local, seasonal birds:** 2,630 species across Europe, North America, Mexico and Central
+  America, North Africa and the Middle East, Australia and New Zealand, from free recordings
+  (xeno-canto, iNaturalist, sound archives through GBIF, Wikimedia Commons). Pick your region
+  on an offline world map, which opens on your continent, or use your position (it never
+  leaves the phone).
 - **A gentle wake-up:** the song rises from silence over a minute, then the phone vibrates. The
   quiz shows over the lock screen. A backup alarm rings if anything goes wrong.
 - **Four difficulties:** Easy (songs of common birds), Medium (adds calls), Hard (every
@@ -50,25 +75,32 @@ Free, no ads, no trackers. English, French, German and Spanish.
 - **Six rarities**, from Common to Legendary, plus **Shiny** cards: leucistic or melanistic
   birds, about one in a thousand cards. Each has its own frame material, card stock and reveal.
 - **Every card is a specimen:** real statistics of the species (weight, wingspan, length,
-  migration distance) rolled for that card, a quality score, one of up to five photos of the
-  bird, a **bird group icon**, and the recording it was won with.
+  migration distance) rolled for that card, a quality score, one of up to six photos of the
+  bird (**Art n/6**), and the recording it was won with.
+- **Badges:** the bird's group, habitat and diet, as glass badges on the photo; tap one to read
+  its name.
 - **Training:** a pile of free boosters (one every 15 minutes) to practise between alarms.
 - **Achievements and series:** 18 achievements in five tiers, and series by family, habitat,
   voice and theme. Each completed tier or series gives a card of guaranteed rarity.
-- Collection views by region or species, search, sort and filters; the species' Wikipedia
-  article in your language; share a card as an image.
+- Collection views by region, species or **duplicates**, search, sorts (newest, quality,
+  rarity…) and filters; piles of copies that open on tap; the species' Wikipedia article in
+  your language; share a card as an image.
+- **Missing-species map** (Plus): every cell of the region map coloured by the species you
+  still lack there, with a legend; tap a cell for its counts.
 
 **With friends (optional account)**
 - **Cloud backup** of the collection: an anonymous account by default, Google or email sign-in
   to keep it across phones. Account deletion in the app or on the web.
 - **Profile:** a unique @name, an avatar cut from one of your cards, a hall of fame of three
-  cards, and your stats.
-- **Friends:** add by @name, invite with a link, and **trade cards at a distance**. Both sides
-  offer, both agree, and the swap happens on both phones.
+  cards, and your stats (also shown on a friend's profile).
+- **Friends:** add by @name, invite with a link, browse their collection and **trade cards at a
+  distance**. Both sides offer full cards, both agree, and the swap happens on both phones.
+- **Switch account:** the collection is saved to the current account, then the phone loads
+  the other one's.
 - Bonus codes for events and testers.
 
-**Support:** optional tips and **Early Bird Plus** (a booster every minute), through Google
-Play. Nothing random is ever sold.
+**Support:** optional tips and **Early Bird Plus** (a booster every minute and the
+missing-species map), through Google Play. Nothing random is ever sold.
 
 ## Repository layout
 
@@ -78,7 +110,9 @@ Play. Nothing random is ever sold.
 | `app/firestore.rules` | Firestore security rules (accounts, profiles, friends, trades); `firestore_rules_check.py` tests them live |
 | `pipeline/build.py` | Builds the catalog: regions, species, photos, recordings, stats, series; publishes it |
 | `pipeline/series.md` | The series (editable): families, habitats, voices, themes, and their rewards |
-| `pipeline/variants.py`, `shiny.py` | Card photo variants and Shiny photos (contact sheets, picks) |
+| `pipeline/variants.py`, `shiny.py` | Card photo variants (Commons, then reviewed iNaturalist photos; rejects in `photo_rejects.csv`) and Shiny photos |
+| `pipeline/names.csv`, `overrides.csv` | Hand-made English names and species overrides |
+| `pipeline/sweep_oc.py` | Free-recording coverage sweep of a new area, before it is added |
 | `pipeline/family_icons.py` | Bird group icons from PhyloPic silhouettes |
 | `pipeline/world_map.py` | The offline world map of the region picker (Natural Earth) |
 | `pipeline/store_assets.py` | Store icon and feature graphic |
@@ -92,8 +126,12 @@ Play. Nothing random is ever sold.
   photos and keeps a small pile of upcoming songs, so **alarms always ring offline**.
 - **Firebase** (Auth and Firestore, free plan, security rules only) holds per-player data:
   backup, profile, friends, trades, codes. It is never on the alarm's path.
+- **Heatmap data:** `cells_species.json` lists each cell's card numbers; the app counts the
+  missing ones itself, on the phone.
 - Building: `flutter build appbundle --release` in `app/`; test builds with developer tools:
-  `flutter build apk --profile --dart-define=DEV_TOOLS=true`. The pipeline is Python
+  `flutter build apk --profile --dart-define=DEV_TOOLS=true`, plus
+  `--dart-define=CATALOG_URL=http://localhost:8765/v1/` to try a local catalog before it is
+  published. The pipeline is Python
   (stdlib) and ffmpeg.
 
 ## Data and licences
@@ -102,10 +140,10 @@ Play. Nothing random is ever sold.
 |---|---|---|
 | Presence, seasons, rarity | GBIF.org occurrence data, eBird where dense (monthly counts only) | CC0, CC BY or CC BY-NC, per dataset |
 | Names | Wikidata, GBIF | CC0 |
-| Photos | Wikimedia Commons, iNaturalist | CC0, public domain, CC BY, CC BY-SA (author and licence on each card) |
-| Recordings | xeno-canto, iNaturalist | CC0, CC BY, CC BY-SA (author and licence on each card) |
-| Card statistics | AVONET (Tobias et al. 2022, *Ecology Letters*), Wikidata | CC BY 4.0, CC0 |
-| Bird group icons | PhyloPic | CC0, Public Domain Mark |
+| Photos | Wikimedia Commons, iNaturalist (research-grade, reviewed by hand) | CC0, public domain, CC BY, CC BY-SA (author and licence on each card) |
+| Recordings | xeno-canto, iNaturalist, NatureMapr, Borror Lab, Animal Sound Archive (through GBIF), Wikimedia Commons | CC0, CC BY, CC BY-SA (author and licence on each card) |
+| Card statistics, habitat and diet | AVONET (Tobias et al. 2022, *Ecology Letters*), Wikidata, Wikipedia (body length) | CC BY 4.0, CC0, CC BY-SA |
+| Bird group and badge icons | PhyloPic, Material Icons, drawn for the app | CC0, Public Domain Mark, Apache 2.0 |
 | World map | Natural Earth | Public domain |
 
 The app shows each photo's and recording's author and licence on its card (ⓘ) and in
