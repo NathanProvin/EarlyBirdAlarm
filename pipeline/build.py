@@ -29,6 +29,8 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from PIL import Image, ImageOps
+
 MY_NAME = "Nathan Provin"  # credit for your own photos without a credits.csv line
 # Rarity tiers: minimum share of the month's bird records for the first four;
 # "legendary" only needs RARE_MIN records that month (filters out one-off errors).
@@ -1085,7 +1087,51 @@ def extra_photos(bird_id, tmp, base_url):
                 save_photo(src, OUT / "photos" / name)
             out.setdefault(key, []).append({"photo": f"photos/{name}", "credit": f"Photo: {x['credit']}",
                                             **({"kind": x["kind"]} if key == "shiny" else {})})
+    out_variants = out.get("variants", []) + my_photos(bird_id)
+    return out | ({"variants": out_variants} if out_variants else {})
+
+
+MY_VARIANT = re.compile(r"^([a-z_]+)-([A-Za-z0-9_-]+)\.(jpe?g|png)$", re.I)
+
+
+def my_photos(bird_id):
+    """The user's own extra photos (2026-11-20): my_photos/<bird id>-<anything>.jpg, added after the
+    variants in file-name order as <bird id>-m<anything>.jpg (named from the file, so adding one
+    never renames another: cards point at them). Credit: MY_NAME."""
+    out = []
+    for src in sorted(MY_PHOTOS.glob(f"{bird_id}-*")):
+        if not (m := MY_VARIANT.match(src.name)) or m[1] != bird_id:
+            continue
+        name = f"{bird_id}-m{m[2]}.jpg"
+        if not (OUT / "photos" / name).exists():
+            # Upright per EXIF, and saved without EXIF (no camera or GPS data published).
+            upright = OUT / "photos" / f"{name}.src.png"
+            ImageOps.exif_transpose(Image.open(src)).convert("RGB").save(upright)
+            save_photo(upright, OUT / "photos" / name)
+            upright.unlink()
+        out.append({"photo": f"photos/{name}", "credit": f"Photo: {MY_NAME}"})
     return out
+
+
+def add_my_photos():
+    """`py build.py myphotos`: adds my_photos/ to the current species.json without a rebuild; a file
+    whose bird id isn't in the catalog stops it. Then `py build.py publish`."""
+    path = OUT / "species.json"
+    species = json.loads(path.read_text(encoding="utf-8"))
+    ids = {b["id"] for b in species}
+    files = [f for f in MY_PHOTOS.iterdir() if "-" in f.name]  # <latin>.jpg = a catalog photo, credits.csv
+    bad = [f.name for f in files if not (m := MY_VARIANT.match(f.name)) or m[1] not in ids]
+    assert not bad, f"not <bird id>-<anything>.jpg with a catalog bird id: {bad}"
+    added = 0
+    for b in species:
+        old = {v["photo"] for v in b.get("variants", [])}
+        new = [v for v in my_photos(b["id"]) if v["photo"] not in old]
+        if new:
+            b["variants"] = b.get("variants", []) + new
+            added += len(new)
+            print(b["id"], [v["photo"] for v in new])
+    write_json(path, species)
+    print(f"{added} photos added")
 
 
 _extras = None
@@ -1115,6 +1161,8 @@ def main():
         return publish()
     if sys.argv[1:] == ["series"]:
         return build_series()
+    if sys.argv[1:] == ["myphotos"]:
+        return add_my_photos()
     xc_key_file = ROOT / "xc_key.txt"
     xc_key = xc_key_file.read_text().strip() if xc_key_file.exists() else None
     overrides = read_csv(ROOT / "overrides.csv")  # "Latin name" -> "xc=123" / "commons=File:x.jpg"

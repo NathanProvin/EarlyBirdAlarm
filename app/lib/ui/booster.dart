@@ -8,59 +8,6 @@ import 'gyro.dart';
 import 'shiny.dart';
 import 'theme.dart';
 
-/// The app icon (half-sun on the horizon, perched bird), drawn from the shapes of
-/// res/drawable/ic_launcher_foreground.xml.
-class LogoPainter extends CustomPainter {
-  const LogoPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final inkPaint = Paint()..color = ink;
-    canvas
-      ..save()
-      ..translate(size.width / 2, size.height / 2)
-      ..scale(size.shortestSide / 56)
-      ..translate(-55.75, -55.5) // centre of the drawing (x 30..81.5, y 42..69)
-      ..drawArc(
-        Rect.fromCircle(center: const Offset(54, 66), radius: 24),
-        pi,
-        pi,
-        true,
-        Paint()..color = coral,
-      )
-      ..drawRect(const Rect.fromLTWH(24, 66, 60, 3), inkPaint)
-      ..drawOval(
-        Rect.fromCenter(center: const Offset(66, 59), width: 16, height: 12),
-        inkPaint,
-      )
-      ..drawCircle(const Offset(73, 52), 4, inkPaint)
-      ..drawPath(
-        Path()..addPolygon(const [
-          Offset(76.5, 50.8),
-          Offset(81.5, 52.5),
-          Offset(76.5, 54.2),
-        ], true),
-        inkPaint,
-      )
-      ..drawPath(
-        Path()..addPolygon(const [
-          Offset(59, 57),
-          Offset(50, 63),
-          Offset(54.5, 64.2),
-          Offset(61.5, 61),
-        ], true),
-        inkPaint,
-      )
-      ..drawRect(const Rect.fromLTWH(64, 64, 1.4, 2.5), inkPaint)
-      ..drawRect(const Rect.fromLTWH(68.5, 64, 1.4, 2.5), inkPaint)
-      ..drawCircle(const Offset(74.5, 51.4), 0.9, Paint()..color = paper)
-      ..restore();
-  }
-
-  @override
-  bool shouldRepaint(LogoPainter oldDelegate) => false;
-}
-
 /// The logo on a paper disc, readable on any background.
 class Logo extends StatelessWidget {
   const Logo({this.size = 96, super.key});
@@ -70,9 +17,9 @@ class Logo extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: size,
     height: size,
-    padding: EdgeInsets.all(size * 0.12),
+    padding: EdgeInsets.all(size * 0.08),
     decoration: const BoxDecoration(color: paper, shape: BoxShape.circle),
-    child: const CustomPaint(painter: LogoPainter()),
+    child: Image.asset('assets/logo.png'), // pipeline/store_assets.py
   );
 }
 

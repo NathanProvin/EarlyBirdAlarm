@@ -10,3 +10,5 @@ app/android/key.properties
 app/android/app/google-services.json
 app/lib/firebase_options.dart
 *.salive
+# The user's own photo originals (full resolution); the 900 px copies are on the CDN
+pipeline/my_photos/

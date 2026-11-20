@@ -1,73 +1,105 @@
-"""Builds the Google Play graphics from the app's own icon shapes and colours:
-  store/icon-512.png        512 × 512 app icon (Play applies its own rounded mask)
+"""Builds every logo image from pipeline/logo.png (1024 px, transparent, from the user, 2026-11-20):
+  Android launcher icon   res/mipmap-*/ic_launcher_foreground.png, ic_launcher_monochrome.png
+                          (adaptive layers, 108 dp) and ic_launcher.png (legacy, 48 dp)
+  status-bar icon         res/drawable-*/ic_notification.png (white silhouette, 24 dp)
+  store/icon-512.png      512 × 512 Play icon (Play applies its own rounded mask)
   store/feature-graphic.png 1024 × 500 feature graphic
-  docs/logo.png             the README logo (same as the icon)
-  app/assets/icon.png       the logo on shared cards (same as the icon)
-The icon is the vector of app/android/app/src/main/res/drawable/ic_launcher_foreground.xml
-(108-unit canvas), drawn at 4× and scaled down for smooth edges. Lettering: Roboto (Apache 2.0,
-shipped with Flutter). Usage: py pipeline/store_assets.py"""
+  docs/logo.png           the README logo
+  app/assets/icon.png     the logo on shared cards
+  app/assets/logo.png     the logo on boosters and card backs (transparent)
+  app/assets/logo_shadow.png the Alarm page's blurred backdrop (white silhouette, tinted in the app)
+Lettering: Roboto (Apache 2.0, shipped with Flutter). Usage: py pipeline/store_assets.py"""
+import math
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).parent.parent
 FONTS = ROOT / ".tools" / "flutter" / "bin" / "cache" / "artifacts" / "material_fonts"
-PAPER, INK, CORAL = (246, 241, 234), (28, 27, 26), (232, 106, 79)  # ui/theme.dart
+RES = ROOT / "app" / "android" / "app" / "src" / "main" / "res"
+PAPER, INK = (246, 241, 234), (28, 27, 26)  # ui/theme.dart; PAPER = ic_launcher_background.xml
 RARITY = [(140, 133, 123), (79, 143, 91), (59, 125, 184), (138, 79, 176), (217, 162, 27)]
-SS = 4  # supersampling
+DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
+LOGO = Image.open(ROOT / "pipeline" / "logo.png").convert("RGBA")
 
 
-def bird(draw, s, ox, oy):
-    """The icon's sun, horizon and perched bird; one icon unit = s pixels, offset (ox, oy)."""
-    P = lambda x, y: (ox + x * s, oy + y * s)
-    def ellipse(cx, cy, rx, ry, fill):
-        draw.ellipse([P(cx - rx, cy - ry), P(cx + rx, cy + ry)], fill=fill)
-    draw.pieslice([P(30, 42), P(78, 90)], 180, 360, fill=CORAL)   # half-sun, centre (54, 66) r 24
-    draw.rectangle([P(24, 66), P(84, 69)], fill=INK)              # horizon
-    ellipse(66, 59, 8, 6, INK)                                    # body
-    ellipse(73, 52, 4, 4, INK)                                    # head
-    draw.polygon([P(76.5, 50.8), P(81.5, 52.5), P(76.5, 54.2)], fill=INK)            # beak
-    draw.polygon([P(59, 57), P(50, 63), P(54.5, 64.2), P(61.5, 61)], fill=INK)        # tail
-    draw.rectangle([P(64, 64), P(65.4, 66.5)], fill=INK)          # legs
-    draw.rectangle([P(68.5, 64), P(69.9, 66.5)], fill=INK)
-    ellipse(74.5, 51.4, 0.9, 0.9, PAPER)                          # eye
+def reach(img):
+    """The farthest visible pixel from the centre, as a share of the image's width."""
+    a, (w, h) = img.getchannel("A").load(), img.size
+    return max(math.hypot(x - w / 2, y - h / 2) for y in range(0, h, 2) for x in range(0, w, 2) if a[x, y] > 16) / w
+
+
+# Adaptive icons guarantee only a 66-unit circle of the 108-unit canvas: the logo is scaled to fit it.
+SCALE = 33 / 108 / reach(LOGO)  # logo width / canvas width
+assert 0.5 < SCALE < 1.2, SCALE
+
+
+def canvas(size, units=108, bg=None):
+    """The logo on a size-px square showing the central `units` of the 108-unit adaptive canvas."""
+    side = round(size * 108 / units * SCALE)
+    out = Image.new("RGBA", (size, size), bg or (0, 0, 0, 0))
+    logo = LOGO.resize((side, side), Image.LANCZOS)
+    out.alpha_composite(logo, ((size - side) // 2, (size - side) // 2)) if side <= size else \
+        out.alpha_composite(logo.crop(((side - size) // 2,) * 2 + ((side + size) // 2,) * 2))
+    return out
+
+
+def white(img):
+    """The image's silhouette in white (Android tints monochrome and status-bar icons)."""
+    out = Image.new("RGBA", img.size, (255, 255, 255, 0))
+    out.putalpha(img.getchannel("A"))
+    return out
 
 
 def icon(size):
-    # Launchers show the central 72 units of the 108-unit adaptive canvas: the same here.
-    big = Image.new("RGB", (size * SS, size * SS), PAPER)
-    s = size * SS / 72
-    bird(ImageDraw.Draw(big), s, -18 * s, -18 * s)
-    return big.resize((size, size), Image.LANCZOS)
+    # Launchers show the central 72 units of the 108-unit canvas, on the paper background.
+    return canvas(size, 72, PAPER + (255,)).convert("RGB")
 
 
 def feature_graphic():
     w, h = 1024, 500
-    big = Image.new("RGB", (w * SS, h * SS), PAPER)
+    img = Image.new("RGB", (w, h), PAPER)
+    logo = LOGO.resize((round(h * 0.84 / (2 * reach(LOGO))),) * 2, Image.LANCZOS)  # ~84 % of the height
+    img.paste(logo, (250 - logo.width // 2, (h - logo.height) // 2), logo)
+    big = img.resize((w * 4, h * 4), Image.LANCZOS)  # lettering supersampled
     d = ImageDraw.Draw(big)
-    # The icon scene on the left, large: the horizon line spans the left half.
-    s = 6.6 * SS
-    bird(d, s, -16 * s, (h * SS - 108 * s) / 2 + 6 * s)  # horizon ends ~450 px, before the text
-    font = lambda name, px: ImageFont.truetype(str(FONTS / name), px * SS)
-    x = 500 * SS
-    d.text((x, 150 * SS), "Early Bird", font=font("roboto-bold.ttf", 76), fill=INK)
-    d.text((x, 240 * SS), "Wake up to real bird songs.", font=font("roboto-regular.ttf", 32), fill=INK)
-    d.text((x, 284 * SS), "Guess the bird, win its card.", font=font("roboto-regular.ttf", 32), fill=INK)
+    font = lambda name, px: ImageFont.truetype(str(FONTS / name), px * 4)
+    x = 500 * 4
+    d.text((x, 150 * 4), "Early Bird", font=font("roboto-bold.ttf", 76), fill=INK)
+    d.text((x, 240 * 4), "Wake up to real bird songs.", font=font("roboto-regular.ttf", 32), fill=INK)
+    d.text((x, 284 * 4), "Guess the bird, win its card.", font=font("roboto-regular.ttf", 32), fill=INK)
     for i, c in enumerate(RARITY):  # the five rarities
-        cx, cy, r = x + (12 + i * 34) * SS, 360 * SS, 11 * SS
+        cx, cy, r = x + (12 + i * 34) * 4, 360 * 4, 11 * 4
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=c)
     return big.resize((w, h), Image.LANCZOS)
 
 
 def main():
-    out = ROOT / "store"
-    out.mkdir(exist_ok=True)
+    for name, k in DENSITIES.items():
+        (RES / f"mipmap-{name}").mkdir(exist_ok=True)
+        (RES / f"drawable-{name}").mkdir(exist_ok=True)
+        fg = canvas(round(108 * k))
+        fg.save(RES / f"mipmap-{name}" / "ic_launcher_foreground.png")
+        white(fg).save(RES / f"mipmap-{name}" / "ic_launcher_monochrome.png")
+        icon(round(48 * k)).save(RES / f"mipmap-{name}" / "ic_launcher.png")
+        # Status bar: the logo filling 22 of the 24 dp.
+        white(canvas(round(24 * k), 108 * 2 * reach(LOGO) * SCALE / (22 / 24))).save(
+            RES / f"drawable-{name}" / "ic_notification.png")
+    (ROOT / "store").mkdir(exist_ok=True)
     (ROOT / "docs").mkdir(exist_ok=True)
-    icon(512).convert("RGBA").save(out / "icon-512.png")  # Play wants a 32-bit PNG
+    icon(512).convert("RGBA").save(ROOT / "store" / "icon-512.png")  # Play wants a 32-bit PNG
     icon(512).save(ROOT / "docs" / "logo.png")
-    icon(192).save(ROOT / "app" / "assets" / "icon.png")  # the logo on shared cards
-    feature_graphic().save(out / "feature-graphic.png")
-    print("store/icon-512.png, store/feature-graphic.png, docs/logo.png, app/assets/icon.png")
+    icon(192).save(ROOT / "app" / "assets" / "icon.png")
+    feature_graphic().save(ROOT / "store" / "feature-graphic.png")
+    # Cropped to the logo's circle, so it fills the booster's paper disc.
+    r = reach(LOGO) * LOGO.width
+    c = LOGO.width / 2
+    LOGO.crop((round(c - r),) * 2 + (round(c + r),) * 2).resize((384, 384), Image.LANCZOS) \
+        .save(ROOT / "app" / "assets" / "logo.png")
+    # Backdrop: a 512 px silhouette with room for its blur.
+    shadow = white(canvas(512, 108 * 1.25)).filter(ImageFilter.GaussianBlur(14))
+    shadow.save(ROOT / "app" / "assets" / "logo_shadow.png")
+    print("launcher, notification, store, docs and app logo images written")
 
 
 if __name__ == "__main__":

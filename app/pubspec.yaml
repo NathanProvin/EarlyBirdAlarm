@@ -82,6 +82,8 @@ flutter:
     - assets/content/photos/
     - assets/map/
     - assets/icon.png
+    - assets/logo.png
+    - assets/logo_shadow.png
     - assets/rooster.m4a
 
   # To add assets to your application, add an assets section, like this:

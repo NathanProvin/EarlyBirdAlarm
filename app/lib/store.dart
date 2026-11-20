@@ -543,7 +543,7 @@ class Store extends ChangeNotifier {
       title: notificationTitle, // big bold line of the banner
       body: a.label.isEmpty ? 'Early Bird' : a.label,
       androidStopAlarmOnDismiss: false, // only a guess stops it
-      icon: 'ic_notification', // white bird, res/drawable
+      icon: 'ic_notification', // white logo, res/drawable-*dpi
       iconColor: coral,
     );
     await Alarm.set(

@@ -325,96 +325,114 @@ class _HomeScreenState extends State<HomeScreen> {
           // The pages run under the glass bar; their lists pad their ends by
           // MediaQuery's bottom padding, which then includes the bar.
           extendBody: true,
-          body: SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                // Other tabs use the whole screen: no streak / settings row there.
-                if (_tab == 1) PageHeader(center: StreakPill(store.streak)),
-                if (_tab == 0)
-                  const Expanded(child: TwitchScreen())
-                else if (_tab == 2)
-                  const Expanded(child: CollectionScreen())
-                else if (alarms.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Text(l.noAlarms, style: text.titleLarge),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        for (final a in alarms)
-                          InkWell(
-                            onTap: () => _edit(a),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                24,
-                                12,
-                                16,
-                                12,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Time, days and switch on one row.
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: TimeOfDay(
-                                                  hour: a.hour,
-                                                  minute: a.minute,
-                                                ).format(context),
-                                                style: text.displaySmall,
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    '  ${daysText(context, a.days)}',
-                                                style: text.bodyLarge,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Semantics(
-                                        // TalkBack: "07:00, Mon Tue, on".
-                                        label:
-                                            '${TimeOfDay(hour: a.hour, minute: a.minute).format(context)}, ${daysText(context, a.days)}',
-                                        child: Switch(
-                                          value: a.enabled,
-                                          onChanged: (on) => store.save(
-                                            a..enabled = on,
-                                            l.guessTheBird,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (a.label.isNotEmpty)
-                                    Text(
-                                      a.label,
-                                      style: text.bodyLarge?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  if (a.enabled) ...[
-                                    const SizedBox(height: 8),
-                                    _RingBar(a),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
+          body: Stack(
+            children: [
+              if (_tab == 1)
+                // The logo as a faint blurred backdrop (pre-blurred, pipeline/store_assets.py).
+                Positioned.fill(
+                  child: Center(
+                    child: Image.asset(
+                      'assets/logo_shadow.png',
+                      width: 360,
+                      color: Theme.of(context).colorScheme.onSurface
+                          .withValues(alpha: 0.06),
+                      excludeFromSemantics: true,
                     ),
                   ),
-              ],
-            ),
+                ),
+              SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    // Other tabs use the whole screen: no streak / settings row there.
+                    if (_tab == 1) PageHeader(center: StreakPill(store.streak)),
+                    if (_tab == 0)
+                      const Expanded(child: TwitchScreen())
+                    else if (_tab == 2)
+                      const Expanded(child: CollectionScreen())
+                    else if (alarms.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: Text(l.noAlarms, style: text.titleLarge),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            for (final a in alarms)
+                              InkWell(
+                                onTap: () => _edit(a),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    24,
+                                    12,
+                                    16,
+                                    12,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Time, days and switch on one row.
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text.rich(
+                                              TextSpan(
+                                                children: [
+                                                  TextSpan(
+                                                    text: TimeOfDay(
+                                                      hour: a.hour,
+                                                      minute: a.minute,
+                                                    ).format(context),
+                                                    style: text.displaySmall,
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        '  ${daysText(context, a.days)}',
+                                                    style: text.bodyLarge,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Semantics(
+                                            // TalkBack: "07:00, Mon Tue, on".
+                                            label:
+                                                '${TimeOfDay(hour: a.hour, minute: a.minute).format(context)}, ${daysText(context, a.days)}',
+                                            child: Switch(
+                                              value: a.enabled,
+                                              onChanged: (on) => store.save(
+                                                a..enabled = on,
+                                                l.guessTheBird,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (a.label.isNotEmpty)
+                                        Text(
+                                          a.label,
+                                          style: text.bodyLarge?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      if (a.enabled) ...[
+                                        const SizedBox(height: 8),
+                                        _RingBar(a),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
