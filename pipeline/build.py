@@ -1042,7 +1042,8 @@ R2_KEYS = ROOT.parent / "keys" / "r2.txt"  # access key id, then secret key (git
 
 
 def sync_r2():
-    """Mirror PAGES to the R2 bucket: only changed files go up, files gone from PAGES are deleted."""
+    """Copy PAGES to the R2 bucket: only changed files go up. Nothing is deleted: a player's saved
+    card may still point at a clip or photo a later build dropped (2026-11-20)."""
     key_id, secret = R2_KEYS.read_text().split()[:2]
     # winget install Rclone.Rclone: on PATH only in new terminals, so else found in winget's folder
     rclone = shutil.which("rclone") or str(next(
@@ -1051,7 +1052,7 @@ def sync_r2():
                         "RCLONE_CONFIG_R2_ACCESS_KEY_ID": key_id, "RCLONE_CONFIG_R2_SECRET_ACCESS_KEY": secret,
                         "RCLONE_CONFIG_R2_ENDPOINT": R2_ENDPOINT,
                         "RCLONE_CONFIG_R2_NO_CHECK_BUCKET": "true"}  # the token only reaches this bucket
-    subprocess.run([rclone, "sync", str(PAGES), f"r2:{R2_BUCKET}", "--checksum", "--fast-list",
+    subprocess.run([rclone, "copy", str(PAGES), f"r2:{R2_BUCKET}", "--checksum", "--fast-list",
                     "--exclude", ".git/**", "--exclude", ".nojekyll", "--transfers", "16",
                     "--stats-one-line", "--stats", "30s", "--stats-log-level", "NOTICE"], env=env, check=True)
 

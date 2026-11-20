@@ -36,7 +36,7 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Switch account on the account page (collection saved to the account and required online, then the phone emptied). Trade: full cards with names, a Collected / Duplicates switch for my cards and the friend's, offers open whole on tap
 - [x] `firestore.rules` deployed 2026-11-17: friends read each other's card chunks (user OK)
 - [x] Phone check with a dev build: Melbourne cell, 1,000 drawn cards, badges, heatmap (validated by the user, 2026-11-20)
-- [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+5**, signed bundle built (2026-11-20). Then: **publish the catalog only once 1.2 is live** (R2 is shared by every version)
+- [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+5**, signed bundle built (2026-11-20). Catalog **published to R2 before 1.2 is live** (user, 2026-11-20): 1.1 reads it fine (same formats and region kinds; strict cell-id parsing; no icon for a new family; an Oceania player's offline fallback is the European birds). R2 uploads now copy and never delete (old cards may point at dropped clips / photos). Next: upload the bundle to the closed track; the catalog fixes (Latin-only names, out-of-area trim) at the next rebuild
 
 ## Later
 - **Challenges between friends** (the "coming soon" button on a friend's profile).
