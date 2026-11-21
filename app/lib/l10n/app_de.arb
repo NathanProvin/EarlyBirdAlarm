@@ -55,7 +55,7 @@
   "alarmCall": "Warnruf",
   "seasonalBirds": "Vögel der Saison",
   "credits": "Quellen",
-  "creditsBody": "Vorkommen und Jahreszeiten der Vögel: Beobachtungsdaten von GBIF.org.\n\nNamen und Fotos: Wikidata und Wikimedia Commons (CC0, gemeinfrei, CC BY, CC BY-SA); Urheber und Lizenz jedes Fotos stehen auf seiner Karte (ⓘ).\n\nGesänge und Rufe: Aufnahmen von xeno-canto.org und iNaturalist (CC0, CC BY, CC BY-SA); Urheber und Lizenz stehen auf der Karte (ⓘ). Hahn des Notfallweckers: Kalvin Chan, iNaturalist (CC0).\n\nKartenwerte: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia und Wikidata.",
+  "creditsBody": "Logo: Fanny Crepin.\n\nVorkommen und Jahreszeiten der Vögel: Beobachtungsdaten von GBIF.org.\n\nNamen und Fotos: Wikidata und Wikimedia Commons (CC0, gemeinfrei, CC BY, CC BY-SA); Urheber und Lizenz jedes Fotos stehen auf seiner Karte (ⓘ).\n\nGesänge und Rufe: Aufnahmen von xeno-canto.org und iNaturalist (CC0, CC BY, CC BY-SA); Urheber und Lizenz stehen auf der Karte (ⓘ). Hahn des Notfallweckers: Kalvin Chan, iNaturalist (CC0).\n\nKartenwerte: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia und Wikidata.",
   "tryNextTime": "Beim nächsten Mal klappt's!",
   "speciesCollected": "{ordinal} Art gesammelt!",
   "streakLost": "Serie verloren",

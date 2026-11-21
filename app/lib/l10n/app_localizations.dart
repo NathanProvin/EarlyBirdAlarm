@@ -435,7 +435,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsBody.
   ///
   /// In en, this message translates to:
-  /// **'Bird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org and iNaturalist recordings (CC0, CC BY, CC BY-SA); each recordist and license are on the card (ⓘ). Backup alarm rooster: Kalvin Chan, iNaturalist (CC0).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.'**
+  /// **'Logo: Fanny Crepin.\n\nBird presence and seasons: GBIF.org occurrence data.\n\nNames and photos: Wikidata and Wikimedia Commons (CC0, public domain, CC BY, CC BY-SA); each photo\'s author and license are on its card (ⓘ).\n\nSongs and calls: xeno-canto.org and iNaturalist recordings (CC0, CC BY, CC BY-SA); each recordist and license are on the card (ⓘ). Backup alarm rooster: Kalvin Chan, iNaturalist (CC0).\n\nCard stats: AVONET (Tobias et al. 2022, Ecology Letters, CC BY 4.0), Wikipedia and Wikidata.'**
   String get creditsBody;
 
   /// No description provided for @tryNextTime.
