@@ -327,5 +327,20 @@
   "cancelTrade": "Cancel",
   "missingSpecies": "Missing species",
   "cellCollected": "{have} / {total} collected · {missing} missing",
-  "@cellCollected": {"placeholders": {"have": {"type": "int"}, "total": {"type": "int"}, "missing": {"type": "int"}}}
+  "@cellCollected": {"placeholders": {"have": {"type": "int"}, "total": {"type": "int"}, "missing": {"type": "int"}}},
+  "reminders": "Reminders",
+  "remindersInfo": "A nudge after a few days away, twice at most.",
+  "reminderTradeTitle": "A friend is waiting for you",
+  "reminderTradeBody": "Your card trade is still open. Have a look before it expires!",
+  "reminderSeriesTitle": "Almost complete!",
+  "reminderSeriesBody": "{missing, plural, =1{Just 1 bird left to complete {name}.} other{Just {missing} birds left to complete {name}.}}",
+  "@reminderSeriesBody": {"placeholders": {"missing": {"type": "int"}, "name": {"type": "String"}}},
+  "reminderMonthTitle": "New month, new birds",
+  "reminderMonthBody": "The season is turning: new birds are singing in your area. Who has arrived?",
+  "reminderPileTitle": "Your boosters are ready",
+  "reminderPileBody": "{count} boosters are waiting for you. Which birds will you find?",
+  "@reminderPileBody": {"placeholders": {"count": {"type": "int"}}},
+  "reminderMissingTitle": "Birds to discover",
+  "reminderMissingBody": "{count} species of {region} are still missing from your collection.",
+  "@reminderMissingBody": {"placeholders": {"count": {"type": "int"}, "region": {"type": "String"}}}
 }

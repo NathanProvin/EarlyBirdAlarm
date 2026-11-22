@@ -287,5 +287,17 @@
   "tradeBothOffer": "1 carte chacun minimum",
   "cancelTrade": "Annuler",
   "missingSpecies": "Espèces manquantes",
-  "cellCollected": "{have} / {total} collectées · {missing} manquantes"
+  "cellCollected": "{have} / {total} collectées · {missing} manquantes",
+  "reminders": "Rappels",
+  "remindersInfo": "Un petit rappel après quelques jours d’absence, deux au plus.",
+  "reminderTradeTitle": "Un ami t’attend",
+  "reminderTradeBody": "Ton échange de cartes est toujours ouvert. Jette un œil avant qu’il expire !",
+  "reminderSeriesTitle": "Presque complète !",
+  "reminderSeriesBody": "{missing, plural, =1{Plus qu’un oiseau pour compléter {name}.} other{Plus que {missing} oiseaux pour compléter {name}.}}",
+  "reminderMonthTitle": "Nouveau mois, nouveaux oiseaux",
+  "reminderMonthBody": "La saison tourne : de nouveaux oiseaux chantent près de chez toi. Qui est arrivé ?",
+  "reminderPileTitle": "Tes boosters sont prêts",
+  "reminderPileBody": "{count} boosters t’attendent. Quels oiseaux vas-tu trouver ?",
+  "reminderMissingTitle": "Des oiseaux à découvrir",
+  "reminderMissingBody": "Il manque encore {count} espèces de {region} à ta collection."
 }

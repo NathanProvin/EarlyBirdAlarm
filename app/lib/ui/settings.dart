@@ -334,7 +334,15 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(child: _ThemeSwatch(value, label)),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l.reminders, style: header),
+              subtitle: Text(l.remindersInfo, style: text.bodySmall),
+              value: store.reminders,
+              onChanged: (on) => store.reminders = on,
+            ),
+            const SizedBox(height: 12),
             Text(l.credits, style: header),
             ListTile(
               contentPadding: EdgeInsets.zero,

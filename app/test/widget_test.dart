@@ -8,6 +8,7 @@ import 'package:early_bird/cards.dart';
 import 'package:early_bird/content.dart';
 import 'package:early_bird/l10n/app_localizations.dart';
 import 'package:early_bird/main.dart';
+import 'package:early_bird/reminders.dart';
 import 'package:early_bird/series.dart';
 import 'package:early_bird/store.dart';
 import 'package:early_bird/trade.dart';
@@ -827,7 +828,23 @@ void main() {
       expect(checkCard(card('robin').toJson()), isNotNull);
       expect(checkCard(card('nobody').toJson()), isNull); // unknown bird
       expect(checkCard(card('robin', quality: 150).toJson()), isNull);
-      expect(checkCard(card('robin', weight: 99).toJson()), isNull); // 20 ± 3×2
+      // Catalog drift (another build or copy) isn't forgery: out-of-band stats are
+      // clamped (20 ± 3×2), unknown stats dropped, unknown clips and photos kept.
+      expect(
+        checkCard(card('robin', weight: 99).toJson())!.stats['weight'],
+        26,
+      );
+      final drifted = card('robin').toJson()
+        ..['stats'] = {'weight': 20, 'gone': 5}
+        ..['recording'] = 'audio/old-clip.m4a'
+        ..['photo'] = 'photos/dropped.jpg';
+      final kept = checkCard(drifted)!;
+      expect(kept.stats.keys, ['weight']);
+      expect(kept.recording, 'audio/old-clip.m4a');
+      expect(
+        checkCard(card('robin').toJson()..['stats'] = {'weight': double.nan}),
+        isNull,
+      );
       expect(checkCard({'bird': 'robin'}), isNull); // malformed
       final bad = card('robin', quality: 150);
       final t = RemoteTrade(
@@ -1326,6 +1343,35 @@ void main() {
     for (final g in familyGroups.keys) {
       expect(groupPath(g).getBounds().isEmpty, isFalse, reason: g);
     }
+  });
+
+  test('reminders: strongest nudge first, a different one to follow, at the habit hour', () {
+    final now = DateTime(2026, 11, 22, 7, 30); // used at 7:30
+    final first = reminderTime(now, reminderFirst);
+    final second = reminderTime(first, reminderFollowUp);
+    expect(first, DateTime(2026, 11, 25, 9, 30)); // kept from 9:00
+    expect(second, DateTime(2026, 11, 29, 9, 30));
+    expect(reminderTime(DateTime(2026, 1, 1, 23), reminderFirst).hour, 20);
+    (Nudge, Nudge?) pick({
+      bool trade = false,
+      bool series = false,
+      DateTime? first2,
+      int missing = 40,
+    }) => pickNudges(
+      now: now,
+      first: first,
+      second: first2 ?? second,
+      trade: trade,
+      series: series,
+      seasonal: true,
+      missing: missing,
+    );
+    expect(pick(trade: true, series: true), (Nudge.trade, Nudge.series));
+    expect(pick(series: true), (Nudge.series, Nudge.pile));
+    expect(pick(), (Nudge.pile, Nudge.missing));
+    // The follow-up falls in December: the new month's birds.
+    expect(pick(first2: DateTime(2026, 12, 1)), (Nudge.pile, Nudge.month));
+    expect(pick(missing: 0), (Nudge.pile, null));
   });
 }
 

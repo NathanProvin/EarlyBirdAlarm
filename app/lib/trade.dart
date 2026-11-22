@@ -24,17 +24,21 @@ String offersHash(List<CardData> mine, List<CardData> theirs) {
 }
 
 /// A card offered by the other phone, or null if it can't be genuine: unknown bird or
-/// rarity, quality outside 0–100, a stat the species doesn't have or out of the roll's
-/// ±3 standard deviations, a date in the future.
+/// rarity, quality outside 0–100, a non-finite stat, a date in the future, a Shiny photo
+/// on a non-Shiny card or the reverse.
+/// The catalog changes between builds (1.2 re-parsed sizes, swapped clips, rejected
+/// photos) and two phones can hold different copies for up to a week (syncRegion), so a
+/// genuine card may name a photo or clip this phone doesn't know (kept: the UI falls back)
+/// or have stats outside this catalog's ±3 SD (clamped, not refused; a stat the species
+/// no longer has is dropped). Refusing them cancelled real trades (bug, 2026-11-22).
 CardData? checkCard(Object? json) {
   try {
     final card = CardData.fromJson(json! as Map<String, dynamic>);
     final bird = birdById(card.birdId);
     if (bird == null) return null;
     if (card.rarity != null && !cardTiers.contains(card.rarity)) return null;
-    // A photo must be one of this bird's (a variant, or a Shiny one on a Shiny card).
     if (card.photo case final p?
-        when bird.photoOf(p).photo != p ||
+        when bird.photoOf(p).photo == p &&
             (bird.photoOf(p).kind != null) != (card.rarity == 'shiny')) {
       return null;
     }
@@ -42,18 +46,14 @@ CardData? checkCard(Object? json) {
     if (card.earned.isAfter(DateTime.now().add(const Duration(days: 1)))) {
       return null;
     }
-    for (final MapEntry(:key, :value) in card.stats.entries) {
+    if (card.stats.values.any((v) => !v.isFinite)) return null;
+    card.stats.updateAll((key, value) {
       final s = bird.stats[key];
-      if (s == null || !value.isFinite) return null;
-      if (value < s.mean - 3 * s.sd - 1e-6 ||
-          value > s.mean + 3 * s.sd + 1e-6) {
-        return null;
-      }
-    }
-    if (card.recording != null &&
-        !bird.recordings.any((r) => r.file == card.recording)) {
-      return null;
-    }
+      return s == null
+          ? value
+          : value.clamp(s.mean - 3 * s.sd, s.mean + 3 * s.sd).toDouble();
+    });
+    card.stats.removeWhere((key, _) => bird.stats[key] == null);
     return card;
   } on Object {
     return null; // malformed JSON or types

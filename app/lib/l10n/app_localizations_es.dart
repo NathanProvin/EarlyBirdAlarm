@@ -1041,4 +1041,55 @@ class AppLocalizationsEs extends AppLocalizations {
   String cellCollected(int have, int total, int missing) {
     return '$have / $total conseguidas · faltan $missing';
   }
+
+  @override
+  String get reminders => 'Recordatorios';
+
+  @override
+  String get remindersInfo =>
+      'Un pequeño aviso tras unos días sin jugar, dos como máximo.';
+
+  @override
+  String get reminderTradeTitle => 'Un amigo te espera';
+
+  @override
+  String get reminderTradeBody =>
+      'Tu intercambio de cartas sigue abierto. ¡Échale un vistazo antes de que caduque!';
+
+  @override
+  String get reminderSeriesTitle => '¡Casi completa!';
+
+  @override
+  String reminderSeriesBody(int missing, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      missing,
+      locale: localeName,
+      other: 'Solo te faltan $missing aves para completar $name.',
+      one: 'Solo te falta 1 ave para completar $name.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reminderMonthTitle => 'Nuevo mes, nuevas aves';
+
+  @override
+  String get reminderMonthBody =>
+      'Cambia la estación: nuevas aves cantan en tu zona. ¿Quién ha llegado?';
+
+  @override
+  String get reminderPileTitle => 'Tus sobres están listos';
+
+  @override
+  String reminderPileBody(int count) {
+    return '$count sobres te esperan. ¿Qué aves encontrarás?';
+  }
+
+  @override
+  String get reminderMissingTitle => 'Aves por descubrir';
+
+  @override
+  String reminderMissingBody(int count, String region) {
+    return 'Aún faltan $count especies de $region en tu colección.';
+  }
 }

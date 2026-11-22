@@ -901,6 +901,18 @@ class _CardDetailState extends State<CardDetail> {
     final recording =
         widget.recording ??
         bird.recordings.where((r) => r.file == card?.recording).firstOrNull;
+    final face = _flip(
+      RepaintBoundary(
+        key: _boundary,
+        child: BirdCardView(
+          bird: bird,
+          card: card,
+          play: card == null
+              ? widget.recording?.file ?? playableFile(bird)
+              : null,
+        ),
+      ),
+    );
     return Column(
       children: [
         Expanded(
@@ -925,28 +937,20 @@ class _CardDetailState extends State<CardDetail> {
                     child: SizedBox(
                       height: height,
                       // In 3D like the boosters; the shared picture is taken inside, flat.
-                      child: CardTilt(
-                        // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
-                        shine:
-                            card != null &&
-                            cardTiers.indexOf(cardRarity(card)) >=
-                                cardTiers.indexOf('epic'),
-                        shineAfter: widget.flipIn
-                            ? const Duration(milliseconds: 1100)
-                            : Duration.zero,
-                        child: _flip(
-                          RepaintBoundary(
-                            key: _boundary,
-                            child: BirdCardView(
-                              bird: bird,
-                              card: card,
-                              play: card == null
-                                  ? widget.recording?.file ?? playableFile(bird)
-                                  : null,
+                      // A heard card stays still: its blurs would be redrawn at every tilt
+                      // step (~60 a second), which dropped frames on the wrong-guess reveal.
+                      child: card == null
+                          ? face
+                          : CardTilt(
+                              // Epic and Legendary cards are glossy; on a reveal, once the flip is done.
+                              shine:
+                                  cardTiers.indexOf(cardRarity(card)) >=
+                                  cardTiers.indexOf('epic'),
+                              shineAfter: widget.flipIn
+                                  ? const Duration(milliseconds: 1100)
+                                  : Duration.zero,
+                              child: face,
                             ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],

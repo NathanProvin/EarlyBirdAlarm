@@ -1829,6 +1829,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{have} / {total} collected · {missing} missing'**
   String cellCollected(int have, int total, int missing);
+
+  /// No description provided for @reminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get reminders;
+
+  /// No description provided for @remindersInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'A nudge after a few days away, twice at most.'**
+  String get remindersInfo;
+
+  /// No description provided for @reminderTradeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A friend is waiting for you'**
+  String get reminderTradeTitle;
+
+  /// No description provided for @reminderTradeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your card trade is still open. Have a look before it expires!'**
+  String get reminderTradeBody;
+
+  /// No description provided for @reminderSeriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost complete!'**
+  String get reminderSeriesTitle;
+
+  /// No description provided for @reminderSeriesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{missing, plural, =1{Just 1 bird left to complete {name}.} other{Just {missing} birds left to complete {name}.}}'**
+  String reminderSeriesBody(int missing, String name);
+
+  /// No description provided for @reminderMonthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New month, new birds'**
+  String get reminderMonthTitle;
+
+  /// No description provided for @reminderMonthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The season is turning: new birds are singing in your area. Who has arrived?'**
+  String get reminderMonthBody;
+
+  /// No description provided for @reminderPileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your boosters are ready'**
+  String get reminderPileTitle;
+
+  /// No description provided for @reminderPileBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} boosters are waiting for you. Which birds will you find?'**
+  String reminderPileBody(int count);
+
+  /// No description provided for @reminderMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Birds to discover'**
+  String get reminderMissingTitle;
+
+  /// No description provided for @reminderMissingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} species of {region} are still missing from your collection.'**
+  String reminderMissingBody(int count, String region);
 }
 
 class _AppLocalizationsDelegate

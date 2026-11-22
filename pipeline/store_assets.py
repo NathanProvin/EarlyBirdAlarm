@@ -96,8 +96,8 @@ def main():
     c = LOGO.width / 2
     LOGO.crop((round(c - r),) * 2 + (round(c + r),) * 2).resize((384, 384), Image.LANCZOS) \
         .save(ROOT / "app" / "assets" / "logo.png")
-    # Backdrop: a 512 px silhouette with room for its blur.
-    shadow = white(canvas(512, 108 * 1.25)).filter(ImageFilter.GaussianBlur(14))
+    # Backdrop: a 512 px silhouette with room for its blur (bigger, sharper: 2026-11-22).
+    shadow = white(canvas(512, 108 * 1.1)).filter(ImageFilter.GaussianBlur(9))
     shadow.save(ROOT / "app" / "assets" / "logo_shadow.png")
     print("launcher, notification, store, docs and app logo images written")
 

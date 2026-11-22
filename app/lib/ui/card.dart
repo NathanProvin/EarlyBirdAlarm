@@ -128,34 +128,41 @@ class BirdCardView extends StatelessWidget {
                         ),
                     // Group, habitat and diet (family_icon.dart), a tap names each:
                     // down the photo's left side, top corner to bottom corner, evenly
-                    // spaced; a label slides out to the right (2026-11-19).
-                    Positioned.fill(
-                      left: 8,
-                      top: 8,
-                      right: 8,
-                      bottom: 8,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (final (icon, label) in [
-                            if (groupIcon(bird.family) case final icon?)
-                              (icon, '${l.familyLabel} · ${bird.family}'),
-                            if (habitatIcon(bird.habitat) case final icon?)
-                              (
-                                icon,
-                                '${l.habitatLabel} · ${l.habitatName(traitKey(bird.habitat!))}',
+                    // spaced; a label slides out to the right (2026-11-19). Not on a
+                    // heard card: blurred to nothing there, and each is a backdrop blur
+                    // inside the card's blur, which made the wrong-guess reveal stutter.
+                    if (card != null)
+                      Positioned.fill(
+                        left: 8,
+                        top: 8,
+                        right: 8,
+                        bottom: 8,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (final (icon, label) in [
+                              if (groupIcon(bird.family) case final icon?)
+                                (icon, '${l.familyLabel} · ${bird.family}'),
+                              if (habitatIcon(bird.habitat) case final icon?)
+                                (
+                                  icon,
+                                  '${l.habitatLabel} · ${l.habitatName(traitKey(bird.habitat!))}',
+                                ),
+                              if (dietIcon(bird.diet) case final icon?)
+                                (
+                                  icon,
+                                  '${l.dietLabel} · ${l.dietName(traitKey(bird.diet!))}',
+                                ),
+                            ])
+                              GlassBadge(
+                                icon: icon,
+                                label: label,
+                                color: frame,
                               ),
-                            if (dietIcon(bird.diet) case final icon?)
-                              (
-                                icon,
-                                '${l.dietLabel} · ${l.dietName(traitKey(bird.diet!))}',
-                              ),
-                          ])
-                            GlassBadge(icon: icon, label: label, color: frame),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

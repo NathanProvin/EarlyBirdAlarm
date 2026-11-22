@@ -12,6 +12,7 @@ import 'birds.dart';
 import 'content.dart';
 import 'l10n/app_localizations.dart';
 import 'purchases.dart';
+import 'reminders.dart';
 import 'store.dart';
 import 'ui/collection.dart';
 import 'ui/edit.dart';
@@ -37,6 +38,8 @@ Future<void> main() async {
   unawaited(store.healAlarms());
   unawaited(initPurchases());
   unawaited(signInQuietly(store));
+  // Leaving the app (or turning Reminders off and leaving) sets the reminders afresh.
+  AppLifecycleListener(onHide: () => unawaited(scheduleReminders(store)));
   runApp(
     ListenableBuilder(
       listenable: store,
@@ -333,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: Image.asset(
                       'assets/logo_shadow.png',
-                      width: 360,
+                      width: 480, // capped by the screen's width: as wide as it goes
                       color: Theme.of(context).colorScheme.onSurface
                           .withValues(alpha: 0.06),
                       excludeFromSemantics: true,

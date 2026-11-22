@@ -1043,4 +1043,55 @@ class AppLocalizationsFr extends AppLocalizations {
   String cellCollected(int have, int total, int missing) {
     return '$have / $total collectées · $missing manquantes';
   }
+
+  @override
+  String get reminders => 'Rappels';
+
+  @override
+  String get remindersInfo =>
+      'Un petit rappel après quelques jours d’absence, deux au plus.';
+
+  @override
+  String get reminderTradeTitle => 'Un ami t’attend';
+
+  @override
+  String get reminderTradeBody =>
+      'Ton échange de cartes est toujours ouvert. Jette un œil avant qu’il expire !';
+
+  @override
+  String get reminderSeriesTitle => 'Presque complète !';
+
+  @override
+  String reminderSeriesBody(int missing, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      missing,
+      locale: localeName,
+      other: 'Plus que $missing oiseaux pour compléter $name.',
+      one: 'Plus qu’un oiseau pour compléter $name.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reminderMonthTitle => 'Nouveau mois, nouveaux oiseaux';
+
+  @override
+  String get reminderMonthBody =>
+      'La saison tourne : de nouveaux oiseaux chantent près de chez toi. Qui est arrivé ?';
+
+  @override
+  String get reminderPileTitle => 'Tes boosters sont prêts';
+
+  @override
+  String reminderPileBody(int count) {
+    return '$count boosters t’attendent. Quels oiseaux vas-tu trouver ?';
+  }
+
+  @override
+  String get reminderMissingTitle => 'Des oiseaux à découvrir';
+
+  @override
+  String reminderMissingBody(int count, String region) {
+    return 'Il manque encore $count espèces de $region à ta collection.';
+  }
 }

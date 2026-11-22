@@ -287,5 +287,17 @@
   "tradeBothOffer": "Mínimo 1 carta cada uno",
   "cancelTrade": "Cancelar",
   "missingSpecies": "Especies que faltan",
-  "cellCollected": "{have} / {total} conseguidas · faltan {missing}"
+  "cellCollected": "{have} / {total} conseguidas · faltan {missing}",
+  "reminders": "Recordatorios",
+  "remindersInfo": "Un pequeño aviso tras unos días sin jugar, dos como máximo.",
+  "reminderTradeTitle": "Un amigo te espera",
+  "reminderTradeBody": "Tu intercambio de cartas sigue abierto. ¡Échale un vistazo antes de que caduque!",
+  "reminderSeriesTitle": "¡Casi completa!",
+  "reminderSeriesBody": "{missing, plural, =1{Solo te falta 1 ave para completar {name}.} other{Solo te faltan {missing} aves para completar {name}.}}",
+  "reminderMonthTitle": "Nuevo mes, nuevas aves",
+  "reminderMonthBody": "Cambia la estación: nuevas aves cantan en tu zona. ¿Quién ha llegado?",
+  "reminderPileTitle": "Tus sobres están listos",
+  "reminderPileBody": "{count} sobres te esperan. ¿Qué aves encontrarás?",
+  "reminderMissingTitle": "Aves por descubrir",
+  "reminderMissingBody": "Aún faltan {count} especies de {region} en tu colección."
 }

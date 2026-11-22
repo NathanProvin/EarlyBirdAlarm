@@ -138,6 +138,13 @@ class MainActivity : FlutterActivity() {
                     override fun onInstallReferrerServiceDisconnected() {}
                 })
             }
+        // Come-back reminders (Reminders.kt, reminders.dart): a JSON list, or null to cancel.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/reminders")
+            .setMethodCallHandler { call, result ->
+                (call.arguments as String?)?.let { Reminders.schedule(this, it) }
+                    ?: Reminders.cancel(this)
+                result.success(null)
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "early_bird/version")
             .setMethodCallHandler { _, result ->
                 result.success(packageManager.getPackageInfo(packageName, 0).versionName)

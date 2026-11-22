@@ -287,5 +287,17 @@
   "tradeBothOffer": "Mindestens 1 Karte pro Person",
   "cancelTrade": "Abbrechen",
   "missingSpecies": "Fehlende Arten",
-  "cellCollected": "{have} / {total} gesammelt · {missing} fehlen"
+  "cellCollected": "{have} / {total} gesammelt · {missing} fehlen",
+  "reminders": "Erinnerungen",
+  "remindersInfo": "Ein kleiner Hinweis nach ein paar Tagen Pause, höchstens zweimal.",
+  "reminderTradeTitle": "Ein Freund wartet auf dich",
+  "reminderTradeBody": "Dein Kartentausch ist noch offen. Schau vorbei, bevor er abläuft!",
+  "reminderSeriesTitle": "Fast komplett!",
+  "reminderSeriesBody": "{missing, plural, =1{Nur noch 1 Vogel, dann ist {name} komplett.} other{Nur noch {missing} Vögel, dann ist {name} komplett.}}",
+  "reminderMonthTitle": "Neuer Monat, neue Vögel",
+  "reminderMonthBody": "Die Jahreszeit wechselt: Neue Vögel singen in deiner Gegend. Wer ist angekommen?",
+  "reminderPileTitle": "Deine Booster sind bereit",
+  "reminderPileBody": "{count} Booster warten auf dich. Welche Vögel wirst du finden?",
+  "reminderMissingTitle": "Vögel zu entdecken",
+  "reminderMissingBody": "{count} Arten aus {region} fehlen noch in deiner Sammlung."
 }

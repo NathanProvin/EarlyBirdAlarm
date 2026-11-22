@@ -394,6 +394,11 @@ class Store extends ChangeNotifier {
   set gyro(bool on) =>
       _prefs.setBool('gyro', on).then((_) => notifyListeners());
 
+  /// Come-back reminders after a few days away (reminders.dart); on by default (user).
+  bool get reminders => _prefs.getBool('reminders') ?? true;
+  set reminders(bool on) =>
+      _prefs.setBool('reminders', on).then((_) => notifyListeners());
+
   /// Ignore the season: any bird of the region can ring.
   bool get allBirds => _prefs.getBool('allBirds') ?? false;
   set allBirds(bool on) =>
