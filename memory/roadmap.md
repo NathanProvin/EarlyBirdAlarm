@@ -43,6 +43,7 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - **Region UI:** rework the picker, names and collection views (the 2° grid stays).
 - **iOS:** AlarmKit (iOS 26+; check custom sounds), Sign in with Apple, StoreKit products; remote trades and backup already cross-platform. $99 / year, cloud Mac builds, a real iPhone.
 - **Marketplace** (~1,000+ daily players): server-signed pre-rolled cards (Blaze + Cloud Functions); first a bank (sell duplicates, buy a chosen card), then player listings with a fee; the currency never bought with or turned into money.
+- **Duplicates worth something** (ideas 2026-11-22, not decided): (1) a spare card for boosters now (Common 1 … Legendary 5; reuses twitchBonus; recommended first), (2) 5 copies of a rarity combine into 1 card of the next (no Shiny), (3) feed a copy to reroll the best copy's stats, keeping the better, (4) feathers from duplicates buy a heard-but-missed bird (local step toward the Marketplace bank; recommended second), (5) Art sets: all of a species' photos, (6) one-way gifts to friends. Not more than two of 2-4 at once (too many exchange systems); all local, so cheatable until server-side.
 - **More of the globe** (each: free-recording sweep, zone, offline birds, languages): South Africa, Japan, India, Brazil.
 
 ## Backlog
