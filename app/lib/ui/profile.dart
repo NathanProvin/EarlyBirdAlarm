@@ -266,97 +266,122 @@ class ProfileHeader extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    // The avatar on the left; the @name, the sign-in state and the counts beside it
-    // (2026-11-23).
-    return Row(
-      spacing: 16,
-      children: [
-        Semantics(
-          button: true,
-          label: l.changeAvatar,
-          child: GestureDetector(
-            onTap: () => _changeAvatar(context),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Avatar(store.avatar, size: 104),
-                Positioned(
-                  right: -4,
-                  bottom: -4,
-                  child: _GlassIcon(Icons.edit, color: scheme.primary),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(radius),
-                onTap: () => showDialog<void>(
-                  context: context,
-                  builder: (_) => const _Rename(),
-                ),
-                child: SizedBox(
-                  height: 48, // a full touch target
-                  child: Row(
-                    children: [
-                      // Shrinks to fit on one line: a 20-character name is shown whole.
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            '@${store.username ?? '…'}',
-                            style: text.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+    // Two columns (2026-11-23): the avatar with the @name under it; the three counts
+    // stacked as tall as the avatar, with the sign-in state under them.
+    return LayoutBuilder(
+      builder: (context, box) {
+        final size = min(150.0, box.maxWidth * 0.46);
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 14,
+          children: [
+            SizedBox(
+              width: size,
+              child: Column(
+                children: [
+                  Semantics(
+                    button: true,
+                    label: l.changeAvatar,
+                    child: GestureDetector(
+                      onTap: () => _changeAvatar(context),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Avatar(store.avatar, size: size),
+                          Positioned(
+                            right: size * 0.04,
+                            bottom: size * 0.04,
+                            child: _GlassIcon(
+                              Icons.edit,
+                              color: scheme.primary,
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      Icon(Icons.edit, size: 16, color: scheme.primary),
-                    ],
+                    ),
                   ),
-                ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(radius),
+                    onTap: () => showDialog<void>(
+                      context: context,
+                      builder: (_) => const _Rename(),
+                    ),
+                    child: SizedBox(
+                      height: 48, // a full touch target
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Shrinks to fit: a 20-character name is shown whole.
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '@${store.username ?? '…'}',
+                                style: text.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Icons.edit, size: 14, color: scheme.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              if (email case final e?)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.cloud_done_outlined,
-                      size: 14,
-                      color: scheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        e,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.bodySmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                TextButton(
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(0, 48),
-                    padding: EdgeInsets.zero,
-                    alignment: Alignment.centerLeft,
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: size,
+                    child: StatPills(cards: store.cards, stacked: true),
                   ),
-                  onPressed: onSignIn,
-                  child: Text(l.signInToKeep),
-                ),
-              const SizedBox(height: 10),
-              StatPills(cards: store.cards),
-            ],
-          ),
-        ),
-      ],
+                  SizedBox(
+                    height: 48, // level with the @name
+                    child: email == null
+                        ? TextButton(
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(0, 48),
+                              padding: EdgeInsets.zero,
+                            ),
+                            onPressed: onSignIn,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(l.signInToKeep),
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cloud_done_outlined,
+                                size: 14,
+                                color: scheme.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  email!,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text.bodySmall?.copyWith(
+                                    color: scheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -372,14 +397,14 @@ class _GlassIcon extends StatelessWidget {
     child: BackdropFilter(
       filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.black.withValues(alpha: 0.45),
           border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         ),
-        child: Icon(icon, size: 20, color: color),
+        child: Icon(icon, size: 15, color: color),
       ),
     ),
   );
@@ -630,10 +655,13 @@ int collectionPoints(List<CardData> cards) {
   return sum.round();
 }
 
-/// The collection in three compact counts: cards, species, regions (beside the avatar).
+/// The collection in three counts: cards, species, regions. [stacked]: one above the
+/// other, number and name on one line, filling the height given (beside the avatar);
+/// else side by side, the name under the number (a friend's profile).
 class StatPills extends StatelessWidget {
-  const StatPills({required this.cards, super.key});
+  const StatPills({required this.cards, this.stacked = false, super.key});
   final List<CardData> cards;
+  final bool stacked;
 
   @override
   Widget build(BuildContext context) {
@@ -645,36 +673,47 @@ class StatPills extends StatelessWidget {
       ({for (final c in cards) c.birdId}.length, l.statSpecies),
       ({for (final c in cards) ?c.region}.length, l.statRegions),
     ];
-    return Row(
-      spacing: 6,
-      children: [
-        for (final (n, label) in stats)
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-              decoration: BoxDecoration(
-                color: scheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(radius),
-              ),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  children: [
-                    Text(
-                      '$n',
-                      style: text.titleMedium?.copyWith(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+    final number = text.titleLarge?.copyWith(
+      color: scheme.primary,
+      fontWeight: FontWeight.bold,
+    );
+    final pills = [
+      for (final (n, label) in stats)
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+            decoration: BoxDecoration(
+              color: scheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(radius),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: stacked
+                  ? Row(
+                      spacing: 8,
+                      children: [
+                        Text('$n', style: number),
+                        Text(label, style: text.labelLarge),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Text('$n', style: number),
+                        Text(label, style: text.labelMedium),
+                      ],
                     ),
-                    Text(label, style: text.labelSmall),
-                  ],
-                ),
-              ),
             ),
           ),
-      ],
-    );
+        ),
+    ];
+    return stacked
+        // Stretched: the three pills share one width, their numbers in one column.
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 6,
+            children: pills,
+          )
+        : Row(spacing: 6, children: pills);
   }
 }
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -127,10 +128,7 @@ class _RankButtonState extends State<RankButton> {
           ),
           child: Material(
             color: scheme.secondaryContainer,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(radius),
-              side: BorderSide(color: edge, width: 2),
-            ),
+            borderRadius: BorderRadius.circular(radius),
             child: InkWell(
               borderRadius: BorderRadius.circular(radius),
               onTap: onTap,
@@ -139,7 +137,7 @@ class _RankButtonState extends State<RankButton> {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     spacing: 2,
                     children: [
                       Row(
@@ -165,7 +163,7 @@ class _RankButtonState extends State<RankButton> {
                         children: [
                           Icon(
                             Icons.calendar_month,
-                            size: 14,
+                            size: 16,
                             color: scheme.onSurfaceVariant,
                           ),
                           Text(
@@ -219,8 +217,9 @@ class _RankButtonState extends State<RankButton> {
   }
 }
 
-/// The month's world ranking: when it ends, the reward ladder (your place on it
-/// raised), the top 10 live, then your own row if you're further down.
+/// The month's world ranking as a bar chart (2026-11-23): when it ends, then the top 10
+/// live, one horizontal bar per player sized by their points, and the player's own row
+/// below when they're further down.
 class RankingScreen extends StatefulWidget {
   const RankingScreen({super.key});
 
@@ -250,94 +249,63 @@ class _RankingScreenState extends State<RankingScreen> {
         future: _mine,
         builder: (context, mine) {
           final my = mine.data;
-          final myTier = my == null ? null : rankReward(my.rank, my.total);
-          return ListView(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              8,
-              16,
-              24 + MediaQuery.paddingOf(context).bottom,
-            ),
-            children: [
-              Text(
-                l.rankEnds(days),
-                textAlign: TextAlign.center,
-                style: text.titleSmall?.copyWith(color: scheme.primary),
-              ),
-              const SizedBox(height: 16),
-              // The reward ladder: a card per rarity over its top percentile.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          return StreamBuilder(
+            stream: _top,
+            builder: (context, top) {
+              final rows = top.data ?? const <RankRow>[];
+              final inTop = rows.any((r) => r.name == me);
+              // The longest bar is the leader's (or mine, should the list lag behind).
+              final most = [
+                1,
+                ...rows.map((r) => r.points),
+                ?my?.points,
+              ].reduce(max);
+              return ListView(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  8,
+                  16,
+                  24 + MediaQuery.paddingOf(context).bottom,
+                ),
                 children: [
-                  for (final (rarity, pct) in rankLadder)
-                    Column(
-                      spacing: 6,
-                      children: [
-                        AnimatedScale(
-                          scale: rarity == myTier ? 1.35 : 1,
-                          duration: const Duration(milliseconds: 300),
-                          child: _MiniCard(rarity, width: 26),
-                        ),
-                        Text(
-                          '$pct%',
-                          style: text.labelMedium?.copyWith(
-                            fontWeight: rarity == myTier
-                                ? FontWeight.bold
-                                : null,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    l.rankEnds(days),
+                    textAlign: TextAlign.center,
+                    style: text.titleSmall?.copyWith(color: scheme.primary),
+                  ),
+                  const SizedBox(height: 16),
+                  for (final r in rows)
+                    _Bar(
+                      // Ties share the rank of the first with that score.
+                      rank: rows.indexWhere((x) => x.points == r.points) + 1,
+                      name: r.name,
+                      points: r.points,
+                      share: r.points / most,
+                      me: r.name == me,
+                    ),
+                  if (my != null && !inTop && top.hasData) ...[
+                    Icon(Icons.more_vert, color: scheme.onSurfaceVariant),
+                    _Bar(
+                      rank: my.rank,
+                      name: me ?? '',
+                      points: my.points,
+                      share: my.points / most,
+                      me: true,
+                    ),
+                  ],
+                  if (my == null &&
+                      mine.connectionState == ConnectionState.done)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        l.rankEnter,
+                        textAlign: TextAlign.center,
+                        style: text.bodyLarge,
+                      ),
                     ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                l.rankHint,
-                textAlign: TextAlign.center,
-                style: text.bodySmall,
-              ),
-              const SizedBox(height: 20),
-              StreamBuilder(
-                stream: _top,
-                builder: (context, top) {
-                  final rows = top.data ?? const <RankRow>[];
-                  final inTop = rows.any((r) => r.name == me);
-                  return Column(
-                    spacing: 6,
-                    children: [
-                      for (final r in rows)
-                        _Row(
-                          // Ties share the rank of the first with that score.
-                          rank:
-                              rows.indexWhere((x) => x.points == r.points) + 1,
-                          name: r.name,
-                          points: r.points,
-                          me: r.name == me,
-                        ),
-                      if (my != null && !inTop && top.hasData) ...[
-                        Icon(Icons.more_vert, color: scheme.onSurfaceVariant),
-                        _Row(
-                          rank: my.rank,
-                          name: me ?? '',
-                          points: my.points,
-                          me: true,
-                        ),
-                      ],
-                      if (my == null &&
-                          mine.connectionState == ConnectionState.done)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: Text(
-                            l.rankEnter,
-                            textAlign: TextAlign.center,
-                            style: text.bodyLarge,
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ],
+              );
+            },
           );
         },
       ),
@@ -345,17 +313,20 @@ class _RankingScreenState extends State<RankingScreen> {
   }
 }
 
-/// One player in the ranking: the rank (gold, silver, bronze for the podium), the @name,
-/// the points; the player's own row in the accent.
-class _Row extends StatelessWidget {
-  const _Row({
+/// One player in the chart: the rank (gold, silver, bronze for the podium), the @name over
+/// a bar growing to [share] of the leader's, the points at its end; the player's own row
+/// tinted and its bar in the full accent.
+class _Bar extends StatelessWidget {
+  const _Bar({
     required this.rank,
     required this.name,
     required this.points,
+    required this.share,
     required this.me,
   });
   final int rank, points;
   final String name;
+  final double share;
   final bool me;
 
   static const _podium = [
@@ -371,46 +342,80 @@ class _Row extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final medal = rank <= 3 ? _podium[rank - 1] : null;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: me ? scheme.primary : scheme.secondaryContainer,
+        color: me ? scheme.primary.withValues(alpha: 0.12) : null,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Row(
-        spacing: 12,
+        spacing: 10,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             alignment: Alignment.center,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: medal),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: medal ?? scheme.secondaryContainer,
+            ),
             child: Text(
               '$rank',
-              style: text.titleSmall?.copyWith(
+              style: text.labelLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: medal != null
-                    ? ink
-                    : me
-                    ? scheme.onPrimary
-                    : null,
+                color: medal != null ? ink : null,
               ),
             ),
           ),
           Expanded(
-            child: Text(
-              '@$name',
-              overflow: TextOverflow.ellipsis,
-              style: text.titleSmall?.copyWith(
-                color: me ? scheme.onPrimary : null,
-                fontWeight: me ? FontWeight.bold : null,
-              ),
-            ),
-          ),
-          Text(
-            NumberFormat.decimalPattern(l.localeName).format(points),
-            style: text.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: me ? scheme.onPrimary : scheme.primary,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 4,
+              children: [
+                Text(
+                  '@$name',
+                  overflow: TextOverflow.ellipsis,
+                  style: text.labelLarge?.copyWith(
+                    fontWeight: me ? FontWeight.bold : null,
+                    color: me ? scheme.primary : null,
+                  ),
+                ),
+                Row(
+                  spacing: 8,
+                  children: [
+                    Expanded(
+                      // The bar grows in when the chart opens.
+                      child: TweenAnimationBuilder(
+                        tween: Tween(begin: 0.0, end: share.clamp(0.02, 1.0)),
+                        duration: const Duration(milliseconds: 700),
+                        curve: Curves.easeOutCubic,
+                        builder: (_, f, _) => Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: FractionallySizedBox(
+                            widthFactor: f,
+                            child: Container(
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: me
+                                    ? scheme.primary
+                                    : scheme.primary.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      NumberFormat.decimalPattern(l.localeName).format(points),
+                      style: text.labelLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

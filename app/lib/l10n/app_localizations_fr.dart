@@ -1133,10 +1133,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get rankHint =>
-      'Les points des cartes gagnées ce mois-ci. La carte récompense arrive le 1er.';
-
-  @override
   String rankReward(String month) {
     return 'Votre récompense de $month';
   }

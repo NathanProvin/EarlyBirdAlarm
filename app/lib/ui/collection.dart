@@ -153,7 +153,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         ),
       );
       return AlertDialog(
-        icon: Icon(Icons.hardware, color: scheme.primary),
+        icon: Icon(Icons.hardware, size: 44, color: scheme.primary),
         title: Text(l.craftRecipes),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -164,7 +164,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
           ],
         ),
         actions: [
-          TextButton(
+          FilledButton.tonal(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(120, 52),
+              textStyle: Theme.of(context).textTheme.titleMedium,
+            ),
             onPressed: () => Navigator.of(context).pop(),
             child: Text(MaterialLocalizations.of(context).okButtonLabel),
           ),
@@ -814,7 +818,10 @@ class _HammerState extends State<_Hammer> with SingleTickerProviderStateMixin {
                 ],
               ),
               child: Material(
-                shape: const CircleBorder(),
+                // An accent outline, as the forge pill and the map's radar.
+                shape: CircleBorder(
+                  side: BorderSide(color: scheme.primary, width: 2),
+                ),
                 color: widget.on ? scheme.primary : scheme.secondaryContainer,
                 child: InkWell(
                   customBorder: const CircleBorder(),

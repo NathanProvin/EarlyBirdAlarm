@@ -1956,12 +1956,6 @@ abstract class AppLocalizations {
   /// **'{days, plural, =1{Last day} other{Ends in {days} days}}'**
   String rankEnds(int days);
 
-  /// No description provided for @rankHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Points of the cards won this month. The reward card arrives on the 1st.'**
-  String get rankHint;
-
   /// No description provided for @rankReward.
   ///
   /// In en, this message translates to:

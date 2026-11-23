@@ -38,15 +38,6 @@ String rankReward(int rank, int total) => switch (rank / total) {
   _ => 'common',
 };
 
-/// The percentile thresholds of [rankReward], for the reward ladder.
-const rankLadder = [
-  ('legendary', 1),
-  ('epic', 5),
-  ('rare', 15),
-  ('uncommon', 40),
-  ('common', 100),
-];
-
 /// One row of the ranking.
 typedef RankRow = ({String uid, String name, int points});
 

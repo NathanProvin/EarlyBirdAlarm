@@ -354,7 +354,6 @@
   "@rankTitle": {"placeholders": {"month": {"type": "String"}}},
   "rankEnds": "{days, plural, =1{Last day} other{Ends in {days} days}}",
   "@rankEnds": {"placeholders": {"days": {"type": "int"}}},
-  "rankHint": "Points of the cards won this month. The reward card arrives on the 1st.",
   "rankReward": "Your {month} reward",
   "@rankReward": {"placeholders": {"month": {"type": "String"}}},
   "rankEnter": "Win a card this month to enter the ranking.",

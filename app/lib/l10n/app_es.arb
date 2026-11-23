@@ -309,7 +309,6 @@
   "statPoints": "Puntos",
   "rankTitle": "Clasificación de {month}",
   "rankEnds": "{days, plural, =1{Último día} other{Termina en {days} días}}",
-  "rankHint": "Puntos de las cartas ganadas este mes. La carta de recompensa llega el día 1.",
   "rankReward": "Tu recompensa de {month}",
   "rankEnter": "Gana una carta este mes para entrar en la clasificación.",
   "craftPlusOnly": "Solo con Early Bird Plus"

@@ -309,7 +309,6 @@
   "statPoints": "Punkte",
   "rankTitle": "Rangliste {month}",
   "rankEnds": "{days, plural, =1{Letzter Tag} other{Endet in {days} Tagen}}",
-  "rankHint": "Punkte der Karten, die du diesen Monat gewinnst. Die Belohnungskarte kommt am 1.",
   "rankReward": "Deine Belohnung für {month}",
   "rankEnter": "Gewinne diesen Monat eine Karte, um in die Rangliste zu kommen.",
   "craftPlusOnly": "Nur mit Early Bird Plus"
