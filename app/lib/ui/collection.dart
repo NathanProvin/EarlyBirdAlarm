@@ -12,6 +12,8 @@ import '../cards.dart';
 import '../content.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
+import '../remote_trade.dart' show myTrades;
+import '../trade.dart' show lockedCards;
 import 'booster.dart';
 import 'card.dart';
 import 'region.dart';
@@ -19,6 +21,7 @@ import 'series.dart';
 import 'share.dart';
 import 'trade.dart';
 import 'theme.dart';
+import 'twitch.dart' show PlusSheet;
 
 /// A card's rarity; cards from before 3c have none and take their species' tier.
 String cardRarity(CardData c) =>
@@ -82,6 +85,93 @@ class _CollectionScreenState extends State<CollectionScreen> {
   _Sort _sort = _Sort.rarity;
   String? _tier; // rarity filter, null = all
   final _fetching = <String>{}; // other regions' bird lists being downloaded
+  // Crafting (Plus): the forge pill open (crafting mode with Plus), the cards picked.
+  bool _craftMenu = false;
+  bool get _crafting => _craftMenu && store.twitchPlus;
+  final _picked = <String>{};
+
+  void _snack(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text)));
+
+  /// Forges [picked] into [result] (a rarity, or 'booster'), then plays the forge.
+  Future<void> _forge(List<CardData> picked, String result) async {
+    final l = AppLocalizations.of(context);
+    // Cards offered in a trade stay put: the friend would still receive them.
+    final Set<String> locked;
+    try {
+      locked = lockedCards(await myTrades());
+    } on Exception {
+      return _snack(l.accountError);
+    }
+    if (!mounted) return;
+    if (picked.any((c) => locked.contains(c.key))) return _snack(l.craftLocked);
+    final best = picked.reduce((a, b) => b.quality > a.quality ? b : a);
+    final forged = result == 'booster'
+        ? null
+        : forgeCard(best, birdById(best.birdId), result);
+    await store.craft(picked, forged);
+    if (!mounted) return;
+    setState(_picked.clear);
+    unawaited(
+      Navigator.of(context).push(
+        PageRouteBuilder<void>(
+          opaque: false,
+          pageBuilder: (_, _, _) => _ForgeScreen(picked, forged),
+          transitionsBuilder: (_, a, _, child) =>
+              FadeTransition(opacity: a, child: child),
+        ),
+      ),
+    );
+  }
+
+  /// What each recipe gives, in pictures only: any language reads it.
+  void _recipes(AppLocalizations l) => showDialog<void>(
+    context: context,
+    builder: (context) {
+      final scheme = Theme.of(context).colorScheme;
+      // Fixed widths, centred: the arrows line up on the dialog's middle.
+      Widget row(int n, String? from, String to) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 10,
+          children: [
+            SizedBox(
+              width: 32,
+              child: Text(
+                '$n×',
+                textAlign: TextAlign.end,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            _miniCard(from),
+            Icon(Icons.arrow_forward, color: scheme.primary),
+            _miniCard(to),
+            const SizedBox(width: 32), // balances the count on the left
+          ],
+        ),
+      );
+      return AlertDialog(
+        icon: Icon(Icons.hardware, color: scheme.primary),
+        title: Text(l.craftRecipes),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            row(2, null, 'booster'),
+            for (final MapEntry(key: t, value: n) in craftCost.entries)
+              row(n, t, tiers[tiers.indexOf(t) + 1]),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(MaterialLocalizations.of(context).okButtonLabel),
+          ),
+        ],
+      );
+    },
+  );
 
   /// The bird ids of [region]; for another region, its list is fetched once (to count
   /// "2/500") and meanwhile only the cards won there are known (null).
@@ -274,6 +364,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ],
+      // Crafting: every spare copy on its own, ready to pick (the best copies stay out).
+      _duplicates when _crafting => [
+        for (final c in spares)
+          if (birdById(c.birdId) case final b?) (b, c as CardData?),
+      ],
       _duplicates => [
         for (final c in best.values)
           if (spareSpecies.contains(c.birdId))
@@ -329,10 +424,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
         child: child,
       ),
     );
+    final picked = [
+      for (final c in cards)
+        if (_picked.contains(c.key)) c,
+    ];
+    final result = craftResult(
+      [for (final c in picked) cardRarity(c)],
+      [for (final c in picked) c.birdId],
+    );
     void open(Widget screen) =>
         Navigator.of(context)
             .push(MaterialPageRoute<void>(builder: (_) => screen));
-    return Column(
+    final grid = Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
@@ -404,9 +507,62 @@ class _CollectionScreenState extends State<CollectionScreen> {
             itemBuilder: (context, i) {
               final (b, c) = shown[i];
               final open = openable.indexOf(shown[i]);
-              final copies = view == _all ? 1 : copiesOf[b.id] ?? 0;
+              final copies = view == _all || _crafting
+                  ? 1
+                  : copiesOf[b.id] ?? 0;
               // Species and Duplicates: a pile opens into its copies.
               final pile = !compact && copies > 1;
+              if (_crafting) {
+                final on = c != null && _picked.contains(c.key);
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CardTile(
+                        bird: b,
+                        card: c,
+                        heard: heard.contains(b.id),
+                        compact: compact,
+                        onTap: c == null
+                            ? null
+                            : () {
+                                unawaited(HapticFeedback.selectionClick());
+                                setState(() {
+                                  if (!_picked.remove(c.key)) {
+                                    _picked.add(c.key);
+                                  }
+                                });
+                              },
+                      ),
+                    ),
+                    if (on)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(radius),
+                              border: Border.all(
+                                color: scheme.primary,
+                                width: 4,
+                              ),
+                            ),
+                            child: Align(
+                              alignment: const Alignment(0.9, -0.95),
+                              child: CircleAvatar(
+                                radius: 14,
+                                backgroundColor: scheme.primary,
+                                child: Icon(
+                                  Icons.check,
+                                  size: 18,
+                                  color: scheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              }
               return CardTile(
                 bird: b,
                 card: c,
@@ -441,6 +597,391 @@ class _CollectionScreenState extends State<CollectionScreen> {
           ),
         ),
       ],
+    );
+    // Crafting, in the thumb's reach: the hammer, and its pill sliding out to the left.
+    final plus = store.twitchPlus;
+    final small = Theme.of(context).textTheme.bodySmall;
+    final pill = Material(
+      key: const ValueKey('forge'),
+      elevation: 3,
+      color: scheme.surfaceContainerHigh,
+      shape: StadiumBorder(side: BorderSide(color: scheme.primary, width: 2)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 56,
+          maxWidth: MediaQuery.sizeOf(context).width - 32 - 56 - 8,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: l.craftRecipes,
+              icon: Icon(Icons.info_outline, color: scheme.primary),
+              onPressed: () => _recipes(l),
+            ),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.craftTitle,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  // Without Plus: say it's paid; nothing picked: the pitch; else what
+                  // the picked cards give, in pictures.
+                  if (!plus || picked.isEmpty)
+                    Text(
+                      plus ? l.craftPitch : l.craftPlusOnly,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: small,
+                    )
+                  else
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 4,
+                      children: [
+                        Text('${picked.length}×', style: small),
+                        const Icon(Icons.arrow_forward, size: 14),
+                        if (result == null)
+                          const Icon(Icons.block, size: 14)
+                        else
+                          _miniCard(result, width: 12),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 6, 0),
+              child: !plus
+                  ? FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                      ),
+                      icon: const Icon(Icons.bolt),
+                      label: const Text('Plus'),
+                      onPressed: () => showModalBottomSheet<void>(
+                        context: context,
+                        showDragHandle: true,
+                        builder: (_) => const PlusSheet(),
+                      ),
+                    )
+                  : picked.isEmpty
+                  ? const SizedBox(width: 8)
+                  : FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                      ),
+                      onPressed: result == null
+                          ? null
+                          : () => _forge(picked, result),
+                      child: Text(l.craftAction),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return Stack(
+      children: [
+        grid,
+        Positioned(
+          right: 16,
+          bottom: 16 + MediaQuery.paddingOf(context).bottom,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 8,
+            children: [
+              // Grows out of the hammer, right to left, and folds back into it.
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, a) => FadeTransition(
+                  opacity: a,
+                  child: SizeTransition(
+                    sizeFactor: a,
+                    axis: Axis.horizontal,
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: child,
+                  ),
+                ),
+                child: _craftMenu ? pill : const SizedBox.shrink(),
+              ),
+              _Hammer(
+                tooltip: l.craftTitle,
+                on: _craftMenu,
+                onTap: () {
+                  unawaited(HapticFeedback.selectionClick());
+                  setState(() {
+                    _craftMenu = !_craftMenu;
+                    _picked.clear();
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A small card in a rarity's colour; null is "any card" (every rarity's colour) and
+/// 'booster' a booster: the recipes and the forge pill, readable in any language.
+Widget _miniCard(String? rarity, {double width = 22}) {
+  final size = Size(width, width * 1.4);
+  if (rarity == 'booster') {
+    return SizedBox.fromSize(size: size, child: const BoosterFace());
+  }
+  return Container(
+    width: size.width,
+    height: size.height,
+    decoration: BoxDecoration(
+      color: rarityColor[rarity],
+      gradient: rarity == null
+          ? LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [for (final t in tiers) rarityColor[t]!],
+            )
+          : null,
+      borderRadius: BorderRadius.circular(width / 6),
+      border: Border.all(color: ink, width: 1.5),
+    ),
+  );
+}
+
+/// The crafting button: a round hammer in the Plus bolt's and the radar's colours,
+/// beating slowly to be noticed; filled with the accent while crafting is on.
+class _Hammer extends StatefulWidget {
+  const _Hammer({required this.tooltip, required this.on, required this.onTap});
+  final String tooltip;
+  final bool on;
+  final VoidCallback onTap;
+
+  @override
+  State<_Hammer> createState() => _HammerState();
+}
+
+class _HammerState extends State<_Hammer> with SingleTickerProviderStateMixin {
+  late final _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 3),
+  );
+
+  bool _started = false;
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // 10 beats (30 s) each time the Collection opens, then rest: seen, never nagging.
+    if (!_started && !MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _pulse.repeat(count: 10);
+    }
+    if (widget.on && _pulse.isAnimating) _pulse.reset();
+    return Tooltip(
+      message: widget.tooltip,
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _pulse,
+          builder: (context, _) {
+            // A beat in the first half of each cycle, then rest (as PulseButton).
+            final beat = sin((_pulse.value / 0.5).clamp(0.0, 1.0) * pi);
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.primary.withValues(alpha: 0.25 + 0.6 * beat),
+                    blurRadius: 8 + 16 * beat,
+                    spreadRadius: 1 + 6 * beat,
+                  ),
+                ],
+              ),
+              child: Material(
+                shape: const CircleBorder(),
+                color: widget.on ? scheme.primary : scheme.secondaryContainer,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: widget.onTap,
+                  child: SizedBox.square(
+                    dimension: 56,
+                    child: Transform.scale(
+                      scale: 1 + 0.35 * beat,
+                      child: Icon(
+                        Icons.hardware,
+                        color: widget.on ? scheme.onPrimary : scheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// The forge (2026-11-23): the used cards gather from a ring into one pile (the pile
+/// screen's deal, backward), the pile shakes under three hammer blows, flashes in the new
+/// rarity's colour, and the forged card flips in (or a booster appears).
+class _ForgeScreen extends StatefulWidget {
+  const _ForgeScreen(this.used, this.forged);
+  final List<CardData> used;
+  final CardData? forged; // null: a booster
+
+  @override
+  State<_ForgeScreen> createState() => _ForgeScreenState();
+}
+
+class _ForgeScreenState extends State<_ForgeScreen>
+    with SingleTickerProviderStateMixin {
+  late final _forge = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _forge.forward().whenComplete(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _forge.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final forged = widget.forged;
+    final glow = forged == null
+        ? Theme.of(context).colorScheme.primary
+        : rarityColor[forged.rarity]!;
+    void close() => Navigator.of(context).pop();
+    final Widget body;
+    if (_forge.isCompleted && forged != null) {
+      body = CardDetail(
+        bird: birdById(forged.birdId)!,
+        card: forged,
+        flipIn: true,
+        onClose: close,
+      );
+    } else if (_forge.isCompleted) {
+      body = Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 24,
+        children: [
+          TweenAnimationBuilder(
+            tween: Tween(begin: 0.6, end: 1.0),
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutBack,
+            builder: (_, s, child) => Transform.scale(scale: s, child: child),
+            child: const SizedBox(
+              width: 140,
+              height: 196,
+              child: BoosterFace(),
+            ),
+          ),
+          Text(
+            l.craftBooster,
+            style: Theme.of(context).textTheme.headlineSmall
+                ?.copyWith(color: Colors.white),
+          ),
+          RoundButton(icon: Icons.close, tooltip: l.done, onPressed: close),
+        ],
+      );
+    } else {
+      final used = [
+        for (final c in widget.used)
+          if (birdById(c.birdId) case final b?) (b, c),
+      ];
+      body = LayoutBuilder(
+        builder: (context, box) {
+          final w = box.maxWidth * 0.32, h = w / 0.68;
+          final reach = box.maxWidth * 0.3;
+          return AnimatedBuilder(
+            animation: _forge,
+            builder: (context, _) {
+              final v = _forge.value;
+              final gather = Curves.easeInCubic.transform(
+                (v / 0.45).clamp(0.0, 1.0),
+              );
+              // Three hammer blows, then the flash.
+              final shake = v < 0.45 || v > 0.75
+                  ? 0.0
+                  : sin((v - 0.45) / 0.3 * 6 * pi);
+              final flash = v < 0.7 ? 0.0 : sin((v - 0.7) / 0.3 * pi);
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  for (final (i, (b, c)) in used.indexed)
+                    Transform.translate(
+                      offset:
+                          Offset.fromDirection(
+                            2 * pi * i / used.length - pi / 2,
+                            reach,
+                          ) *
+                          (1 - gather),
+                      child: Transform.rotate(
+                        angle:
+                            (i.isOdd ? -1 : 1) * 0.06 * gather + 0.05 * shake,
+                        child: SizedBox(
+                          width: w,
+                          height: h,
+                          child: CardTile(bird: b, card: c, heard: false),
+                        ),
+                      ),
+                    ),
+                  IgnorePointer(
+                    child: Container(
+                      width: w * (1 + 3 * flash),
+                      height: w * (1 + 3 * flash),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            Colors.white.withValues(alpha: flash),
+                            glow.withValues(alpha: 0.7 * flash),
+                            glow.withValues(alpha: 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+    }
+    return Scaffold(
+      backgroundColor: Colors.black.withValues(alpha: 0.85),
+      body: SafeArea(
+        child: Padding(padding: const EdgeInsets.all(12), child: body),
+      ),
     );
   }
 }

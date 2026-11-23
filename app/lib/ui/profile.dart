@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -264,7 +266,10 @@ class ProfileHeader extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Column(
+    // The avatar on the left; the @name, the sign-in state and the counts beside it
+    // (2026-11-23).
+    return Row(
+      spacing: 16,
       children: [
         Semantics(
           button: true,
@@ -274,66 +279,83 @@ class ProfileHeader extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                Avatar(store.avatar, size: 128),
+                Avatar(store.avatar, size: 104),
                 Positioned(
-                  right: -2,
-                  bottom: -2,
+                  right: -4,
+                  bottom: -4,
                   child: _GlassIcon(Icons.edit, color: scheme.primary),
                 ),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        InkWell(
-          borderRadius: BorderRadius.circular(radius),
-          onTap: () => showDialog<void>(
-            context: context,
-            builder: (_) => const _Rename(),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Shrinks to fit on one line: a 20-character name is shown whole.
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '@${store.username ?? '…'}',
-                      style: text.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(radius),
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (_) => const _Rename(),
+                ),
+                child: SizedBox(
+                  height: 48, // a full touch target
+                  child: Row(
+                    children: [
+                      // Shrinks to fit on one line: a 20-character name is shown whole.
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '@${store.username ?? '…'}',
+                            style: text.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      Icon(Icons.edit, size: 16, color: scheme.primary),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Icon(Icons.edit, size: 18, color: scheme.primary),
-              ],
-            ),
+              ),
+              if (email case final e?)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_done_outlined,
+                      size: 14,
+                      color: scheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        e,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.bodySmall?.copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
+                  ),
+                  onPressed: onSignIn,
+                  child: Text(l.signInToKeep),
+                ),
+              const SizedBox(height: 10),
+              StatPills(cards: store.cards),
+            ],
           ),
         ),
-        if (email case final e?)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.cloud_done_outlined, size: 14, color: scheme.primary),
-              const SizedBox(width: 4),
-              Text(
-                e,
-                style: text.bodySmall?.copyWith(
-                  color: scheme.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
-            ],
-          )
-        else
-          TextButton(
-            style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
-            onPressed: onSignIn,
-            child: Text(l.signInToKeep),
-          ),
       ],
     );
   }
@@ -574,9 +596,43 @@ class HallRow extends StatelessWidget {
   );
 }
 
-/// The collection in three numbers under the hall of fame.
-class ProfileStats extends StatelessWidget {
-  const ProfileStats({required this.cards, super.key});
+/// Points per card by rarity (reworked 2026-11-23: gentler steps than ×5). Rarity still
+/// beats numbers: 100 Rare / Epic / Legendary cards at Hard odds (~3,000) outscore 1,000
+/// Common / Uncommon ones (~1,900).
+const rarityPoints = {
+  'common': 1,
+  'uncommon': 5,
+  'rare': 20,
+  'epic': 60,
+  'legendary': 150,
+  'shiny': 300,
+};
+
+/// The collection's score: each card's rarity points, up to +25 % for its quality and
+/// up to +25 % for the share of its species' photos (arts) collected. Derived from the
+/// cards each time it shows: always current, nothing saved, a friend's computed alike.
+int collectionPoints(List<CardData> cards) {
+  final arts = <String, Set<int>>{};
+  for (final c in cards) {
+    if (birdById(c.birdId)?.artOf(c.photo) case (final x, _)) {
+      (arts[c.birdId] ??= {}).add(x);
+    }
+  }
+  var sum = 0.0;
+  for (final c in cards) {
+    final n = birdById(c.birdId)?.artOf(null)?.$2;
+    final share = n == null ? 0 : (arts[c.birdId]?.length ?? 0) / n;
+    sum +=
+        rarityPoints[cardRarity(c)]! *
+        (1 + 0.25 * c.quality / 100) *
+        (1 + 0.25 * share);
+  }
+  return sum.round();
+}
+
+/// The collection in three compact counts: cards, species, regions (beside the avatar).
+class StatPills extends StatelessWidget {
+  const StatPills({required this.cards, super.key});
   final List<CardData> cards;
 
   @override
@@ -590,34 +646,149 @@ class ProfileStats extends StatelessWidget {
       ({for (final c in cards) ?c.region}.length, l.statRegions),
     ];
     return Row(
+      spacing: 6,
       children: [
-        for (final (i, (n, label)) in stats.indexed) ...[
-          if (i > 0) const SizedBox(width: 8),
+        for (final (n, label) in stats)
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
               decoration: BoxDecoration(
                 color: scheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(radius),
               ),
-              child: Column(
-                children: [
-                  Text(
-                    '$n',
-                    style: text.headlineSmall?.copyWith(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.bold,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  children: [
+                    Text(
+                      '$n',
+                      style: text.titleMedium?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  Text(label, style: text.labelMedium),
-                ],
+                    Text(label, style: text.labelSmall),
+                  ],
+                ),
               ),
             ),
           ),
-        ],
       ],
     );
   }
+}
+
+/// The score: a big trophy beating a few times, the number beside it, "Points" under
+/// the number, right-aligned with it; the group centred. [onTap]: the ranking.
+class PointsButton extends StatefulWidget {
+  const PointsButton({required this.cards, this.onTap, super.key});
+  final List<CardData> cards;
+  final VoidCallback? onTap;
+
+  @override
+  State<PointsButton> createState() => _PointsButtonState();
+}
+
+class _PointsButtonState extends State<PointsButton>
+    with SingleTickerProviderStateMixin {
+  late final _beat = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2500),
+  );
+  bool _started = false;
+
+  @override
+  void dispose() {
+    _beat.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    // 6 beats (15 s) each time the page opens, then still.
+    if (!_started && !MediaQuery.disableAnimationsOf(context)) {
+      _started = true;
+      _beat.repeat(count: 6);
+    }
+    return Material(
+      color: scheme.secondaryContainer,
+      borderRadius: BorderRadius.circular(radius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(radius),
+        onTap: widget.onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 12,
+            children: [
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _beat,
+                  builder: (context, child) {
+                    final b = sin((_beat.value / 0.35).clamp(0.0, 1.0) * pi);
+                    return Transform.scale(
+                      scale: 1 + 0.18 * b,
+                      child: Icon(
+                        Icons.emoji_events,
+                        size: 44,
+                        color: scheme.primary,
+                        shadows: [
+                          if (b > 0)
+                            Shadow(
+                              color: scheme.primary.withValues(alpha: 0.7 * b),
+                              blurRadius: 12,
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        NumberFormat.decimalPattern(l.localeName)
+                            .format(collectionPoints(widget.cards)),
+                        style: text.headlineMedium?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                        ),
+                      ),
+                      Text(l.statPoints, style: text.labelMedium),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A friend's collection: their score, then their three counts.
+class ProfileStats extends StatelessWidget {
+  const ProfileStats({required this.cards, super.key});
+  final List<CardData> cards;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    spacing: 8,
+    children: [
+      PointsButton(cards: cards),
+      StatPills(cards: cards),
+    ],
+  );
 }
 
 /// Friends: Add friend, the requests received (Accept / Decline), then the friends.

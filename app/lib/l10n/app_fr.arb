@@ -299,5 +299,18 @@
   "reminderPileTitle": "Tes boosters sont prêts",
   "reminderPileBody": "{count} boosters t’attendent. Quels oiseaux vas-tu trouver ?",
   "reminderMissingTitle": "Des oiseaux à découvrir",
-  "reminderMissingBody": "Il manque encore {count} espèces de {region} à ta collection."
+  "reminderMissingBody": "Il manque encore {count} espèces de {region} à ta collection.",
+  "craftTitle": "Forge",
+  "craftPitch": "Fusionnez, montez en rareté.",
+  "craftAction": "Forger",
+  "craftRecipes": "Recettes",
+  "craftLocked": "Une carte choisie est proposée dans un échange.",
+  "craftBooster": "+1 booster",
+  "statPoints": "Points",
+  "rankTitle": "Classement de {month}",
+  "rankEnds": "{days, plural, =1{Dernier jour} other{Se termine dans {days} jours}}",
+  "rankHint": "Les points des cartes gagnées ce mois-ci. La carte récompense arrive le 1er.",
+  "rankReward": "Votre récompense de {month}",
+  "rankEnter": "Gagnez une carte ce mois-ci pour entrer au classement.",
+  "craftPlusOnly": "Réservé à Early Bird Plus"
 }

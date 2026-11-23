@@ -1092,4 +1092,57 @@ class AppLocalizationsEs extends AppLocalizations {
   String reminderMissingBody(int count, String region) {
     return 'Aún faltan $count especies de $region en tu colección.';
   }
+
+  @override
+  String get craftTitle => 'Forja';
+
+  @override
+  String get craftPitch => 'Fusiona cartas, sube de rareza.';
+
+  @override
+  String get craftAction => 'Forjar';
+
+  @override
+  String get craftRecipes => 'Recetas';
+
+  @override
+  String get craftLocked => 'Una carta elegida está en un intercambio.';
+
+  @override
+  String get craftBooster => '+1 sobre';
+
+  @override
+  String get statPoints => 'Puntos';
+
+  @override
+  String rankTitle(String month) {
+    return 'Clasificación de $month';
+  }
+
+  @override
+  String rankEnds(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Termina en $days días',
+      one: 'Último día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rankHint =>
+      'Puntos de las cartas ganadas este mes. La carta de recompensa llega el día 1.';
+
+  @override
+  String rankReward(String month) {
+    return 'Tu recompensa de $month';
+  }
+
+  @override
+  String get rankEnter =>
+      'Gana una carta este mes para entrar en la clasificación.';
+
+  @override
+  String get craftPlusOnly => 'Solo con Early Bird Plus';
 }

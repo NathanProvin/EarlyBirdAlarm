@@ -342,5 +342,21 @@
   "@reminderPileBody": {"placeholders": {"count": {"type": "int"}}},
   "reminderMissingTitle": "Birds to discover",
   "reminderMissingBody": "{count} species of {region} are still missing from your collection.",
-  "@reminderMissingBody": {"placeholders": {"count": {"type": "int"}, "region": {"type": "String"}}}
+  "@reminderMissingBody": {"placeholders": {"count": {"type": "int"}, "region": {"type": "String"}}},
+  "craftTitle": "Forge",
+  "craftPitch": "Fuse cards, rank up.",
+  "craftAction": "Forge",
+  "craftRecipes": "Recipes",
+  "craftLocked": "A selected card is offered in a trade.",
+  "craftBooster": "+1 booster",
+  "statPoints": "Points",
+  "rankTitle": "{month} ranking",
+  "@rankTitle": {"placeholders": {"month": {"type": "String"}}},
+  "rankEnds": "{days, plural, =1{Last day} other{Ends in {days} days}}",
+  "@rankEnds": {"placeholders": {"days": {"type": "int"}}},
+  "rankHint": "Points of the cards won this month. The reward card arrives on the 1st.",
+  "rankReward": "Your {month} reward",
+  "@rankReward": {"placeholders": {"month": {"type": "String"}}},
+  "rankEnter": "Win a card this month to enter the ranking.",
+  "craftPlusOnly": "Early Bird Plus only"
 }

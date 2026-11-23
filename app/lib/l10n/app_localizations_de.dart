@@ -1096,4 +1096,57 @@ class AppLocalizationsDe extends AppLocalizations {
   String reminderMissingBody(int count, String region) {
     return '$count Arten aus $region fehlen noch in deiner Sammlung.';
   }
+
+  @override
+  String get craftTitle => 'Schmiede';
+
+  @override
+  String get craftPitch => 'Karten verschmelzen, aufsteigen.';
+
+  @override
+  String get craftAction => 'Schmieden';
+
+  @override
+  String get craftRecipes => 'Rezepte';
+
+  @override
+  String get craftLocked => 'Eine gewählte Karte steckt in einem Tausch.';
+
+  @override
+  String get craftBooster => '+1 Booster';
+
+  @override
+  String get statPoints => 'Punkte';
+
+  @override
+  String rankTitle(String month) {
+    return 'Rangliste $month';
+  }
+
+  @override
+  String rankEnds(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Endet in $days Tagen',
+      one: 'Letzter Tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get rankHint =>
+      'Punkte der Karten, die du diesen Monat gewinnst. Die Belohnungskarte kommt am 1.';
+
+  @override
+  String rankReward(String month) {
+    return 'Deine Belohnung für $month';
+  }
+
+  @override
+  String get rankEnter =>
+      'Gewinne diesen Monat eine Karte, um in die Rangliste zu kommen.';
+
+  @override
+  String get craftPlusOnly => 'Nur mit Early Bird Plus';
 }

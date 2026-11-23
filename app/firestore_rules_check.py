@@ -5,6 +5,7 @@ a deleted account). Needs two codes made in the console: `ogbetatester` (active)
     py -I app/firestore_rules_check.py
 """
 import json
+from datetime import datetime, timezone
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -36,6 +37,11 @@ def anonymous():
 
 (a, ta), (b, tb) = anonymous(), anonymous()
 doc = {"fields": {"test": {"booleanValue": True}}}
+
+
+_now = datetime.now(timezone.utc)
+MONTH = str(_now.year * 100 + _now.month)  # the ranking's month key (UTC)
+LAST = str(_now.year * 100 + _now.month - 1 if _now.month > 1 else (_now.year - 1) * 100 + 12)
 
 
 def fields(**kv):
@@ -161,6 +167,21 @@ checks += [
         "where": {"fieldFilter": {"field": {"fieldPath": "a"}, "op": "EQUAL", "value": {"stringValue": lo}}}}})[0], 200),
     ("B removes A: A's side", call("DELETE", f"{DB}/friends/{a}/list/{b}", tb)[0], 200),
     ("B removes A: its side", call("DELETE", f"{DB}/friends/{b}/list/{a}", tb)[0], 200),
+    # The monthly ranking: own row, current UTC month, own @name.
+    *[(what, call("PATCH", f"{DB}/ranks/{m}/players/{uid}", tok, {"fields": {
+        "name": {"stringValue": nm}, "points": {"integerValue": str(p)}}})[0], exp)
+      for what, m, uid, tok, nm, p, exp in [
+        ("A ranks this month", MONTH, a, ta, na, 120, 200),
+        ("A ranks last month", LAST, a, ta, na, 120, 403),
+        ("A ranks under B's name", MONTH, a, ta, nb, 120, 403),
+        ("A writes B's row", MONTH, b, ta, nb, 120, 403),
+        ("A ranks with 0 points", MONTH, a, ta, na, 0, 403),
+      ]],
+    ("B reads the top 10", call("POST", f"{DB}/ranks/{MONTH}:runQuery", tb, {"structuredQuery": {
+        "from": [{"collectionId": "players"}],
+        "orderBy": [{"field": {"fieldPath": "points"}, "direction": "DESCENDING"}], "limit": 10}})[0], 200),
+    ("B deletes A's row", call("DELETE", f"{DB}/ranks/{MONTH}/players/{a}", tb)[0], 403),
+    ("A deletes its row", call("DELETE", f"{DB}/ranks/{MONTH}/players/{a}", ta)[0], 200),
     ("A deletes its profile", call("DELETE", f"{DB}/profiles/{a}", ta)[0], 200),
     ("A frees its name", call("DELETE", f"{DB}/usernames/{na}", ta)[0], 200),
 ]

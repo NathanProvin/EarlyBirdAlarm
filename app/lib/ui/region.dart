@@ -593,10 +593,12 @@ class _RegionScreenState extends State<RegionScreen>
                         most: most,
                       ),
                     ),
-                // A radar that pulses until the map is on.
+                // A radar that pulses until the map is on: the main action, just above
+                // Confirm (2026-11-23: swapped with the search, now secondary, above it).
                 Positioned(
                   left: 16,
-                  bottom: 96 + MediaQuery.paddingOf(context).bottom,
+                  right: 16,
+                  bottom: 16 + MediaQuery.paddingOf(context).bottom,
                   child: PulseButton(
                     icon: Icons.radar,
                     label: l.missingSpecies,
@@ -607,7 +609,7 @@ class _RegionScreenState extends State<RegionScreen>
                 ),
                 Positioned(
                   right: 16,
-                  bottom: 96 + MediaQuery.paddingOf(context).bottom,
+                  bottom: 84 + MediaQuery.paddingOf(context).bottom,
                   child: FloatingActionButton.small(
                     heroTag: null,
                     tooltip: l.useMyLocation,
@@ -618,10 +620,11 @@ class _RegionScreenState extends State<RegionScreen>
                     child: const Icon(Icons.my_location),
                   ),
                 ),
+                // The search, smaller, beside the location button.
                 Positioned(
                   left: 16,
-                  right: 16,
-                  bottom: 16 + MediaQuery.paddingOf(context).bottom,
+                  right: 72,
+                  bottom: 80 + MediaQuery.paddingOf(context).bottom,
                   child: _SearchBar(
                     controller: _search,
                     focus: _searchFocus,
@@ -686,7 +689,7 @@ class _SearchBar extends StatelessWidget {
     return Material(
       elevation: 3,
       color: scheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(24),
       clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -710,13 +713,15 @@ class _SearchBar extends StatelessWidget {
               extentOffset: controller.text.length,
             ),
             decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, size: 20),
               hintText: hint,
+              hintStyle: Theme.of(context).textTheme.bodyMedium,
+              isDense: true,
               border: InputBorder.none,
               enabledBorder: InputBorder.none,
               focusedBorder: InputBorder.none,
               filled: false,
-              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ],

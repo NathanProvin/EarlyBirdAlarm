@@ -199,7 +199,12 @@ class _PulseButtonState extends State<PulseButton>
           final beat = sin(t * pi);
           if (widget.iconOnly) {
             return FilledButton.tonalIcon(
-              style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+              // An accent outline and label: it stands out on the map (2026-11-23).
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                foregroundColor: scheme.primary,
+                side: BorderSide(color: scheme.primary, width: 2),
+              ),
               onPressed: widget.onPressed,
               icon: Transform.scale(
                 scale: 1 + 0.25 * beat,

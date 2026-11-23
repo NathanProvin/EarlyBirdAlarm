@@ -299,5 +299,18 @@
   "reminderPileTitle": "Deine Booster sind bereit",
   "reminderPileBody": "{count} Booster warten auf dich. Welche Vögel wirst du finden?",
   "reminderMissingTitle": "Vögel zu entdecken",
-  "reminderMissingBody": "{count} Arten aus {region} fehlen noch in deiner Sammlung."
+  "reminderMissingBody": "{count} Arten aus {region} fehlen noch in deiner Sammlung.",
+  "craftTitle": "Schmiede",
+  "craftPitch": "Karten verschmelzen, aufsteigen.",
+  "craftAction": "Schmieden",
+  "craftRecipes": "Rezepte",
+  "craftLocked": "Eine gewählte Karte steckt in einem Tausch.",
+  "craftBooster": "+1 Booster",
+  "statPoints": "Punkte",
+  "rankTitle": "Rangliste {month}",
+  "rankEnds": "{days, plural, =1{Letzter Tag} other{Endet in {days} Tagen}}",
+  "rankHint": "Punkte der Karten, die du diesen Monat gewinnst. Die Belohnungskarte kommt am 1.",
+  "rankReward": "Deine Belohnung für {month}",
+  "rankEnter": "Gewinne diesen Monat eine Karte, um in die Rangliste zu kommen.",
+  "craftPlusOnly": "Nur mit Early Bird Plus"
 }

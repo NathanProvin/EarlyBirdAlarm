@@ -859,6 +859,33 @@ class Store extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Monthly ranking rewards collected, kept in seriesDone ('rank:202610') so the backup
+  /// carries them: a reinstall or another phone can't collect one twice.
+  bool rankCollected(String month) => _collected.contains('rank:$month');
+
+  /// Collects [month]'s ranking reward: a gift card of [rarity] (null: the region's birds
+  /// aren't known yet, try later).
+  Future<CardData?> collectRank(String month, String rarity) async {
+    final card = await gift(rarity);
+    if (card == null) return null;
+    await _prefs.setStringList('seriesDone', [..._collected, 'rank:$month']);
+    notifyListeners();
+    return card;
+  }
+
+  /// Crafting (Plus): [used] leave the collection; [forged] joins it, or a bonus booster
+  /// when null. Not kept in [given]: that counts trades (the Trader achievement).
+  Future<void> craft(List<CardData> used, CardData? forged) async {
+    final gone = {for (final c in used) c.key};
+    await _saveCards([
+      for (final c in cards)
+        if (!gone.contains(c.key)) c,
+      ?forged,
+    ]);
+    if (forged == null) await _prefs.setInt('twitchBonus', twitchBonus + 1);
+    notifyListeners();
+  }
+
   /// Ids of birds guessed wrong and not yet won as a card.
   Set<String> get heard => {...?_prefs.getStringList('heard')};
 

@@ -13,6 +13,7 @@ import 'birds.dart';
 import 'cards.dart';
 import 'firebase_options.dart';
 import 'profile.dart';
+import 'ranking.dart' show saveRank;
 import 'remote_trade.dart';
 import 'store.dart';
 
@@ -102,6 +103,7 @@ Future<void> _flush(Store store, {bool strict = false}) async {
   _timer?.cancel();
   final user = FirebaseAuth.instance.currentUser;
   if (user == null || store.cloudOff) return;
+  unawaited(saveRank(store)); // the month's score rides along with the backup
   if (user.uid != _sentUid) {
     _sentUid = user.uid;
     _forget();

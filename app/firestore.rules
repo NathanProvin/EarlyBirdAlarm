@@ -130,6 +130,21 @@ service cloud.firestore {
         && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid)
         && (!swapping(resource.data) || (resource.data.aDone && resource.data.bDone));
     }
+    // The monthly world ranking (2026-11-23): ranks/{month}/players/{uid} = {name, points},
+    // month = UTC year * 100 + month ("202611"). Everyone signed in reads it (the top 10,
+    // counts for a rank); a player writes only their own row, only for the current month
+    // (past months stay frozen for the rewards), under the @name they hold.
+    match /ranks/{month}/players/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && month == string(request.time.year() * 100 + request.time.month())
+        && request.resource.data.keys().hasOnly(['name', 'points'])
+        && request.resource.data.points is int
+        && request.resource.data.points > 0 && request.resource.data.points <= 1000000
+        && request.resource.data.name is string
+        && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.name.lower())).data.uid == uid;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
     // Everything else stays closed.
   }
 }

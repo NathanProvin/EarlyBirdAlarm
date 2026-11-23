@@ -7,6 +7,7 @@ import '../account.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import 'profile.dart';
+import 'ranking.dart';
 import 'series.dart';
 
 /// The profile page (2026-11-13), opened from the person icon on the Alarms and Training
@@ -78,7 +79,24 @@ class _AccountScreenState extends State<AccountScreen> {
                   children: [
                     const HallOfFame(),
                     const SizedBox(height: 20),
-                    ProfileStats(cards: store.cards),
+                    // The score (2/3) and this month's rank (1/3), as tall as each
+                    // other. The ranking needs the (anonymous) account: none in tests.
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: 8,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: PointsButton(
+                              cards: store.cards,
+                              onTap: online ? () => openRanking(context) : null,
+                            ),
+                          ),
+                          if (online) const Expanded(child: RankButton()),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

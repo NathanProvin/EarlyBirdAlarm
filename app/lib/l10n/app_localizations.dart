@@ -1901,6 +1901,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} species of {region} are still missing from your collection.'**
   String reminderMissingBody(int count, String region);
+
+  /// No description provided for @craftTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge'**
+  String get craftTitle;
+
+  /// No description provided for @craftPitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuse cards, rank up.'**
+  String get craftPitch;
+
+  /// No description provided for @craftAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge'**
+  String get craftAction;
+
+  /// No description provided for @craftRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get craftRecipes;
+
+  /// No description provided for @craftLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'A selected card is offered in a trade.'**
+  String get craftLocked;
+
+  /// No description provided for @craftBooster.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 booster'**
+  String get craftBooster;
+
+  /// No description provided for @statPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get statPoints;
+
+  /// No description provided for @rankTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} ranking'**
+  String rankTitle(String month);
+
+  /// No description provided for @rankEnds.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{Last day} other{Ends in {days} days}}'**
+  String rankEnds(int days);
+
+  /// No description provided for @rankHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Points of the cards won this month. The reward card arrives on the 1st.'**
+  String get rankHint;
+
+  /// No description provided for @rankReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {month} reward'**
+  String rankReward(String month);
+
+  /// No description provided for @rankEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Win a card this month to enter the ranking.'**
+  String get rankEnter;
+
+  /// No description provided for @craftPlusOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird Plus only'**
+  String get craftPlusOnly;
 }
 
 class _AppLocalizationsDelegate

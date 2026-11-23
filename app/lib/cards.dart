@@ -176,3 +176,43 @@ double _cdf(double z) {
           exp(-x * x);
   return 0.5 * (1 + (z < 0 ? -erf : erf));
 }
+
+/// Crafting (Plus, 2026-11-23): cards of one rarity needed to forge one of the next.
+const craftCost = {'common': 4, 'uncommon': 3, 'rare': 3, 'epic': 3};
+
+/// What cards of [rarities], of the species [birds], forge: the next rarity, 'booster'
+/// for any 2 cards, or null. Only cards of one species combine (user, 2026-11-23);
+/// Shiny cards never go in.
+String? craftResult(List<String> rarities, Iterable<String> birds) {
+  if (rarities.isEmpty || rarities.contains('shiny')) return null;
+  if (birds.toSet().length > 1) return null;
+  final r = rarities.first;
+  if (craftCost[r] == rarities.length && rarities.every((x) => x == r)) {
+    return tiers[tiers.indexOf(r) + 1];
+  }
+  return rarities.length == 2 ? 'booster' : null;
+}
+
+/// The forged card: [best]'s bird, photo and stats as [rarity], won now. Every stat gets
+/// the same modifier, uniform in [-2 %, +5 %]; the quality follows the new stats.
+CardData forgeCard(CardData best, Bird? bird, String rarity, [Random? random]) {
+  final u = -0.02 + 0.07 * (random ?? Random()).nextDouble();
+  final stats = {for (final e in best.stats.entries) e.key: e.value * (1 + u)};
+  final p = [
+    if (bird != null)
+      for (final e in stats.entries) percentileOf(bird, e.key, e.value),
+  ];
+  return CardData(
+    birdId: best.birdId,
+    stats: stats,
+    quality: p.isEmpty
+        ? best.quality
+        : (100 * p.reduce((a, b) => a + b) / p.length).round(),
+    earned: DateTime.now(),
+    rarity: rarity,
+    region: best.region,
+    level: best.level,
+    recording: best.recording,
+    photo: best.photo,
+  );
+}
