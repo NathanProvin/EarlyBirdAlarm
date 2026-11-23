@@ -1289,11 +1289,16 @@ class CardTile extends StatelessWidget {
                     ),
                   _hero(
                     IgnorePointer(
-                      child: FittedBox(
-                        child: SizedBox(
-                          width: 340,
-                          height: 340 / 0.68,
-                          child: BirdCardView(bird: bird, card: card),
+                      child: LayoutBuilder(
+                        builder: (context, box) => PhotoScale(
+                          scale: min(1, box.maxWidth / 340),
+                          child: FittedBox(
+                            child: SizedBox(
+                              width: 340,
+                              height: 340 / 0.68,
+                              child: BirdCardView(bird: bird, card: card),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -1473,25 +1478,55 @@ class BirdPhoto extends StatelessWidget {
         : path.startsWith('assets/')
         ? AssetImage(path)
         : FileImage(File(path));
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ImageFiltered(
-          imageFilter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Image(
-            image: image,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const ColoredBox(color: unknownColor),
-          ),
-        ),
-        Image(
-          image: image,
-          fit: BoxFit.contain,
-          errorBuilder: (_, _, _) => const SizedBox(),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, box) {
+        // Decoded near the size it shows (2026-11-23: full-size photos shrunk at each
+        // frame): its width in pixels, in a few steps so the cache keeps few copies.
+        final px =
+            box.maxWidth *
+            PhotoScale.of(context) *
+            MediaQuery.devicePixelRatioOf(context);
+        final step = [256, 512, 1024].where((s) => s >= px).firstOrNull;
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // The edges: a 24-pixel copy stretched smoothly looks blurred, at no cost.
+            // It was a live blur (sigma 16) redrawn at every frame while scrolling.
+            Image(
+              image: ResizeImage(image, width: 24),
+              fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
+              errorBuilder: (_, _, _) => const ColoredBox(color: unknownColor),
+            ),
+            Image(
+              image: step == null
+                  ? image
+                  : ResizeImage(
+                      image,
+                      width: step,
+                      policy: ResizeImagePolicy.fit,
+                    ),
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox(),
+            ),
+          ],
+        );
+      },
     );
   }
+}
+
+/// How much the card or circle around a photo is scaled on screen (a grid tile shrinks
+/// a 340 dp card, an avatar zooms into its crop): [BirdPhoto] decodes at the shown size.
+class PhotoScale extends InheritedWidget {
+  const PhotoScale({required this.scale, required super.child, super.key});
+  final double scale;
+
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<PhotoScale>()?.scale ?? 1;
+
+  @override
+  bool updateShouldNotify(PhotoScale old) => old.scale != scale;
 }
 
 /// "1st", "2nd", "12th"... in English; "1re", "2e"... in French and "1.ª", "2.ª" in Spanish

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -70,7 +69,10 @@ class Avatar extends StatelessWidget {
                       1,
                       1,
                     ),
-                  child: BirdPhoto(bird, photo: a['photo'] as String?),
+                  child: PhotoScale(
+                    scale: (a['scale'] as num? ?? 1).toDouble(),
+                    child: BirdPhoto(bird, photo: a['photo'] as String?),
+                  ),
                 ),
               ),
       ),
@@ -393,20 +395,16 @@ class _GlassIcon extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) => ClipOval(
-    child: BackdropFilter(
-      filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.black.withValues(alpha: 0.45),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        ),
-        child: Icon(icon, size: 15, color: color),
-      ),
+  // A plain dark circle: a live background blur was redrawn at each scrolled frame.
+  Widget build(BuildContext context) => Container(
+    width: 30,
+    height: 30,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.black.withValues(alpha: 0.6),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
     ),
+    child: Icon(icon, size: 15, color: color),
   );
 }
 

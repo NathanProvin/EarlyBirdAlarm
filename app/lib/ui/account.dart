@@ -56,61 +56,68 @@ class _AccountScreenState extends State<AccountScreen> {
         stream: _user,
         builder: (context, snap) => ListenableBuilder(
           listenable: store,
-          builder: (context, _) => ListView(
+          // Built once, all of it (2026-11-23): a lazy list dropped the sections out of
+          // view and rebuilt them on the way back, refetching the rank and the friends.
+          builder: (context, _) => SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
               24,
               8,
               24,
               24 + MediaQuery.paddingOf(context).bottom,
             ),
-            children: [
-              ProfileHeader(
-                email: snap.data?.isAnonymous == false
-                    ? snap.data?.email
-                    : null,
-                onSignIn: () => Scrollable.ensureVisible(
-                  _account.currentContext!,
-                  duration: const Duration(milliseconds: 400),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ProfileHeader(
+                  email: snap.data?.isAnonymous == false
+                      ? snap.data?.email
+                      : null,
+                  onSignIn: () => Scrollable.ensureVisible(
+                    _account.currentContext!,
+                    duration: const Duration(milliseconds: 400),
+                  ),
                 ),
-              ),
-              section(
-                null,
-                Column(
-                  children: [
-                    const HallOfFame(),
-                    const SizedBox(height: 20),
-                    // The score (2/3) and this month's rank (1/3), as tall as each
-                    // other. The ranking needs the (anonymous) account: none in tests.
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        spacing: 8,
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: PointsButton(
-                              cards: store.cards,
-                              onTap: online ? () => openRanking(context) : null,
+                section(
+                  null,
+                  Column(
+                    children: [
+                      const HallOfFame(),
+                      const SizedBox(height: 20),
+                      // The score (2/3) and this month's rank (1/3), as tall as each
+                      // other. The ranking needs the (anonymous) account: none in tests.
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          spacing: 8,
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: PointsButton(
+                                cards: store.cards,
+                                onTap: online
+                                    ? () => openRanking(context)
+                                    : null,
+                              ),
                             ),
-                          ),
-                          if (online) const Expanded(child: RankButton()),
-                        ],
+                            if (online) const Expanded(child: RankButton()),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Friends, invites and codes need the (anonymous) account: none in tests.
-              if (online) ...[
-                section(l.friends, const Friends()),
-                section(l.bonusCodes, const _Code()),
+                // Friends, invites and codes need the (anonymous) account: none in tests.
+                if (online) ...[
+                  section(l.friends, const Friends()),
+                  section(l.bonusCodes, const _Code()),
+                ],
+                section(
+                  l.account,
+                  const AccountPanel(canDelete: true),
+                  key: _account,
+                ),
               ],
-              section(
-                l.account,
-                const AccountPanel(canDelete: true),
-                key: _account,
-              ),
-            ],
+            ),
           ),
         ),
       ),
