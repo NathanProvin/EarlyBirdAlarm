@@ -38,6 +38,20 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Phone check with a dev build: Melbourne cell, 1,000 drawn cards, badges, heatmap (validated by the user, 2026-11-20)
 - [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+6** (+5 was already used on Play), signed bundle built (2026-11-21). Catalog **published to R2 before 1.2 is live** (user, 2026-11-20): 1.1 reads it fine (same formats and region kinds; strict cell-id parsing; no icon for a new family; an Oceania player's offline fallback is the European birds). R2 uploads now copy and never delete (old cards may point at dropped clips / photos). **New logo** (user, marketing, 2026-11-20): `pipeline/logo.png` → every icon and store image via `store_assets.py` (scaled to Android's 66 dp safe circle), boosters / card backs, a faint blurred logo behind the Alarm list; bundle rebuilt. **The user's own photos** as extra variants (`py build.py myphotos`, first: Stonechat). Next: publish the catalog (the photo), upload the bundle to the closed track with the new icon and feature graphic; the catalog fixes (Latin-only names, out-of-area trim) at the next rebuild
 
+## Phase 1.2.1 — crafting, points, monthly ranking (2026-11-23)
+All in `main` (pushed: 02a8ee3, 1866473, c1bd81a); details in decisions.md (Crafting, Points, Monthly world ranking, UI pass, Smooth scrolling).
+- [x] Crafting (Plus): hammer + Forge pill in the Collection, same species only, recipes in pictures, forge animation
+- [x] Points (rarity 1 / 5 / 20 / 60 / 150 / 300, +25 % quality, +25 % arts) on the profile; monthly world ranking (bar chart, top 10 + own row, reward card on the 1st by top percentile)
+- [x] Firestore rules for `ranks/{yyyymm}/players/{uid}` **deployed** 2026-11-23 (user OK); `firestore_rules_check.py` covers them (8 cases, "rules ok")
+- [x] Profile reworked (avatar 150 dp + @name, 3 stacked count pills + email, score 2/3 + rank 1/3); map: radar above Confirm, search smaller above it
+- [x] Smoother scrolling (no live blurs, photos decoded at shown size, profile built once): validated by the user on the S22 ("much smoother")
+- [x] Release APK 1.2.1+7 on the S22 (fresh install 2026-11-23: the old 1.2.0 sideload was gone; the user signs in with Google to get the collection back)
+- [x] **UI pass 2026-11-24** (pushed: fd6b716, ac7d56c): own profile in a friend's layout with "#12 ›" inside the Points tile (validated); crafting from opened piles in Species and Duplicates, the forge pill kept (full width) on the pile; forge animation centred and bigger; forge gauge (slots filling, "2/3", result popping in); unpaid pill "Combine cards" and the new Plus pitch; `HIDE_PLUS` build flag; unpaid layouts checked by the user
+- [ ] **Next (user, 2026-11-24): build and update** — version bump if +7 is already used on Play, signed bundle, release notes in 4 languages (crafting, points, monthly ranking)
+- [x] Forge with real spares, from opened piles too (user, S22, 2026-11-24)
+- [ ] Checks on the S22: a long German / Spanish name in the profile header, large font size, the 1st-of-month reward (December 1st: first real claim), ranking with several players
+- [ ] Open questions: the recipes panel doesn't say "same species" (rainbow card = any rarity); ranking scores are self-reported (cheatable until server-signed cards); unclaimed-achievement progress can drop when crafting uses cards
+
 ## Later
 - **Challenges between friends** (the "coming soon" button on a friend's profile).
 - **Region UI:** rework the picker, names and collection views (the 2° grid stays).
