@@ -2,7 +2,8 @@
 
 Iterative: each step ends with something that runs on a real Android device and is validated by the user. Rules and choices: `decisions.md`. Store answers: `store-listing.md`.
 
-## Status — 2026-11-13
+## Status — 2026-11-24
+- **1.3.0+8 uploaded to the closed track** (crafting, points, monthly ranking, achievements rework); see Phase 1.3.0 below. The lines under this one are the 2026-11-13 status, kept for history.
 - **Live:** 1.0.0+3 in **closed testing** on Google Play (14 active installs; reads the frozen GitHub Pages catalog).
 - **1.1.0+4 validated by the user on the S22 (2026-11-13)**, pushed to GitHub (`main`), signed bundle built: `app/build/app/outputs/bundle/release/app-release.aab`. Next: upload to the closed track (tutorial given 2026-11-13), then Production.
 - **1.1 contents:** cloud backup + accounts (anonymous, Google, email), profile (@name, avatar, hall of fame, stats), friends, invite links + welcome card, bonus codes (`OGBetaTester`), **remote trades** (face-to-face trading removed), card variants + Shiny, achievements in 5 tiers + Voices series, song comparison after a wrong guess, bird group icons, catalog on R2 (1,292 species), lock-screen fix and tester feedback (1.0.1, never shipped alone).
@@ -40,7 +41,7 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+6** (+5 was already used on Play), signed bundle built (2026-11-21). Catalog **published to R2 before 1.2 is live** (user, 2026-11-20): 1.1 reads it fine (same formats and region kinds; strict cell-id parsing; no icon for a new family; an Oceania player's offline fallback is the European birds). R2 uploads now copy and never delete (old cards may point at dropped clips / photos). **New logo** (user, marketing, 2026-11-20): `pipeline/logo.png` → every icon and store image via `store_assets.py` (scaled to Android's 66 dp safe circle), boosters / card backs, a faint blurred logo behind the Alarm list; bundle rebuilt. **The user's own photos** as extra variants (`py build.py myphotos`, first: Stonechat). Next: publish the catalog (the photo), upload the bundle to the closed track with the new icon and feature graphic; the catalog fixes (Latin-only names, out-of-area trim) at the next rebuild
 
 ## Phase 1.3.0 — crafting, points, monthly ranking (2026-11-23; named 1.2.1 until 2026-11-24)
-All in `main` (pushed: 02a8ee3, 1866473, c1bd81a); details in decisions.md (Crafting, Points, Monthly world ranking, UI pass, Smooth scrolling).
+All in `main` (pushed: 02a8ee3, 1866473, c1bd81a, fd6b716, ac7d56c, 2b01f8f); details in decisions.md (Crafting, Points, Monthly world ranking, UI pass, Smooth scrolling).
 - [x] Crafting (Plus): hammer + Forge pill in the Collection, same species only, recipes in pictures, forge animation
 - [x] Points (rarity 1 / 5 / 20 / 60 / 150 / 300, +25 % quality, +25 % arts) on the profile; monthly world ranking (bar chart, top 10 + own row, reward card on the 1st by top percentile)
 - [x] Firestore rules for `ranks/{yyyymm}/players/{uid}` **deployed** 2026-11-23 (user OK); `firestore_rules_check.py` covers them (8 cases, "rules ok")
@@ -48,12 +49,13 @@ All in `main` (pushed: 02a8ee3, 1866473, c1bd81a); details in decisions.md (Craf
 - [x] Smoother scrolling (no live blurs, photos decoded at shown size, profile built once): validated by the user on the S22 ("much smoother")
 - [x] Release APK 1.2.1+7 on the S22 (fresh install 2026-11-23: the old 1.2.0 sideload was gone; the user signs in with Google to get the collection back)
 - [x] **UI pass 2026-11-24** (pushed: fd6b716, ac7d56c): own profile in a friend's layout with "#12 ›" inside the Points tile (validated); crafting from opened piles in Species and Duplicates, the forge pill kept (full width) on the pile; forge animation centred and bigger; forge gauge (slots filling, "2/3", result popping in); unpaid pill "Combine cards" and the new Plus pitch; `HIDE_PLUS` build flag; unpaid layouts checked by the user
+- [x] **Achievements rework + diet / habitat series + Series pages packed 6 per page + ranking reminder ~2 days before month end** (2b01f8f, installed on the S22 2026-11-24)
 - [x] Version **1.3.0+8** (user: major features), release notes in 4 languages (`store-listing.md`), 2026-11-24
-- [ ] Signed bundle 1.3.0+8 → closed track
+- [x] Signed bundle 1.3.0+8 → closed track (built and uploaded 2026-11-24)
 - [x] Forge with real spares, from opened piles too (user, S22, 2026-11-24)
 - [x] Long German / Spanish names (user OK, 2026-11-24)
-- [ ] Checks on the S22: large font size, the 1st-of-month reward (kept open, user 2026-11-24) (December 1st: first real claim), ranking with several players
-- [ ] Open questions: the recipes panel doesn't say "same species" (rainbow card = any rarity); ranking scores are self-reported (cheatable until server-signed cards); unclaimed-achievement progress can drop when crafting uses cards
+- [ ] Checks on the S22: large font size, the 1st-of-month reward (kept open, user 2026-11-24) (December 1st: first real claim), ranking with several players: on 2026-11-24 the user saw only themselves, expected (only 1.2.1+ writes rows and 1.2.1 never reached Play; a row also needs an @name, the cloud on and a card won this UTC month): **wait for testers on 1.3.0**, check `ranks/202611/players` in the Firebase console if still alone
+- [ ] Open questions: the recipes panel doesn't say "same species" (rainbow card = any rarity); players without an @name never appear in the ranking (ask for one on opening it, or an anonymous label? undecided); ranking scores are self-reported (cheatable until server-signed cards); unclaimed-achievement progress can drop when crafting uses cards
 
 ## Later
 - [x] **Achievements balance** (user, 2026-11-24): done the same day, see decisions.md "Achievements and series".
