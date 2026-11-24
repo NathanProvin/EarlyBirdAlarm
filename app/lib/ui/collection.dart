@@ -129,7 +129,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   /// The forge pill: ⓘ, what the picked cards give, Forge (without Plus: the Plus
   /// sheet). Also on an opened pile, so the picks can be forged from there.
-  Widget _forgePill() {
+  /// [wide]: the whole screen's width (an opened pile, where the hammer isn't).
+  Widget _forgePill({bool wide = false}) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final picked = [
@@ -150,10 +151,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
       child: ConstrainedBox(
         constraints: BoxConstraints(
           minHeight: 56,
-          maxWidth: MediaQuery.sizeOf(context).width - 32 - 56 - 8,
+          minWidth: wide ? MediaQuery.sizeOf(context).width - 32 : 0,
+          maxWidth: MediaQuery.sizeOf(context).width - 32 - (wide ? 0 : 56 + 8),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
           children: [
             IconButton(
               tooltip: l.craftRecipes,
@@ -161,6 +163,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
               onPressed: () => _recipes(l),
             ),
             Flexible(
+              fit: wide ? FlexFit.tight : FlexFit.loose,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,18 +188,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       ),
                     )
                   else
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 4,
-                      children: [
-                        Text('${picked.length}×', style: small),
-                        const Icon(Icons.arrow_forward, size: 14),
-                        if (result == null)
-                          const Icon(Icons.block, size: 14)
-                        else
-                          _miniCard(result, width: 12),
-                      ],
-                    ),
+                    _ForgeGauge(picked, result),
                 ],
               ),
             ),
@@ -618,7 +610,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   PageRouteBuilder<void>(
                     transitionDuration: const Duration(milliseconds: 350),
                     pageBuilder: (_, _, _) => _crafting
-                        ? _PileScreen(b, picked: _picked, forge: _forgePill)
+                        ? _PileScreen(
+                            b,
+                            picked: _picked,
+                            forge: () => _forgePill(wide: true),
+                          )
                         : _PileScreen(b),
                     transitionsBuilder: (_, a, _, child) =>
                         FadeTransition(opacity: a, child: child),
@@ -748,6 +744,100 @@ Widget _miniCard(String? rarity, {double width = 22}) {
       border: Border.all(color: ink, width: 1.5),
     ),
   );
+}
+
+/// The forge pill's progress: one slot per card the recipe needs (4 Commons, 3 of the
+/// others, 2 for a booster from a Legendary), each filling in its card's colour as it is
+/// picked, "2/3", then what Forge gives: faint until reached, popping in with a glow.
+class _ForgeGauge extends StatelessWidget {
+  const _ForgeGauge(this.picked, this.result);
+  final List<CardData> picked;
+  final String? result;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final small = Theme.of(context).textTheme.bodySmall;
+    final rarities = [for (final c in picked) cardRarity(c)];
+    final goal = craftCost[rarities.first] ?? 2;
+    final next = craftCost.containsKey(rarities.first)
+        ? tiers[tiers.indexOf(rarities.first) + 1]
+        : 'booster';
+    final slots = max(goal, rarities.length);
+    final full = result != null && result != 'booster';
+    // No recipe can come of these: too many, a Shiny, mixed species or rarities.
+    final stuck =
+        result == null &&
+        (rarities.length >= goal ||
+            rarities.contains('shiny') ||
+            rarities.toSet().length > 1 ||
+            {for (final c in picked) c.birdId}.length > 1);
+    // Popping in: a card picked, the result reached.
+    Widget pop(Key key, Widget child, {double from = 1.6}) =>
+        TweenAnimationBuilder(
+          key: key,
+          tween: Tween(begin: from, end: 1.0),
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.elasticOut,
+          builder: (_, s, child) => Transform.scale(scale: s, child: child),
+          child: child,
+        );
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: AlignmentDirectional.centerStart,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 3,
+        children: [
+          for (var i = 0; i < slots; i++)
+            i < rarities.length
+                ? pop(ValueKey('slot$i'), _miniCard(rarities[i], width: 13))
+                : Container(
+                    width: 13,
+                    height: 13 * 1.4,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(13 / 6),
+                      border: Border.all(
+                        color: scheme.onSurface.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+          const SizedBox(width: 2),
+          Text(
+            '${rarities.length}/$goal',
+            style: small?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: full ? scheme.primary : null,
+            ),
+          ),
+          const Icon(Icons.arrow_forward, size: 14),
+          if (stuck)
+            const Icon(Icons.block, size: 16)
+          else if (result == null)
+            Opacity(opacity: 0.3, child: _miniCard(next, width: 16))
+          else
+            pop(
+              ValueKey(result),
+              from: 0.3,
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    if (full)
+                      BoxShadow(
+                        color: rarityColor[result]!.withValues(alpha: 0.8),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                  ],
+                ),
+                child: _miniCard(result, width: 16),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The crafting button: a round hammer in the Plus bolt's and the radar's colours,
@@ -1325,6 +1415,7 @@ class _PileScreenState extends State<_PileScreen>
         title: Text('${bird.nameIn(l.localeName)} ×${copies.length}'),
       ),
       floatingActionButton: widget.forge?.call(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: LayoutBuilder(
         builder: (context, box) {
           final w = (box.maxWidth - 2 * pad - gap) / 2, h = w / 0.68;
@@ -1336,7 +1427,10 @@ class _PileScreenState extends State<_PileScreen>
               pad,
               4,
               pad,
-              pad + MediaQuery.paddingOf(context).bottom,
+              // Room for the forge pill under the last cards.
+              pad +
+                  (widget.forge == null ? 0 : 80) +
+                  MediaQuery.paddingOf(context).bottom,
             ),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
