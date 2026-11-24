@@ -11,13 +11,14 @@ Iterative: each step ends with something that runs on a real Android device and 
 ## Release 1.1.0 → Production
 Updates during the closed test don't reset its clock. Testers' emails stay in the Play Console, never in the repo.
 - [x] Version **1.1.0+4**, signed release bundle (no DEV_TOOLS), README rewritten (2026-11-13)
-- [ ] **User:** banned-words review in `app/lib/names.dart` (`bannedNames`)
+- [x] **User:** banned-words review in `app/lib/names.dart` (`bannedNames`)
 - [x] Upload to **internal testing** first, install from Play: Google sign-in (Play signing SHA-1), invite link → referrer → welcome card, a test purchase (license tester set), in-app review prompt (checked by the user on the S22, 2026-11-13; the S22 now runs the Play build, so a debug `adb install -r` fails on the signature until it's uninstalled)
 - [ ] Then the same bundle to the **closed testing** track, release notes in 4 languages
-- [ ] Play Console: store listing (trading bullet changed: "Trade cards with your friends, wherever they are", 4 languages, `store-listing.md`); Data safety for accounts + data deletion URL `https://cdn.earlybirdalarm.app/delete-account.html` (done 2026-11-13 per the user, check); Bluetooth / precise-location declarations gone; **full-screen intent** declaration (alarm clock); product `twitch_plus` titled "Early Bird Plus"
+- [ ] Play Console: store listing (trading bullet changed: "Trade cards with your friends, wherever they are", 4 languages, `store-listing.md`); Data safety for accounts + data deletion URL `https://cdn.earlybirdalarm.app/delete-account.html` (done 2026-11-13 per the user, check); Bluetooth / precise-location declarations gone; **full-screen intent** declaration (alarm clock, done per the user 2026-11-24); product `twitch_plus` titled "Early Bird Plus"
 - [ ] Upgrade check: a real S22 1.0.0+3 prefs export in `upgrade_test.dart` (needs the user's OK for adb); the user's collection exported before switching the S22 to the Play build (different signature = another app; the cloud backup now covers it after a Google sign-in)
-- [ ] Alarm video for the media-playback foreground-service declaration (S22, locked, rings, guess; unlisted YouTube)
-- [ ] S22: the backup alarm (rooster at 3 min, rings with the app killed); a tester's Android 14+ phone: lock-screen quiz and the onboarding's Fix buttons
+- [x] Alarm video for the media-playback foreground-service declaration (S22, locked, rings, guess; unlisted YouTube)
+- [x] S22: the backup alarm (rooster at 3 min, rings with the app killed): done and checked (user, 2026-11-24)
+- [ ] A tester's Android 14+ phone: lock-screen quiz and the onboarding's Fix buttons
 - [ ] **14 consecutive days with ≥ 12 opted-in testers**, then **Apply for production**; staged rollout 20 % → 100 %
 - [ ] README: drop "in closed testing" once public; `svc power stayon usb` off on the S22
 
@@ -27,8 +28,8 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Zones: AU bioregions + NZ, country lists + wide cell boxes for the new zones; continents fixed and `oc` in the app
 - [x] Group icons for the new families (ratite, penguin + mappings); series for the new regions
 - [x] Missing-species heatmap (Plus) on the region map; the map opens on the phone's continent
-- [ ] **Full build** (running since 2026-11-16) → family-icon test on the real catalog, empty series pruned, Latin-only English names into `names.csv`
-- [ ] `variants.py` → photo review into `photo_rejects.csv` → quick rebuild (it also writes AVONET `habitat` / `diet` into `species.json`: the running build predates them)
+- [x] **Full build** (finished: the published catalog has 2,630 species, AVONET habitat / diet on ~2,520, variants on 2,468, no Latin-only English names; checked 2026-11-24). Left, optional, by a quick rebuild: → family-icon test on the real catalog, empty series pruned, Latin-only English names into `names.csv`
+- [ ] Optional: `variants.py` → photo review into `photo_rejects.csv` → quick rebuild (it also writes AVONET `habitat` / `diet` into `species.json`: the running build predates them)
 - [x] Card badges at the photo's bottom left: group, habitat, diet (AVONET), glass cartridges, a tap slides out "Family · Turdidae" for 3 s
 - [x] Expert mistake replay: answer and pick stacked (one per row); haptic tick on the 3 main tabs; Expert pool checked (every tier, as Hard)
 - [x] **Art n/6** (user, 2026-11-17; built, hidden for a single photo or a Shiny): "*Art x/n*", x = the card's photo number, n = the species' photo count (catalog + variants); italic, the stat names' font size; top right of the photo, a rounded glass cartridge like the group badge. Duplicates then count by bird + rarity + art; a species page shows "arts found". Check first that a saved card records its photo (older cards: catalog photo = Art 1)
@@ -38,7 +39,7 @@ Updates during the closed test don't reset its clock. Testers' emails stay in th
 - [x] Phone check with a dev build: Melbourne cell, 1,000 drawn cards, badges, heatmap (validated by the user, 2026-11-20)
 - [x] README (1.2 rewrite, new screenshots), store listing and "What's new" (4 languages, 2,630 species, new areas), version **1.2.0+6** (+5 was already used on Play), signed bundle built (2026-11-21). Catalog **published to R2 before 1.2 is live** (user, 2026-11-20): 1.1 reads it fine (same formats and region kinds; strict cell-id parsing; no icon for a new family; an Oceania player's offline fallback is the European birds). R2 uploads now copy and never delete (old cards may point at dropped clips / photos). **New logo** (user, marketing, 2026-11-20): `pipeline/logo.png` → every icon and store image via `store_assets.py` (scaled to Android's 66 dp safe circle), boosters / card backs, a faint blurred logo behind the Alarm list; bundle rebuilt. **The user's own photos** as extra variants (`py build.py myphotos`, first: Stonechat). Next: publish the catalog (the photo), upload the bundle to the closed track with the new icon and feature graphic; the catalog fixes (Latin-only names, out-of-area trim) at the next rebuild
 
-## Phase 1.2.1 — crafting, points, monthly ranking (2026-11-23)
+## Phase 1.3.0 — crafting, points, monthly ranking (2026-11-23; named 1.2.1 until 2026-11-24)
 All in `main` (pushed: 02a8ee3, 1866473, c1bd81a); details in decisions.md (Crafting, Points, Monthly world ranking, UI pass, Smooth scrolling).
 - [x] Crafting (Plus): hammer + Forge pill in the Collection, same species only, recipes in pictures, forge animation
 - [x] Points (rarity 1 / 5 / 20 / 60 / 150 / 300, +25 % quality, +25 % arts) on the profile; monthly world ranking (bar chart, top 10 + own row, reward card on the 1st by top percentile)
@@ -47,12 +48,15 @@ All in `main` (pushed: 02a8ee3, 1866473, c1bd81a); details in decisions.md (Craf
 - [x] Smoother scrolling (no live blurs, photos decoded at shown size, profile built once): validated by the user on the S22 ("much smoother")
 - [x] Release APK 1.2.1+7 on the S22 (fresh install 2026-11-23: the old 1.2.0 sideload was gone; the user signs in with Google to get the collection back)
 - [x] **UI pass 2026-11-24** (pushed: fd6b716, ac7d56c): own profile in a friend's layout with "#12 ›" inside the Points tile (validated); crafting from opened piles in Species and Duplicates, the forge pill kept (full width) on the pile; forge animation centred and bigger; forge gauge (slots filling, "2/3", result popping in); unpaid pill "Combine cards" and the new Plus pitch; `HIDE_PLUS` build flag; unpaid layouts checked by the user
-- [ ] **Next (user, 2026-11-24): build and update** — version bump if +7 is already used on Play, signed bundle, release notes in 4 languages (crafting, points, monthly ranking)
+- [x] Version **1.3.0+8** (user: major features), release notes in 4 languages (`store-listing.md`), 2026-11-24
+- [ ] Signed bundle 1.3.0+8 → closed track
 - [x] Forge with real spares, from opened piles too (user, S22, 2026-11-24)
-- [ ] Checks on the S22: a long German / Spanish name in the profile header, large font size, the 1st-of-month reward (December 1st: first real claim), ranking with several players
+- [x] Long German / Spanish names (user OK, 2026-11-24)
+- [ ] Checks on the S22: large font size, the 1st-of-month reward (kept open, user 2026-11-24) (December 1st: first real claim), ranking with several players
 - [ ] Open questions: the recipes panel doesn't say "same species" (rainbow card = any rarity); ranking scores are self-reported (cheatable until server-signed cards); unclaimed-achievement progress can drop when crafting uses cards
 
 ## Later
+- [x] **Achievements balance** (user, 2026-11-24): done the same day, see decisions.md "Achievements and series".
 - **Challenges between friends** (the "coming soon" button on a friend's profile).
 - **Region UI:** rework the picker, names and collection views (the 2° grid stays).
 - **iOS:** AlarmKit (iOS 26+; check custom sounds), Sign in with Apple, StoreKit products; remote trades and backup already cross-platform. $99 / year, cloud Mac builds, a real iPhone.

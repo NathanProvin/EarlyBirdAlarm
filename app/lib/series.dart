@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'birds.dart';
 import 'cards.dart';
+import 'ui/profile.dart' show collectionPoints;
 
 /// A series of birds to collect, from series.json (pipeline/series.md).
 class Series {
@@ -29,48 +30,209 @@ class Series {
 /// All series of the catalog; loaded by initContent.
 List<Series> allSeries = [];
 
+/// Series made in the app from the birds' AVONET diet or habitat (2026-11-24): id, page,
+/// reward, the values that count, names in EN / FR / DE / ES. The biggest groups (insect
+/// eaters, forest…) are left out: a hundred birds in one region is no series.
+const _traitSeries = [
+  (
+    'trait-nectarivores',
+    'diets',
+    'rare',
+    {'Nectarivore'},
+    ['Nectarivores', 'Nectarivores', 'Nektarfresser', 'Nectarívoros'],
+  ),
+  (
+    'trait-frugivores',
+    'diets',
+    'epic',
+    {'Frugivore'},
+    ['Frugivores', 'Frugivores', 'Fruchtfresser', 'Frugívoros'],
+  ),
+  (
+    'trait-granivores',
+    'diets',
+    'rare',
+    {'Granivore'},
+    ['Granivores', 'Granivores', 'Körnerfresser', 'Granívoros'],
+  ),
+  (
+    'trait-predators',
+    'diets',
+    'epic',
+    {'Vertivore', 'Scavenger'},
+    ['Predators', 'Prédateurs', 'Beutegreifer', 'Depredadores'],
+  ),
+  (
+    'trait-piscivores',
+    'diets',
+    'epic',
+    {'Aquatic predator'},
+    ['Piscivores', 'Piscivores', 'Fischfresser', 'Piscívoros'],
+  ),
+  (
+    'trait-herbivores',
+    'diets',
+    'rare',
+    {'Herbivore aquatic', 'Herbivore terrestrial'},
+    ['Herbivores', 'Herbivores', 'Pflanzenfresser', 'Herbívoros'],
+  ),
+  (
+    'trait-marine',
+    'habitats',
+    'epic',
+    {'Marine'},
+    ['Seabirds', 'Marins', 'Meeresvögel', 'Marinos'],
+  ),
+  (
+    'trait-coastal',
+    'habitats',
+    'rare',
+    {'Coastal'},
+    ['Coastal', 'Côtiers', 'Küstenvögel', 'Costeros'],
+  ),
+  (
+    'trait-rock',
+    'habitats',
+    'epic',
+    {'Rock'},
+    ['Rupicolous', 'Rupicoles', 'Felsbewohner', 'Rupícolas'],
+  ),
+  (
+    'trait-riverine',
+    'habitats',
+    'rare',
+    {'Riverine'},
+    ['Riparian', 'Ripicoles', 'Uferbewohner', 'Ribereños'],
+  ),
+  (
+    'trait-grassland',
+    'habitats',
+    'epic',
+    {'Grassland'},
+    ['Grassland birds', 'Prairiaux', 'Wiesenvögel', 'Pratenses'],
+  ),
+];
+
+/// The diet and habitat series, from every bird of the catalog ([seriesStates] keeps
+/// those with 3 birds or more in the region).
+List<Series> traitSeries(Iterable<Bird> birds) => [
+  for (final (id, group, reward, values, names) in _traitSeries)
+    Series.fromJson({
+      'id': id,
+      for (final (i, g) in const ['en', 'fr', 'de', 'es'].indexed) g: names[i],
+      'group': group,
+      'reward': reward,
+      'birds': [
+        for (final b in birds)
+          if (values.contains(b.diet) || values.contains(b.habitat)) b.id,
+      ],
+    }),
+];
+
+/// The covered zone of a card's [region] (a 2° cell or a list id), as the pipeline's
+/// CELL_AREAS boxes and country lists draw them: Europe, North America, Australia,
+/// New Zealand, North Africa + Middle East, Mexico + Central America; null if unknown.
+String? zoneOf(String? region) {
+  if (region == null) return null;
+  final cell = RegExp(r'^([NS])(\d\d)([EW])(\d{3})$').firstMatch(region);
+  if (cell != null) {
+    final lat = int.parse(cell[2]!) * (cell[1] == 'N' ? 1 : -1);
+    final lon = int.parse(cell[4]!) * (cell[3] == 'E' ? 1 : -1);
+    const boxes = [
+      (34, 72, -12, 42, 'eu'),
+      (24, 72, -170, -52, 'na'),
+      (-44, -10, 112, 154, 'au'),
+      (-48, -34, 166, 180, 'nz'),
+      (18, 34, -18, 34, 'mena'),
+      (12, 34, 34, 62, 'mena'),
+      (34, 44, 42, 62, 'mena'),
+      (6, 24, -118, -76, 'mxca'),
+    ];
+    for (final (a0, a1, b0, b1, zone) in boxes) {
+      if (a0 <= lat && lat < a1 && b0 <= lon && lon < b1) return zone;
+    }
+    return null;
+  }
+  if (region.startsWith(RegExp('US-|CA-'))) return 'na';
+  if (region.startsWith('AU-')) return 'au';
+  if (region.startsWith('NZ')) return 'nz';
+  if (const {'MX', 'GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA'}.contains(region)) {
+    return 'mxca';
+  }
+  const mena = {
+    'MA', 'DZ', 'TN', 'LY', 'EG', 'TR', 'SY', 'LB', 'IL', 'PS', 'JO', //
+    'IQ', 'IR', 'SA', 'AE', 'OM', 'QA', 'KW', 'BH', 'YE',
+  };
+  return mena.contains(region) ? 'mena' : 'eu';
+}
+
+/// The Podium's tiers: the top share of a month's world ranking, in %.
+const podiumTops = [50.0, 25.0, 10.0, 2.0, 0.1];
+
+/// How many Podium tiers a place of [rank] among [total] players reaches. #1 counts as
+/// the top 0.1 % from 100 players on (before 1,000 nobody else could reach it).
+int podiumTiers(int rank, int total) => podiumTops
+    .where(
+      (top) =>
+          100 * rank / total <= top ||
+          (top == 0.1 && rank == 1 && total >= 100),
+    )
+    .length;
+
 /// Game achievements, computed from play rather than from bird groups. Reworked
-/// 2026-11-12 (user): 18 achievements on 3 pages, each with 5 tiers (I…V) collected one
-/// at a time, tier n giving a card of the n-th rarity (Common … Legendary).
+/// 2026-11-12 (user): 5 tiers (I…V) each, collected one at a time, tier n giving a card
+/// of the n-th rarity (Common … Legendary). 2026-11-24 (user): harder goals, Early riser
+/// removed (its tiers collected stay), 6 new: 23 on 4 pages.
 const collector = 'collector',
     localExpert = 'local-expert',
     twitcher = 'twitcher',
+    ornithologist = 'ornithologist',
     duplicates = 'duplicates',
-    fullSet = 'full-set',
-    perfectSpecimen = 'perfect-specimen';
-const rareFinds = 'rare-finds',
-    epicFinds = 'epic-finds',
+    fullSet = 'full-set';
+const perfectSpecimen = 'perfect-specimen',
+    rareFinds = 'rare-finds',
+    epicFinds =
+        'epic-finds', // "Rarities" since 2026-11-24 (ids never change)
     legendaryHunter = 'legendary-hunter',
-    sharpEar = 'sharp-ear',
+    gallery = 'gallery',
+    crafter = 'crafter';
+const sharpEar = 'sharp-ear',
     wakeUpStreak = 'wake-up-streak',
-    earlyRiser = 'early-riser';
-const dailyBirder = 'daily-birder',
+    dailyBirder = 'daily-birder',
     fidelity = 'fidelity',
     globetrotter = 'globetrotter',
-    fullHouse = 'full-house',
+    explorer = 'explorer';
+const fullHouse = 'full-house',
     trader = 'trader',
-    influencer = 'influencer';
+    influencer = 'influencer',
+    score = 'score',
+    podium = 'podium';
 
-/// Each achievement's page (1-3) and the goal of each of its 5 tiers.
+/// Each achievement's page (1-4) and the goal of each of its 5 tiers.
 const achievementGoals = <String, (int, List<int>)>{
-  collector: (1, [10, 50, 100, 500, 2500]),
-  localExpert: (1, [10, 25, 50, 100, 150]),
-  twitcher: (1, [25, 75, 150, 300, 600]),
+  collector: (1, [10, 50, 250, 1000, 3000]),
+  localExpert: (1, [20, 50, 100, 175, 250]),
+  twitcher: (1, [50, 150, 300, 600, 1200]),
+  ornithologist: (1, [10, 25, 50, 100, 150]), // bird families owned
   duplicates: (1, [3, 5, 10, 20, 40]),
   fullSet: (1, [2, 3, 4, 5, 6]), // rarities owned; 6 = Shiny too
-  perfectSpecimen: (1, [80, 85, 90, 95, 99]), // best quality, %
-  rareFinds: (2, [5, 25, 75, 200, 500]),
-  epicFinds: (2, [1, 5, 15, 40, 100]),
+  perfectSpecimen: (2, [76, 81, 91, 96, 100]), // best quality, %: >75 … 100
+  rareFinds: (2, [10, 50, 150, 400, 1000]),
+  epicFinds: (2, [3, 15, 40, 100, 250]),
   legendaryHunter: (2, [1, 3, 5, 10, 25]),
-  sharpEar: (2, [5, 10, 25, 50, 100]), // right answers in a row
-  wakeUpStreak: (2, [3, 7, 30, 100, 365]), // days in a row
-  earlyRiser: (2, [5, 20, 50, 150, 365]), // cards won before 7:00
+  gallery: (2, [1, 3, 10, 25, 50]), // species with all their arts (2 or more)
+  crafter: (2, [1, 5, 15, 45, 100]), // cards forged
+  sharpEar: (3, [5, 10, 25, 50, 100]), // right answers in a row
+  wakeUpStreak: (3, [3, 7, 30, 100, 365]), // days in a row
   dailyBirder: (3, [7, 30, 90, 180, 365]), // days with a card
   fidelity: (3, [2, 3, 6, 9, 12]), // months of the year with a card
-  globetrotter: (3, [2, 3, 5, 10, 20]),
-  fullHouse: (3, [1, 3, 5, 10, 20]),
-  trader: (3, [1, 5, 15, 40, 100]), // cards traded away
-  influencer: (3, [1, 3, 5, 10, 25]), // friends joined through the invite link
+  globetrotter: (3, [3, 8, 20, 40, 80]),
+  explorer: (3, [2, 3, 4, 5, 6]), // covered zones with a card (zoneOf)
+  fullHouse: (4, [1, 3, 5, 10, 20]),
+  trader: (4, [1, 5, 15, 40, 100]), // cards traded away
+  influencer: (4, [1, 3, 5, 10, 25]), // friends joined through the invite link
+  score: (4, [500, 2500, 10000, 50000, 200000]), // collection points
+  podium: (4, [1, 2, 3, 4, 5]), // Podium tiers reached (podiumTiers)
 };
 
 /// Achievements collected before the tiers (one goal each, saved as their id): the
@@ -82,7 +244,6 @@ const _oldAchievements = <String, (String, int)>{
   'legendary-hunter': (legendaryHunter, 3), // 5 Legendary cards
   'full-set': (fullSet, 4), // 5 rarities
   'five-of-a-kind': (duplicates, 2), // 5 copies
-  'dawn-chorus': (earlyRiser, 1), // 10 cards before 7:00
   'globetrotter': (globetrotter, 2), // 3 regions
   'full-house': (fullHouse, 2), // 3 series
   'perfect-specimen': (perfectSpecimen, 4), // 95 %
@@ -107,8 +268,10 @@ const seriesGroups = [
   'achievements1',
   'achievements2',
   'achievements3',
+  'achievements4',
   'families',
   'habitats',
+  'diets',
   'themes',
   'voices',
 ];
@@ -119,6 +282,8 @@ typedef Play = ({
   int bestAlarmStreak, // days of right alarm answers in a row
   int given, // cards traded away
   int friends, // friends joined through the invite link
+  int crafted, // cards forged
+  int podium, // Podium tiers reached
   Set<String> collected, // series and achievement tiers collected
 });
 
@@ -186,28 +351,42 @@ List<SeriesState> seriesStates(
   for (final c in cards) {
     copies[c.birdId] = (copies[c.birdId] ?? 0) + 1;
   }
+  // Each species' arts owned (Art x of n), for the Gallery.
+  final arts = <String, Set<int>>{};
+  for (final c in cards) {
+    if (birdById(c.birdId)?.artOf(c.photo) case (final x, final n) when n > 1) {
+      (arts[c.birdId] ??= {}).add(x);
+    }
+  }
   final values = {
     collector: cards.length,
     localExpert: have.where(byId.containsKey).length,
     twitcher: have.length,
+    ornithologist: {for (final id in have) ?birdById(id)?.family}.length,
     duplicates: copies.values.fold(0, max),
     fullSet: {for (final c in cards) rarityOf(c)}.whereType<String>().length,
     perfectSpecimen: cards.fold(0, (m, c) => max(m, c.quality)),
     rareFinds: atLeast('rare'),
     epicFinds: atLeast('epic'),
     legendaryHunter: atLeast('legendary'),
+    gallery: arts.entries
+        .where((e) => e.value.length >= birdById(e.key)!.artOf(null)!.$2)
+        .length,
+    crafter: play.crafted,
     sharpEar: play.bestStreak,
     wakeUpStreak: play.bestAlarmStreak,
-    earlyRiser: cards.where((c) => c.earned.hour < 7).length,
     dailyBirder: {
       for (final c in cards)
         DateTime(c.earned.year, c.earned.month, c.earned.day),
     }.length,
     fidelity: {for (final c in cards) c.earned.month}.length,
     globetrotter: {for (final c in cards) ?c.region}.length,
+    explorer: {for (final c in cards) ?zoneOf(c.region)}.length,
     fullHouse: series.where((s) => s.complete).length,
     trader: play.given,
     influencer: play.friends,
+    score: collectionPoints(cards),
+    podium: play.podium,
   };
   return [
     ...series,

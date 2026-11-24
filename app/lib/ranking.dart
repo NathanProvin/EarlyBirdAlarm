@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import 'cards.dart';
+import 'main.dart' show store;
 import 'store.dart';
 import 'ui/profile.dart' show collectionPoints;
 
@@ -93,7 +94,9 @@ Future<({int rank, int total, int points})?> myRank(String month) async {
     _month(month).where('points', isGreaterThan: points).count().get(),
     _month(month).count().get(),
   ]);
-  return (rank: above.count! + 1, total: total.count!, points: points);
+  final rank = above.count! + 1;
+  store.notePodium(rank, total.count!); // the Podium achievement
+  return (rank: rank, total: total.count!, points: points);
 }
 
 /// Removes this player's row of the current month (account deletion).

@@ -1491,7 +1491,7 @@ abstract class AppLocalizations {
   /// No description provided for @epicFinds.
   ///
   /// In en, this message translates to:
-  /// **'Epic finds'**
+  /// **'Rarities'**
   String get epicFinds;
 
   /// No description provided for @sharpEar.
@@ -1505,12 +1505,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wake-up streak'**
   String get wakeUpStreak;
-
-  /// No description provided for @earlyRiser.
-  ///
-  /// In en, this message translates to:
-  /// **'Early riser'**
-  String get earlyRiser;
 
   /// No description provided for @dailyBirder.
   ///
@@ -1565,12 +1559,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A {count}-day wake-up streak'**
   String goalWakeUpStreak(int count);
-
-  /// No description provided for @goalEarlyRiser.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} cards won before 7:00'**
-  String goalEarlyRiser(int count);
 
   /// No description provided for @goalDailyBirder.
   ///
@@ -1839,7 +1827,7 @@ abstract class AppLocalizations {
   /// No description provided for @remindersInfo.
   ///
   /// In en, this message translates to:
-  /// **'A nudge after a few days away, twice at most.'**
+  /// **'A nudge after a few days away, twice at most, and one before the month\'s ranking closes.'**
   String get remindersInfo;
 
   /// No description provided for @reminderTradeTitle.
@@ -1889,6 +1877,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} boosters are waiting for you. Which birds will you find?'**
   String reminderPileBody(int count);
+
+  /// No description provided for @reminderRankingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Only 2 days left in the ranking'**
+  String get reminderRankingTitle;
+
+  /// No description provided for @reminderRankingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The month\'s world ranking closes soon: every card you win still counts. Climb a few places for a better reward!'**
+  String get reminderRankingBody;
 
   /// No description provided for @reminderMissingTitle.
   ///
@@ -1973,6 +1973,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Combine cards'**
   String get craftPlusOnly;
+
+  /// No description provided for @ornithologist.
+  ///
+  /// In en, this message translates to:
+  /// **'Ornithologist'**
+  String get ornithologist;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @crafter.
+  ///
+  /// In en, this message translates to:
+  /// **'Crafter'**
+  String get crafter;
+
+  /// No description provided for @explorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Explorer'**
+  String get explorer;
+
+  /// No description provided for @score.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get score;
+
+  /// No description provided for @podium.
+  ///
+  /// In en, this message translates to:
+  /// **'Podium'**
+  String get podium;
+
+  /// No description provided for @goalOrnithologist.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} bird families'**
+  String goalOrnithologist(int count);
+
+  /// No description provided for @goalGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every photo of 1 species} other{Every photo of {count} species}}'**
+  String goalGallery(int count);
+
+  /// No description provided for @goalCrafter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 card forged} other{{count} cards forged}}'**
+  String goalCrafter(int count);
+
+  /// No description provided for @goalExplorer.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards from {count} zones of the world'**
+  String goalExplorer(int count);
+
+  /// No description provided for @goalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} points'**
+  String goalScore(int count);
+
+  /// No description provided for @goalPodium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reach the top {top} % of a month\'s world ranking'**
+  String goalPodium(String top);
 }
 
 class _AppLocalizationsDelegate

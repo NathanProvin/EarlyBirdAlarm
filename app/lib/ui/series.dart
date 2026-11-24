@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import '../birds.dart';
 import '../cards.dart';
@@ -27,7 +28,12 @@ String seriesName(AppLocalizations l, SeriesState s) =>
       legendaryHunter => l.legendaryHunter,
       sharpEar => l.sharpEar,
       wakeUpStreak => l.wakeUpStreak,
-      earlyRiser => l.earlyRiser,
+      ornithologist => l.ornithologist,
+      gallery => l.gallery,
+      crafter => l.crafter,
+      explorer => l.explorer,
+      score => l.score,
+      podium => l.podium,
       dailyBirder => l.dailyBirder,
       fidelity => l.fidelity,
       globetrotter => l.globetrotter,
@@ -52,7 +58,15 @@ String? seriesGoal(AppLocalizations l, SeriesState s) {
     legendaryHunter => l.goalLegendaryHunter(n),
     sharpEar => l.goalSharpEar(n),
     wakeUpStreak => l.goalWakeUpStreak(n),
-    earlyRiser => l.goalEarlyRiser(n),
+    ornithologist => l.goalOrnithologist(n),
+    gallery => l.goalGallery(n),
+    crafter => l.goalCrafter(n),
+    explorer => l.goalExplorer(n),
+    score => l.goalScore(n),
+    podium => l.goalPodium(
+      NumberFormat.decimalPattern(l.localeName)
+          .format(podiumTops[min(s.tier, 4)]),
+    ),
     dailyBirder => l.goalDailyBirder(n),
     fidelity => l.goalFidelity(n),
     globetrotter => l.goalGlobetrotter(n),
@@ -106,15 +120,16 @@ class _SeriesScreenState extends State<SeriesScreen> {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final states = store.seriesNow;
-    // One page per group (the families take two), 6 badges at most per page; null is
-    // an empty "to be added" badge, a page kept for later achievements.
-    final pages = <List<SeriesState?>>[
+    // The badges in group order, packed 6 per page with no gaps (2026-11-24, user: no
+    // half-empty pages); achievements end with "to be added" badges (null) up to a full page.
+    final shown = <SeriesState?>[
       for (final g in seriesGroups)
         if (g.startsWith('achievements') != _series)
-          if (states.where((s) => s.group == g).toList() case final group)
-            for (var i = 0; i < group.length; i += 6)
-              group.skip(i).take(6).toList(),
-      if (!_series) List.filled(6, null),
+          ...states.where((s) => s.group == g),
+    ];
+    if (!_series) shown.addAll(List.filled(6 - shown.length % 6, null));
+    final pages = [
+      for (var i = 0; i < shown.length; i += 6) shown.skip(i).take(6).toList(),
     ];
     return Scaffold(
       appBar: AppBar(title: Text(l.series)),
@@ -379,7 +394,12 @@ class _Badge extends StatelessWidget {
       legendaryHunter => Icons.auto_awesome,
       sharpEar => Icons.hearing,
       wakeUpStreak => Icons.local_fire_department,
-      earlyRiser => Icons.wb_twilight,
+      ornithologist => Icons.account_tree_outlined,
+      gallery => Icons.photo_library_outlined,
+      crafter => Icons.hardware,
+      explorer => Icons.explore,
+      score => Icons.stars,
+      podium => Icons.leaderboard,
       dailyBirder => Icons.calendar_today,
       fidelity => Icons.event_repeat,
       globetrotter => Icons.public,

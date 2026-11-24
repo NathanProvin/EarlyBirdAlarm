@@ -209,12 +209,28 @@ class Store extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Cards forged (the Crafter achievement); boosters from the forge don't count.
+  int get crafted => _prefs.getInt('crafted') ?? 0;
+
+  /// Podium tiers reached (podiumTiers of the best place seen in any month).
+  int get podium => _prefs.getInt('podium') ?? 0;
+
+  /// A place seen in a month's ranking: keeps the best Podium tier reached.
+  void notePodium(int rank, int total) {
+    final n = podiumTiers(rank, total);
+    if (n <= podium) return;
+    _prefs.setInt('podium', n);
+    notifyListeners();
+  }
+
   /// The region's series and the achievements, as they stand.
   List<SeriesState> get seriesNow => seriesStates(birds, achievementCards, (
     bestStreak: bestStreak,
     bestAlarmStreak: bestAlarmStreak,
     given: given.length,
     friends: friends,
+    crafted: crafted,
+    podium: podium,
     collected: _collected,
   ));
 
@@ -886,7 +902,11 @@ class Store extends ChangeNotifier {
         if (!gone.contains(c.key)) c,
       ?forged,
     ]);
-    if (forged == null) await _prefs.setInt('twitchBonus', twitchBonus + 1);
+    if (forged == null) {
+      await _prefs.setInt('twitchBonus', twitchBonus + 1);
+    } else {
+      await _prefs.setInt('crafted', crafted + 1);
+    }
     notifyListeners();
   }
 
@@ -904,6 +924,8 @@ class Store extends ChangeNotifier {
     'alarmStreak': alarmStreak,
     'bestAlarmStreak': bestAlarmStreak,
     'twitchBonus': twitchBonus,
+    'crafted': crafted,
+    'podium': podium,
     'blocked': blocked.toList(),
   };
 
@@ -921,8 +943,13 @@ class Store extends ChangeNotifier {
       'alarmStreak',
       'bestAlarmStreak',
       'twitchBonus',
+      'crafted',
+      'podium',
     ]) {
-      await _prefs.setInt(k, b[k] as int);
+      await _prefs.setInt(
+        k,
+        b[k] as int? ?? 0,
+      ); // older backups: no crafted, podium
     }
     notifyListeners();
   }

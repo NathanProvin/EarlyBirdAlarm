@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Android · version 1.2.0 · in closed testing on
+  Android · version 1.3.0 · in closed testing on
   <a href="https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird">Google Play</a>
 </p>
 

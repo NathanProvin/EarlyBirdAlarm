@@ -57,6 +57,24 @@ DateTime reminderTime(DateTime now, Duration after) => DateTime(
   now.minute,
 );
 
+/// The ranking reminder (2026-11-24, user): 2 days before the month's ranking closes (UTC
+/// month), at the habit hour; past it, next month's. Unlike the come-back ones it stays on
+/// its date however often the app is used: it is the last call to climb.
+DateTime rankingReminderTime(DateTime now) {
+  final u = now.toUtc();
+  for (var m = 1; ; m++) {
+    final end = DateTime.utc(u.year, u.month + m).toLocal();
+    final at = DateTime(
+      end.year,
+      end.month,
+      end.day - 2,
+      now.hour.clamp(9, 20),
+      now.minute,
+    );
+    if (at.isAfter(now)) return at;
+  }
+}
+
 /// Sets the two reminders from what the player has now, or cancels them when off.
 Future<void> scheduleReminders(Store store) async {
   try {
@@ -117,6 +135,14 @@ Future<void> scheduleReminders(Store store) async {
       jsonEncode([
         reminder(one, first),
         if (two != null) reminder(two, second),
+        // Only players in the ranking: an @name and the cloud on.
+        if (store.username != null && !store.cloudOff)
+          {
+            'at': rankingReminderTime(now).millisecondsSinceEpoch,
+            'title': l.reminderRankingTitle,
+            'body': l.reminderRankingBody,
+            'channel': l.reminders,
+          },
       ]),
     );
   } on Exception {

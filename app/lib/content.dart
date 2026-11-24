@@ -121,6 +121,7 @@ Future<void> initContent(String? region) async {
           : await rootBundle.loadString('assets/content/series.json'),
     ) as List)
       Series.fromJson(j as Map<String, dynamic>),
+    ...traitSeries(species.values),
   ];
   final regionFile = localFile('regions/$region.json');
   if (region != null && regionFile.existsSync()) {

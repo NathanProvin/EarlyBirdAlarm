@@ -829,16 +829,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get duplicates => 'Doppelte';
 
   @override
-  String get epicFinds => 'Epische Funde';
+  String get epicFinds => 'Raritäten';
 
   @override
   String get sharpEar => 'Feines Gehör';
 
   @override
   String get wakeUpStreak => 'Weckserie';
-
-  @override
-  String get earlyRiser => 'Frühaufsteher';
 
   @override
   String get dailyBirder => 'Täglich unterwegs';
@@ -881,11 +878,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String goalWakeUpStreak(int count) {
     return 'Eine Weckserie von $count Tagen';
-  }
-
-  @override
-  String goalEarlyRiser(int count) {
-    return '$count Karten vor 7:00 gewonnen';
   }
 
   @override
@@ -1051,7 +1043,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get remindersInfo =>
-      'Ein kleiner Hinweis nach ein paar Tagen Pause, höchstens zweimal.';
+      'Ein kleiner Hinweis nach ein paar Tagen Pause, höchstens zweimal, und einer vor dem Ende der Monatsrangliste.';
 
   @override
   String get reminderTradeTitle => 'Ein Freund wartet auf dich';
@@ -1088,6 +1080,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String reminderPileBody(int count) {
     return '$count Booster warten auf dich. Welche Vögel wirst du finden?';
   }
+
+  @override
+  String get reminderRankingTitle => 'Nur noch 2 Tage Rangliste';
+
+  @override
+  String get reminderRankingBody =>
+      'Die Weltrangliste des Monats endet bald: Jede gewonnene Karte zählt noch. Klettere ein paar Plätze für eine bessere Belohnung!';
 
   @override
   String get reminderMissingTitle => 'Vögel zu entdecken';
@@ -1145,4 +1144,68 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get craftPlusOnly => 'Karten kombinieren';
+
+  @override
+  String get ornithologist => 'Ornithologe';
+
+  @override
+  String get gallery => 'Galerist';
+
+  @override
+  String get crafter => 'Schmied';
+
+  @override
+  String get explorer => 'Entdecker';
+
+  @override
+  String get score => 'Punktestand';
+
+  @override
+  String get podium => 'Podium';
+
+  @override
+  String goalOrnithologist(int count) {
+    return '$count Vogelfamilien';
+  }
+
+  @override
+  String goalGallery(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Alle Fotos von $count Arten',
+      one: 'Alle Fotos von 1 Art',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalCrafter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count geschmiedete Karten',
+      one: '1 geschmiedete Karte',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String goalExplorer(int count) {
+    return 'Karten aus $count Weltgegenden';
+  }
+
+  @override
+  String goalScore(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString Punkte';
+  }
+
+  @override
+  String goalPodium(String top) {
+    return 'Die besten $top % der monatlichen Weltrangliste erreichen';
+  }
 }
