@@ -40,19 +40,8 @@ Future<void> openRanking(BuildContext context) =>
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (_) => const RankingScreen()));
 
-/// "NOV": a month key's first three letters in the app's language, in capitals.
-String _monthShort(AppLocalizations l, String key) {
-  final k = int.parse(key);
-  final s = DateFormat.MMM(l.localeName)
-      .format(DateTime(k ~/ 100, k % 100))
-      .replaceAll('.', '')
-      .toUpperCase();
-  return s.length > 3 ? s.substring(0, 3) : s;
-}
-
-/// The profile's rank button (1/3 beside the score, 2026-11-23): "#12 ›" over "📅 NOV",
-/// outlined in the accent like the map's radar, to be tapped. Last month's reward
-/// waiting: outlined and glowing in the reward's colour, with its card; a tap collects it.
+/// The profile's rank, inside the Points tile (2026-11-24): "#12 >", to be tapped.
+/// Last month's reward waiting: in the reward's colour, with its card; a tap collects it.
 class RankButton extends StatefulWidget {
   const RankButton({super.key});
 
@@ -102,9 +91,10 @@ class _RankButtonState extends State<RankButton> {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    // Inside the Points tile (2026-11-24): "#12 >", in the reward's colour (its mini
+    // card before it) while last month's reward waits.
     Widget button({
       required String rank,
-      required String month,
       required String label,
       required VoidCallback onTap,
       String? reward,
@@ -114,71 +104,27 @@ class _RankButtonState extends State<RankButton> {
         button: true,
         label: label,
         excludeSemantics: true,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            boxShadow: [
-              if (reward != null)
-                BoxShadow(
-                  color: edge.withValues(alpha: 0.6),
-                  blurRadius: 14,
-                  spreadRadius: 1,
-                ),
-            ],
-          ),
-          child: Material(
-            color: scheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(radius),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(radius),
-              onTap: onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 2,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (reward != null) ...[
-                            _MiniCard(reward, width: 16),
-                            const SizedBox(width: 6),
-                          ],
-                          Text(
-                            rank,
-                            style: text.headlineSmall?.copyWith(
-                              color: edge,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Icon(Icons.chevron_right, color: edge),
-                        ],
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: 4,
-                        children: [
-                          Icon(
-                            Icons.calendar_month,
-                            size: 16,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                          Text(
-                            month,
-                            style: text.labelMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+        child: InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (reward != null) ...[
+                  _MiniCard(reward, width: 16),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  rank,
+                  style: text.headlineSmall?.copyWith(
+                    color: edge,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
+                Icon(Icons.chevron_right, color: edge),
+              ],
             ),
           ),
         ),
@@ -193,7 +139,6 @@ class _RankButtonState extends State<RankButton> {
           return button(
             reward: rarity,
             rank: '#${r.rank}',
-            month: _monthShort(l, _last),
             label: '${l.rankReward(_monthName(l, _last))}. ${l.tapToCollect}',
             onTap: () => _collect(rarity),
           );
@@ -204,7 +149,6 @@ class _RankButtonState extends State<RankButton> {
             final r = mine.data;
             return button(
               rank: r == null ? '#–' : '#${r.rank}',
-              month: _monthShort(l, _month),
               label: r == null
                   ? '${l.rankTitle(_monthName(l, _month))}. ${l.rankEnter}'
                   : '${l.rankTitle(_monthName(l, _month))}: #${r.rank}',

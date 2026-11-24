@@ -592,7 +592,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Mode illimité : un booster par minute ! Un achat, à vie.';
+      'Boosters illimités, Radar des espèces et Forge de cartes : un achat, à vie.';
 
   @override
   String get paymentsGoogle => 'Paiement par Google Play.';
@@ -1142,5 +1142,5 @@ class AppLocalizationsFr extends AppLocalizations {
       'Gagnez une carte ce mois-ci pour entrer au classement.';
 
   @override
-  String get craftPlusOnly => 'Réservé à Early Bird Plus';
+  String get craftPlusOnly => 'Combinez vos cartes';
 }

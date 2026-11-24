@@ -161,7 +161,7 @@
   "thankYouPlus": "Early Bird Plus es tuyo para siempre: un sobre por minuto y el mapa de especies que faltan. ¡Gracias por ayudar a que Early Bird siga sin anuncios y creciendo!",
   "purchasesUnavailable": "Las compras no están disponibles en este teléfono.",
   "twitchPlus": "Early Bird Plus",
-  "twitchPlusPitch": "Modo ilimitado: ¡un sobre por minuto! Una compra, para siempre.",
+  "twitchPlusPitch": "Sobres ilimitados, Radar de especies y Forja de cartas: una compra, para siempre.",
   "paymentsGoogle": "Pago con Google Play.",
   "shareTitle": "¡Carta {rarity}!",
   "shareTagline": "El despertador de los pajareros · Gratis en Google Play",
@@ -311,5 +311,5 @@
   "rankEnds": "{days, plural, =1{Último día} other{Termina en {days} días}}",
   "rankReward": "Tu recompensa de {month}",
   "rankEnter": "Gana una carta este mes para entrar en la clasificación.",
-  "craftPlusOnly": "Solo con Early Bird Plus"
+  "craftPlusOnly": "Combina tus cartas"
 }

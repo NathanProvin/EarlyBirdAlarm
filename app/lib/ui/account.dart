@@ -83,25 +83,13 @@ class _AccountScreenState extends State<AccountScreen> {
                     children: [
                       const HallOfFame(),
                       const SizedBox(height: 20),
-                      // The score (2/3) and this month's rank (1/3), as tall as each
-                      // other. The ranking needs the (anonymous) account: none in tests.
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          spacing: 8,
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: PointsButton(
-                                cards: store.cards,
-                                onTap: online
-                                    ? () => openRanking(context)
-                                    : null,
-                              ),
-                            ),
-                            if (online) const Expanded(child: RankButton()),
-                          ],
-                        ),
+                      // The score with this month's rank inside, then the counts,
+                      // as on a friend's profile. The ranking needs the (anonymous)
+                      // account: none in tests.
+                      ProfileStats(
+                        cards: store.cards,
+                        onTap: online ? () => openRanking(context) : null,
+                        rank: online ? const RankButton() : null,
                       ),
                     ],
                   ),

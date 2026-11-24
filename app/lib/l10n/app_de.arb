@@ -161,7 +161,7 @@
   "thankYouPlus": "Early Bird Plus gehört dir für immer: ein Booster pro Minute und die Karte der fehlenden Arten. Danke, dass du Early Bird werbefrei hältst und wachsen lässt!",
   "purchasesUnavailable": "Käufe sind auf diesem Telefon nicht verfügbar.",
   "twitchPlus": "Early Bird Plus",
-  "twitchPlusPitch": "Unbegrenzter Modus: ein Booster pro Minute! Einmal kaufen, für immer.",
+  "twitchPlusPitch": "Unbegrenzte Booster, Arten-Radar und Kartenschmiede: einmal kaufen, für immer.",
   "paymentsGoogle": "Bezahlung über Google Play.",
   "shareTitle": "Karte „{rarity}“!",
   "shareTagline": "Der Wecker für Vogelfreunde · Gratis bei Google Play",
@@ -311,5 +311,5 @@
   "rankEnds": "{days, plural, =1{Letzter Tag} other{Endet in {days} Tagen}}",
   "rankReward": "Deine Belohnung für {month}",
   "rankEnter": "Gewinne diesen Monat eine Karte, um in die Rangliste zu kommen.",
-  "craftPlusOnly": "Nur mit Early Bird Plus"
+  "craftPlusOnly": "Karten kombinieren"
 }

@@ -174,7 +174,7 @@
   "thankYouPlus": "Early Bird Plus is yours for good: a booster every minute and the missing-species map. Thank you for helping Early Bird stay ad-free and keep growing!",
   "purchasesUnavailable": "Purchases are not available on this phone.",
   "twitchPlus": "Early Bird Plus",
-  "twitchPlusPitch": "Unlimited mode: a booster every minute! One purchase, for life.",
+  "twitchPlusPitch": "Unlimited boosters, Species Radar and Card crafting: one purchase, for life.",
   "paymentsGoogle": "Payments by Google Play.",
   "shareTitle": "{rarity} card!",
   "@shareTitle": {"placeholders": {"rarity": {"type": "String"}}},
@@ -357,5 +357,5 @@
   "rankReward": "Your {month} reward",
   "@rankReward": {"placeholders": {"month": {"type": "String"}}},
   "rankEnter": "Win a card this month to enter the ranking.",
-  "craftPlusOnly": "Early Bird Plus only"
+  "craftPlusOnly": "Combine cards"
 }

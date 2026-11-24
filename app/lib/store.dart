@@ -96,6 +96,10 @@ const twitchEvery = Duration(minutes: devTools ? 1 : 15);
 /// Twitch Plus (one-time purchase, see purchases.dart): a booster every minute.
 const twitchPlusEvery = Duration(minutes: 1);
 
+/// `--dart-define=HIDE_PLUS=true`: a build that shows the app as without Plus (to check
+/// its layouts) while the purchase stays saved; a normal build brings Plus back.
+const _hidePlus = bool.fromEnvironment('HIDE_PLUS');
+
 int twitchCharges(
   DateTime start,
   DateTime now, [
@@ -153,7 +157,7 @@ class Store extends ChangeNotifier {
   int get twitchBonus => _prefs.getInt('twitchBonus') ?? 0;
 
   /// Twitch Plus bought (restored from Google Play after a reinstall).
-  bool get twitchPlus => _prefs.getBool('twitchPlus') ?? false;
+  bool get twitchPlus => !_hidePlus && (_prefs.getBool('twitchPlus') ?? false);
   set twitchPlus(bool on) =>
       _prefs.setBool('twitchPlus', on).then((_) => notifyListeners());
 

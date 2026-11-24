@@ -268,122 +268,78 @@ class ProfileHeader extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    // Two columns (2026-11-23): the avatar with the @name under it; the three counts
-    // stacked as tall as the avatar, with the sign-in state under them.
-    return LayoutBuilder(
-      builder: (context, box) {
-        final size = min(150.0, box.maxWidth * 0.46);
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 14,
-          children: [
-            SizedBox(
-              width: size,
-              child: Column(
-                children: [
-                  Semantics(
-                    button: true,
-                    label: l.changeAvatar,
-                    child: GestureDetector(
-                      onTap: () => _changeAvatar(context),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Avatar(store.avatar, size: size),
-                          Positioned(
-                            right: size * 0.04,
-                            bottom: size * 0.04,
-                            child: _GlassIcon(
-                              Icons.edit,
-                              color: scheme.primary,
-                            ),
-                          ),
-                        ],
+    // A friend's profile's layout (2026-11-24): the avatar centred, the @name, then
+    // the email (or sign in) under it.
+    const size = 128.0;
+    return Column(
+      children: [
+        Semantics(
+          button: true,
+          label: l.changeAvatar,
+          child: GestureDetector(
+            onTap: () => _changeAvatar(context),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Avatar(store.avatar, size: size),
+                Positioned(
+                  right: size * 0.04,
+                  bottom: size * 0.04,
+                  child: _GlassIcon(Icons.edit, color: scheme.primary),
+                ),
+              ],
+            ),
+          ),
+        ),
+        InkWell(
+          borderRadius: BorderRadius.circular(radius),
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (_) => const _Rename(),
+          ),
+          child: SizedBox(
+            height: 48, // a full touch target
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Shrinks to fit: a 20-character name is shown whole.
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '@${store.username ?? '…'}',
+                      style: text.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(radius),
-                    onTap: () => showDialog<void>(
-                      context: context,
-                      builder: (_) => const _Rename(),
-                    ),
-                    child: SizedBox(
-                      height: 48, // a full touch target
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Shrinks to fit: a 20-character name is shown whole.
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                '@${store.username ?? '…'}',
-                                style: text.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(Icons.edit, size: 14, color: scheme.primary),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 4),
+                Icon(Icons.edit, size: 14, color: scheme.primary),
+              ],
             ),
-            Expanded(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: size,
-                    child: StatPills(cards: store.cards, stacked: true),
+          ),
+        ),
+        if (email == null)
+          TextButton(onPressed: onSignIn, child: Text(l.signInToKeep))
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.cloud_done_outlined, size: 14, color: scheme.primary),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  email!,
+                  overflow: TextOverflow.ellipsis,
+                  style: text.bodySmall?.copyWith(
+                    color: scheme.onSurface.withValues(alpha: 0.6),
                   ),
-                  SizedBox(
-                    height: 48, // level with the @name
-                    child: email == null
-                        ? TextButton(
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(0, 48),
-                              padding: EdgeInsets.zero,
-                            ),
-                            onPressed: onSignIn,
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(l.signInToKeep),
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.cloud_done_outlined,
-                                size: 14,
-                                color: scheme.primary,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  email!,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: text.bodySmall?.copyWith(
-                                    color: scheme.onSurface.withValues(
-                                      alpha: 0.6,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+      ],
     );
   }
 }
@@ -653,13 +609,10 @@ int collectionPoints(List<CardData> cards) {
   return sum.round();
 }
 
-/// The collection in three counts: cards, species, regions. [stacked]: one above the
-/// other, number and name on one line, filling the height given (beside the avatar);
-/// else side by side, the name under the number (a friend's profile).
+/// The collection in three counts side by side: cards, species, regions.
 class StatPills extends StatelessWidget {
-  const StatPills({required this.cards, this.stacked = false, super.key});
+  const StatPills({required this.cards, super.key});
   final List<CardData> cards;
-  final bool stacked;
 
   @override
   Widget build(BuildContext context) {
@@ -686,41 +639,28 @@ class StatPills extends StatelessWidget {
             ),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: stacked
-                  ? Row(
-                      spacing: 8,
-                      children: [
-                        Text('$n', style: number),
-                        Text(label, style: text.labelLarge),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        Text('$n', style: number),
-                        Text(label, style: text.labelMedium),
-                      ],
-                    ),
+              child: Column(
+                children: [
+                  Text('$n', style: number),
+                  Text(label, style: text.labelMedium),
+                ],
+              ),
             ),
           ),
         ),
     ];
-    return stacked
-        // Stretched: the three pills share one width, their numbers in one column.
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 6,
-            children: pills,
-          )
-        : Row(spacing: 6, children: pills);
+    return Row(spacing: 6, children: pills);
   }
 }
 
 /// The score: a big trophy beating a few times, the number beside it, "Points" under
-/// the number, right-aligned with it; the group centred. [onTap]: the ranking.
+/// the number, right-aligned with it; the group centred. [onTap]: the ranking. [rank]:
+/// the player's own "#1 >" at the right end.
 class PointsButton extends StatefulWidget {
-  const PointsButton({required this.cards, this.onTap, super.key});
+  const PointsButton({required this.cards, this.onTap, this.rank, super.key});
   final List<CardData> cards;
   final VoidCallback? onTap;
+  final Widget? rank;
 
   @override
   State<PointsButton> createState() => _PointsButtonState();
@@ -759,52 +699,63 @@ class _PointsButtonState extends State<PointsButton>
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 12,
             children: [
-              RepaintBoundary(
-                child: AnimatedBuilder(
-                  animation: _beat,
-                  builder: (context, child) {
-                    final b = sin((_beat.value / 0.35).clamp(0.0, 1.0) * pi);
-                    return Transform.scale(
-                      scale: 1 + 0.18 * b,
-                      child: Icon(
-                        Icons.emoji_events,
-                        size: 44,
-                        color: scheme.primary,
-                        shadows: [
-                          if (b > 0)
-                            Shadow(
-                              color: scheme.primary.withValues(alpha: 0.7 * b),
-                              blurRadius: 12,
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 12,
+                  children: [
+                    RepaintBoundary(
+                      child: AnimatedBuilder(
+                        animation: _beat,
+                        builder: (context, child) {
+                          final b = sin(
+                            (_beat.value / 0.35).clamp(0.0, 1.0) * pi,
+                          );
+                          return Transform.scale(
+                            scale: 1 + 0.18 * b,
+                            child: Icon(
+                              Icons.emoji_events,
+                              size: 44,
+                              color: scheme.primary,
+                              shadows: [
+                                if (b > 0)
+                                  Shadow(
+                                    color: scheme.primary.withValues(
+                                      alpha: 0.7 * b,
+                                    ),
+                                    blurRadius: 12,
+                                  ),
+                              ],
                             ),
-                        ],
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        NumberFormat.decimalPattern(l.localeName)
-                            .format(collectionPoints(widget.cards)),
-                        style: text.headlineMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.bold,
-                          height: 1.1,
+                    ),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              NumberFormat.decimalPattern(l.localeName)
+                                  .format(collectionPoints(widget.cards)),
+                              style: text.headlineMedium?.copyWith(
+                                color: scheme.primary,
+                                fontWeight: FontWeight.bold,
+                                height: 1.1,
+                              ),
+                            ),
+                            Text(l.statPoints, style: text.labelMedium),
+                          ],
                         ),
                       ),
-                      Text(l.statPoints, style: text.labelMedium),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+              ?widget.rank,
             ],
           ),
         ),
@@ -813,16 +764,18 @@ class _PointsButtonState extends State<PointsButton>
   }
 }
 
-/// A friend's collection: their score, then their three counts.
+/// A collection's score, then its three counts. [onTap], [rank]: see [PointsButton].
 class ProfileStats extends StatelessWidget {
-  const ProfileStats({required this.cards, super.key});
+  const ProfileStats({required this.cards, this.onTap, this.rank, super.key});
   final List<CardData> cards;
+  final VoidCallback? onTap;
+  final Widget? rank;
 
   @override
   Widget build(BuildContext context) => Column(
     spacing: 8,
     children: [
-      PointsButton(cards: cards),
+      PointsButton(cards: cards, onTap: onTap, rank: rank),
       StatPills(cards: cards),
     ],
   );

@@ -113,6 +113,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
     await store.craft(picked, forged);
     if (!mounted) return;
     setState(_picked.clear);
+    final here = ModalRoute.of(context);
+    Navigator.of(context).popUntil((r) => r == here || r.isFirst);
     unawaited(
       Navigator.of(context).push(
         PageRouteBuilder<void>(
@@ -120,6 +122,114 @@ class _CollectionScreenState extends State<CollectionScreen> {
           pageBuilder: (_, _, _) => _ForgeScreen(picked, forged),
           transitionsBuilder: (_, a, _, child) =>
               FadeTransition(opacity: a, child: child),
+        ),
+      ),
+    );
+  }
+
+  /// The forge pill: ⓘ, what the picked cards give, Forge (without Plus: the Plus
+  /// sheet). Also on an opened pile, so the picks can be forged from there.
+  Widget _forgePill() {
+    final l = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final picked = [
+      for (final c in store.cards)
+        if (_picked.contains(c.key)) c,
+    ];
+    final result = craftResult(
+      [for (final c in picked) cardRarity(c)],
+      [for (final c in picked) c.birdId],
+    );
+    final plus = store.twitchPlus;
+    final small = Theme.of(context).textTheme.bodySmall;
+    return Material(
+      key: const ValueKey('forge'),
+      elevation: 3,
+      color: scheme.surfaceContainerHigh,
+      shape: StadiumBorder(side: BorderSide(color: scheme.primary, width: 2)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 56,
+          maxWidth: MediaQuery.sizeOf(context).width - 32 - 56 - 8,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: l.craftRecipes,
+              icon: Icon(Icons.info_outline, color: scheme.primary),
+              onPressed: () => _recipes(l),
+            ),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l.craftTitle,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: scheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  // Without Plus: say it's paid; nothing picked: the pitch; else what
+                  // the picked cards give, in pictures.
+                  if (!plus || picked.isEmpty)
+                    // Shrinks to fit rather than being cut.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        plus ? l.craftPitch : l.craftPlusOnly,
+                        style: small,
+                      ),
+                    )
+                  else
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 4,
+                      children: [
+                        Text('${picked.length}×', style: small),
+                        const Icon(Icons.arrow_forward, size: 14),
+                        if (result == null)
+                          const Icon(Icons.block, size: 14)
+                        else
+                          _miniCard(result, width: 12),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 6, 0),
+              child: !plus
+                  ? FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                      ),
+                      icon: const Icon(Icons.bolt),
+                      label: const Text('Plus'),
+                      onPressed: () => showModalBottomSheet<void>(
+                        context: context,
+                        showDragHandle: true,
+                        builder: (_) => const PlusSheet(),
+                      ),
+                    )
+                  : picked.isEmpty
+                  ? const SizedBox(width: 8)
+                  : FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                      ),
+                      onPressed: result == null
+                          ? null
+                          : () => _forge(picked, result),
+                      child: Text(l.craftAction),
+                    ),
+            ),
+          ],
         ),
       ),
     );
@@ -368,11 +478,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
         for (final c in best.values)
           if (birdById(c.birdId) case final b?) (b, c as CardData?),
       ],
-      // Crafting: every spare copy on its own, ready to pick (the best copies stay out).
-      _duplicates when _crafting => [
-        for (final c in spares)
-          if (birdById(c.birdId) case final b?) (b, c as CardData?),
-      ],
       _duplicates => [
         for (final c in best.values)
           if (spareSpecies.contains(c.birdId))
@@ -427,14 +532,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
         onTap: onTap,
         child: child,
       ),
-    );
-    final picked = [
-      for (final c in cards)
-        if (_picked.contains(c.key)) c,
-    ];
-    final result = craftResult(
-      [for (final c in picked) cardRarity(c)],
-      [for (final c in picked) c.birdId],
     );
     void open(Widget screen) =>
         Navigator.of(context)
@@ -511,60 +608,51 @@ class _CollectionScreenState extends State<CollectionScreen> {
             itemBuilder: (context, i) {
               final (b, c) = shown[i];
               final open = openable.indexOf(shown[i]);
-              final copies = view == _all || _crafting
-                  ? 1
-                  : copiesOf[b.id] ?? 0;
-              // Species and Duplicates: a pile opens into its copies.
+              final copies = view == _all ? 1 : copiesOf[b.id] ?? 0;
+              // Species and Duplicates: a pile opens into its copies (to pick from,
+              // while crafting).
               final pile = !compact && copies > 1;
+              Future<void> openPile() async {
+                unawaited(HapticFeedback.selectionClick());
+                await Navigator.of(context).push(
+                  PageRouteBuilder<void>(
+                    transitionDuration: const Duration(milliseconds: 350),
+                    pageBuilder: (_, _, _) => _crafting
+                        ? _PileScreen(b, picked: _picked, forge: _forgePill)
+                        : _PileScreen(b),
+                    transitionsBuilder: (_, a, _, child) =>
+                        FadeTransition(opacity: a, child: child),
+                  ),
+                );
+                if (mounted) setState(() {}); // the forge pill shows the picks
+              }
+
               if (_crafting) {
-                final on = c != null && _picked.contains(c.key);
-                return Stack(
-                  children: [
-                    Positioned.fill(
-                      child: CardTile(
-                        bird: b,
-                        card: c,
-                        heard: heard.contains(b.id),
-                        compact: compact,
-                        onTap: c == null
-                            ? null
-                            : () {
-                                unawaited(HapticFeedback.selectionClick());
-                                setState(() {
-                                  if (!_picked.remove(c.key)) {
-                                    _picked.add(c.key);
-                                  }
-                                });
-                              },
-                      ),
-                    ),
-                    if (on)
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(radius),
-                              border: Border.all(
-                                color: scheme.primary,
-                                width: 4,
-                              ),
-                            ),
-                            child: Align(
-                              alignment: const Alignment(0.9, -0.95),
-                              child: CircleAvatar(
-                                radius: 14,
-                                backgroundColor: scheme.primary,
-                                child: Icon(
-                                  Icons.check,
-                                  size: 18,
-                                  color: scheme.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                return _pickMark(
+                  context,
+                  pile
+                      ? store.cards.any(
+                          (k) => k.birdId == b.id && _picked.contains(k.key),
+                        )
+                      : c != null && _picked.contains(c.key),
+                  CardTile(
+                    bird: b,
+                    card: c,
+                    copies: copies,
+                    heard: heard.contains(b.id),
+                    compact: compact,
+                    heroTag: pile ? _pileHero(b) : null,
+                    onTap: pile
+                        ? openPile
+                        : c == null
+                        ? null
+                        : () {
+                            unawaited(HapticFeedback.selectionClick());
+                            setState(() {
+                              if (!_picked.remove(c.key)) _picked.add(c.key);
+                            });
+                          },
+                  ),
                 );
               }
               return CardTile(
@@ -575,19 +663,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                 compact: compact,
                 heroTag: pile ? _pileHero(b) : null,
                 onTap: pile
-                    ? () {
-                        unawaited(HapticFeedback.selectionClick());
-                        Navigator.of(context).push(
-                          PageRouteBuilder<void>(
-                            transitionDuration: const Duration(
-                              milliseconds: 350,
-                            ),
-                            pageBuilder: (_, _, _) => _PileScreen(b),
-                            transitionsBuilder: (_, a, _, child) =>
-                                FadeTransition(opacity: a, child: child),
-                          ),
-                        );
-                      }
+                    ? openPile
                     : open < 0
                     ? null
                     : () => Navigator.of(context).push(
@@ -603,96 +679,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       ],
     );
     // Crafting, in the thumb's reach: the hammer, and its pill sliding out to the left.
-    final plus = store.twitchPlus;
-    final small = Theme.of(context).textTheme.bodySmall;
-    final pill = Material(
-      key: const ValueKey('forge'),
-      elevation: 3,
-      color: scheme.surfaceContainerHigh,
-      shape: StadiumBorder(side: BorderSide(color: scheme.primary, width: 2)),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: 56,
-          maxWidth: MediaQuery.sizeOf(context).width - 32 - 56 - 8,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: l.craftRecipes,
-              icon: Icon(Icons.info_outline, color: scheme.primary),
-              onPressed: () => _recipes(l),
-            ),
-            Flexible(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l.craftTitle,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // Without Plus: say it's paid; nothing picked: the pitch; else what
-                  // the picked cards give, in pictures.
-                  if (!plus || picked.isEmpty)
-                    Text(
-                      plus ? l.craftPitch : l.craftPlusOnly,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: small,
-                    )
-                  else
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 4,
-                      children: [
-                        Text('${picked.length}×', style: small),
-                        const Icon(Icons.arrow_forward, size: 14),
-                        if (result == null)
-                          const Icon(Icons.block, size: 14)
-                        else
-                          _miniCard(result, width: 12),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 6, 0),
-              child: !plus
-                  ? FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 44),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                      ),
-                      icon: const Icon(Icons.bolt),
-                      label: const Text('Plus'),
-                      onPressed: () => showModalBottomSheet<void>(
-                        context: context,
-                        showDragHandle: true,
-                        builder: (_) => const PlusSheet(),
-                      ),
-                    )
-                  : picked.isEmpty
-                  ? const SizedBox(width: 8)
-                  : FilledButton(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 44),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                      ),
-                      onPressed: result == null
-                          ? null
-                          : () => _forge(picked, result),
-                      child: Text(l.craftAction),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
+    final pill = _forgePill();
     return Stack(
       children: [
         grid,
@@ -926,8 +913,8 @@ class _ForgeScreenState extends State<_ForgeScreen>
       ];
       body = LayoutBuilder(
         builder: (context, box) {
-          final w = box.maxWidth * 0.32, h = w / 0.68;
-          final reach = box.maxWidth * 0.3;
+          final w = box.maxWidth * 0.5, h = w / 0.68;
+          final reach = box.maxWidth * 0.25;
           return AnimatedBuilder(
             animation: _forge,
             builder: (context, _) {
@@ -940,9 +927,11 @@ class _ForgeScreenState extends State<_ForgeScreen>
                   ? 0.0
                   : sin((v - 0.45) / 0.3 * 6 * pi);
               final flash = v < 0.7 ? 0.0 : sin((v - 0.7) / 0.3 * pi);
+              // Full screen: a Stack sized by its card sat in the top left corner.
               return Stack(
                 alignment: Alignment.center,
                 children: [
+                  const SizedBox.expand(),
                   for (final (i, (b, c)) in used.indexed)
                     Transform.translate(
                       offset:
@@ -1265,11 +1254,44 @@ class CardPager extends StatelessWidget {
   }
 }
 
+/// A picked card while crafting: an accent border and a ✓ over [tile].
+Widget _pickMark(BuildContext context, bool on, Widget tile) {
+  final scheme = Theme.of(context).colorScheme;
+  return Stack(
+    children: [
+      Positioned.fill(child: tile),
+      if (on)
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: scheme.primary, width: 4),
+              ),
+              child: Align(
+                alignment: const Alignment(0.9, -0.95),
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: scheme.primary,
+                  child: Icon(Icons.check, size: 18, color: scheme.onPrimary),
+                ),
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
 /// A species' pile opened (2026-11-17): every copy, best first. The top card flies in
-/// from the grid (Hero); the others are dealt from under it to their places.
+/// from the grid (Hero); the others are dealt from under it to their places. [picked]:
+/// crafting's picks, toggled by a tap instead of opening the card.
 class _PileScreen extends StatefulWidget {
-  const _PileScreen(this.bird);
+  const _PileScreen(this.bird, {this.picked, this.forge});
   final Bird bird;
+  final Set<String>? picked;
+  final Widget Function()?
+  forge; // the collection's forge pill, rebuilt with the picks
 
   @override
   State<_PileScreen> createState() => _PileScreenState();
@@ -1302,6 +1324,7 @@ class _PileScreenState extends State<_PileScreen>
       appBar: AppBar(
         title: Text('${bird.nameIn(l.localeName)} ×${copies.length}'),
       ),
+      floatingActionButton: widget.forge?.call(),
       body: LayoutBuilder(
         builder: (context, box) {
           final w = (box.maxWidth - 2 * pad - gap) / 2, h = w / 0.68;
@@ -1323,17 +1346,30 @@ class _PileScreenState extends State<_PileScreen>
             ),
             itemCount: copies.length,
             itemBuilder: (context, i) {
-              final tile = CardTile(
+              final picked = widget.picked;
+              final key = copies[i].key;
+              Widget tile = CardTile(
                 bird: bird,
                 card: copies[i],
                 heard: false,
                 heroTag: i == 0 ? _pileHero(bird) : null,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => CardPager(entries: entries, initial: i),
-                  ),
-                ),
+                onTap: picked != null
+                    ? () {
+                        unawaited(HapticFeedback.selectionClick());
+                        setState(() {
+                          if (!picked.remove(key)) picked.add(key);
+                        });
+                      }
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              CardPager(entries: entries, initial: i),
+                        ),
+                      ),
               );
+              if (picked != null) {
+                tile = _pickMark(context, picked.contains(key), tile);
+              }
               if (i == 0) return tile;
               // Once the top card has landed, one card every 60 ms, tilted as in a pile.
               final begin = min(0.25 + 0.06 * i, 0.65);

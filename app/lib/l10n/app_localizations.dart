@@ -1071,7 +1071,7 @@ abstract class AppLocalizations {
   /// No description provided for @twitchPlusPitch.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited mode: a booster every minute! One purchase, for life.'**
+  /// **'Unlimited boosters, Species Radar and Card crafting: one purchase, for life.'**
   String get twitchPlusPitch;
 
   /// No description provided for @paymentsGoogle.
@@ -1971,7 +1971,7 @@ abstract class AppLocalizations {
   /// No description provided for @craftPlusOnly.
   ///
   /// In en, this message translates to:
-  /// **'Early Bird Plus only'**
+  /// **'Combine cards'**
   String get craftPlusOnly;
 }
 

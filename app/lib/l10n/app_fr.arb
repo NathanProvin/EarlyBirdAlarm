@@ -161,7 +161,7 @@
   "thankYouPlus": "Early Bird Plus est à vous pour de bon : un booster par minute et la carte des espèces manquantes. Merci d'aider Early Bird à rester sans pub et à grandir !",
   "purchasesUnavailable": "Les achats ne sont pas disponibles sur ce téléphone.",
   "twitchPlus": "Early Bird Plus",
-  "twitchPlusPitch": "Mode illimité : un booster par minute ! Un achat, à vie.",
+  "twitchPlusPitch": "Boosters illimités, Radar des espèces et Forge de cartes : un achat, à vie.",
   "paymentsGoogle": "Paiement par Google Play.",
   "shareTitle": "Carte {rarity} !",
   "shareTagline": "Le réveil des ornithos · Gratuit sur Google Play",
@@ -311,5 +311,5 @@
   "rankEnds": "{days, plural, =1{Dernier jour} other{Se termine dans {days} jours}}",
   "rankReward": "Votre récompense de {month}",
   "rankEnter": "Gagnez une carte ce mois-ci pour entrer au classement.",
-  "craftPlusOnly": "Réservé à Early Bird Plus"
+  "craftPlusOnly": "Combinez vos cartes"
 }
