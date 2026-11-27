@@ -76,7 +76,8 @@ The production release: no risky features. Order below = build order, one releas
 - [x] **User (console):** code `ami2nathan` → reward `legendary` (codes live in Firestore `codes/{word}`, not in the app)
 - [x] **Performance pass** (2026-11-27): grid tiles and forge without live blurs, 35 → 5 ms GPU frames (decisions.md, Smooth scrolling)
 - [ ] User review on the S22 (crafting validated; ranking and Lure fixes of 2026-11-27 installed); the two noisy recordings to remove (reject list)
-- [ ] Version 1.4.0+9 (set), release notes in 4 languages (`store-listing.md`), signed bundle → closed track → production
+- [x] Version 1.4.0+9, release notes in 4 languages (`store-listing.md`), signed bundle built (2026-11-27)
+- [ ] Upload the bundle to the closed track, then production
 
 ## Later
 - **Challenges between friends** (brainstormed 2026-11-27, not green-lit): async 5-bird duel on a `challenges/{a}_{b}` doc (trade pattern), or a real-time 3-lives duel with wagered cards held in escrow in the duel doc (removed from both collections at the start, so a loser going offline can't keep them; leaving = loss); cheatable while cards are rolled on the phone.

@@ -1,6 +1,6 @@
 # Early Bird Alarm — Google Play listing & declarations
 
-Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-24 (What's new 1.3.0); 2026-11-20 (1.2: species count and new areas, card badges and missing-species map bullets, What's new 1.2.0); 2026-11-03 (store title, descriptions rewritten for conversion); before: 2026-11-01
+Ready to paste into Play Console (Iteration 4b). Keep in sync with the app. Updated 2026-11-27 (What's new 1.4.0); 2026-11-24 (What's new 1.3.0); 2026-11-20 (1.2: species count and new areas, card badges and missing-species map bullets, What's new 1.2.0); 2026-11-03 (store title, descriptions rewritten for conversion); before: 2026-11-01
 (trading, series rewards, 4 languages, world map, search, onboarding).
 
 ## Basics
@@ -186,6 +186,47 @@ GRATIS. SIN ANUNCIOS. SIN CUENTA. SIN RASTREO.
 En español, inglés, francés y alemán.
 
 Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
+
+## What's new — 1.4.0+9 (≤ 500 chars each)
+### EN
+New in 1.4
+• Lure (Early Bird Plus): call a bird up to 3 times a day, it may be your next card
+• World ranking: this month or all time, with avatars and a reward card for the top 10
+• Forge: 3 Commons make an Uncommon, 2 Commons make 2 boosters
+• Forge mode opens your duplicates
+• Share your own bird photos for the catalog, from Settings
+• Leaf warblers series: the whole family
+• Much smoother collection and forge
+
+### FR
+Nouveau dans la 1.4
+• Repasse (Early Bird Plus) : appelez un oiseau jusqu'à 3 fois par jour, il sera peut-être votre prochaine carte
+• Classement mondial : ce mois-ci ou de tous les temps, avec avatars et une carte pour le top 10
+• Forge : 3 Communes donnent une Peu commune, 2 Communes donnent 2 boosters
+• Le mode forge ouvre vos doubles
+• Partagez vos photos d'oiseaux pour le catalogue, depuis les Réglages
+• Série Pouillots : toute la famille
+• Collection et forge bien plus fluides
+
+### DE
+Neu in 1.4
+• Lockruf (Early Bird Plus): Ruf bis zu 3-mal am Tag einen Vogel, vielleicht ist er deine nächste Karte
+• Weltrangliste: dieser Monat oder Allzeit, mit Avataren und einer Karte für die Top 10
+• Schmiede: 3 Gewöhnliche ergeben eine Ungewöhnliche, 2 Gewöhnliche 2 Booster
+• Der Schmiedemodus öffnet deine Doppelten
+• Teile deine Vogelfotos für den Katalog, in den Einstellungen
+• Serie Laubsänger: die ganze Familie
+• Sammlung und Schmiede viel flüssiger
+
+### ES
+Novedades de la 1.4
+• Reclamo (Early Bird Plus): llama a un ave hasta 3 veces al día, quizá sea tu próxima carta
+• Clasificación mundial: este mes o histórica, con avatares y una carta para el top 10
+• Forja: 3 Comunes dan una Poco común, 2 Comunes dan 2 sobres
+• El modo forja abre tus duplicados
+• Comparte tus fotos de aves para el catálogo, desde Ajustes
+• Serie Mosquiteros: toda la familia
+• Colección y forja mucho más fluidas
 
 ## What's new — 1.3.0+8 (≤ 500 chars each)
   ### EN
