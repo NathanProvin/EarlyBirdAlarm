@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'card.dart' show PhotoScale;
 import 'family_paths.dart';
 
 /// Bird group icons (2026-11-13): each catalog family belongs to one group, drawn as a
@@ -454,27 +455,31 @@ class _Glass extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(radius),
-    child: BackdropFilter(
-      filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: color.withValues(
-            alpha: 0.18,
-          ) /* Art's; the badges' since 2026-11-19 */,
-          border: Border.all(
-            color: Color.lerp(
-              color,
-              Colors.white,
-              0.45,
-            )!.withValues(alpha: 0.8),
-            width: 1.5,
-          ),
+  Widget build(BuildContext context) {
+    // A shrunk card (grid tile, forge): a solid tint, the same rim. Up to 4 live blurs
+    // per tile made scrolling GPU-bound (35 ms frames on the S22, 2026-11-27).
+    final shrunk = PhotoScale.of(context) < 1;
+    final box = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        color: shrunk
+            ? Color.lerp(color, Colors.black, 0.35)!.withValues(alpha: 0.6)
+            : color.withValues(alpha: 0.18),
+        border: Border.all(
+          color: Color.lerp(color, Colors.white, 0.45)!.withValues(alpha: 0.8),
+          width: 1.5,
         ),
-        child: child,
       ),
-    ),
-  );
+      child: child,
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: shrunk
+          ? box
+          : BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: box,
+            ),
+    );
+  }
 }

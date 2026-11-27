@@ -188,41 +188,41 @@ En español, inglés, francés y alemán.
 Para pajareros, amantes de la naturaleza, coleccionistas y cualquiera que esté harto de su alarma de siempre.
 
 ## What's new — 1.3.0+8 (≤ 500 chars each)
-### EN
-New in 1.3
-• Card forge (Early Bird Plus): combine copies of a species into a rarer card, or any 2 into a booster
-• Points: every card counts, rarer and better ones more
-• Monthly world ranking, with a reward card for the best players and a reminder before it closes
-• 6 new achievements, harder goals, and new diet and habitat series
-• New profile: your score and rank at a glance
-• Smoother scrolling
+  ### EN
+  New in 1.3
+  • Card forge (Early Bird Plus): combine copies of a species into a rarer card, or any 2 into a booster
+  • Points: every card counts, rarer and better ones more
+  • Monthly world ranking, with a reward card for the best players and a reminder before it closes
+  • 6 new achievements, harder goals, and new diet and habitat series
+  • New profile: your score and rank at a glance
+  • Smoother scrolling
 
-### FR
-Nouveau dans la 1.3
-• Forge de cartes (Early Bird Plus) : fusionnez les doubles d'une espèce en une carte plus rare, ou 2 cartes en un booster
-• Points : chaque carte compte, les plus rares et les meilleures davantage
-• Classement mondial mensuel, avec une carte en récompense pour les meilleurs et un rappel avant la clôture
-• 6 nouveaux succès, des objectifs plus durs, et de nouvelles séries par régime et habitat
-• Nouveau profil : score et rang en un coup d'œil
-• Défilement plus fluide
+  ### FR
+  Nouveau dans la 1.3
+  • Forge de cartes (Early Bird Plus) : fusionnez les doubles d'une espèce en une carte plus rare, ou 2 cartes en un booster
+  • Points : chaque carte compte, les plus rares et les meilleures davantage
+  • Classement mondial mensuel, avec une carte en récompense pour les meilleurs et un rappel avant la clôture
+  • 6 nouveaux succès, des objectifs plus durs, et de nouvelles séries par régime et habitat
+  • Nouveau profil : score et rang en un coup d'œil
+  • Défilement plus fluide
 
-### DE
-Neu in 1.3
-• Kartenschmiede (Early Bird Plus): verschmilz Doppelte einer Art zu einer selteneren Karte oder 2 Karten zu einem Booster
-• Punkte: Jede Karte zählt, seltene und bessere mehr
-• Monatliche Weltrangliste mit einer Belohnungskarte für die Besten und einer Erinnerung vor dem Ende
-• 6 neue Erfolge, schwerere Ziele und neue Serien nach Nahrung und Lebensraum
-• Neues Profil: Punkte und Rang auf einen Blick
-• Flüssigeres Scrollen
+  ### DE
+  Neu in 1.3
+  • Kartenschmiede (Early Bird Plus): verschmilz Doppelte einer Art zu einer selteneren Karte oder 2 Karten zu einem Booster
+  • Punkte: Jede Karte zählt, seltene und bessere mehr
+  • Monatliche Weltrangliste mit einer Belohnungskarte für die Besten und einer Erinnerung vor dem Ende
+  • 6 neue Erfolge, schwerere Ziele und neue Serien nach Nahrung und Lebensraum
+  • Neues Profil: Punkte und Rang auf einen Blick
+  • Flüssigeres Scrollen
 
-### ES
-Novedades de la 1.3
-• Forja de cartas (Early Bird Plus): fusiona los duplicados de una especie en una carta más rara, o 2 cartas en un sobre
-• Puntos: cada carta cuenta, las más raras y mejores, más
-• Clasificación mundial mensual, con una carta de premio para los mejores y un aviso antes del cierre
-• 6 logros nuevos, metas más difíciles y nuevas series por dieta y hábitat
-• Nuevo perfil: tu puntuación y tu puesto de un vistazo
-• Desplazamiento más fluido
+  ### ES
+  Novedades de la 1.3
+  • Forja de cartas (Early Bird Plus): fusiona los duplicados de una especie en una carta más rara, o 2 cartas en un sobre
+  • Puntos: cada carta cuenta, las más raras y mejores, más
+  • Clasificación mundial mensual, con una carta de premio para los mejores y un aviso antes del cierre
+  • 6 logros nuevos, metas más difíciles y nuevas series por dieta y hábitat
+  • Nuevo perfil: tu puntuación y tu puesto de un vistazo
+  • Desplazamiento más fluido
 
 ## What's new — 1.2.0 (≤ 500 chars each)
 ### EN

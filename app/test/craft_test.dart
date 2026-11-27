@@ -5,21 +5,22 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('recipes', () {
-    expect(craftResult(List.filled(4, 'common'), const ['x']), 'uncommon');
+    expect(craftResult(List.filled(3, 'common'), const ['x']), 'uncommon');
+    expect(craftResult(['common', 'common'], const ['x']), 'booster');
+    expect(craftResult(['common', 'common'], const ['x', 'y']), isNull);
+    expect(craftResult(['epic', 'epic'], const ['x']), isNull);
+    expect(craftResult(['legendary', 'legendary'], const ['x']), isNull);
+    expect(craftResult(List.filled(4, 'common'), const ['x']), isNull);
     expect(craftResult(List.filled(3, 'uncommon'), const ['x']), 'rare');
     expect(craftResult(List.filled(3, 'epic'), const ['x']), 'legendary');
-    expect(craftResult(['rare', 'common'], const ['x']), 'booster');
-    expect(craftResult(['common', 'common', 'common'], const ['x']), isNull);
-    expect(
-      craftResult(['common', 'common', 'common', 'rare'], const ['x']),
-      isNull,
-    );
+    expect(craftResult(['rare', 'common'], const ['x']), isNull);
+    expect(craftResult(['common', 'common', 'rare'], const ['x']), isNull);
     expect(craftResult(List.filled(3, 'legendary'), const ['x']), isNull);
     expect(craftResult(['shiny', 'common'], const ['x']), isNull);
     expect(craftResult([], const []), isNull);
     // Two species never combine, for a card or a booster.
     expect(
-      craftResult(List.filled(4, 'common'), const ['x', 'x', 'y', 'x']),
+      craftResult(List.filled(3, 'common'), const ['x', 'y', 'x']),
       isNull,
     );
     expect(craftResult(['rare', 'common'], const ['x', 'y']), isNull);

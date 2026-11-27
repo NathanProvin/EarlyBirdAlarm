@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'account.dart';
 import 'birds.dart';
 import 'content.dart';
+import 'frame_log.dart';
 import 'l10n/app_localizations.dart';
 import 'purchases.dart';
 import 'reminders.dart';
@@ -29,6 +29,7 @@ late final Store store;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (frameLog) startFrameLog();
   await Alarm.init();
   store = await Store.load();
   await initContent(store.region);
@@ -178,61 +179,60 @@ class _BottomBar extends StatelessWidget {
 
     final alarmsOn = tab == 1;
     final inset = MediaQuery.paddingOf(context).bottom; // gesture bar
+    // Nearly opaque, no live blur: a full-width blur over the scrolling grid was redrawn
+    // at every frame (perf, 2026-11-27).
     return ClipRect(
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.surface.withValues(alpha: 0.65),
-            border: Border(
-              top: BorderSide(color: scheme.onSurface.withValues(alpha: 0.08)),
-            ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: scheme.surface.withValues(alpha: 0.94),
+          border: Border(
+            top: BorderSide(color: scheme.onSurface.withValues(alpha: 0.08)),
           ),
-          child: Padding(
-            padding: EdgeInsets.only(bottom: inset),
-            child: SizedBox(
-              height: 72,
-              child: Row(
-                children: [
-                  side(0, Icons.music_note, l.twitch, badge: ready),
-                  Expanded(
-                    child: Semantics(
-                      button: true,
-                      selected: alarmsOn,
-                      label: l.alarms,
-                      excludeSemantics: true,
-                      child: GestureDetector(
-                        onTap: () => onSelect(1),
-                        child: Center(
-                          // A ring around the circle marks the open tab.
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: alarmsOn
-                                    ? scheme.primary
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: inset),
+          child: SizedBox(
+            height: 72,
+            child: Row(
+              children: [
+                side(0, Icons.music_note, l.twitch, badge: ready),
+                Expanded(
+                  child: Semantics(
+                    button: true,
+                    selected: alarmsOn,
+                    label: l.alarms,
+                    excludeSemantics: true,
+                    child: GestureDetector(
+                      onTap: () => onSelect(1),
+                      child: Center(
+                        // A ring around the circle marks the open tab.
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: alarmsOn
+                                  ? scheme.primary
+                                  : Colors.transparent,
+                              width: 2,
                             ),
-                            child: CircleAvatar(
-                              radius: 26,
-                              backgroundColor: scheme.primary,
-                              child: Icon(
-                                Icons.alarm,
-                                size: 28,
-                                color: scheme.onPrimary,
-                              ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 26,
+                            backgroundColor: scheme.primary,
+                            child: Icon(
+                              Icons.alarm,
+                              size: 28,
+                              color: scheme.onPrimary,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  side(2, Icons.style_outlined, l.collection),
-                ],
-              ),
+                ),
+                side(2, Icons.style_outlined, l.collection),
+              ],
             ),
           ),
         ),

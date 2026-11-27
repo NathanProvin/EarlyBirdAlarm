@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'birds.dart';
 import 'cards.dart';
 import 'names.dart';
-import 'ranking.dart' show monthKey;
+import 'ranking.dart' show allTime, monthKey;
 import 'store.dart';
 
 /// The profile page's cloud side (2026-11-13): the @name (`usernames/{lower}`), what
@@ -272,13 +272,11 @@ Future<void> deleteSocial(String uid, String? name) async {
     batch.delete(r.reference);
   }
   batch.delete(_profile(uid));
-  batch.delete(
-    _db
-        .collection('ranks')
-        .doc(monthKey(DateTime.now()))
-        .collection('players')
-        .doc(uid),
-  );
+  for (final board in [monthKey(DateTime.now()), allTime]) {
+    batch.delete(
+      _db.collection('ranks').doc(board).collection('players').doc(uid),
+    );
+  }
   await batch.commit();
   // Apart: a name already freed would make the whole batch fail (the rule reads it).
   if (name != null) {

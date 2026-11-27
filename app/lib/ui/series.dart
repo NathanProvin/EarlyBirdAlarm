@@ -147,7 +147,7 @@ class _SeriesScreenState extends State<SeriesScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _ModeSwitch(
+            ModeSwitch(
               series: _series,
               onChanged: _show,
               left: l.achievements,
@@ -225,8 +225,9 @@ class _SeriesScreenState extends State<SeriesScreen> {
 /// The Achievements | Series switch (2026-11-12, user): both names on a track, the
 /// chosen one on a thumb that slides across, so it reads as a switch, not a title. Tap a
 /// name, or drag across: the thumb follows the finger.
-class _ModeSwitch extends StatelessWidget {
-  const _ModeSwitch({
+class ModeSwitch extends StatelessWidget {
+  const ModeSwitch({
+    super.key,
     required this.series,
     required this.onChanged,
     required this.left,
@@ -306,7 +307,10 @@ class _ModeSwitch extends StatelessWidget {
                                               : scheme.onSecondaryContainer
                                                     .withValues(alpha: 0.7),
                                         ),
-                                    child: Text(label),
+                                    child: Text(
+                                      label,
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                 ),
                               ),

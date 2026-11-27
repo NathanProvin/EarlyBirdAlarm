@@ -1374,13 +1374,19 @@ void main() {
     expect(pick(missing: 0), (Nudge.pile, null));
   });
 
-  test('ranking reminder: ~2 days before the UTC month ends, then next month', () {
-    final mid = rankingReminderTime(DateTime(2026, 11, 10, 7, 30));
-    expect((mid.month, mid.hour, mid.minute), (11, 9, 30));
-    expect(mid.day, inInclusiveRange(28, 29)); // the local day depends on the time zone
-    final late = rankingReminderTime(DateTime(2026, 11, 30, 12));
-    expect((late.month, late.day >= 29), (12, true));
-  });
+  test(
+    'ranking reminder: ~2 days before the UTC month ends, then next month',
+    () {
+      final mid = rankingReminderTime(DateTime(2026, 11, 10, 7, 30));
+      expect((mid.month, mid.hour, mid.minute), (11, 9, 30));
+      expect(
+        mid.day,
+        inInclusiveRange(28, 29),
+      ); // the local day depends on the time zone
+      final late = rankingReminderTime(DateTime(2026, 11, 30, 12));
+      expect((late.month, late.day >= 29), (12, true));
+    },
+  );
 }
 
 Rect _cellRectForTest(String id) =>

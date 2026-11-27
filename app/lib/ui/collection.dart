@@ -89,6 +89,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
   bool _craftMenu = false;
   bool get _crafting => _craftMenu && store.twitchPlus;
   final _picked = <String>{};
+  String?
+  _viewBeforeCraft; // crafting opens Duplicates; leaving brings this back
 
   void _snack(String text) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
@@ -118,7 +120,6 @@ class _CollectionScreenState extends State<CollectionScreen> {
     unawaited(
       Navigator.of(context).push(
         PageRouteBuilder<void>(
-          opaque: false,
           pageBuilder: (_, _, _) => _ForgeScreen(picked, forged),
           transitionsBuilder: (_, a, _, child) =>
               FadeTransition(opacity: a, child: child),
@@ -233,7 +234,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     builder: (context) {
       final scheme = Theme.of(context).colorScheme;
       // Fixed widths, centred: the arrows line up on the dialog's middle.
-      Widget row(int n, String? from, String to) => Padding(
+      Widget row(int n, String? from, String to, [int times = 1]) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -250,7 +251,15 @@ class _CollectionScreenState extends State<CollectionScreen> {
             _miniCard(from),
             Icon(Icons.arrow_forward, color: scheme.primary),
             _miniCard(to),
-            const SizedBox(width: 32), // balances the count on the left
+            SizedBox(
+              width: 32, // balances the count on the left
+              child: times > 1
+                  ? Text(
+                      '×$times',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    )
+                  : null,
+            ),
           ],
         ),
       );
@@ -260,7 +269,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            row(2, null, 'booster'),
+            row(2, 'common', 'booster', 2),
             for (final MapEntry(key: t, value: n) in craftCost.entries)
               row(n, t, tiers[tiers.indexOf(t) + 1]),
           ],
@@ -308,7 +317,32 @@ class _CollectionScreenState extends State<CollectionScreen> {
           setSheet(() {});
         }
 
-        final title = Theme.of(context).textTheme.titleMedium;
+        final scheme = Theme.of(context).colorScheme;
+        // Section titles stand out (user, 2026-11-27): bold, the accent, an icon.
+        Widget title(IconData icon, String text) => Row(
+          spacing: 8,
+          children: [
+            Icon(icon, size: 22, color: scheme.primary),
+            Text(
+              text,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+        );
+        IconData viewIcon(String v) => switch (v) {
+          _all => Icons.style,
+          _species => Icons.layers,
+          _duplicates => Icons.copy_all,
+          _world => Icons.public,
+          _ => Icons.place,
+        };
+        const divider = Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Divider(height: 1),
+        );
         return Padding(
           padding: EdgeInsets.fromLTRB(
             24,
@@ -320,25 +354,52 @@ class _CollectionScreenState extends State<CollectionScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l.viewMenu, style: title),
-              // Choosing a view closes the sheet: the collection shows at once.
-              DropdownButton<String>(
-                isExpanded: true,
-                value: view(),
-                items: [
-                  for (final MapEntry(:key, value: label) in views.entries)
-                    DropdownMenuItem(
-                      value: key,
-                      child: Text(label, overflow: TextOverflow.ellipsis),
-                    ),
-                ],
-                onChanged: (v) {
-                  setState(() => _view = v);
-                  Navigator.of(context).pop();
-                },
+              title(Icons.visibility, l.viewMenu),
+              const SizedBox(height: 8),
+              // The view first and boxed in the accent; choosing one closes the sheet:
+              // the collection shows at once.
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  border: Border.all(color: scheme.primary, width: 2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  underline: const SizedBox.shrink(),
+                  borderRadius: BorderRadius.circular(16),
+                  iconEnabledColor: scheme.primary,
+                  itemHeight: 56,
+                  value: view(),
+                  items: [
+                    for (final MapEntry(:key, value: label) in views.entries)
+                      DropdownMenuItem(
+                        value: key,
+                        child: Row(
+                          spacing: 12,
+                          children: [
+                            Icon(viewIcon(key), color: scheme.primary),
+                            Expanded(
+                              child: Text(
+                                label,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                  onChanged: (v) {
+                    setState(() => _view = v);
+                    Navigator.of(context).pop();
+                  },
+                ),
               ),
-              const SizedBox(height: 16),
-              Text(l.sortMenu, style: title),
+              divider,
+              title(Icons.swap_vert, l.sortMenu),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -357,8 +418,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Text(l.rarityMenu, style: title),
+              divider,
+              title(Icons.star, l.rarityMenu),
               const SizedBox(height: 8),
               // Six circles: all (empty), then each rarity; the choice named below.
               Row(
@@ -544,11 +605,13 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   borderRadius: BorderRadius.circular(999),
                   onTap: () =>
                       _optionsSheet(l, views, () => _view ?? current ?? _all),
-                  child: _Pill(
-                    viewNames[view]!,
-                    // The chosen rarity's colour while filtering.
-                    ring: _tier == null ? null : rarityColor[_tier],
-                  ),
+                  child: _crafting
+                      ? _Pill(l.craftTitle, forge: true)
+                      : _Pill(
+                          viewNames[view]!,
+                          // The chosen rarity's colour while filtering.
+                          ring: _tier == null ? null : rarityColor[_tier],
+                        ),
                 ),
               ),
               round(
@@ -679,6 +742,17 @@ class _CollectionScreenState extends State<CollectionScreen> {
     return Stack(
       children: [
         grid,
+        // Crafting mode is on: a plain accent frame (a breathing glow cost frames).
+        if (_crafting)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: scheme.primary, width: 4),
+                ),
+              ),
+            ),
+          ),
         Positioned(
           right: 16,
           bottom: 16 + MediaQuery.paddingOf(context).bottom,
@@ -710,6 +784,14 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   setState(() {
                     _craftMenu = !_craftMenu;
                     _picked.clear();
+                    // Duplicates hold what can be forged (user, 2026-11-27).
+                    if (!store.twitchPlus) return;
+                    if (_craftMenu) {
+                      _viewBeforeCraft = _view;
+                      _view = _duplicates;
+                    } else {
+                      _view = _viewBeforeCraft;
+                    }
                   });
                 },
               ),
@@ -746,8 +828,8 @@ Widget _miniCard(String? rarity, {double width = 22}) {
   );
 }
 
-/// The forge pill's progress: one slot per card the recipe needs (4 Commons, 3 of the
-/// others, 2 for a booster from a Legendary), each filling in its card's colour as it is
+/// The forge pill's progress: one slot per card the recipe needs (3 of each rarity,
+/// 2 Commons showing their boosters on the way; a Legendary has no recipe), each filling in its card's colour as it is
 /// picked, "2/3", then what Forge gives: faint until reached, popping in with a glow.
 class _ForgeGauge extends StatelessWidget {
   const _ForgeGauge(this.picked, this.result);
@@ -759,7 +841,7 @@ class _ForgeGauge extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final small = Theme.of(context).textTheme.bodySmall;
     final rarities = [for (final c in picked) cardRarity(c)];
-    final goal = craftCost[rarities.first] ?? 2;
+    final goal = craftCost[rarities.first] ?? 1;
     final next = craftCost.containsKey(rarities.first)
         ? tiers[tiers.indexOf(rarities.first) + 1]
         : 'booster';
@@ -769,6 +851,7 @@ class _ForgeGauge extends StatelessWidget {
     final stuck =
         result == null &&
         (rarities.length >= goal ||
+            !craftCost.containsKey(rarities.first) ||
             rarities.contains('shiny') ||
             rarities.toSet().length > 1 ||
             {for (final c in picked) c.birdId}.length > 1);
@@ -1033,10 +1116,12 @@ class _ForgeScreenState extends State<_ForgeScreen>
                       child: Transform.rotate(
                         angle:
                             (i.isOdd ? -1 : 1) * 0.06 * gather + 0.05 * shake,
-                        child: SizedBox(
-                          width: w,
-                          height: h,
-                          child: CardTile(bird: b, card: c, heard: false),
+                        child: RepaintBoundary(
+                          child: SizedBox(
+                            width: w,
+                            height: h,
+                            child: CardTile(bird: b, card: c, heard: false),
+                          ),
                         ),
                       ),
                     ),
@@ -1064,7 +1149,7 @@ class _ForgeScreenState extends State<_ForgeScreen>
       );
     }
     return Scaffold(
-      backgroundColor: Colors.black.withValues(alpha: 0.85),
+      backgroundColor: const Color(0xFF0B0B0B),
       body: SafeArea(
         child: Padding(padding: const EdgeInsets.all(12), child: body),
       ),
@@ -1075,9 +1160,10 @@ class _ForgeScreenState extends State<_ForgeScreen>
 /// The view button: the current view's name in an outlined pill of fixed width, the
 /// options icon after it; [ring] colours the outline while a rarity filter is on.
 class _Pill extends StatelessWidget {
-  const _Pill(this.label, {this.ring});
+  const _Pill(this.label, {this.ring, this.forge = false});
   final String label;
   final Color? ring;
+  final bool forge; // crafting mode: filled with the accent, a hammer
 
   @override
   Widget build(BuildContext context) {
@@ -1091,7 +1177,11 @@ class _Pill extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
           decoration: BoxDecoration(
-            border: Border.all(color: ring ?? scheme.outline, width: 2.5),
+            color: forge ? scheme.primary : null,
+            border: Border.all(
+              color: forge ? scheme.primary : ring ?? scheme.outline,
+              width: 2.5,
+            ),
             borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
@@ -1101,11 +1191,17 @@ class _Pill extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: forge ? scheme.onPrimary : null,
+                  ),
                 ),
               ),
-              const Icon(Icons.tune, size: 20),
+              Icon(
+                forge ? Icons.hardware : Icons.tune,
+                size: 20,
+                color: forge ? scheme.onPrimary : null,
+              ),
             ],
           ),
         ),

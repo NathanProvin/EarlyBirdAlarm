@@ -592,7 +592,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Unbegrenzte Booster, Arten-Radar und Kartenschmiede: einmal kaufen, für immer.';
+      'Mehr Funktionen: schnellere Booster, Radar, Kartenschmiede und Lockrufe. Einmal kaufen, für immer.';
 
   @override
   String get paymentsGoogle => 'Bezahlung über Google Play.';
@@ -1046,6 +1046,19 @@ class AppLocalizationsDe extends AppLocalizations {
       'Ein kleiner Hinweis nach ein paar Tagen Pause, höchstens zweimal, und einer vor dem Ende der Monatsrangliste.';
 
   @override
+  String get sharePhotos => 'Teile deine Fotos';
+
+  @override
+  String get sharePhotosInfo => 'oder schick dem Entwickler Feedback';
+
+  @override
+  String get sharePhotosSubject => 'Early Bird: Fotos und Feedback';
+
+  @override
+  String get sharePhotosBody =>
+      'Vogel:\nOrt:\nDatum:\n\nIch habe die angehängten Fotos selbst aufgenommen und erlaube Early Bird, sie in der App unter der Lizenz CC BY 4.0 zu verwenden, mit der Nennung:\n\nFeedback:\n';
+
+  @override
   String get reminderTradeTitle => 'Ein Freund wartet auf dich';
 
   @override
@@ -1112,7 +1125,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get craftLocked => 'Eine gewählte Karte steckt in einem Tausch.';
 
   @override
-  String get craftBooster => '+1 Booster';
+  String get craftBooster => '+2 Booster';
 
   @override
   String get statPoints => 'Punkte';
@@ -1141,6 +1154,49 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get rankEnter =>
       'Gewinne diesen Monat eine Karte, um in die Rangliste zu kommen.';
+
+  @override
+  String get lureInfo => 'Locke die Art an, die du willst.';
+
+  @override
+  String get rankRewardColumn => 'Belohnung';
+
+  @override
+  String rankDaysLeft(int days) {
+    return '-$days T';
+  }
+
+  @override
+  String get rankWorld => 'Weltrangliste';
+
+  @override
+  String get lure => 'Lockruf';
+
+  @override
+  String get lureSearch => 'Welchen Vogel rufst du?';
+
+  @override
+  String lurePlayed(String bird) {
+    return 'Lockruf: $bird. Kommt er? Öffne deine nächste Karte, um es zu sehen.';
+  }
+
+  @override
+  String get lureNone => 'Heute keine Lockrufe mehr. Bis morgen!';
+
+  @override
+  String get lureOffline =>
+      'Keine Verbindung: Der Ruf kann nicht abgespielt werden.';
+
+  @override
+  String get rankAllTime => 'Allzeit';
+
+  @override
+  String get rankAllTimeTitle => 'Allzeit-Rangliste';
+
+  @override
+  String rankFinished(String rank, String month) {
+    return 'Du bist im $month auf Platz $rank gelandet!';
+  }
 
   @override
   String get craftPlusOnly => 'Karten kombinieren';

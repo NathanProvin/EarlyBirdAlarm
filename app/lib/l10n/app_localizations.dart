@@ -1071,7 +1071,7 @@ abstract class AppLocalizations {
   /// No description provided for @twitchPlusPitch.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited boosters, Species Radar and Card crafting: one purchase, for life.'**
+  /// **'More features: speed up boosters, radar, card crafting and calls. Buy once, for life.'**
   String get twitchPlusPitch;
 
   /// No description provided for @paymentsGoogle.
@@ -1830,6 +1830,30 @@ abstract class AppLocalizations {
   /// **'A nudge after a few days away, twice at most, and one before the month\'s ranking closes.'**
   String get remindersInfo;
 
+  /// No description provided for @sharePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your photos'**
+  String get sharePhotos;
+
+  /// No description provided for @sharePhotosInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'or send feedback to the developer'**
+  String get sharePhotosInfo;
+
+  /// No description provided for @sharePhotosSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'Early Bird: photos and feedback'**
+  String get sharePhotosSubject;
+
+  /// No description provided for @sharePhotosBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bird:\nPlace:\nDate:\n\nI took the attached photos myself and allow Early Bird to use them in the app under the CC BY 4.0 licence, credited as:\n\nFeedback:\n'**
+  String get sharePhotosBody;
+
   /// No description provided for @reminderTradeTitle.
   ///
   /// In en, this message translates to:
@@ -1935,7 +1959,7 @@ abstract class AppLocalizations {
   /// No description provided for @craftBooster.
   ///
   /// In en, this message translates to:
-  /// **'+1 booster'**
+  /// **'+2 boosters'**
   String get craftBooster;
 
   /// No description provided for @statPoints.
@@ -1967,6 +1991,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Win a card this month to enter the ranking.'**
   String get rankEnter;
+
+  /// No description provided for @lureInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Attract the species you want.'**
+  String get lureInfo;
+
+  /// No description provided for @rankRewardColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward'**
+  String get rankRewardColumn;
+
+  /// No description provided for @rankDaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'-{days} d'**
+  String rankDaysLeft(int days);
+
+  /// No description provided for @rankWorld.
+  ///
+  /// In en, this message translates to:
+  /// **'World ranking'**
+  String get rankWorld;
+
+  /// No description provided for @lure.
+  ///
+  /// In en, this message translates to:
+  /// **'Lure'**
+  String get lure;
+
+  /// No description provided for @lureSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Which bird do you call?'**
+  String get lureSearch;
+
+  /// No description provided for @lurePlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'You played the {bird}\'s call. Will it come? Open your next card to find out.'**
+  String lurePlayed(String bird);
+
+  /// No description provided for @lureNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No lures left today. Back tomorrow!'**
+  String get lureNone;
+
+  /// No description provided for @lureOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection: the call can\'t play.'**
+  String get lureOffline;
+
+  /// No description provided for @rankAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get rankAllTime;
+
+  /// No description provided for @rankAllTimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All-time ranking'**
+  String get rankAllTimeTitle;
+
+  /// No description provided for @rankFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished {rank} in {month}!'**
+  String rankFinished(String rank, String month);
 
   /// No description provided for @craftPlusOnly.
   ///

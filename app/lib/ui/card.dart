@@ -298,19 +298,31 @@ class BirdCardView extends StatelessWidget {
                           : Stack(
                               fit: StackFit.expand,
                               children: [
-                                ImageFiltered(
-                                  imageFilter: ui.ImageFilter.blur(
-                                    sigmaX: 8,
-                                    sigmaY: 8,
-                                  ),
-                                  child: ColorFiltered(
+                                if (PhotoScale.of(context) < 1) ...[
+                                  ColorFiltered(
                                     colorFilter: const ColorFilter.mode(
                                       Colors.grey,
                                       BlendMode.saturation,
                                     ),
                                     child: face,
                                   ),
-                                ),
+                                  ColoredBox(
+                                    color: paper.withValues(alpha: 0.7),
+                                  ),
+                                ] else
+                                  ImageFiltered(
+                                    imageFilter: ui.ImageFilter.blur(
+                                      sigmaX: 8,
+                                      sigmaY: 8,
+                                    ),
+                                    child: ColorFiltered(
+                                      colorFilter: const ColorFilter.mode(
+                                        Colors.grey,
+                                        BlendMode.saturation,
+                                      ),
+                                      child: face,
+                                    ),
+                                  ),
                                 Center(
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
@@ -888,11 +900,13 @@ class PlayButton extends StatefulWidget {
 }
 
 class _PlayButtonState extends State<PlayButton> {
-  final _player = AudioPlayer();
+  // Made on first use: a grid tile shows the button but never plays (perf, 2026-11-27).
+  AudioPlayer? _made;
+  AudioPlayer get _player => _made ??= AudioPlayer();
 
   @override
   void dispose() {
-    _player.dispose();
+    _made?.dispose();
     super.dispose();
   }
 
@@ -902,64 +916,70 @@ class _PlayButtonState extends State<PlayButton> {
   }
 
   @override
-  Widget build(BuildContext context) => StreamBuilder<bool>(
-    stream: _player.playingStream,
-    builder: (context, snap) {
-      final icon = snap.data == true ? Icons.stop : Icons.play_arrow;
-      final tooltip = AppLocalizations.of(context).play;
-      if (widget.glass) {
-        return ClipOval(
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-            child: Material(
-              color: Colors.white.withValues(alpha: 0.25),
-              shape: CircleBorder(
-                side: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  width: 1.5,
-                ),
-              ),
-              child: IconButton(
-                tooltip: tooltip,
-                onPressed: _toggle,
-                iconSize: widget.small ? 24 : 36,
-                padding: EdgeInsets.all(widget.small ? 6 : 12),
-                icon: Icon(icon, color: Colors.white),
-              ),
+  Widget build(BuildContext context) {
+    // A shrunk card (grid tile, forge) can't be tapped there: just the look.
+    if (PhotoScale.of(context) < 1) {
+      return IgnorePointer(child: _look(context, Icons.play_arrow));
+    }
+    return StreamBuilder<bool>(
+      stream: _player.playingStream,
+      builder: (context, snap) =>
+          _look(context, snap.data == true ? Icons.stop : Icons.play_arrow),
+    );
+  }
+
+  Widget _look(BuildContext context, IconData icon) {
+    final tooltip = AppLocalizations.of(context).play;
+    if (widget.glass) {
+      // Solid, not frosted: a live blur was redrawn at every scrolled frame.
+      return ClipOval(
+        child: Material(
+          color: Colors.black.withValues(alpha: 0.35),
+          shape: CircleBorder(
+            side: BorderSide(
+              color: Colors.white.withValues(alpha: 0.7),
+              width: 1.5,
             ),
           ),
-        );
-      }
-      final color = widget.color!;
-      final button = IconButton.filled(
-        tooltip: tooltip,
-        onPressed: _toggle,
-        style: IconButton.styleFrom(
-          backgroundColor: widget.texture == null ? color : Colors.transparent,
-          // A discreet outline lifts it off the card stock.
-          side: BorderSide(
-            color: Color.lerp(color, Colors.white, 0.45)!,
-            width: 1.5,
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: _toggle,
+            iconSize: widget.small ? 24 : 36,
+            padding: EdgeInsets.all(widget.small ? 6 : 12),
+            icon: Icon(icon, color: Colors.white),
           ),
         ),
-        icon: Icon(icon, color: widget.iconColor),
       );
-      if (widget.texture == null) return button;
-      return Stack(
-        alignment: Alignment.center,
-        children: [
-          // The 40 dp disc inside the button's 48 dp touch target.
-          ClipOval(
-            child: CustomPaint(
-              size: const Size.square(40),
-              painter: widget.texture,
-            ),
+    }
+    final color = widget.color!;
+    final button = IconButton.filled(
+      tooltip: tooltip,
+      onPressed: _toggle,
+      style: IconButton.styleFrom(
+        backgroundColor: widget.texture == null ? color : Colors.transparent,
+        // A discreet outline lifts it off the card stock.
+        side: BorderSide(
+          color: Color.lerp(color, Colors.white, 0.45)!,
+          width: 1.5,
+        ),
+      ),
+      icon: Icon(icon, color: widget.iconColor),
+    );
+    if (widget.texture == null) return button;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // The 40 dp disc inside the button's 48 dp touch target.
+        ClipOval(
+          child: CustomPaint(
+            size: const Size.square(40),
+            painter: widget.texture,
           ),
-          button,
-        ],
-      );
-    },
-  );
+        ),
+        button,
+      ],
+    );
+  }
 }
 
 String statName(AppLocalizations l, String key) => switch (key) {
@@ -1118,7 +1138,9 @@ class _StarsState extends State<_Stars> with SingleTickerProviderStateMixin {
           ),
       ],
     );
-    if (widget.stars < 4 || MediaQuery.disableAnimationsOf(context)) {
+    if (widget.stars < 4 ||
+        MediaQuery.disableAnimationsOf(context) ||
+        PhotoScale.of(context) < 1) {
       _glint.stop();
       return row;
     }

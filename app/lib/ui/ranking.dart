@@ -8,7 +8,8 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../ranking.dart';
-import 'series.dart' show RewardScreen;
+import 'profile.dart' show Avatar;
+import 'series.dart' show ModeSwitch, RewardScreen;
 import 'theme.dart';
 
 /// A month key's name in the app's language: "202611" → "November".
@@ -62,8 +63,29 @@ class _RankButtonState extends State<RankButton> {
     return myRank(_month);
   }
 
-  Future<void> _collect(String rarity) async {
+  Future<void> _collect(String rarity, int rank) async {
     if (_busy) return;
+    final l = AppLocalizations.of(context);
+    // "You finished #3 in November!" with the card it wins, then the card itself.
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: _MiniCard(rarity, width: 40),
+        title: Text(
+          l.rankFinished('#$rank', _monthName(l, _last)),
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(140, 52)),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l.tapToCollect),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !mounted) return;
     setState(() => _busy = true);
     unawaited(HapticFeedback.mediumImpact());
     final card = await store.collectRank(_last, rarity);
@@ -71,7 +93,6 @@ class _RankButtonState extends State<RankButton> {
     setState(() => _busy = false);
     // The region's birds aren't known yet: try again later.
     if (card == null) return;
-    final l = AppLocalizations.of(context);
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) =>
@@ -134,13 +155,13 @@ class _RankButtonState extends State<RankButton> {
     return FutureBuilder(
       future: _lastRank,
       builder: (context, last) {
-        if (last.data case final r?) {
-          final rarity = rankReward(r.rank, r.total);
+        if (last.data case final r? when rankReward(r.rank) != null) {
+          final rarity = rankReward(r.rank)!;
           return button(
             reward: rarity,
             rank: '#${r.rank}',
             label: '${l.rankReward(_monthName(l, _last))}. ${l.tapToCollect}',
-            onTap: () => _collect(rarity),
+            onTap: () => _collect(rarity, r.rank),
           );
         }
         return FutureBuilder(
@@ -173,8 +194,14 @@ class RankingScreen extends StatefulWidget {
 
 class _RankingScreenState extends State<RankingScreen> {
   final _month = monthKey(DateTime.now());
-  late final _top = watchTop(_month);
-  late final _mine = saveRank(store).then((_) => myRank(_month));
+  // The month by default; the all-time board on the switch (user, 2026-11-27).
+  bool _allTime = false;
+  late final _tops = {_month: watchTop(_month), allTime: watchTop(allTime)};
+  late final _saved = saveRank(store);
+  late final _mine = {
+    _month: _saved.then((_) => myRank(_month)),
+    allTime: _saved.then((_) => myRank(allTime)),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -186,92 +213,118 @@ class _RankingScreenState extends State<RankingScreen> {
     final days = (end.difference(DateTime.now().toUtc()).inMinutes / 1440)
         .ceil()
         .clamp(1, 31);
+    final board = _allTime ? allTime : _month;
     final me = store.username;
+    // "NOV" over "-4 d": the month's short name and the days left, on the switch.
+    final short = DateFormat.MMM(l.localeName)
+        .format(DateTime(k ~/ 100, k % 100))
+        .replaceAll('.', '')
+        .toUpperCase();
     return Scaffold(
-      appBar: AppBar(title: Text(l.rankTitle(_monthName(l, _month)))),
-      body: FutureBuilder(
-        future: _mine,
-        builder: (context, mine) {
-          final my = mine.data;
-          return StreamBuilder(
-            stream: _top,
-            builder: (context, top) {
-              final rows = top.data ?? const <RankRow>[];
-              final inTop = rows.any((r) => r.name == me);
-              // The longest bar is the leader's (or mine, should the list lag behind).
-              final most = [
-                1,
-                ...rows.map((r) => r.points),
-                ?my?.points,
-              ].reduce(max);
-              return ListView(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  8,
-                  16,
-                  24 + MediaQuery.paddingOf(context).bottom,
-                ),
-                children: [
-                  Text(
-                    l.rankEnds(days),
-                    textAlign: TextAlign.center,
-                    style: text.titleSmall?.copyWith(color: scheme.primary),
-                  ),
-                  const SizedBox(height: 16),
-                  for (final r in rows)
-                    _Bar(
-                      // Ties share the rank of the first with that score.
-                      rank: rows.indexWhere((x) => x.points == r.points) + 1,
-                      name: r.name,
-                      points: r.points,
-                      share: r.points / most,
-                      me: r.name == me,
-                    ),
-                  if (my != null && !inTop && top.hasData) ...[
-                    Icon(Icons.more_vert, color: scheme.onSurfaceVariant),
-                    _Bar(
-                      rank: my.rank,
-                      name: me ?? '',
-                      points: my.points,
-                      share: my.points / most,
-                      me: true,
-                    ),
-                  ],
-                  if (my == null &&
-                      mine.connectionState == ConnectionState.done)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Text(
-                        l.rankEnter,
-                        textAlign: TextAlign.center,
-                        style: text.bodyLarge,
+      appBar: AppBar(title: Text(l.rankWorld)),
+      body: Column(
+        children: [
+          ModeSwitch(
+            series: _allTime,
+            onChanged: (v) => setState(() => _allTime = v),
+            left: '$short\n${l.rankDaysLeft(days)}',
+            right: l.rankAllTime,
+          ),
+          Expanded(
+            child: FutureBuilder(
+              key: ValueKey(board),
+              future: _mine[board],
+              builder: (context, mine) {
+                final my = mine.data;
+                return StreamBuilder(
+                  stream: _tops[board],
+                  builder: (context, top) {
+                    final rows = top.data ?? const <RankRow>[];
+                    final inTop = rows.any((r) => r.name == me);
+                    // The longest bar is the leader's (or mine, should the list lag).
+                    final most = [
+                      1,
+                      ...rows.map((r) => r.points),
+                      ?my?.points,
+                    ].reduce(max);
+                    return ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        4,
+                        16,
+                        MediaQuery.paddingOf(context).bottom,
                       ),
-                    ),
-                ],
-              );
-            },
-          );
-        },
+                      children: [
+                        for (final r in rows)
+                          _Bar(
+                            // Ties share the rank of the first with that score.
+                            rank:
+                                rows.indexWhere((x) => x.points == r.points) +
+                                1,
+                            row: r,
+                            share: r.points / most,
+                            me: r.name == me,
+                            rewards: !_allTime,
+                          ),
+                        if (my != null && !inTop && top.hasData) ...[
+                          Icon(
+                            Icons.more_vert,
+                            size: 16,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                          _Bar(
+                            rank: my.rank,
+                            row: (
+                              uid: '',
+                              name: me ?? '',
+                              points: my.points,
+                              avatar: store.avatar,
+                            ),
+                            share: my.points / most,
+                            me: true,
+                            rewards: !_allTime,
+                          ),
+                        ],
+                        if (my == null &&
+                            mine.connectionState == ConnectionState.done)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              l.rankEnter,
+                              textAlign: TextAlign.center,
+                              style: text.bodyLarge,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// One player in the chart: the rank (gold, silver, bronze for the podium), the @name over
-/// a bar growing to [share] of the leader's, the points at its end; the player's own row
-/// tinted and its bar in the full accent.
+/// One player in the chart (2026-11-27): the avatar wearing the rank as a medal at its
+/// bottom left (gold, silver, bronze for the podium), then a full-width track filled to
+/// [share] of the leader's, the @name and points written over the track (never cropped
+/// by a short fill), and on a month's board the card that place wins. The player's own
+/// row tinted, its fill in the full accent.
 class _Bar extends StatelessWidget {
   const _Bar({
     required this.rank,
-    required this.name,
-    required this.points,
+    required this.row,
     required this.share,
     required this.me,
+    required this.rewards,
   });
-  final int rank, points;
-  final String name;
+  final int rank;
+  final RankRow row;
   final double share;
-  final bool me;
+  final bool me, rewards;
 
   static const _podium = [
     Color(0xFFD9A21B),
@@ -285,83 +338,123 @@ class _Bar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final medal = rank <= 3 ? _podium[rank - 1] : null;
+    final reward = rewards ? rankReward(rank) : null;
+    const size = 42.0;
+    // Rows written before 1.4.0 carry no avatar: the profile has it.
+    final avatar = row.avatar != null || row.uid.isEmpty
+        ? Avatar(row.avatar, size: size)
+        : FutureBuilder(
+            future: profileAvatar(row.uid),
+            builder: (_, a) => Avatar(a.data, size: size),
+          );
+    // A row of 50 dp: 11 fit the S22 without scrolling, with a clear gap between the
+    // 30 dp bars. The medal hangs off the avatar's bottom left.
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
         color: me ? scheme.primary.withValues(alpha: 0.12) : null,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: Row(
-        spacing: 10,
+        spacing: 12,
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: medal ?? scheme.secondaryContainer,
-            ),
-            child: Text(
-              '$rank',
-              style: text.labelLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: medal != null ? ink : null,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 4,
+          SizedBox(
+            width: size + 6,
+            height: size,
+            child: Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text(
-                  '@$name',
-                  overflow: TextOverflow.ellipsis,
-                  style: text.labelLarge?.copyWith(
-                    fontWeight: me ? FontWeight.bold : null,
-                    color: me ? scheme.primary : null,
-                  ),
-                ),
-                Row(
-                  spacing: 8,
-                  children: [
-                    Expanded(
-                      // The bar grows in when the chart opens.
-                      child: TweenAnimationBuilder(
-                        tween: Tween(begin: 0.0, end: share.clamp(0.02, 1.0)),
-                        duration: const Duration(milliseconds: 700),
-                        curve: Curves.easeOutCubic,
-                        builder: (_, f, _) => Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: FractionallySizedBox(
-                            widthFactor: f,
-                            child: Container(
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: me
-                                    ? scheme.primary
-                                    : scheme.primary.withValues(alpha: 0.4),
-                                borderRadius: BorderRadius.circular(7),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                Positioned(top: 0, right: 0, child: avatar),
+                Positioned(
+                  left: 0,
+                  bottom: -3,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 26),
+                    height: 26,
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: medal ?? scheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(13),
+                      border: Border.all(color: scheme.surface, width: 2),
                     ),
-                    Text(
-                      NumberFormat.decimalPattern(l.localeName).format(points),
-                      style: text.labelLarge?.copyWith(
+                    child: Text(
+                      '$rank',
+                      style: text.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: scheme.primary,
+                        color: medal != null ? ink : scheme.onSurface,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
+          Expanded(
+            child: Container(
+              height: 30,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: scheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // The fill grows in when the chart opens.
+                  TweenAnimationBuilder(
+                    tween: Tween(begin: 0.0, end: share.clamp(0.04, 1.0)),
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, f, _) => Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: FractionallySizedBox(
+                        widthFactor: f,
+                        heightFactor: 1,
+                        child: ColoredBox(
+                          color: scheme.primary.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // The @name at the start, the points at the end, centred in height.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      spacing: 8,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '@${row.name}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: text.labelLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          NumberFormat.decimalPattern(l.localeName)
+                              .format(row.points),
+                          style: text.labelMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (rewards)
+            SizedBox(
+              width: 22,
+              child: reward == null
+                  ? null
+                  : Center(child: _MiniCard(reward, width: 18)),
+            ),
         ],
       ),
     );

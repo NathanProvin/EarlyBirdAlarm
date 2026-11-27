@@ -28,7 +28,7 @@ class PageHeader extends StatelessWidget {
               tooltip: l.account,
               icon: Badge(
                 isLabelVisible: store.tradeWaiting,
-                child: const Icon(Icons.person_outline),
+                child: const Icon(Icons.person, size: 34),
               ),
               onPressed: () => open(const AccountScreen()),
             ),
@@ -40,7 +40,7 @@ class PageHeader extends StatelessWidget {
           ),
           IconButton(
             tooltip: l.settings,
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings, size: 34),
             onPressed: () => open(const SettingsScreen()),
           ),
         ],

@@ -9,6 +9,7 @@ import '../purchases.dart';
 import '../store.dart';
 import 'booster.dart';
 import 'header.dart';
+import 'lure.dart';
 import 'ring.dart';
 import 'streak.dart';
 
@@ -67,7 +68,7 @@ class _TwitchScreenState extends State<TwitchScreen> {
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
-    return Column(
+    final page = Column(
       children: [
         PageHeader(
           center: Row(
@@ -141,6 +142,17 @@ class _TwitchScreenState extends State<TwitchScreen> {
         ],
         // Higher than the glass bottom bar's edge.
         SizedBox(height: 32 + MediaQuery.paddingOf(context).bottom),
+      ],
+    );
+    // The Lure, bottom left (user, 2026-11-27).
+    return Stack(
+      children: [
+        page,
+        Positioned(
+          left: 16,
+          bottom: 24 + MediaQuery.paddingOf(context).bottom,
+          child: const LureButton(),
+        ),
       ],
     );
   }

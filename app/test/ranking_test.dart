@@ -8,16 +8,13 @@ void main() {
     expect(lastMonthKey(DateTime.utc(2027, 1, 1)), '202612');
   });
 
-  test('reward by top percentile', () {
-    expect(rankReward(1, 100), 'legendary');
-    expect(rankReward(5, 100), 'epic');
-    expect(rankReward(15, 100), 'rare');
-    expect(rankReward(40, 100), 'uncommon');
-    expect(rankReward(41, 100), 'common');
-    expect(
-      rankReward(1, 14),
-      'rare',
-    ); // 7 %: few players, no Legendary for first
+  test('reward by rank: the top 10 only', () {
+    expect(rankReward(1), 'legendary');
+    expect(rankReward(2), 'epic');
+    expect(rankReward(3), 'rare');
+    expect([rankReward(4), rankReward(5)], ['uncommon', 'uncommon']);
+    expect([rankReward(6), rankReward(10)], ['common', 'common']);
+    expect(rankReward(11), isNull);
   });
 
   test("only this month's cards score", () {

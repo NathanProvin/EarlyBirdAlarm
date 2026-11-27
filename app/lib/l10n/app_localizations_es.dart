@@ -591,7 +591,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Sobres ilimitados, Radar de especies y Forja de cartas: una compra, para siempre.';
+      'Más funciones: sobres más rápidos, radar, forja de cartas y reclamos. Compra una vez, para siempre.';
 
   @override
   String get paymentsGoogle => 'Pago con Google Play.';
@@ -1042,6 +1042,19 @@ class AppLocalizationsEs extends AppLocalizations {
       'Un pequeño aviso tras unos días sin jugar, dos como máximo, y uno antes de que cierre la clasificación del mes.';
 
   @override
+  String get sharePhotos => 'Comparte tus fotos';
+
+  @override
+  String get sharePhotosInfo => 'o envía tu opinión al desarrollador';
+
+  @override
+  String get sharePhotosSubject => 'Early Bird: fotos y opiniones';
+
+  @override
+  String get sharePhotosBody =>
+      'Ave:\nLugar:\nFecha:\n\nHe tomado yo mismo las fotos adjuntas y autorizo a Early Bird a usarlas en la app con licencia CC BY 4.0, con el crédito:\n\nOpinión:\n';
+
+  @override
   String get reminderTradeTitle => 'Un amigo te espera';
 
   @override
@@ -1108,7 +1121,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get craftLocked => 'Una carta elegida está en un intercambio.';
 
   @override
-  String get craftBooster => '+1 sobre';
+  String get craftBooster => '+2 sobres';
 
   @override
   String get statPoints => 'Puntos';
@@ -1137,6 +1150,48 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get rankEnter =>
       'Gana una carta este mes para entrar en la clasificación.';
+
+  @override
+  String get lureInfo => 'Atrae la especie que quieras.';
+
+  @override
+  String get rankRewardColumn => 'Recompensa';
+
+  @override
+  String rankDaysLeft(int days) {
+    return '-$days d';
+  }
+
+  @override
+  String get rankWorld => 'Clasificación mundial';
+
+  @override
+  String get lure => 'Reclamo';
+
+  @override
+  String get lureSearch => '¿Qué ave llamas?';
+
+  @override
+  String lurePlayed(String bird) {
+    return 'Reclamo: $bird. ¿Vendrá? Abre tu próxima carta para saberlo.';
+  }
+
+  @override
+  String get lureNone => 'No quedan reclamos hoy. ¡Hasta mañana!';
+
+  @override
+  String get lureOffline => 'Sin conexión: no se puede reproducir el canto.';
+
+  @override
+  String get rankAllTime => 'Siempre';
+
+  @override
+  String get rankAllTimeTitle => 'Clasificación histórica';
+
+  @override
+  String rankFinished(String rank, String month) {
+    return '¡Terminaste $rank en $month!';
+  }
 
   @override
   String get craftPlusOnly => 'Combina tus cartas';

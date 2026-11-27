@@ -167,21 +167,27 @@ checks += [
         "where": {"fieldFilter": {"field": {"fieldPath": "a"}, "op": "EQUAL", "value": {"stringValue": lo}}}}})[0], 200),
     ("B removes A: A's side", call("DELETE", f"{DB}/friends/{a}/list/{b}", tb)[0], 200),
     ("B removes A: its side", call("DELETE", f"{DB}/friends/{b}/list/{a}", tb)[0], 200),
-    # The monthly ranking: own row, current UTC month, own @name.
+    # The rankings: own row, current UTC month or the all-time board, own @name.
     *[(what, call("PATCH", f"{DB}/ranks/{m}/players/{uid}", tok, {"fields": {
-        "name": {"stringValue": nm}, "points": {"integerValue": str(p)}}})[0], exp)
-      for what, m, uid, tok, nm, p, exp in [
-        ("A ranks this month", MONTH, a, ta, na, 120, 200),
-        ("A ranks last month", LAST, a, ta, na, 120, 403),
-        ("A ranks under B's name", MONTH, a, ta, nb, 120, 403),
-        ("A writes B's row", MONTH, b, ta, nb, 120, 403),
-        ("A ranks with 0 points", MONTH, a, ta, na, 0, 403),
+        "name": {"stringValue": nm}, "points": {"integerValue": str(p)},
+        **({"avatar": {"mapValue": {"fields": {"bird": {"stringValue": "turdus_merula"}}}}} if av else {})}})[0], exp)
+      for what, m, uid, tok, nm, p, av, exp in [
+        ("A ranks this month", MONTH, a, ta, na, 120, False, 200),
+        ("A ranks this month with its avatar", MONTH, a, ta, na, 120, True, 200),
+        ("A ranks last month", LAST, a, ta, na, 120, False, 403),
+        ("A ranks under B's name", MONTH, a, ta, nb, 120, False, 403),
+        ("A writes B's row", MONTH, b, ta, nb, 120, False, 403),
+        ("A ranks with 0 points", MONTH, a, ta, na, 0, False, 403),
+        ("A ranks 5M points in a month", MONTH, a, ta, na, 5000000, False, 403),
+        ("A ranks 5M points all time", "all", a, ta, na, 5000000, True, 200),
+        ("A ranks on a made-up board", "best", a, ta, na, 120, False, 403),
       ]],
     ("B reads the top 10", call("POST", f"{DB}/ranks/{MONTH}:runQuery", tb, {"structuredQuery": {
         "from": [{"collectionId": "players"}],
         "orderBy": [{"field": {"fieldPath": "points"}, "direction": "DESCENDING"}], "limit": 10}})[0], 200),
     ("B deletes A's row", call("DELETE", f"{DB}/ranks/{MONTH}/players/{a}", tb)[0], 403),
     ("A deletes its row", call("DELETE", f"{DB}/ranks/{MONTH}/players/{a}", ta)[0], 200),
+    ("A deletes its all-time row", call("DELETE", f"{DB}/ranks/all/players/{a}", ta)[0], 200),
     ("A deletes its profile", call("DELETE", f"{DB}/profiles/{a}", ta)[0], 200),
     ("A frees its name", call("DELETE", f"{DB}/usernames/{na}", ta)[0], 200),
 ]

@@ -182,12 +182,7 @@ birds: Alcedo atthis, Merops apiaster, Coracias garrulus, Upupa epops, Oriolus o
 reward: rare
 
 ## leafwarblers | Leaf warblers | Pouillots | Laubsänger | Mosquiteros | Phylloscopus proregulus
-birds: Phylloscopus inornatus, Phylloscopus proregulus, Phylloscopus humei, Phylloscopus fuscatus,
-  Phylloscopus schwarzi, Phylloscopus borealis, Phylloscopus trochiloides,
-  Phylloscopus plumbeitarsus, Phylloscopus ibericus, Phylloscopus bonelli,
-  Phylloscopus orientalis, Phylloscopus coronatus, Phylloscopus nitidus,
-  Phylloscopus tenellipes, Phylloscopus griseolus, Phylloscopus examinandus,
-  Phylloscopus sindianus, Phylloscopus maculipennis
+family: Phylloscopidae
 reward: legendary
 
 ## white | White knights | Chevaliers blancs | Weiße Ritter | Caballeros blancos | Ardea alba

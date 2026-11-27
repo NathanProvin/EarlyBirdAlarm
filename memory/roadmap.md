@@ -2,6 +2,9 @@
 
 Iterative: each step ends with something that runs on a real Android device and is validated by the user. Rules and choices: `decisions.md`. Store answers: `store-listing.md`.
 
+## Status — 2026-11-27
+- **1.4.0 planned** (production polish, see Phase 1.4.0): crafting balance and mode, filter sheet, photo sharing, Pouillots, ranking rework, Lure. Challenges stay in Later.
+
 ## Status — 2026-11-24
 - **1.3.0+8 uploaded to the closed track** (crafting, points, monthly ranking, achievements rework); see Phase 1.3.0 below. The lines under this one are the 2026-11-13 status, kept for history.
 - **Live:** 1.0.0+3 in **closed testing** on Google Play (14 active installs; reads the frozen GitHub Pages catalog).
@@ -57,9 +60,27 @@ All in `main` (pushed: 02a8ee3, 1866473, c1bd81a, fd6b716, ac7d56c, 2b01f8f); de
 - [ ] Checks on the S22: large font size, the 1st-of-month reward (kept open, user 2026-11-24) (December 1st: first real claim), ranking with several players: on 2026-11-24 the user saw only themselves, expected (only 1.2.1+ writes rows and 1.2.1 never reached Play; a row also needs an @name, the cloud on and a card won this UTC month): **wait for testers on 1.3.0**, check `ranks/202611/players` in the Firebase console if still alone
 - [ ] Open questions: the recipes panel doesn't say "same species" (rainbow card = any rarity); players without an @name never appear in the ranking (ask for one on opening it, or an anonymous label? undecided); ranking scores are self-reported (cheatable until server-signed cards); unclaimed-achievement progress can drop when crafting uses cards
 
+## Phase 1.4.0 — production polish (planned 2026-11-27)
+The production release: no risky features. Order below = build order, one release APK on the S22 per step, validated by the user; decisions.md updated as each step is built.
+- [x] **Crafting balance:** 3 Common → Uncommon (`craftCost`, `cards.dart`); the booster recipe is now **only 2 Commons of one species → 2 boosters** (any other pair refused, the Legendary goal-2 fallback gone); recipe panel, "+2 boosters" text (4 languages), `craft_test.dart`
+- [x] **Crafting mode:** the hammer switches the Collection to **Duplicates** (the previous view comes back on leaving); while active the header view pill becomes an accent-filled "🔨 Forge" pill and a slow accent glow pulses along the screen edges (a painter, no blur)
+- [x] **Filter & sort sheet:** dropdown kept; section titles bold in the accent with an icon (👁 View, ⇅ Sort, ★ Rarity), thin dividers; the View dropdown in a filled box with a 2 px accent outline, bigger text, the view's icon
+- [x] **Settings → "Share your bird photos"** (subtitle "or send feedback to the developer"), after Theme: a mailto to the contact address with a template (bird, place, date, "I took these photos and allow Early Bird to use them under CC BY 4.0, credited as: ___"); photos attached in the mail app; added like `my_photos` (credited to the sender); 4 languages
+- [x] **Pouillots series = whole family** (`family: Phylloscopidae` in `series.md`: 20 catalog species, adds Chiffchaff, Willow, Wood and Canary Islands Chiffchaff; griseolus / maculipennis were not in the catalog); `series.json` rebuilt and published (copy), no app release needed
+- [x] **Ranking rework** (`ranking.dart`, `ui/ranking.dart`, rules):
+  - Month | All-time switch at the top centre (the Achievements | Series switch, made public), "NOV" (localized short month) by default
+  - All-time board: `ranks/all/players/{uid}` = all collection points, written with the month row; no rewards; rules block for `all` (higher cap), checker cases, deleted with the account. **Rules deploy needs the user's OK**
+  - Rows: rank, round avatar (added to the row doc, rules `hasOnly` + `avatar`), bar with the @name and points inside (minimum width), reward card icon at the right (month board); top 10 + own row as 11th with its real rank
+  - Month rewards by rank: #1 Legendary, #2 Epic, #3 Rare, #4–5 Uncommon, #6–10 Common, **nothing below #10 for now** (percentiles again with more players); collected on the 1st through a popup ("You finished #3 in November!") then the reward card
+- [x] **Lure (FR "Repasse")**, Plus only, 3 a day: icon at the bottom left of the Training tab (unpaid → Plus sheet); a search of the species that can be drafted now (region, season, difficulty); the bird's call plays, popup "You played the Blackbird's call. Will it answer?"; the **next card from any source** (Training or alarm) has 50 % chance of being that bird; a miss uses the call up; no network → a normal draw
+- [x] **User (console):** code `ami2nathan` → reward `legendary` (codes live in Firestore `codes/{word}`, not in the app)
+- [x] **Performance pass** (2026-11-27): grid tiles and forge without live blurs, 35 → 5 ms GPU frames (decisions.md, Smooth scrolling)
+- [ ] User review on the S22 (crafting validated; ranking and Lure fixes of 2026-11-27 installed); the two noisy recordings to remove (reject list)
+- [ ] Version 1.4.0+9 (set), release notes in 4 languages (`store-listing.md`), signed bundle → closed track → production
+
 ## Later
+- **Challenges between friends** (brainstormed 2026-11-27, not green-lit): async 5-bird duel on a `challenges/{a}_{b}` doc (trade pattern), or a real-time 3-lives duel with wagered cards held in escrow in the duel doc (removed from both collections at the start, so a loser going offline can't keep them; leaving = loss); cheatable while cards are rolled on the phone.
 - [x] **Achievements balance** (user, 2026-11-24): done the same day, see decisions.md "Achievements and series".
-- **Challenges between friends** (the "coming soon" button on a friend's profile).
 - **Region UI:** rework the picker, names and collection views (the 2° grid stays).
 - **iOS:** AlarmKit (iOS 26+; check custom sounds), Sign in with Apple, StoreKit products; remote trades and backup already cross-platform. $99 / year, cloud Mac builds, a real iPhone.
 - **Marketplace** (~1,000+ daily players): server-signed pre-rolled cards (Blaze + Cloud Functions); first a bank (sell duplicates, buy a chosen card), then player listings with a fee; the currency never bought with or turned into money.

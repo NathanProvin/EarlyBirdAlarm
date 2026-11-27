@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../birds.dart';
 import '../l10n/app_localizations.dart';
@@ -6,6 +7,7 @@ import '../main.dart';
 import 'bird_icon.dart';
 import 'credits.dart';
 import 'onboarding.dart';
+import 'profile.dart' show contactEmail;
 import 'region.dart';
 import 'theme.dart';
 import 'tips.dart';
@@ -335,6 +337,23 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            // Players' photos join the catalog like the developer's own (user, 2026-11-27).
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.add_a_photo_outlined),
+              title: Text(l.sharePhotos, style: header),
+              subtitle: Text(l.sharePhotosInfo, style: text.bodySmall),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => launchUrl(
+                Uri(
+                  scheme: 'mailto',
+                  path: contactEmail,
+                  query:
+                      'subject=${Uri.encodeComponent(l.sharePhotosSubject)}'
+                      '&body=${Uri.encodeComponent(l.sharePhotosBody)}',
+                ),
+              ),
+            ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(l.reminders, style: header),

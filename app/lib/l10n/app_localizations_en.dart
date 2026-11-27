@@ -591,7 +591,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Unlimited boosters, Species Radar and Card crafting: one purchase, for life.';
+      'More features: speed up boosters, radar, card crafting and calls. Buy once, for life.';
 
   @override
   String get paymentsGoogle => 'Payments by Google Play.';
@@ -1041,6 +1041,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'A nudge after a few days away, twice at most, and one before the month\'s ranking closes.';
 
   @override
+  String get sharePhotos => 'Share your photos';
+
+  @override
+  String get sharePhotosInfo => 'or send feedback to the developer';
+
+  @override
+  String get sharePhotosSubject => 'Early Bird: photos and feedback';
+
+  @override
+  String get sharePhotosBody =>
+      'Bird:\nPlace:\nDate:\n\nI took the attached photos myself and allow Early Bird to use them in the app under the CC BY 4.0 licence, credited as:\n\nFeedback:\n';
+
+  @override
   String get reminderTradeTitle => 'A friend is waiting for you';
 
   @override
@@ -1107,7 +1120,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get craftLocked => 'A selected card is offered in a trade.';
 
   @override
-  String get craftBooster => '+1 booster';
+  String get craftBooster => '+2 boosters';
 
   @override
   String get statPoints => 'Points';
@@ -1135,6 +1148,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rankEnter => 'Win a card this month to enter the ranking.';
+
+  @override
+  String get lureInfo => 'Attract the species you want.';
+
+  @override
+  String get rankRewardColumn => 'Reward';
+
+  @override
+  String rankDaysLeft(int days) {
+    return '-$days d';
+  }
+
+  @override
+  String get rankWorld => 'World ranking';
+
+  @override
+  String get lure => 'Lure';
+
+  @override
+  String get lureSearch => 'Which bird do you call?';
+
+  @override
+  String lurePlayed(String bird) {
+    return 'You played the $bird\'s call. Will it come? Open your next card to find out.';
+  }
+
+  @override
+  String get lureNone => 'No lures left today. Back tomorrow!';
+
+  @override
+  String get lureOffline => 'No connection: the call can\'t play.';
+
+  @override
+  String get rankAllTime => 'All time';
+
+  @override
+  String get rankAllTimeTitle => 'All-time ranking';
+
+  @override
+  String rankFinished(String rank, String month) {
+    return 'You finished $rank in $month!';
+  }
 
   @override
   String get craftPlusOnly => 'Combine cards';

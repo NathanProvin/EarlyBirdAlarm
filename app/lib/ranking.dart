@@ -30,17 +30,27 @@ int monthPoints(List<CardData> cards, DateTime t) {
   ]);
 }
 
-/// The reward card's rarity for finishing [rank] of [total]: by top percentile.
-String rankReward(int rank, int total) => switch (rank / total) {
-  <= 0.01 => 'legendary',
-  <= 0.05 => 'epic',
-  <= 0.15 => 'rare',
-  <= 0.40 => 'uncommon',
-  _ => 'common',
+/// The all-time board's key, beside the months (2026-11-27): every card's points.
+const allTime = 'all';
+
+/// The reward card's rarity for finishing a month at [rank]: the top 10 only (user,
+/// 2026-11-27). shortcut: few players yet, back to percentiles when there are many.
+String? rankReward(int rank) => switch (rank) {
+  1 => 'legendary',
+  2 => 'epic',
+  3 => 'rare',
+  4 || 5 => 'uncommon',
+  <= 10 => 'common',
+  _ => null,
 };
 
 /// One row of the ranking.
-typedef RankRow = ({String uid, String name, int points});
+typedef RankRow = ({
+  String uid,
+  String name,
+  int points,
+  Map<String, dynamic>? avatar,
+});
 
 final _db = FirebaseFirestore.instance;
 String? get _uid => FirebaseAuth.instance.currentUser?.uid;
@@ -49,24 +59,47 @@ CollectionReference<Map<String, dynamic>> _month(String m) =>
 
 String? _sent; // the last row written, to skip identical writes
 
-/// Writes this player's row for the current month when it changed (with each backup and
-/// when the ranking opens). No @name yet, no score, or the cloud off: nothing.
+/// Writes this player's rows, the current month's and the all-time one, when they changed
+/// (with each backup and when the ranking opens). No @name yet or the cloud off: nothing;
+/// a board without points: no row there.
 Future<void> saveRank(Store store) async {
   final uid = _uid, name = store.username;
+  if (uid == null || name == null || store.cloudOff) return;
   final now = DateTime.now();
-  final points = monthPoints(store.cards, now);
-  if (uid == null || name == null || store.cloudOff || points == 0) return;
-  final row = '$uid|${monthKey(now)}|$name|$points';
-  if (row == _sent) return;
+  final avatar = store.avatar;
+  final boards = {
+    monthKey(now): monthPoints(store.cards, now),
+    allTime: collectionPoints(store.cards),
+  }..removeWhere((_, p) => p == 0);
+  final row = '$uid|$name|$boards|$avatar';
+  if (boards.isEmpty || row == _sent) return;
   try {
-    await _month(monthKey(now)).doc(uid).set({'name': name, 'points': points});
+    await Future.wait([
+      for (final MapEntry(key: board, value: points) in boards.entries)
+        _month(board)
+            .doc(uid)
+            .set({'name': name, 'points': points, 'avatar': ?avatar}),
+    ]);
     _sent = row;
   } on Exception catch (e) {
     debugPrint('ranking: $e');
   }
 }
 
-/// The month's top 10, live.
+final _avatars = <String, Future<Map<String, dynamic>?>>{};
+
+/// A player's avatar from their profile, once per session: rows written before 1.4.0
+/// carry none.
+Future<Map<String, dynamic>?> profileAvatar(String uid) => _avatars[uid] ??= _db
+    .collection('profiles')
+    .doc(uid)
+    .get()
+    .then<Map<String, dynamic>?>(
+      (d) => d.data()?['avatar'] as Map<String, dynamic>?,
+      onError: (Object _) => null,
+    );
+
+/// A board's top 10 (a month's, or [allTime]), live.
 Stream<List<RankRow>> watchTop(String month) =>
     _month(month)
         .orderBy('points', descending: true)
@@ -79,6 +112,7 @@ Stream<List<RankRow>> watchTop(String month) =>
                 uid: d.id,
                 name: d.data()['name'] as String? ?? '',
                 points: d.data()['points'] as int? ?? 0,
+                avatar: d.data()['avatar'] as Map<String, dynamic>?,
               ),
           ],
         );
@@ -95,10 +129,7 @@ Future<({int rank, int total, int points})?> myRank(String month) async {
     _month(month).count().get(),
   ]);
   final rank = above.count! + 1;
-  store.notePodium(rank, total.count!); // the Podium achievement
+  // The Podium achievement counts months only.
+  if (month != allTime) store.notePodium(rank, total.count!);
   return (rank: rank, total: total.count!, points: points);
 }
-
-/// Removes this player's row of the current month (account deletion).
-Future<void> deleteRank(String uid) =>
-    _month(monthKey(DateTime.now())).doc(uid).delete();

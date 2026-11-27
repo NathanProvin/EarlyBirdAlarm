@@ -178,10 +178,10 @@ double _cdf(double z) {
 }
 
 /// Crafting (Plus, 2026-11-23): cards of one rarity needed to forge one of the next.
-const craftCost = {'common': 4, 'uncommon': 3, 'rare': 3, 'epic': 3};
+const craftCost = {'common': 3, 'uncommon': 3, 'rare': 3, 'epic': 3};
 
 /// What cards of [rarities], of the species [birds], forge: the next rarity, 'booster'
-/// for any 2 cards, or null. Only cards of one species combine (user, 2026-11-23);
+/// for 2 Commons (2 boosters, user 2026-11-27), or null. Only cards of one species combine (user, 2026-11-23);
 /// Shiny cards never go in.
 String? craftResult(List<String> rarities, Iterable<String> birds) {
   if (rarities.isEmpty || rarities.contains('shiny')) return null;
@@ -190,7 +190,9 @@ String? craftResult(List<String> rarities, Iterable<String> birds) {
   if (craftCost[r] == rarities.length && rarities.every((x) => x == r)) {
     return tiers[tiers.indexOf(r) + 1];
   }
-  return rarities.length == 2 ? 'booster' : null;
+  return rarities.length == 2 && rarities.every((x) => x == 'common')
+      ? 'booster'
+      : null;
 }
 
 /// The forged card: [best]'s bird, photo and stats as [rarity], won now. Every stat gets

@@ -656,6 +656,7 @@ class Store extends ChangeNotifier {
         if (key != forAlarm) value,
     };
     final next =
+        _takeLure(at, held) ??
         deckPile(
           monthFor(at),
           difficulty,
@@ -669,6 +670,45 @@ class Store extends ChangeNotifier {
       debugPrint('perf: draw ${clock.elapsedMicroseconds / 1000} ms');
     }
     return next;
+  }
+
+  /// Lure (Plus, 2026-11-27; FR "Repasse"): a bird called from Training, 3 times a day.
+  /// The next card drawn, Training or an alarm, has one chance in two of being it; a
+  /// miss uses the call up. shortcut: an alarm re-picked later (region change) loses
+  /// a lured card it held, fine while lures are a nudge.
+  static const lureMax = 3;
+  String _today(DateTime now) => '${now.year}-${now.month}-${now.day}';
+  int lureLeft(DateTime now) => _prefs.getString('lureDay') == _today(now)
+      ? max(0, lureMax - (_prefs.getInt('lureUses') ?? 0))
+      : lureMax;
+
+  /// Calls [birdId] (its song already downloaded by the caller): one use of today's.
+  Future<void> lure(String birdId, DateTime now) async {
+    final used = lureMax - lureLeft(now);
+    await _prefs.setString('lureDay', _today(now));
+    await _prefs.setInt('lureUses', used + 1);
+    await _prefs.setString('lure', birdId);
+    notifyListeners();
+  }
+
+  /// The lured bird's card for this draw (50 %), from its songs on the phone; null on a
+  /// miss, with no lure, or when the bird can't ring now. The lure goes either way.
+  (Bird, Recording)? _takeLure(DateTime at, Set<String> held) {
+    final id = _prefs.getString('lure');
+    if (id == null) return null;
+    unawaited(_prefs.remove('lure'));
+    if (Random().nextBool()) return null;
+    final bird = pool(
+      monthFor(at),
+      difficulty,
+    ).keys.where((b) => b.id == id).firstOrNull;
+    if (bird == null) return null;
+    final songs = songsOnPhone();
+    final rec = bird
+        .playable(difficulty)
+        .where((r) => songs.containsKey(r.file) && !held.contains(r.file))
+        .firstOrNull;
+    return rec == null ? null : (bird, rec);
   }
 
   /// The card photo of each pending draw (song → photo, "" for the catalog photo), picked
@@ -893,7 +933,7 @@ class Store extends ChangeNotifier {
     return card;
   }
 
-  /// Crafting (Plus): [used] leave the collection; [forged] joins it, or a bonus booster
+  /// Crafting (Plus): [used] leave the collection; [forged] joins it, or 2 bonus boosters
   /// when null. Not kept in [given]: that counts trades (the Trader achievement).
   Future<void> craft(List<CardData> used, CardData? forged) async {
     final gone = {for (final c in used) c.key};
@@ -903,7 +943,10 @@ class Store extends ChangeNotifier {
       ?forged,
     ]);
     if (forged == null) {
-      await _prefs.setInt('twitchBonus', twitchBonus + 1);
+      await _prefs.setInt(
+        'twitchBonus',
+        twitchBonus + 2,
+      ); // 2 Commons → 2 boosters
     } else {
       await _prefs.setInt('crafted', crafted + 1);
     }
