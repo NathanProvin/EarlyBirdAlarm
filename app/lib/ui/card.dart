@@ -1477,12 +1477,17 @@ class BirdPhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var file = bird.photoOf(photo).photo;
-    // A card's own photo not on the phone yet (won offline): the catalog photo meanwhile.
-    if (file != bird.photo &&
-        phonePath(file) == null &&
-        phonePath(bird.photo) != null) {
-      file = bird.photo;
+    final file = bird.photoOf(photo).photo;
+    // A card's own photo not on the phone (won offline, or a friend's avatar and hall of
+    // fame: before 1.4.1 they showed the catalog photo for good): fetched once and kept,
+    // the catalog photo meanwhile.
+    if (file != bird.photo && phonePath(file) == null) {
+      return FutureBuilder<bool>(
+        future: keepPhoto(file),
+        builder: (context, done) => done.data == true
+            ? BirdPhoto(bird, photo: photo) // on the phone now
+            : BirdPhoto(bird),
+      );
     }
     final path = phonePath(file);
     // A catalog photo of the region not on the phone yet (mobile data): fetched once and

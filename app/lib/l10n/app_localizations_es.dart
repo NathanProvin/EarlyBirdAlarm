@@ -490,36 +490,31 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      '¿Te cuesta avanzar aprendiendo cantos de aves? Cada mañana, despierta con un ave nueva: adivínala, gana su carta y aprende su canto.';
+      'Cada mañana, un ave nueva: adivínala, gana su carta, aprende su canto.';
 
   @override
   String get introRegionTitle => 'Elegir región';
 
   @override
-  String get introRegion =>
-      'Escucharás aves locales: elige una región en el mapa o usa tu ubicación actual.';
+  String get introRegion => 'Elige tu región para oír aves locales.';
 
   @override
   String get introGameTitle => 'Modo de juego';
 
   @override
-  String get introLater =>
-      'Los ajustes más difíciles dan mejores recompensas; puedes cambiarlos luego en Ajustes.';
+  String get introLater => 'Más difícil, mejores recompensas.';
 
   @override
   String get introCollectionTitle => 'Colecciona cartas';
 
   @override
-  String get introTwitch =>
-      'Entrenamiento: un sobre gratis cada 15 minutos para entrenar el oído.';
+  String get introTwitch => 'Entrenamiento: un sobre gratis cada 15 min';
 
   @override
-  String get introSeries =>
-      'Series y logros: complétalos para conseguir cartas raras garantizadas.';
+  String get introSeries => 'Series y logros: cartas raras garantizadas';
 
   @override
-  String get introTrade =>
-      'Intercambiar: queda con otro pajarero e intercambiad cartas en persona.';
+  String get introTrade => 'Intercambios: en persona o a distancia';
 
   @override
   String get introExamineTitle => 'Examinar cartas';
@@ -541,7 +536,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introRarity =>
-      'La rareza de las cartas va de Común a Legendaria: las especies raras tienen más probabilidad de dar cartas raras. Cada carta lleva además estadísticas reales de su especie: ¡busca un ave al 100 %!';
+      'Cinco rarezas y estadísticas reales de la especie: ¡apunta al 100 %!';
 
   @override
   String get start => 'Empezar';
@@ -580,7 +575,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get thankYouPlus =>
-      'Early Bird Plus es tuyo para siempre: un sobre por minuto y el mapa de especies que faltan. ¡Gracias por ayudar a que Early Bird siga sin anuncios y creciendo!';
+      'Early Bird Plus está activado: un sobre cada minuto, el radar, la forja y el Reclamo. ¡Gracias por ayudar a Early Bird a seguir sin anuncios y crecer!';
 
   @override
   String get purchasesUnavailable =>
@@ -591,7 +586,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Más funciones: sobres más rápidos, radar, forja de cartas y reclamos. Compra una vez, para siempre.';
+      'Sobres más rápidos, radar, forja y Reclamo. 1 mes, 6 meses o para siempre: nada se renueva.';
+
+  @override
+  String get plusMonth => '1 mes';
+
+  @override
+  String get plusSixMonths => '6 meses';
+
+  @override
+  String get plusPigeon => 'Paloma';
+
+  @override
+  String get plusDuck => 'Pato';
+
+  @override
+  String get plusEagle => 'Águila';
+
+  @override
+  String get plusLife => 'Para siempre';
 
   @override
   String get paymentsGoogle => 'Pago con Google Play.';
@@ -763,6 +776,44 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Conserva tu colección';
+
+  @override
+  String get introSocialTitle => 'Juega con amigos';
+
+  @override
+  String get introProfile => 'Perfil: tu @nombre, avatar y mejores cartas';
+
+  @override
+  String get introFriends =>
+      'Amigos: invítalos, reciben una carta de bienvenida';
+
+  @override
+  String get introRankings =>
+      'Clasificaciones: el top 10 del mes gana una carta';
+
+  @override
+  String get introAccount => 'Guarda tus cartas, amigos y puesto a salvo.';
+
+  @override
+  String get introPlusBoosters => 'Un sobre cada minuto';
+
+  @override
+  String get introPlusRadar => 'Radar: dónde viven las aves que te faltan';
+
+  @override
+  String get introPlusForge => 'Forja: fusiona tus repetidas';
+
+  @override
+  String get introPlusLure => 'Reclamo: llama al ave que quieras';
+
+  @override
+  String get introPlusOnce => '1 mes, 6 meses o para siempre. Sin suscripción.';
+
+  @override
+  String get introPlusOwned => '¡Gracias! Todo está desbloqueado.';
+
+  @override
+  String get introPlusSee => 'Ver Plus';
 
   @override
   String get shiny => 'Shiny';
@@ -1237,6 +1288,20 @@ class AppLocalizationsEs extends AppLocalizations {
       locale: localeName,
       other: '$count cartas forjadas',
       one: '1 carta forjada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get birdCaller => 'Reclamista';
+
+  @override
+  String goalBirdCaller(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count aves llamadas con el Reclamo',
+      one: '1 ave llamada con el Reclamo',
     );
     return '$_temp0';
   }

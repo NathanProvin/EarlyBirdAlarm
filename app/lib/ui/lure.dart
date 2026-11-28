@@ -101,23 +101,34 @@ class LureButton extends StatelessWidget {
     final color = store.twitchPlus
         ? scheme.primary
         : scheme.primary.withValues(alpha: 0.45);
-    return IconButton.outlined(
+    final button = IconButton.outlined(
       iconSize: 28,
       style: IconButton.styleFrom(
         minimumSize: const Size(56, 56),
         side: BorderSide(color: color, width: 2),
       ),
       color: color,
-      // The same badge as the Training tab's boosters.
-      icon: Badge(
-        isLabelVisible: store.twitchPlus && left > 0,
-        label: Text('$left'),
-        backgroundColor: scheme.primary,
-        textColor: scheme.onPrimary,
-        child: const Icon(Icons.campaign),
-      ),
+      icon: const Icon(Icons.campaign),
       tooltip: l.lure,
       onPressed: () => _tap(context),
+    );
+    if (!store.twitchPlus || left == 0) return button;
+    // The same badge as the Training tab's boosters, centred on the 56 dp circle's edge
+    // at its upper right (45°: 8 dp in from the corner, the 16 dp pill's half).
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        button,
+        Positioned(
+          top: 0,
+          right: 0,
+          child: Badge(
+            label: Text('$left'),
+            backgroundColor: scheme.primary,
+            textColor: scheme.onPrimary,
+          ),
+        ),
+      ],
     );
   }
 }

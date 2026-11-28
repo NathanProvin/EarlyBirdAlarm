@@ -12,6 +12,9 @@ import 'profile.dart' show Avatar;
 import 'series.dart' show ModeSwitch, RewardScreen;
 import 'theme.dart';
 
+/// Gold, silver and bronze: the ranking's medals (and the onboarding's podium).
+const podiumColors = [Color(0xFFD9A21B), Color(0xFFA7ABB2), Color(0xFFB0793F)];
+
 /// A month key's name in the app's language: "202611" → "November".
 String _monthName(AppLocalizations l, String key) {
   final k = int.parse(key);
@@ -196,12 +199,15 @@ class _RankingScreenState extends State<RankingScreen> {
   final _month = monthKey(DateTime.now());
   // The month by default; the all-time board on the switch (user, 2026-11-27).
   bool _allTime = false;
+  // The friends' board, a third button right of the switch (user, 2026-11-28).
+  bool _friends = false;
   late final _tops = {_month: watchTop(_month), allTime: watchTop(allTime)};
   late final _saved = saveRank(store);
   late final _mine = {
     _month: _saved.then((_) => myRank(_month)),
     allTime: _saved.then((_) => myRank(allTime)),
   };
+  late final _friendsRows = _saved.then((_) => friendsBoard());
 
   @override
   Widget build(BuildContext context) {
@@ -224,14 +230,44 @@ class _RankingScreenState extends State<RankingScreen> {
       appBar: AppBar(title: Text(l.rankWorld)),
       body: Column(
         children: [
-          ModeSwitch(
-            series: _allTime,
-            onChanged: (v) => setState(() => _allTime = v),
-            left: '$short\n${l.rankDaysLeft(days)}',
-            right: l.rankAllTime,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  flex: 7,
+                  // Faded while the friends' board shows; a tap comes back to it.
+                  child: AnimatedOpacity(
+                    opacity: _friends ? 0.5 : 1,
+                    duration: const Duration(milliseconds: 250),
+                    child: ModeSwitch(
+                      width: 1,
+                      series: _allTime,
+                      onChanged: (v) => setState(() {
+                        _allTime = v;
+                        _friends = false;
+                      }),
+                      left: '$short\n${l.rankDaysLeft(days)}',
+                      right: l.rankAllTime,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _FriendsButton(
+                    on: _friends,
+                    onTap: () => setState(() => _friends = true),
+                  ),
+                ),
+              ],
+            ),
           ),
           Expanded(
-            child: FutureBuilder(
+            child: _friends
+                ? _friendsChart(context, me)
+                : FutureBuilder(
               key: ValueKey(board),
               future: _mine[board],
               builder: (context, mine) {
@@ -306,6 +342,93 @@ class _RankingScreenState extends State<RankingScreen> {
       ),
     );
   }
+
+  /// The friends' board: the all-time chart without the rewards.
+  Widget _friendsChart(BuildContext context, String? me) => FutureBuilder(
+    future: _friendsRows,
+    builder: (context, snap) {
+      final l = AppLocalizations.of(context);
+      final rows = snap.data;
+      if (rows == null) {
+        return Center(
+          child: snap.hasError
+              ? Text(l.accountError)
+              : const CircularProgressIndicator(),
+        );
+      }
+      final most = [1, ...rows.map((r) => r.points)].reduce(max);
+      return ListView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          4,
+          16,
+          MediaQuery.paddingOf(context).bottom,
+        ),
+        children: [
+          for (final r in rows)
+            _Bar(
+              rank: rows.indexWhere((x) => x.points == r.points) + 1,
+              row: r,
+              share: r.points / most,
+              me: r.name == me,
+              rewards: false,
+            ),
+          if (rows.length <= 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                l.noFriendsYet,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+/// "Friends", right of the month / all-time switch: the same 56 dp pill, filled with the
+/// accent while its board shows.
+class _FriendsButton extends StatelessWidget {
+  const _FriendsButton({required this.on, required this.onTap});
+  final bool on;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      button: true,
+      selected: on,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          height: 56,
+          margin: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: on ? scheme.primary : scheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              AppLocalizations.of(context).friends,
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                fontWeight: FontWeight.bold,
+                color: on
+                    ? scheme.onPrimary
+                    : scheme.onSecondaryContainer.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// One player in the chart (2026-11-27): the avatar wearing the rank as a medal at its
@@ -326,18 +449,12 @@ class _Bar extends StatelessWidget {
   final double share;
   final bool me, rewards;
 
-  static const _podium = [
-    Color(0xFFD9A21B),
-    Color(0xFFA7ABB2),
-    Color(0xFFB0793F),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final medal = rank <= 3 ? _podium[rank - 1] : null;
+    final medal = rank <= 3 ? podiumColors[rank - 1] : null;
     final reward = rewards ? rankReward(rank) : null;
     const size = 42.0;
     // Rows written before 1.4.0 carry no avatar: the profile has it.

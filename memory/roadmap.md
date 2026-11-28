@@ -2,6 +2,9 @@
 
 Iterative: each step ends with something that runs on a real Android device and is validated by the user. Rules and choices: `decisions.md`. Store answers: `store-listing.md`.
 
+## Status — 2026-11-28
+- **1.4.1+10 built for production** (last-minute fixes on top of the unpublished 1.4.0, see Phase 1.4.1); the user's personal photos published to R2 (76 variants).
+
 ## Status — 2026-11-27
 - **1.4.0 planned** (production polish, see Phase 1.4.0): crafting balance and mode, filter sheet, photo sharing, Pouillots, ranking rework, Lure. Challenges stay in Later.
 
@@ -78,6 +81,18 @@ The production release: no risky features. Order below = build order, one releas
 - [ ] User review on the S22 (crafting validated; ranking and Lure fixes of 2026-11-27 installed); the two noisy recordings to remove (reject list)
 - [x] Version 1.4.0+9, release notes in 4 languages (`store-listing.md`), signed bundle built (2026-11-27)
 - [ ] Upload the bundle to the closed track, then production
+
+## Phase 1.4.1 — last-minute fixes (2026-11-28, all validated by the user on the S22)
+- [x] **Alarm time:** iPhone-style wheels (hours, minutes, AM/PM on 12-hour phones; looping, a tick at each number, ~45 pt numbers, 72 dp rows) by default; the former dial behind a clock button (`ui/edit.dart`)
+- [x] **Friends' photos:** a card's own photo (variant / Shiny) missing on the phone is fetched and kept instead of showing the catalog photo for good: friends' avatars, hall of fame and ranking now show the right picture (`BirdPhoto`, `ui/card.dart`)
+- [x] **Lure badge** on the 56 dp circle's edge at 45° (upper right)
+- [x] **Achievements eased** (tiers set by the user, `achievementGoals`); new **Bird Caller** (3 / 15 / 45 / 200 / 500 Lures used; `lured` counter in prefs and the cloud backup); Influencer's icon → group_add
+- [x] **Profile:** tighter gaps so Friends' Add / Invite buttons show without scrolling; **Friends ranking** (a third button right of the month / all-time switch: all-time points of the player and their friends, no rewards)
+- [x] **Onboarding:** 8 pages (Collect cards, new Play with friends with a podium, Account, new Early Bird Plus with "See Plus", Examine + rarities), texts halved, no scrolling, each page centred
+- [x] **Plus pricing:** Pigeon 1 month 0.99 €, Duck 6 months 2.99 €, Eagle for life 4.99 € (decisions.md, Money); products created and checked live in the sheet
+- [x] **Personal photos:** 64 renamed to bird ids (`my_photos/renames.csv`), 19 not in the catalog set aside (`hors_catalogue/`), 2 duplicates (`doublons/`); `py build.py myphotos` + publish (76 added). Catalog gap: Black-necked Grebe missing
+- [x] Version 1.4.1+10, signed bundle
+- [ ] Release notes, upload to the closed track, then production; the two noisy recordings (reject list)
 
 ## Later
 - **Challenges between friends** (brainstormed 2026-11-27, not green-lit): async 5-bird duel on a `challenges/{a}_{b}` doc (trade pattern), or a real-time 3-lives duel with wagered cards held in escrow in the duel doc (removed from both collections at the start, so a loser going offline can't keep them; leaving = loss); cheatable while cards are rolled on the phone.

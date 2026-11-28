@@ -34,7 +34,9 @@ class _AccountScreenState extends State<AccountScreen> {
     final online = Firebase.apps.isNotEmpty;
     Widget section(String? title, Widget child, {Key? key}) => Padding(
       key: key,
-      padding: EdgeInsets.only(top: title == null ? 20 : 32),
+      // Titled sections 12 dp below (32 before 1.4.1): Friends' buttons show without
+      // scrolling on the S22.
+      padding: EdgeInsets.only(top: title == null ? 20 : 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -44,7 +46,7 @@ class _AccountScreenState extends State<AccountScreen> {
               style: Theme.of(context).textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
           ],
           child,
         ],
@@ -82,7 +84,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   Column(
                     children: [
                       const HallOfFame(),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 14),
                       // The score with this month's rank inside, then the counts,
                       // as on a friend's profile. The ranking needs the (anonymous)
                       // account: none in tests.

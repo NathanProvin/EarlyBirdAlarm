@@ -230,6 +230,19 @@ Widget? groupIcon(String family) => switch (familyGroup(family)) {
   null => null,
 };
 
+/// A group's silhouette (e.g. 'pigeon') in [color], in a round outline like the card's
+/// badges: the Plus sheet's Pigeon, Duck and Eagle (1.4.1).
+Widget groupBadge(String group, Color color, {double size = 40}) => Container(
+  width: size,
+  height: size,
+  padding: EdgeInsets.all(size * 0.18),
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    border: Border.all(color: color, width: 1.5),
+  ),
+  child: CustomPaint(painter: _PathPainter(groupPath(group), color)),
+);
+
 /// The card's badge diameter (40 until 2026-11-19, then 35, then 31.5).
 const badgeSize = 31.5;
 

@@ -14,7 +14,12 @@ const tipIds = [
   'tip_breakfast',
   'tip_binoculars',
 ];
-const twitchPlusId = 'twitch_plus';
+const twitchPlusId = 'twitch_plus'; // Plus for life (4.99 € from 1.4.1)
+
+/// The Plus passes (1.4.1, user): one-off purchases, no renewal, consumable so they can be
+/// bought again; their days each (0.99 € and 2.99 € in the Play Console). `plus_year` is
+/// 6 months (user, 2026-11-28; a Play product id can't be renamed).
+const plusPasses = {'plus_month': 30, 'plus_year': 183};
 
 /// The app's navigator (MaterialApp), to say thank you wherever the purchase ends.
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -64,6 +69,13 @@ Future<void> _handle(List<PurchaseDetails> purchases) async {
     if (ok && p.productID == twitchPlusId) {
       store.twitchPlus = true;
       if (p.status == PurchaseStatus.purchased) _thanks(plus: true);
+    } else if (plusPasses[p.productID] case final days? when ok) {
+      // A pass not consumed yet comes back as restored: counted once by its order.
+      await store.addPlus(
+        p.purchaseID ?? p.transactionDate ?? p.productID,
+        days,
+      );
+      if (p.status == PurchaseStatus.purchased) _thanks(plus: true);
     } else if (p.status == PurchaseStatus.purchased) {
       _thanks(plus: false);
     }
@@ -80,6 +92,7 @@ Future<Map<String, ProductDetails>> products() async {
     final r = await InAppPurchase.instance.queryProductDetails({
       ...tipIds,
       twitchPlusId,
+      ...plusPasses.keys,
     });
     return {for (final p in r.productDetails) p.id: p};
   } on Exception {

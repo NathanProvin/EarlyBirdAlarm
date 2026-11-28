@@ -464,6 +464,24 @@ void main() {
     expect(s.twitchReady(DateTime.now()), 5);
   });
 
+  test('Plus passes: days add up from the running end, an order counts once', () async {
+    final expired = DateTime.now().subtract(const Duration(days: 1));
+    SharedPreferences.setMockInitialValues({
+      'plusUntil': expired.millisecondsSinceEpoch,
+    });
+    final s = await Store.load();
+    expect(s.twitchPlus, isFalse); // an expired pass
+    await s.addPlus('GPA.1', 30);
+    final end = s.plusUntil;
+    expect(s.twitchPlus, isTrue);
+    expect(end.difference(DateTime.now()).inDays, inInclusiveRange(29, 30));
+    await s.addPlus('GPA.1', 30); // delivered again by Play
+    expect(s.plusUntil, end);
+    await s.addPlus('GPA.2', 365); // a year on top of the month
+    expect(s.plusUntil, end.add(const Duration(days: 365)));
+    expect(s.backup['plusUntil'], s.plusUntil.millisecondsSinceEpoch);
+  });
+
   test('a Training answer wins a card and counts in the streak', () async {
     SharedPreferences.setMockInitialValues({'streak': 3});
     final s = await Store.load();
@@ -585,7 +603,7 @@ void main() {
     expect((await s.claim(streak())).rarity, 'common');
     expect((streak().tier, streak().total), (1, 7));
     expect((await s.claim(streak())).rarity, 'uncommon');
-    expect((streak().tier, streak().total, streak().owned), (2, 30, 8));
+    expect((streak().tier, streak().total, streak().owned), (2, 20, 8));
     expect(s.claimable(streak()), isFalse);
     for (final id in ['robin', 'redstart', 'tit', 'chaffinch']) {
       await s.answered(null, _b(id), null, true, '');

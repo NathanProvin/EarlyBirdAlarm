@@ -156,10 +156,36 @@ class Store extends ChangeNotifier {
   /// Boosters won by completing series: on top of the timed ones, used first.
   int get twitchBonus => _prefs.getInt('twitchBonus') ?? 0;
 
-  /// Twitch Plus bought (restored from Google Play after a reinstall).
-  bool get twitchPlus => !_hidePlus && (_prefs.getBool('twitchPlus') ?? false);
+  /// Plus on: bought for life (restored from Google Play after a reinstall), or a 1-month
+  /// / 1-year pass still running (1.4.1).
+  bool get twitchPlus =>
+      !_hidePlus &&
+      ((_prefs.getBool('twitchPlus') ?? false) ||
+          plusUntil.isAfter(DateTime.now()));
+
+  /// Plus for life bought.
   set twitchPlus(bool on) =>
       _prefs.setBool('twitchPlus', on).then((_) => notifyListeners());
+
+  /// The end of the Plus passes (one-off, no renewal; 1970: none). Kept in the cloud
+  /// backup: a consumed pass isn't restored by Google Play.
+  DateTime get plusUntil =>
+      DateTime.fromMillisecondsSinceEpoch(_prefs.getInt('plusUntil') ?? 0);
+
+  /// A pass bought (Google Play [order]): [days] more, from now or from the running
+  /// pass's end. Each order counts once (Play can deliver it again).
+  Future<void> addPlus(String order, int days) async {
+    final done = _prefs.getStringList('plusOrders') ?? const <String>[];
+    if (done.contains(order)) return;
+    final now = DateTime.now();
+    final from = plusUntil.isAfter(now) ? plusUntil : now;
+    await _prefs.setInt(
+      'plusUntil',
+      from.add(Duration(days: days)).millisecondsSinceEpoch,
+    );
+    await _prefs.setStringList('plusOrders', [...done, order]);
+    notifyListeners();
+  }
 
   /// Time between two Twitch boosters.
   Duration get twitchPeriod => twitchPlus ? twitchPlusEvery : twitchEvery;
@@ -212,6 +238,9 @@ class Store extends ChangeNotifier {
   /// Cards forged (the Crafter achievement); boosters from the forge don't count.
   int get crafted => _prefs.getInt('crafted') ?? 0;
 
+  /// Lures used, ever (the Bird Caller achievement).
+  int get lured => _prefs.getInt('lured') ?? 0;
+
   /// Podium tiers reached (podiumTiers of the best place seen in any month).
   int get podium => _prefs.getInt('podium') ?? 0;
 
@@ -231,6 +260,7 @@ class Store extends ChangeNotifier {
     friends: friends,
     crafted: crafted,
     podium: podium,
+    lured: lured,
     collected: _collected,
   ));
 
@@ -687,6 +717,7 @@ class Store extends ChangeNotifier {
     final used = lureMax - lureLeft(now);
     await _prefs.setString('lureDay', _today(now));
     await _prefs.setInt('lureUses', used + 1);
+    await _prefs.setInt('lured', lured + 1);
     await _prefs.setString('lure', birdId);
     notifyListeners();
   }
@@ -969,6 +1000,8 @@ class Store extends ChangeNotifier {
     'twitchBonus': twitchBonus,
     'crafted': crafted,
     'podium': podium,
+    'lured': lured,
+    'plusUntil': _prefs.getInt('plusUntil') ?? 0,
     'blocked': blocked.toList(),
   };
 
@@ -988,6 +1021,8 @@ class Store extends ChangeNotifier {
       'twitchBonus',
       'crafted',
       'podium',
+      'lured',
+      'plusUntil',
     ]) {
       await _prefs.setInt(
         k,

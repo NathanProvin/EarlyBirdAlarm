@@ -490,42 +490,40 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Vous n\'arrivez pas à progresser dans l\'apprentissage des chants d\'oiseaux ? Chaque matin, réveillez-vous avec un nouvel oiseau : devinez-le, gagnez sa carte, et apprenez son chant.';
+      'Chaque matin, un nouvel oiseau : devinez-le, gagnez sa carte, apprenez son chant.';
 
   @override
   String get introRegionTitle => 'Choisir une région';
 
   @override
   String get introRegion =>
-      'Vous entendrez des oiseaux locaux : choisissez une région sur la carte, ou utilisez votre position actuelle.';
+      'Choisissez votre région pour entendre les oiseaux locaux.';
 
   @override
   String get introGameTitle => 'Gameplay';
 
   @override
   String get introLater =>
-      'Les réglages plus difficiles donnent de meilleures récompenses ; vous pourrez les changer plus tard dans les Réglages.';
+      'Plus c\'est difficile, meilleures sont les récompenses.';
 
   @override
   String get introCollectionTitle => 'Collectionner des cartes';
 
   @override
   String get introTwitch =>
-      'Entraînement : un booster gratuit toutes les 15 minutes pour entraîner votre oreille.';
+      'Entraînement : un booster gratuit toutes les 15 min';
 
   @override
-  String get introSeries =>
-      'Séries et succès : complétez-les pour récupérer des cartes rares garanties.';
+  String get introSeries => 'Séries et succès : des cartes rares garanties';
 
   @override
-  String get introTrade =>
-      'Échanger : retrouvez un autre ornithologue et échangez des cartes en personne.';
+  String get introTrade => 'Échanges : en personne ou à distance';
 
   @override
   String get introExamineTitle => 'Examiner les cartes';
 
   @override
-  String get introExamine => 'Touchez et maintenez la carte pour l\'examiner !';
+  String get introExamine => 'Maintenez la carte pour l\'examiner !';
 
   @override
   String get next => 'Suivant';
@@ -541,7 +539,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introRarity =>
-      'La rareté des cartes va de Commune à Légendaire : les espèces rares ont plus de chances de donner des cartes rares. Chaque carte porte aussi de vraies statistiques de l\'espèce : visez un oiseau à 100 % !';
+      'Cinq raretés et les vraies stats de l\'espèce : visez 100 % !';
 
   @override
   String get start => 'Commencer';
@@ -581,7 +579,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get thankYouPlus =>
-      'Early Bird Plus est à vous pour de bon : un booster par minute et la carte des espèces manquantes. Merci d\'aider Early Bird à rester sans pub et à grandir !';
+      'Early Bird Plus est activé : un booster chaque minute, le radar, la forge et la Repasse. Merci d\'aider Early Bird à rester sans publicité et à grandir !';
 
   @override
   String get purchasesUnavailable =>
@@ -592,7 +590,25 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Plus de fonctions : boosters accélérés, radar, forge de cartes et repasse. Un seul achat, à vie.';
+      'Boosters plus rapides, radar, forge et Repasse. 1 mois, 6 mois ou à vie : rien ne se renouvelle.';
+
+  @override
+  String get plusMonth => '1 mois';
+
+  @override
+  String get plusSixMonths => '6 mois';
+
+  @override
+  String get plusPigeon => 'Pigeon';
+
+  @override
+  String get plusDuck => 'Canard';
+
+  @override
+  String get plusEagle => 'Aigle';
+
+  @override
+  String get plusLife => 'À vie';
 
   @override
   String get paymentsGoogle => 'Paiement par Google Play.';
@@ -763,6 +779,45 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Gardez votre collection';
+
+  @override
+  String get introSocialTitle => 'Jouez entre amis';
+
+  @override
+  String get introProfile =>
+      'Profil : votre @pseudo, avatar et plus belles cartes';
+
+  @override
+  String get introFriends =>
+      'Amis : invitez-les, ils reçoivent une carte de bienvenue';
+
+  @override
+  String get introRankings => 'Classements : le top 10 du mois gagne une carte';
+
+  @override
+  String get introAccount => 'Garde vos cartes, amis et rang en sécurité.';
+
+  @override
+  String get introPlusBoosters => 'Un booster chaque minute';
+
+  @override
+  String get introPlusRadar =>
+      'Radar : où vivent les oiseaux qui vous manquent';
+
+  @override
+  String get introPlusForge => 'Forge : fusionnez vos doublons';
+
+  @override
+  String get introPlusLure => 'Repasse : appelez l\'oiseau de votre choix';
+
+  @override
+  String get introPlusOnce => '1 mois, 6 mois ou à vie. Sans abonnement.';
+
+  @override
+  String get introPlusOwned => 'Merci ! Tout est débloqué.';
+
+  @override
+  String get introPlusSee => 'Voir Plus';
 
   @override
   String get shiny => 'Shiny';
@@ -1239,6 +1294,20 @@ class AppLocalizationsFr extends AppLocalizations {
       locale: localeName,
       other: '$count cartes forgées',
       one: '1 carte forgée',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get birdCaller => 'Appeleur';
+
+  @override
+  String goalBirdCaller(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count oiseaux appelés avec la Repasse',
+      one: '1 oiseau appelé avec la Repasse',
     );
     return '$_temp0';
   }

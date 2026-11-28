@@ -891,7 +891,7 @@ abstract class AppLocalizations {
   /// No description provided for @introWelcome.
   ///
   /// In en, this message translates to:
-  /// **'Tired of not progressing at learning bird songs? Every morning, wake up to a new bird: guess it right, win its card, and learn its song.'**
+  /// **'Wake up to a new bird each morning: guess it, win its card, learn its song.'**
   String get introWelcome;
 
   /// No description provided for @introRegionTitle.
@@ -903,7 +903,7 @@ abstract class AppLocalizations {
   /// No description provided for @introRegion.
   ///
   /// In en, this message translates to:
-  /// **'You\'ll hear local birds: select a region on the map, or use your current position.'**
+  /// **'Pick your region to hear local birds.'**
   String get introRegion;
 
   /// No description provided for @introGameTitle.
@@ -915,7 +915,7 @@ abstract class AppLocalizations {
   /// No description provided for @introLater.
   ///
   /// In en, this message translates to:
-  /// **'Harder settings give better rewards; you can change them later in Settings.'**
+  /// **'Harder settings, better rewards.'**
   String get introLater;
 
   /// No description provided for @introCollectionTitle.
@@ -927,19 +927,19 @@ abstract class AppLocalizations {
   /// No description provided for @introTwitch.
   ///
   /// In en, this message translates to:
-  /// **'Training: a free booster every 15 minutes to train your ear.'**
+  /// **'Training: a free booster every 15 min'**
   String get introTwitch;
 
   /// No description provided for @introSeries.
   ///
   /// In en, this message translates to:
-  /// **'Series and achievements: complete them to collect guaranteed rare cards.'**
+  /// **'Series and achievements: guaranteed rare cards'**
   String get introSeries;
 
   /// No description provided for @introTrade.
   ///
   /// In en, this message translates to:
-  /// **'Trade: meet another birder and swap cards face to face.'**
+  /// **'Trade cards, face to face or from afar'**
   String get introTrade;
 
   /// No description provided for @introExamineTitle.
@@ -951,7 +951,7 @@ abstract class AppLocalizations {
   /// No description provided for @introExamine.
   ///
   /// In en, this message translates to:
-  /// **'Tap and hold the card to examine it!'**
+  /// **'Hold the card to examine it!'**
   String get introExamine;
 
   /// No description provided for @next.
@@ -981,7 +981,7 @@ abstract class AppLocalizations {
   /// No description provided for @introRarity.
   ///
   /// In en, this message translates to:
-  /// **'Card rarity goes from Common to Legendary: rare species are more likely to give rare cards. Each card also carries real statistics of its species: aim for a 100% bird!'**
+  /// **'Five rarities and real species stats: aim for 100%!'**
   String get introRarity;
 
   /// No description provided for @start.
@@ -1053,7 +1053,7 @@ abstract class AppLocalizations {
   /// No description provided for @thankYouPlus.
   ///
   /// In en, this message translates to:
-  /// **'Early Bird Plus is yours for good: a booster every minute and the missing-species map. Thank you for helping Early Bird stay ad-free and keep growing!'**
+  /// **'Early Bird Plus is on: a booster every minute, the radar, the forge and the Lure. Thank you for helping Early Bird stay ad-free and keep growing!'**
   String get thankYouPlus;
 
   /// No description provided for @purchasesUnavailable.
@@ -1071,8 +1071,44 @@ abstract class AppLocalizations {
   /// No description provided for @twitchPlusPitch.
   ///
   /// In en, this message translates to:
-  /// **'More features: speed up boosters, radar, card crafting and calls. Buy once, for life.'**
+  /// **'Faster boosters, radar, card forge and Lure. 1 month, 6 months or for life: nothing renews.'**
   String get twitchPlusPitch;
+
+  /// No description provided for @plusMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month'**
+  String get plusMonth;
+
+  /// No description provided for @plusSixMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'6 months'**
+  String get plusSixMonths;
+
+  /// No description provided for @plusPigeon.
+  ///
+  /// In en, this message translates to:
+  /// **'Pigeon'**
+  String get plusPigeon;
+
+  /// No description provided for @plusDuck.
+  ///
+  /// In en, this message translates to:
+  /// **'Duck'**
+  String get plusDuck;
+
+  /// No description provided for @plusEagle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eagle'**
+  String get plusEagle;
+
+  /// No description provided for @plusLife.
+  ///
+  /// In en, this message translates to:
+  /// **'For life'**
+  String get plusLife;
 
   /// No description provided for @paymentsGoogle.
   ///
@@ -1385,6 +1421,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep your collection'**
   String get introAccountTitle;
+
+  /// No description provided for @introSocialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Play with friends'**
+  String get introSocialTitle;
+
+  /// No description provided for @introProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile: your @name, avatar and best cards'**
+  String get introProfile;
+
+  /// No description provided for @introFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends: invite them, they get a welcome card'**
+  String get introFriends;
+
+  /// No description provided for @introRankings.
+  ///
+  /// In en, this message translates to:
+  /// **'Rankings: the month\'s top 10 win a card'**
+  String get introRankings;
+
+  /// No description provided for @introAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps your cards, friends and rank safe.'**
+  String get introAccount;
+
+  /// No description provided for @introPlusBoosters.
+  ///
+  /// In en, this message translates to:
+  /// **'A booster every minute'**
+  String get introPlusBoosters;
+
+  /// No description provided for @introPlusRadar.
+  ///
+  /// In en, this message translates to:
+  /// **'Radar: where your missing birds live'**
+  String get introPlusRadar;
+
+  /// No description provided for @introPlusForge.
+  ///
+  /// In en, this message translates to:
+  /// **'Forge: fuse duplicates into rarer cards'**
+  String get introPlusForge;
+
+  /// No description provided for @introPlusLure.
+  ///
+  /// In en, this message translates to:
+  /// **'Lure: call the bird you want'**
+  String get introPlusLure;
+
+  /// No description provided for @introPlusOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month, 6 months or for life. No subscription.'**
+  String get introPlusOnce;
+
+  /// No description provided for @introPlusOwned.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you! Everything is unlocked.'**
+  String get introPlusOwned;
+
+  /// No description provided for @introPlusSee.
+  ///
+  /// In en, this message translates to:
+  /// **'See Plus'**
+  String get introPlusSee;
 
   /// No description provided for @shiny.
   ///
@@ -2123,6 +2231,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 card forged} other{{count} cards forged}}'**
   String goalCrafter(int count);
+
+  /// No description provided for @birdCaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Bird Caller'**
+  String get birdCaller;
+
+  /// No description provided for @goalBirdCaller.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bird called with the Lure} other{{count} birds called with the Lure}}'**
+  String goalBirdCaller(int count);
 
   /// No description provided for @goalExplorer.
   ///

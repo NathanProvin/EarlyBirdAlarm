@@ -490,42 +490,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Kommst du beim Lernen von Vogelstimmen nicht voran? Wach jeden Morgen mit einem neuen Vogel auf: Errate ihn, gewinne seine Karte und lerne seinen Gesang.';
+      'Jeden Morgen ein neuer Vogel: errate ihn, gewinne seine Karte, lerne seinen Gesang.';
 
   @override
   String get introRegionTitle => 'Region wählen';
 
   @override
-  String get introRegion =>
-      'Du hörst Vögel aus deiner Umgebung: Wähle eine Region auf der Karte oder nutze deinen aktuellen Standort.';
+  String get introRegion => 'Wähle deine Region, um heimische Vögel zu hören.';
 
   @override
   String get introGameTitle => 'Spielweise';
 
   @override
-  String get introLater =>
-      'Schwierigere Einstellungen bringen bessere Belohnungen; du kannst sie später in den Einstellungen ändern.';
+  String get introLater => 'Schwerer heißt bessere Belohnungen.';
 
   @override
   String get introCollectionTitle => 'Karten sammeln';
 
   @override
-  String get introTwitch =>
-      'Training: alle 15 Minuten ein kostenloser Booster, um dein Gehör zu trainieren.';
+  String get introTwitch => 'Training: alle 15 Min. ein Gratis-Booster';
 
   @override
-  String get introSeries =>
-      'Serien und Erfolge: Schließe sie ab, um garantiert seltene Karten zu erhalten.';
+  String get introSeries => 'Serien und Erfolge: garantierte seltene Karten';
 
   @override
-  String get introTrade =>
-      'Tauschen: Triff andere Vogelbeobachter und tausche Karten von Person zu Person.';
+  String get introTrade => 'Tauschen: persönlich oder aus der Ferne';
 
   @override
   String get introExamineTitle => 'Karten betrachten';
 
   @override
-  String get introExamine => 'Halte die Karte gedrückt, um sie zu betrachten!';
+  String get introExamine => 'Halte die Karte gedrückt, um sie zu untersuchen!';
 
   @override
   String get next => 'Weiter';
@@ -541,7 +536,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introRarity =>
-      'Die Seltenheit reicht von Häufig bis Legendär: Seltene Arten geben öfter seltene Karten. Jede Karte trägt außerdem echte Werte ihrer Art: Ziel ist ein 100-%-Vogel!';
+      'Fünf Seltenheiten und echte Artdaten: ziel auf 100 %!';
 
   @override
   String get start => 'Starten';
@@ -581,7 +576,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get thankYouPlus =>
-      'Early Bird Plus gehört dir für immer: ein Booster pro Minute und die Karte der fehlenden Arten. Danke, dass du Early Bird werbefrei hältst und wachsen lässt!';
+      'Early Bird Plus ist aktiv: jede Minute ein Booster, das Radar, die Schmiede und der Lockruf. Danke, dass du Early Bird werbefrei hältst und wachsen lässt!';
 
   @override
   String get purchasesUnavailable =>
@@ -592,7 +587,25 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'Mehr Funktionen: schnellere Booster, Radar, Kartenschmiede und Lockrufe. Einmal kaufen, für immer.';
+      'Schnellere Booster, Radar, Schmiede und Lockruf. 1 Monat, 6 Monate oder für immer: nichts verlängert sich.';
+
+  @override
+  String get plusMonth => '1 Monat';
+
+  @override
+  String get plusSixMonths => '6 Monate';
+
+  @override
+  String get plusPigeon => 'Taube';
+
+  @override
+  String get plusDuck => 'Ente';
+
+  @override
+  String get plusEagle => 'Adler';
+
+  @override
+  String get plusLife => 'Für immer';
 
   @override
   String get paymentsGoogle => 'Bezahlung über Google Play.';
@@ -765,6 +778,44 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Behalte deine Sammlung';
+
+  @override
+  String get introSocialTitle => 'Spiel mit Freunden';
+
+  @override
+  String get introProfile => 'Profil: dein @Name, Avatar und beste Karten';
+
+  @override
+  String get introFriends =>
+      'Freunde: lade sie ein, sie bekommen eine Willkommenskarte';
+
+  @override
+  String get introRankings =>
+      'Ranglisten: die Top 10 des Monats gewinnen eine Karte';
+
+  @override
+  String get introAccount => 'Sichert deine Karten, Freunde und deinen Rang.';
+
+  @override
+  String get introPlusBoosters => 'Jede Minute ein Booster';
+
+  @override
+  String get introPlusRadar => 'Radar: wo deine fehlenden Vögel leben';
+
+  @override
+  String get introPlusForge => 'Schmiede: verschmelze Doppelte';
+
+  @override
+  String get introPlusLure => 'Lockruf: rufe den Vogel deiner Wahl';
+
+  @override
+  String get introPlusOnce => '1 Monat, 6 Monate oder für immer. Kein Abo.';
+
+  @override
+  String get introPlusOwned => 'Danke! Alles ist freigeschaltet.';
+
+  @override
+  String get introPlusSee => 'Plus ansehen';
 
   @override
   String get shiny => 'Shiny';
@@ -1242,6 +1293,20 @@ class AppLocalizationsDe extends AppLocalizations {
       locale: localeName,
       other: '$count geschmiedete Karten',
       one: '1 geschmiedete Karte',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get birdCaller => 'Vogelrufer';
+
+  @override
+  String goalBirdCaller(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Vögel mit dem Lockruf gerufen',
+      one: '1 Vogel mit dem Lockruf gerufen',
     );
     return '$_temp0';
   }

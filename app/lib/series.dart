@@ -182,7 +182,8 @@ int podiumTiers(int rank, int total) => podiumTops
 /// Game achievements, computed from play rather than from bird groups. Reworked
 /// 2026-11-12 (user): 5 tiers (I…V) each, collected one at a time, tier n giving a card
 /// of the n-th rarity (Common … Legendary). 2026-11-24 (user): harder goals, Early riser
-/// removed (its tiers collected stay), 6 new: 23 on 4 pages.
+/// removed (its tiers collected stay), 6 new: 23 on 4 pages. 2026-11-28 (user, 1.4.1):
+/// easier tiers, set one by one (a month of play stayed at Rare), Bird Caller added: 24.
 const collector = 'collector',
     localExpert = 'local-expert',
     twitcher = 'twitcher',
@@ -206,33 +207,35 @@ const fullHouse = 'full-house',
     trader = 'trader',
     influencer = 'influencer',
     score = 'score',
-    podium = 'podium';
+    podium = 'podium',
+    birdCaller = 'bird-caller';
 
 /// Each achievement's page (1-4) and the goal of each of its 5 tiers.
 const achievementGoals = <String, (int, List<int>)>{
-  collector: (1, [10, 50, 250, 1000, 3000]),
-  localExpert: (1, [20, 50, 100, 175, 250]),
-  twitcher: (1, [50, 150, 300, 600, 1200]),
-  ornithologist: (1, [10, 25, 50, 100, 150]), // bird families owned
-  duplicates: (1, [3, 5, 10, 20, 40]),
+  collector: (1, [10, 50, 200, 750, 2500]),
+  localExpert: (1, [15, 40, 100, 175, 250]),
+  twitcher: (1, [30, 75, 200, 500, 1000]),
+  ornithologist: (1, [8, 16, 40, 90, 150]), // bird families owned
+  duplicates: (1, [2, 4, 8, 20, 40]),
   fullSet: (1, [2, 3, 4, 5, 6]), // rarities owned; 6 = Shiny too
   perfectSpecimen: (2, [76, 81, 91, 96, 100]), // best quality, %: >75 … 100
-  rareFinds: (2, [10, 50, 150, 400, 1000]),
-  epicFinds: (2, [3, 15, 40, 100, 250]),
+  rareFinds: (2, [5, 25, 75, 250, 1000]),
+  epicFinds: (2, [2, 8, 20, 75, 200]),
   legendaryHunter: (2, [1, 3, 5, 10, 25]),
   gallery: (2, [1, 3, 10, 25, 50]), // species with all their arts (2 or more)
   crafter: (2, [1, 5, 15, 45, 100]), // cards forged
   sharpEar: (3, [5, 10, 25, 50, 100]), // right answers in a row
-  wakeUpStreak: (3, [3, 7, 30, 100, 365]), // days in a row
-  dailyBirder: (3, [7, 30, 90, 180, 365]), // days with a card
+  wakeUpStreak: (3, [3, 7, 20, 100, 365]), // days in a row
+  dailyBirder: (3, [7, 21, 75, 150, 365]), // days with a card
   fidelity: (3, [2, 3, 6, 9, 12]), // months of the year with a card
-  globetrotter: (3, [3, 8, 20, 40, 80]),
+  globetrotter: (3, [2, 5, 15, 40, 75]),
   explorer: (3, [2, 3, 4, 5, 6]), // covered zones with a card (zoneOf)
   fullHouse: (4, [1, 3, 5, 10, 20]),
   trader: (4, [1, 5, 15, 40, 100]), // cards traded away
   influencer: (4, [1, 3, 5, 10, 25]), // friends joined through the invite link
-  score: (4, [500, 2500, 10000, 50000, 200000]), // collection points
+  score: (4, [300, 2000, 5000, 20000, 100000]), // collection points
   podium: (4, [1, 2, 3, 4, 5]), // Podium tiers reached (podiumTiers)
+  birdCaller: (4, [3, 15, 45, 200, 500]), // Lures used
 };
 
 /// Achievements collected before the tiers (one goal each, saved as their id): the
@@ -284,6 +287,7 @@ typedef Play = ({
   int friends, // friends joined through the invite link
   int crafted, // cards forged
   int podium, // Podium tiers reached
+  int lured, // Lures used
   Set<String> collected, // series and achievement tiers collected
 });
 
@@ -387,6 +391,7 @@ List<SeriesState> seriesStates(
     influencer: play.friends,
     score: collectionPoints(cards),
     podium: play.podium,
+    birdCaller: play.lured,
   };
   return [
     ...series,

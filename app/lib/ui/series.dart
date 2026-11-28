@@ -39,6 +39,7 @@ String seriesName(AppLocalizations l, SeriesState s) =>
       globetrotter => l.globetrotter,
       fullHouse => l.fullHouse,
       trader => l.trader,
+      birdCaller => l.birdCaller,
       _ => l.influencer,
     }} ${const ['I', 'II', 'III', 'IV', 'V'][min(s.tier, 4)]}';
 
@@ -72,6 +73,7 @@ String? seriesGoal(AppLocalizations l, SeriesState s) {
     globetrotter => l.goalGlobetrotter(n),
     fullHouse => l.goalFullHouse(n),
     trader => l.goalTrader(n),
+    birdCaller => l.goalBirdCaller(n),
     _ => l.goalInfluencer(n),
   };
 }
@@ -232,7 +234,9 @@ class ModeSwitch extends StatelessWidget {
     required this.onChanged,
     required this.left,
     required this.right,
+    this.width = 0.7,
   });
+  final double width; // a share of the screen's width
   final bool series;
   final ValueChanged<bool> onChanged;
   final String left, right;
@@ -245,7 +249,7 @@ class ModeSwitch extends StatelessWidget {
     final thumb = series ? scheme.onSurface : scheme.primary;
     final onThumb = series ? scheme.surface : scheme.onPrimary;
     return FractionallySizedBox(
-      widthFactor: 0.7,
+      widthFactor: width,
       child: LayoutBuilder(
         builder: (context, box) => GestureDetector(
           onHorizontalDragUpdate: (d) =>
@@ -409,7 +413,8 @@ class _Badge extends StatelessWidget {
       globetrotter => Icons.public,
       fullHouse => Icons.emoji_events,
       trader => Icons.swap_horiz,
-      influencer => Icons.campaign,
+      influencer => Icons.group_add,
+      birdCaller => Icons.campaign, // the Lure button's
       _ => Icons.flutter_dash, // a series whose birds have no photo
     };
     final inner = face != null

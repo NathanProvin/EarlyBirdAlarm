@@ -489,42 +489,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introWelcome =>
-      'Tired of not progressing at learning bird songs? Every morning, wake up to a new bird: guess it right, win its card, and learn its song.';
+      'Wake up to a new bird each morning: guess it, win its card, learn its song.';
 
   @override
   String get introRegionTitle => 'Choose a region';
 
   @override
-  String get introRegion =>
-      'You\'ll hear local birds: select a region on the map, or use your current position.';
+  String get introRegion => 'Pick your region to hear local birds.';
 
   @override
   String get introGameTitle => 'Gameplay';
 
   @override
-  String get introLater =>
-      'Harder settings give better rewards; you can change them later in Settings.';
+  String get introLater => 'Harder settings, better rewards.';
 
   @override
   String get introCollectionTitle => 'Collect cards';
 
   @override
-  String get introTwitch =>
-      'Training: a free booster every 15 minutes to train your ear.';
+  String get introTwitch => 'Training: a free booster every 15 min';
 
   @override
-  String get introSeries =>
-      'Series and achievements: complete them to collect guaranteed rare cards.';
+  String get introSeries => 'Series and achievements: guaranteed rare cards';
 
   @override
-  String get introTrade =>
-      'Trade: meet another birder and swap cards face to face.';
+  String get introTrade => 'Trade cards, face to face or from afar';
 
   @override
   String get introExamineTitle => 'Examine cards';
 
   @override
-  String get introExamine => 'Tap and hold the card to examine it!';
+  String get introExamine => 'Hold the card to examine it!';
 
   @override
   String get next => 'Next';
@@ -540,7 +535,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introRarity =>
-      'Card rarity goes from Common to Legendary: rare species are more likely to give rare cards. Each card also carries real statistics of its species: aim for a 100% bird!';
+      'Five rarities and real species stats: aim for 100%!';
 
   @override
   String get start => 'Start';
@@ -580,7 +575,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thankYouPlus =>
-      'Early Bird Plus is yours for good: a booster every minute and the missing-species map. Thank you for helping Early Bird stay ad-free and keep growing!';
+      'Early Bird Plus is on: a booster every minute, the radar, the forge and the Lure. Thank you for helping Early Bird stay ad-free and keep growing!';
 
   @override
   String get purchasesUnavailable =>
@@ -591,7 +586,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get twitchPlusPitch =>
-      'More features: speed up boosters, radar, card crafting and calls. Buy once, for life.';
+      'Faster boosters, radar, card forge and Lure. 1 month, 6 months or for life: nothing renews.';
+
+  @override
+  String get plusMonth => '1 month';
+
+  @override
+  String get plusSixMonths => '6 months';
+
+  @override
+  String get plusPigeon => 'Pigeon';
+
+  @override
+  String get plusDuck => 'Duck';
+
+  @override
+  String get plusEagle => 'Eagle';
+
+  @override
+  String get plusLife => 'For life';
 
   @override
   String get paymentsGoogle => 'Payments by Google Play.';
@@ -762,6 +775,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get introAccountTitle => 'Keep your collection';
+
+  @override
+  String get introSocialTitle => 'Play with friends';
+
+  @override
+  String get introProfile => 'Profile: your @name, avatar and best cards';
+
+  @override
+  String get introFriends => 'Friends: invite them, they get a welcome card';
+
+  @override
+  String get introRankings => 'Rankings: the month\'s top 10 win a card';
+
+  @override
+  String get introAccount => 'Keeps your cards, friends and rank safe.';
+
+  @override
+  String get introPlusBoosters => 'A booster every minute';
+
+  @override
+  String get introPlusRadar => 'Radar: where your missing birds live';
+
+  @override
+  String get introPlusForge => 'Forge: fuse duplicates into rarer cards';
+
+  @override
+  String get introPlusLure => 'Lure: call the bird you want';
+
+  @override
+  String get introPlusOnce => '1 month, 6 months or for life. No subscription.';
+
+  @override
+  String get introPlusOwned => 'Thank you! Everything is unlocked.';
+
+  @override
+  String get introPlusSee => 'See Plus';
 
   @override
   String get shiny => 'Shiny';
@@ -1235,6 +1284,20 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other: '$count cards forged',
       one: '1 card forged',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get birdCaller => 'Bird Caller';
+
+  @override
+  String goalBirdCaller(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count birds called with the Lure',
+      one: '1 bird called with the Lure',
     );
     return '$_temp0';
   }

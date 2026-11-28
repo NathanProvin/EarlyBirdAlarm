@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import 'cards.dart';
 import 'main.dart' show store;
+import 'profile.dart' show social;
 import 'store.dart';
 import 'ui/profile.dart' show collectionPoints;
 
@@ -116,6 +117,30 @@ Stream<List<RankRow>> watchTop(String month) =>
               ),
           ],
         );
+
+/// The all-time board among this player and their friends (2026-11-28), best first: the
+/// names and avatars their profiles show now, 0 points for a friend with no row there.
+Future<List<RankRow>> friendsBoard() async {
+  final uid = _uid;
+  if (uid == null) return const [];
+  final friends = (await social(store)).friends;
+  final players = [
+    (uid: uid, name: store.username ?? '', avatar: store.avatar),
+    for (final f in friends) (uid: f.uid, name: f.name, avatar: f.avatar),
+  ];
+  final docs = await Future.wait([
+    for (final p in players) _month(allTime).doc(p.uid).get(),
+  ]);
+  return [
+    for (final (i, p) in players.indexed)
+      (
+        uid: p.uid,
+        name: p.name,
+        points: docs[i].data()?['points'] as int? ?? 0,
+        avatar: p.avatar,
+      ),
+  ]..sort((a, b) => b.points.compareTo(a.points));
+}
 
 /// This player's place in [month] (ties share a rank) and how many players scored; null
 /// if they have no row there.

@@ -267,6 +267,8 @@ Map<String, Object?> mergeBackups(
       'twitchBonus',
       'crafted',
       'podium',
+      'lured',
+      'plusUntil',
     ])
       k: max(a[k] as int? ?? 0, b[k] as int? ?? 0),
   };

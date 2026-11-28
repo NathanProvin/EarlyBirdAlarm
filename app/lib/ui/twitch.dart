@@ -9,6 +9,7 @@ import '../purchases.dart';
 import '../store.dart';
 import 'booster.dart';
 import 'header.dart';
+import 'family_icon.dart' show groupBadge;
 import 'lure.dart';
 import 'ring.dart';
 import 'streak.dart';
@@ -272,7 +273,9 @@ class _PulseButtonState extends State<PulseButton>
   }
 }
 
-/// Twitch Plus: what it does, Google Play's price, one tap to buy (bought once, kept for good).
+/// Early Bird Plus: what it does, then Pigeon (1 month), Duck (6 months) or Eagle (for
+/// life) at Google Play's prices (1.4.1, user: one-off purchases, nothing renews); the
+/// Eagle highlighted.
 class PlusSheet extends StatelessWidget {
   const PlusSheet({super.key});
 
@@ -284,6 +287,69 @@ class PlusSheet extends StatelessWidget {
       future: products(),
       builder: (context, snap) {
         final plus = snap.data?[twitchPlusId];
+        // Each choice: the bird's badge in the accent, the length over its name, then the
+        // price (user, 2026-11-28).
+        Widget choice(
+          String id,
+          String group,
+          String name,
+          String length, {
+          bool main = false,
+        }) {
+          final p = snap.data?[id];
+          final scheme = Theme.of(context).colorScheme;
+          final ink = main ? scheme.onPrimary : scheme.onSecondaryContainer;
+          final label = Row(
+            spacing: 14,
+            children: [
+              // The accent, but on the accent-filled Eagle: its ink.
+              groupBadge(group, main ? ink : scheme.primary),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      length,
+                      style: text.titleMedium?.copyWith(
+                        color: ink,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(name, style: text.bodyMedium?.copyWith(color: ink)),
+                  ],
+                ),
+              ),
+              Text(
+                p?.price ?? '–',
+                style: text.titleMedium?.copyWith(color: ink),
+              ),
+            ],
+          );
+          final style = FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(68),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          );
+          final onPressed = p == null
+              ? null
+              : () {
+                  Navigator.of(context).pop();
+                  buy(p);
+                };
+          return Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: main
+                ? FilledButton(
+                    style: style,
+                    onPressed: onPressed,
+                    child: label,
+                  )
+                : FilledButton.tonal(
+                    style: style,
+                    onPressed: onPressed,
+                    child: label,
+                  ),
+          );
+        }
         return Padding(
           padding: EdgeInsets.fromLTRB(
             24,
@@ -298,16 +364,15 @@ class PlusSheet extends StatelessWidget {
               Text(l.twitchPlus, style: text.titleLarge),
               const SizedBox(height: 8),
               Text(l.twitchPlusPitch, style: text.bodyMedium),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                icon: const Icon(Icons.bolt),
-                label: Text(plus?.price ?? l.twitchPlus),
-                onPressed: plus == null
-                    ? null
-                    : () {
-                        Navigator.of(context).pop();
-                        buy(plus);
-                      },
+              const SizedBox(height: 12),
+              choice('plus_month', 'pigeon', l.plusPigeon, l.plusMonth),
+              choice('plus_year', 'duck', l.plusDuck, l.plusSixMonths),
+              choice(
+                twitchPlusId,
+                'raptor',
+                l.plusEagle,
+                l.plusLife,
+                main: true,
               ),
               const SizedBox(height: 8),
               Text(
