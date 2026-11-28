@@ -1059,6 +1059,13 @@ def sync_r2():
                     "--stats-one-line", "--stats", "30s", "--stats-log-level", "NOTICE"], env=env, check=True)
 
 
+# Recordings ("XC123" / "iNat <observation>") and photos (Commons file names) taken out by hand
+# (removed.csv, 2026-11-28): skipped where they stand, so the files after them keep their numbers
+# (an existing file is never redone: renumbering would put one clip or photo under another's name).
+REMOVED = ({row["what"] for row in csv.DictReader(open(ROOT / "removed.csv", encoding="utf-8"))}
+           if (ROOT / "removed.csv").exists() else set())
+
+
 def extra_photos(bird_id, tmp, base_url):
     """Card variants (cache/variants.json from variants.py, best first: the best goes to
     Legendary) and Shiny photos (pipeline/shiny.csv, picked by the user from shiny.py's
@@ -1080,6 +1087,8 @@ def extra_photos(bird_id, tmp, base_url):
     for key, items, url_of in [("variants", picks, lambda x: x["thumb"]),
                                ("shiny", shiny.get(bird_id, []), lambda x: full_size(x["url"]))]:
         for i, x in enumerate(items, 1):
+            if x.get("file") in REMOVED:
+                continue
             name = f"{bird_id}-{key[0]}{i}.jpg"  # -v1 … -v5, -s1 …
             if not (OUT / "photos" / name).exists():
                 src = tmp / f"{name}.src"
@@ -1285,6 +1294,8 @@ def main():
         for i, rec in enumerate(recs, 1):
             if len(recordings) >= n:
                 break
+            if rec.get("ref", f"XC{rec['id']}") in REMOVED:
+                continue
             # iNaturalist clips get their own names: an old NC clip of the same bird is never reused.
             name = f"{bird_id}-{rec.get('prefix', 'n' if 'src' in rec else '')}{i}.m4a"
             audio_out = OUT / "audio" / name

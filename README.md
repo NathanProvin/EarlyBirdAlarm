@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  Android · version 1.3.0 · in closed testing on
+  Android · version 1.4.1 · on
   <a href="https://play.google.com/store/apps/details?id=com.nathanprovin.earlybird">Google Play</a>
 </p>
 
@@ -24,25 +24,22 @@ before moving on. Little by little, you learn the songs of your region.
 and the Middle East, Australia and New Zealand. Free, no ads, no trackers. English, French,
 German and Spanish.
 
-### New in 1.2
+### New in 1.4
 
-- **Three new areas:** Australia and New Zealand (seven Australian bioregions, the two main New
-  Zealand islands), North Africa and the Middle East, Mexico and Central America. The catalog
-  grows from 1,292 to 2,630 species, with emus, lyrebirds, kiwis, kookaburras, kōkako,
-  motmots, toucans and wheatears.
-- **Missing-species map** (Early Bird Plus): a radar button on the region map colours every
-  cell by the number of species you still lack there, from marine blue (none) to firebrick red
-  (the most), on a log scale with a legend. Tap a cell for "58 / 100 collected · 42 missing".
-- **Card badges:** three glass badges down the photo's left side give the bird's group,
-  habitat (forest, wetland, desert, towns…) and diet (insects, fruit, fish, nectar…). Tap one
-  to slide out its name.
-- **Art n/6:** up to six reviewed photos per species; a card says which one it shows, and a
-  duplicate is now the same bird, rarity *and* photo.
-- **Collection:** a Duplicates view, Newest and Quality % sorts, fuller piles that open into
-  their copies.
-- **Friends:** a friend's profile shows their Cards / Species / Regions; trades show full
-  cards, with a Collected / Duplicates switch for both collections.
-- **Switch account** from the account page (your collection is saved online first).
+- **Rankings:** the world ranking of the month (the top 10 win a card) or of all time, and a
+  **friends** board, with avatars wearing their rank as a medal.
+- **Card forge** (Early Bird Plus): fuse three cards of a species into the next rarity, or two
+  Commons into two boosters.
+- **Lure** (Early Bird Plus): call a bird of your choice, three times a day; it may be your
+  next card.
+- **Points and achievements:** every card counts towards your score; 24 achievements in five
+  tiers, with a new **Bird Caller**.
+- **iPhone-style wheels** to set the alarm time, with a tick at each number (the dial is still
+  there).
+- **Early Bird Plus** in three one-off purchases, nothing renews: Pigeon (1 month), Duck
+  (6 months), Eagle (for life).
+- A shorter, 8-page introduction; friends' avatars and hall of fame show their real cards;
+  smoother scrolling; the developer's own photos added to the catalog.
 
 ## Screenshots
 
@@ -80,8 +77,12 @@ German and Spanish.
 - **Badges:** the bird's group, habitat and diet, as glass badges on the photo; tap one to read
   its name.
 - **Training:** a pile of free boosters (one every 15 minutes) to practise between alarms.
-- **Achievements and series:** 18 achievements in five tiers, and series by family, habitat,
-  voice and theme. Each completed tier or series gives a card of guaranteed rarity.
+- **Achievements and series:** 24 achievements in five tiers, and series by family, habitat,
+  diet, voice and theme. Each completed tier or series gives a card of guaranteed rarity.
+- **Points and rankings:** every card scores (rarer and better cards more); a monthly world
+  ranking whose top 10 win a card, an all-time board and a friends board.
+- **Card forge** (Plus): three cards of one species make the next rarity.
+- **Lure** (Plus): call the bird you want, three times a day; your next card may be that bird.
 - Collection views by region, species or **duplicates**, search, sorts (newest, quality,
   rarity…) and filters; piles of copies that open on tap; the species' Wikipedia article in
   your language; share a card as an image.
@@ -99,8 +100,9 @@ German and Spanish.
   the other one's.
 - Bonus codes for events and testers.
 
-**Support:** optional tips and **Early Bird Plus** (a booster every minute and the
-missing-species map), through Google Play. Nothing random is ever sold.
+**Support:** optional tips and **Early Bird Plus** (a booster every minute, the missing-species
+map, the card forge and the Lure), through Google Play, as a one-off purchase for 1 month,
+6 months or life: nothing renews. Nothing random is ever sold.
 
 ## Repository layout
 

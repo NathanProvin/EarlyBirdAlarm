@@ -78,7 +78,7 @@ The production release: no risky features. Order below = build order, one releas
 - [x] **Lure (FR "Repasse")**, Plus only, 3 a day: icon at the bottom left of the Training tab (unpaid → Plus sheet); a search of the species that can be drafted now (region, season, difficulty); the bird's call plays, popup "You played the Blackbird's call. Will it answer?"; the **next card from any source** (Training or alarm) has 50 % chance of being that bird; a miss uses the call up; no network → a normal draw
 - [x] **User (console):** code `ami2nathan` → reward `legendary` (codes live in Firestore `codes/{word}`, not in the app)
 - [x] **Performance pass** (2026-11-27): grid tiles and forge without live blurs, 35 → 5 ms GPU frames (decisions.md, Smooth scrolling)
-- [ ] User review on the S22 (crafting validated; ranking and Lure fixes of 2026-11-27 installed); the two noisy recordings to remove (reject list)
+- [x] User review on the S22 (done with 1.4.1); the noisy recordings removed in 1.4.1
 - [x] Version 1.4.0+9, release notes in 4 languages (`store-listing.md`), signed bundle built (2026-11-27)
 - [ ] Upload the bundle to the closed track, then production
 
@@ -92,7 +92,9 @@ The production release: no risky features. Order below = build order, one releas
 - [x] **Plus pricing:** Pigeon 1 month 0.99 €, Duck 6 months 2.99 €, Eagle for life 4.99 € (decisions.md, Money); products created and checked live in the sheet
 - [x] **Personal photos:** 64 renamed to bird ids (`my_photos/renames.csv`), 19 not in the catalog set aside (`hors_catalogue/`), 2 duplicates (`doublons/`); `py build.py myphotos` + publish (76 added). Catalog gap: Black-necked Grebe missing
 - [x] Version 1.4.1+10, signed bundle
-- [ ] Release notes, upload to the closed track, then production; the two noisy recordings (reject list)
+- [x] **Catalog cleanup** (`pipeline/removed.csv`, skipped by the build without renumbering, and dropped from the published species.json): Eurasian Wigeon music remix (XC507245), Horned Grebe with a woman's voice (iNat 138889748), American Black Duck photo of a Snowy Owl eating a duck (SnowyOwlAmericanBlackDuck.jpg)
+- [x] Release notes in 4 languages (`store-listing.md`, covering all of 1.4), README for 1.4.1
+- [ ] Upload the 1.4.1+10 bundle to the closed track, then production
 
 ## Later
 - **Challenges between friends** (brainstormed 2026-11-27, not green-lit): async 5-bird duel on a `challenges/{a}_{b}` doc (trade pattern), or a real-time 3-lives duel with wagered cards held in escrow in the duel doc (removed from both collections at the start, so a loser going offline can't keep them; leaving = loss); cheatable while cards are rolled on the phone.
